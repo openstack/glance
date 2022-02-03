@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client as http
 import io
 from unittest import mock
 
@@ -23,7 +24,6 @@ import uuid
 import fixtures
 from oslo_serialization import jsonutils
 from six import moves
-from six.moves import http_client as http
 import webob
 
 from glance.cmd import replicator as glance_replicator

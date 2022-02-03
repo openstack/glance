@@ -22,11 +22,11 @@ When subsequent requests for the same image file are received,
 the local cached copy of the image file is returned.
 """
 
+import http.client as http
 import re
 import six
 
 from oslo_log import log as logging
-from six.moves import http_client as http
 import webob
 
 from glance.api.common import size_checked_iter

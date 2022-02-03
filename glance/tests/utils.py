@@ -17,6 +17,8 @@
 
 import errno
 import functools
+import http.client
+import http.server
 import io
 import os
 import shlex
@@ -36,8 +38,6 @@ from oslo_log.fixture import logging_error as log_fixture
 from oslo_log import log
 from oslo_utils import timeutils
 from oslo_utils import units
-from six.moves import BaseHTTPServer
-from six.moves import http_client as http
 import testtools
 import webob
 
@@ -546,9 +546,9 @@ def minimal_add_command(port, name, suffix='', public=True):
 
 def start_http_server(image_id, image_data):
     def _get_http_handler_class(fixture):
-        class StaticHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+        class StaticHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             def do_GET(self):
-                self.send_response(http.OK)
+                self.send_response(http.client.OK)
                 self.send_header('Content-Length', str(len(fixture)))
                 self.end_headers()
                 self.wfile.write(fixture.encode('latin-1'))
@@ -558,9 +558,9 @@ def start_http_server(image_id, image_data):
                 # reserve non_existing_image_path for the cases where we expect
                 # 404 from the server
                 if 'non_existing_image_path' in self.path:
-                    self.send_response(http.NOT_FOUND)
+                    self.send_response(http.client.NOT_FOUND)
                 else:
-                    self.send_response(http.OK)
+                    self.send_response(http.client.OK)
                 self.send_header('Content-Length', str(len(fixture)))
                 self.end_headers()
                 return
@@ -574,7 +574,7 @@ def start_http_server(image_id, image_data):
 
     server_address = ('127.0.0.1', 0)
     handler_class = _get_http_handler_class(image_data)
-    httpd = BaseHTTPServer.HTTPServer(server_address, handler_class)
+    httpd = http.server.HTTPServer(server_address, handler_class)
     port = httpd.socket.getsockname()[1]
 
     thread = threading.Thread(target=httpd.serve_forever)
@@ -616,7 +616,7 @@ class FakeAuthMiddleware(wsgi.Middleware):
 
 
 class FakeHTTPResponse(object):
-    def __init__(self, status=http.OK, headers=None, data=None,
+    def __init__(self, status=http.client.OK, headers=None, data=None,
                  *args, **kwargs):
         data = data or b'I am a teapot, short and stout\n'
         self.data = io.BytesIO(data)
@@ -708,10 +708,10 @@ def is_sqlite_version_prior_to(major, minor):
 
 def start_standalone_http_server():
     def _get_http_handler_class():
-        class StaticHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+        class StaticHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             def do_GET(self):
                 data = b"Hello World!!!"
-                self.send_response(http.OK)
+                self.send_response(http.client.OK)
                 self.send_header('Content-Length', str(len(data)))
                 self.end_headers()
                 self.wfile.write(data)
@@ -721,7 +721,7 @@ def start_standalone_http_server():
 
     server_address = ('127.0.0.1', 0)
     handler_class = _get_http_handler_class()
-    httpd = BaseHTTPServer.HTTPServer(server_address, handler_class)
+    httpd = http.server.HTTPServer(server_address, handler_class)
     port = httpd.socket.getsockname()[1]
 
     thread = threading.Thread(target=httpd.serve_forever)

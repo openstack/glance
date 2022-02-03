@@ -13,9 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client
 from unittest import mock
 
-from six.moves import http_client
 import testtools
 
 from glance.common import auth
@@ -41,11 +41,11 @@ class TestClient(testtools.TestCase):
         with mock.patch.object(auth, 'get_plugin_from_strategy'):
             self.client.make_auth_plugin(creds, insecure)
 
-    @mock.patch.object(http_client.HTTPConnection, "getresponse")
-    @mock.patch.object(http_client.HTTPConnection, "request")
+    @mock.patch.object(http.client.HTTPConnection, "getresponse")
+    @mock.patch.object(http.client.HTTPConnection, "request")
     def test_http_encoding_headers(self, _mock_req, _mock_resp):
         # Lets fake the response
-        # returned by http_client
+        # returned by http.client
         fake = utils.FakeHTTPResponse(data=b"Ok")
         _mock_resp.return_value = fake
 
@@ -54,11 +54,11 @@ class TestClient(testtools.TestCase):
                                       headers=headers)
         self.assertEqual(fake, resp)
 
-    @mock.patch.object(http_client.HTTPConnection, "getresponse")
-    @mock.patch.object(http_client.HTTPConnection, "request")
+    @mock.patch.object(http.client.HTTPConnection, "getresponse")
+    @mock.patch.object(http.client.HTTPConnection, "request")
     def test_http_encoding_params(self, _mock_req, _mock_resp):
         # Lets fake the response
-        # returned by http_client
+        # returned by http.client
         fake = utils.FakeHTTPResponse(data=b"Ok")
         _mock_resp.return_value = fake
 

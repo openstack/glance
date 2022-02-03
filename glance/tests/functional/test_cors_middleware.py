@@ -14,9 +14,10 @@
 
 """Tests cors middleware."""
 
+import http.client
+
 import httplib2
 from oslo_utils.fixture import uuidsentinel as uuids
-from six.moves import http_client
 
 from glance.tests import functional
 
@@ -59,7 +60,7 @@ class TestCORSMiddleware(functional.FunctionalTest):
                 'Access-Control-Request-Method': 'GET'
             }))
 
-        self.assertEqual(http_client.OK, r_headers.status)
+        self.assertEqual(http.client.OK, r_headers.status)
         self.assertIn('access-control-allow-origin', r_headers)
         self.assertEqual('http://valid.example.com',
                          r_headers['access-control-allow-origin'])
@@ -73,7 +74,7 @@ class TestCORSMiddleware(functional.FunctionalTest):
                 'Access-Control-Request-Method': 'GET'
             }))
 
-        self.assertEqual(http_client.OK, r_headers.status)
+        self.assertEqual(http.client.OK, r_headers.status)
         self.assertNotIn('access-control-allow-origin', r_headers)
 
     def test_valid_cors_get_request(self):
@@ -84,7 +85,7 @@ class TestCORSMiddleware(functional.FunctionalTest):
                 'Origin': 'http://valid.example.com'
             }))
 
-        self.assertEqual(http_client.OK, r_headers.status)
+        self.assertEqual(http.client.OK, r_headers.status)
         self.assertIn('access-control-allow-origin', r_headers)
         self.assertEqual('http://valid.example.com',
                          r_headers['access-control-allow-origin'])
@@ -97,5 +98,5 @@ class TestCORSMiddleware(functional.FunctionalTest):
                 'Origin': 'http://invalid.example.com'
             }))
 
-        self.assertEqual(http_client.OK, r_headers.status)
+        self.assertEqual(http.client.OK, r_headers.status)
         self.assertNotIn('access-control-allow-origin', r_headers)

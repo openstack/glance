@@ -14,8 +14,10 @@
 #    under the License.
 
 """Functional test cases testing glance client redirect-following."""
+
+import http.client as http
+
 import eventlet.patcher
-from six.moves import http_client as http
 import webob.dec
 import webob.exc
 

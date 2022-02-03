@@ -16,6 +16,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client as http
 import os
 import sys
 
@@ -25,7 +26,6 @@ from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
 import six
-from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 from webob import exc
 
@@ -117,8 +117,9 @@ class ImageService(object):
     def __init__(self, conn, auth_token):
         """Initialize the ImageService.
 
-        conn: a http_client.HTTPConnection to the glance server
-        auth_token: authentication token to pass in the x-auth-token header
+        :param conn: a http.client.HTTPConnection to the glance server
+        :param auth_token: authentication token to pass in the x-auth-token
+            header
         """
         self.auth_token = auth_token
         self.conn = conn
@@ -133,7 +134,7 @@ class ImageService(object):
         body: body to send with the request
         ignore_result_body: the body of the result will be ignored
 
-        Returns: a http_client response object
+        :returns: A http.client response object
         """
         if self.auth_token:
             headers.setdefault('x-auth-token', self.auth_token)
@@ -178,7 +179,7 @@ class ImageService(object):
 
         if ignore_result_body:
             # NOTE: because we are pipelining requests through a single HTTP
-            # connection, http_client requires that we read the response body
+            # connection, http.client requires that we read the response body
             # before we can make another request. If the caller knows they
             # don't care about the body, they can ask us to do that for them.
             response.read()
@@ -211,7 +212,7 @@ class ImageService(object):
 
         image_uuid: the id of an image
 
-        Returns: a http_client Response object where the body is the image.
+        :returns: a http.client Response object where the body is the image.
         """
         url = '/v1/images/%s' % image_uuid
         return self._http_request('GET', url, {}, '')

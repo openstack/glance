@@ -13,13 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import http.client as http
 import os
 import re
 import time
 
 import psutil
 import requests
-from six.moves import http_client as http
 
 from glance.tests import functional
 from glance.tests.utils import execute

@@ -14,11 +14,11 @@
 #    under the License.
 
 import datetime
+import http.client as http
 
 import glance_store
 from oslo_config import cfg
 from oslo_serialization import jsonutils
-from six.moves import http_client as http
 import webob
 
 import glance.api.v2.image_members

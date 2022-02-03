@@ -15,9 +15,11 @@
 #    under the License.
 
 """Functional test asserting strongly typed exceptions from glance client"""
+
+import http.client as http_client
+
 import eventlet.patcher
 import httplib2
-from six.moves import http_client
 import webob.dec
 import webob.exc
 

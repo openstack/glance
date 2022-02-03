@@ -20,6 +20,7 @@ but that is really not relevant, as the image cache is transparent
 to the backend store.
 """
 
+import http.client as http_client
 import os
 import shutil
 
@@ -27,7 +28,6 @@ import httplib2
 from oslo_serialization import jsonutils
 from oslo_utils.fixture import uuidsentinel as uuids
 from oslo_utils import units
-from six.moves import http_client
 
 from glance.tests import functional
 from glance.tests.utils import skip_if_disabled

@@ -12,11 +12,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import http.client as http
 from unittest.mock import patch
 
 from oslo_policy import policy
 from oslo_utils.fixture import uuidsentinel as uuids
-from six.moves import http_client as http
 import testtools
 import webob
 

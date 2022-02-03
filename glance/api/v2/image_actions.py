@@ -12,9 +12,11 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
+import http.client as http
+
 import glance_store
 from oslo_log import log as logging
-from six.moves import http_client as http
 import webob.exc
 
 from glance.api import policy

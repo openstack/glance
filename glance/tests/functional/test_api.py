@@ -15,9 +15,10 @@
 
 """Version-independent api tests"""
 
+import http.client as http_client
+
 import httplib2
 from oslo_serialization import jsonutils
-from six.moves import http_client
 
 from glance.tests import functional
 from glance.tests.unit import test_versions as tv

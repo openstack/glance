@@ -14,6 +14,7 @@
 
 import datetime
 import hashlib
+import http.client as http
 import os
 import re
 
@@ -27,7 +28,6 @@ from oslo_serialization import jsonutils as json
 from oslo_utils import encodeutils
 from oslo_utils import timeutils as oslo_timeutils
 import requests
-from six.moves import http_client as http
 import six.moves.urllib.parse as urlparse
 import webob.exc
 
