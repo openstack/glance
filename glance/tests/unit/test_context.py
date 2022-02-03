@@ -13,11 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from unittest import mock
 
 from oslo_config import cfg
-from six.moves import range
 
 from glance import context
 from glance.tests.unit import utils as unit_utils

@@ -27,8 +27,6 @@ from oslo_utils.secretutils import md5
 from oslo_utils import units
 import requests
 from six.moves import http_client as http
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 from six.moves import urllib
 
 from glance.quota import keystone as ks_quota

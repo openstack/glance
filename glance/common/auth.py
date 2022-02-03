@@ -35,8 +35,6 @@ import httplib2
 from keystoneclient import service_catalog as ks_service_catalog
 from oslo_serialization import jsonutils
 from six.moves import http_client as http
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 import six.moves.urllib.parse as urlparse
 
 from glance.common import exception

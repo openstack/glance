@@ -13,9 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
-
 from glance.api import policy
 from glance.common import exception
 from glance.common import property_utils

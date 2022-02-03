@@ -26,8 +26,6 @@ import glance_store as store
 from oslo_config import cfg
 from oslo_utils import secretutils
 from oslo_utils import units
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 
 from glance import async_
 from glance.common import exception

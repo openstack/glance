@@ -16,8 +16,6 @@
 import os
 
 import six
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 
 from glance.common import crypt
 from glance.common import utils

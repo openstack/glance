@@ -14,10 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
 from unittest import mock
-
-from six.moves import range
 
 from glance.domain import proxy
 import glance.tests.utils as test_utils

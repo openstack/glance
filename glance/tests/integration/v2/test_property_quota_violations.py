@@ -16,8 +16,6 @@
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 from six.moves import http_client
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 
 from glance.tests.integration.v2 import base
 

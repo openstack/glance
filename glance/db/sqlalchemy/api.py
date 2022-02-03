@@ -32,8 +32,6 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 import osprofiler.sqlalchemy
 from retrying import retry
-# NOTE(jokke): simplified transition to py3, behaves like py2 xrange
-from six.moves import range
 import sqlalchemy
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy import MetaData, Table
