@@ -21,10 +21,10 @@ __all__ = [
     'get_image_data_iter',
 ]
 
+import urllib
 
 from oslo_log import log as logging
 from oslo_utils import timeutils
-from six.moves import urllib
 
 from glance.common import exception
 from glance.i18n import _, _LE

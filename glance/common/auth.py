@@ -31,12 +31,13 @@ Keystone (an identity management system).
    http://service_endpoint/
 
 """
+
 import http.client as http
+import urllib.parse as urlparse
 
 import httplib2
 from keystoneclient import service_catalog as ks_service_catalog
 from oslo_serialization import jsonutils
-import six.moves.urllib.parse as urlparse
 
 from glance.common import exception
 from glance.i18n import _

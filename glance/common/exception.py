@@ -16,7 +16,7 @@
 
 """Glance exception subclasses"""
 
-import six.moves.urllib.parse as urlparse
+import urllib.parse as urlparse
 
 from glance.i18n import _
 

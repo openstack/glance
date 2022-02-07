@@ -14,8 +14,7 @@
 #    under the License.
 
 from unittest import mock
-
-from six.moves import urllib
+import urllib
 
 from glance.common import exception
 from glance.common.scripts import utils as script_utils

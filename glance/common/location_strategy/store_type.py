@@ -15,8 +15,9 @@
 
 """Storage preference based location strategy module"""
 
+import urllib.parse as urlparse
+
 from oslo_config import cfg
-import six.moves.urllib.parse as urlparse
 
 from glance.i18n import _
 

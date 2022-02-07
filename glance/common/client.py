@@ -24,6 +24,7 @@ import functools
 import http.client
 import os
 import re
+import urllib.parse as urlparse
 
 try:
     from eventlet.green import socket
@@ -44,7 +45,6 @@ from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import netutils
 import six
-import six.moves.urllib.parse as urlparse
 
 from glance.common import auth
 from glance.common import exception

@@ -14,11 +14,11 @@
 #    under the License.
 
 import http.client
+import urllib
 
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-from six.moves import urllib
 import webob.dec
 
 from glance.common import wsgi

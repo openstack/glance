@@ -13,11 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import urllib
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
-from six.moves import urllib
 from stevedore import driver
 from taskflow import engines
 from taskflow.listeners import logging as llistener

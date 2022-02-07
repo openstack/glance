@@ -19,6 +19,7 @@
 import http.client as http
 import os
 import sys
+import urllib.parse as urlparse
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -26,7 +27,6 @@ from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
 import six
-import six.moves.urllib.parse as urlparse
 from webob import exc
 
 from glance.common import config

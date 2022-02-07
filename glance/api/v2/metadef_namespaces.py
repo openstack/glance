@@ -14,12 +14,12 @@
 # limitations under the License.
 
 import http.client as http
+import urllib.parse as urlparse
 
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
-import six.moves.urllib.parse as urlparse
 import webob.exc
 from wsme.rest import json
 
