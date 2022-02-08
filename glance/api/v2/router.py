@@ -588,5 +588,9 @@ class API(wsgi.Router):
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='GET')
+        mapper.connect('/info/usage',
+                       controller=info_resource,
+                       action='get_usage',
+                       conditions={'method': ['GET']})
 
         super(API, self).__init__(mapper)

@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
+
 from oslo_config import cfg
+import oslo_serialization.jsonutils as json
 import webob.exc
 
 from glance.common import wsgi
+import glance.db
 from glance.i18n import _
-
+from glance.quota import keystone as ks_quota
 
 CONF = cfg.CONF
 
@@ -63,6 +67,49 @@ class InfoController(object):
 
         return {'stores': backends}
 
+    def get_usage(self, req):
+        project_usage = ks_quota.get_usage(req.context)
+        return {'usage':
+                {name: {'usage': usage.usage,
+                        'limit': usage.limit}
+                 for name, usage in project_usage.items()}}
+
+
+class ResponseSerializer(wsgi.JSONResponseSerializer):
+    def __init__(self, usage_schema=None):
+        super(ResponseSerializer, self).__init__()
+        self.schema = usage_schema or get_usage_schema()
+
+    def get_usage(self, response, usage):
+        body = json.dumps(self.schema.filter(usage), ensure_ascii=False)
+        response.unicode_body = str(body)
+        response.content_type = 'application/json'
+
+
+_USAGE_SCHEMA = {
+    'usage': {
+        'type': 'array',
+        'items': {
+            'type': 'object',
+            'additionalProperties': True,
+            'validation_data': {
+                'type': 'object',
+                'additonalProperties': False,
+                'properties': {
+                    'usage': {'type': 'integer'},
+                    'limit': {'type': 'integer'},
+                },
+            },
+        },
+    },
+}
+
+
+def get_usage_schema():
+    return glance.schema.Schema('usage', copy.deepcopy(_USAGE_SCHEMA))
+
 
 def create_resource():
-    return wsgi.Resource(InfoController())
+    usage_schema = get_usage_schema()
+    serializer = ResponseSerializer(usage_schema)
+    return wsgi.Resource(InfoController(), None, serializer)

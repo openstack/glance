@@ -103,3 +103,26 @@ Response Example
 
 .. literalinclude:: samples/stores-list-response.json
    :language: json
+
+Quota usage
+~~~~~~~~~~~
+
+.. rest_method:: GET /v2/info/usage
+
+The user's quota and current usage are displayed, if enabled by
+server-side configuration.
+
+Normal response codes: 200
+
+Request
+-------
+
+There are no request parameters.
+
+This call does not allow a request body.
+
+Response Example
+----------------
+
+.. literalinclude:: samples/usage-response.json
+   :language: json

@@ -31,6 +31,12 @@ from glance.tests.unit import base
 def get_versions_list(url, enabled_backends=False):
     image_versions = [
         {
+            'id': 'v2.13',
+            'status': 'CURRENT',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        },
+        {
             'id': 'v2.7',
             'status': 'SUPPORTED',
             'links': [{'rel': 'self',
@@ -83,7 +89,7 @@ def get_versions_list(url, enabled_backends=False):
         image_versions = [
             {
                 'id': 'v2.12',
-                'status': 'CURRENT',
+                'status': 'SUPPORTED',
                 'links': [{'rel': 'self',
                            'href': '%s/v2/' % url}],
             },
@@ -115,7 +121,7 @@ def get_versions_list(url, enabled_backends=False):
     else:
         image_versions.insert(0, {
             'id': 'v2.9',
-            'status': 'CURRENT',
+            'status': 'SUPPORTED',
             'links': [{'rel': 'self',
                        'href': '%s/v2/' % url}],
         })
@@ -322,15 +328,20 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    # version 2.13 does not exist
-    def test_request_url_v2_13_default_unsupported(self):
+    def test_request_url_v2_13_enabled_supported(self):
         request = webob.Request.blank('/v2.13/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    # version 2.14 does not exist
+    def test_request_url_v2_14_default_unsupported(self):
+        request = webob.Request.blank('/v2.14/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
-    def test_request_url_v2_13_enabled_unsupported(self):
+    def test_request_url_v2_14_enabled_unsupported(self):
         self.config(enabled_backends='slow:one,fast:two')
-        request = webob.Request.blank('/v2.13/images')
+        request = webob.Request.blank('/v2.14/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 

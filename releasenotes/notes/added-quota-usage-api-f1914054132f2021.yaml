@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    This release brings additional functionality to the unified quota
+    work done in the previous release. A usage API is now available,
+    which provides a way for users to see their current quota limits
+    and their active resource usage towards them. For more
+    information, see the discovery section in the `api-ref
+    <https://developer.openstack.org/api-ref/image/v2/index.html#image-service-info-discovery>`_.

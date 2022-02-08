@@ -24,6 +24,7 @@ import uuid
 
 import fixtures
 from oslo_limit import exception as ol_exc
+from oslo_limit import limit
 from oslo_serialization import jsonutils
 from oslo_utils.secretutils import md5
 from oslo_utils import units
@@ -7017,6 +7018,13 @@ def get_enforcer_class(limits):
                         project_id=project_id,
                         over_limit_info_list=[ol_exc.OverLimitInfo(
                             name, limits.get(name), current.get(name), delta)])
+
+        def calculate_usage(self, project_id, names):
+            return {
+                name: limit.ProjectUsage(
+                    limits.get(name, 0),
+                    self._callback(project_id, [name])[name])
+                for name in names}
 
     return FakeEnforcer
 
