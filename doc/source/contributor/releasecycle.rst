@@ -24,6 +24,18 @@ Between Summit and Milestone-1
 #. Add any Glance-specific schedule information to the release calendar
    (https://review.opendev.org/#/c/505425/)
 
+#. Update the ``CURRENT_RELEASE`` constant in ``glance/db/migration.py``.
+   Include a ``Sem-Ver`` pseudo-header in the commit message so that
+   PBR will increment the glance version number to match the release
+   name.
+
+   * The value of the ``Sem-Ver`` pseudo-header must be ``api-break``
+     (which is a little disconcerting) because we need to increment the
+     major digit in the **Glance** version number (we aren't signalling
+     anything about the **Images** API), and that's the constant
+     that pbr recognizes for this purpose.
+   * Example patch: https://review.opendev.org/c/openstack/glance/+/827919
+
 #. Focus on spec reviews to get them approved and updated early in
    the cycle to allow enough time for implementation.
 
