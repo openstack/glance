@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import builtins
 import os
 
 import eventlet
@@ -36,8 +37,7 @@ glance.async_.set_threadpool_model('eventlet')
 
 # See http://code.google.com/p/python-nose/issues/detail?id=373
 # The code below enables tests to work with i18n _() blocks
-import six.moves.builtins as __builtin__
-setattr(__builtin__, '_', lambda x: x)
+setattr(builtins, '_', lambda x: x)
 
 # Set up logging to output debugging
 import logging

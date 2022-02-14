@@ -12,12 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import configparser
 import re
 
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_policy import policy
-from six.moves import configparser
 
 import glance.api.policy
 from glance.common import exception

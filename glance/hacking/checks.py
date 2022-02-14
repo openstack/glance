@@ -117,13 +117,6 @@ def dict_constructor_with_list_copy(logical_line):
 
 
 @core.flake8ext
-def check_python3_xrange(logical_line):
-    if re.search(r"\bxrange\s*\(", logical_line):
-        yield(0, "G329: Do not use xrange. Use range, or six.moves.range for "
-                 "large loops.")
-
-
-@core.flake8ext
 def no_log_warn(logical_line):
     """Disallow 'LOG.warn('
 
