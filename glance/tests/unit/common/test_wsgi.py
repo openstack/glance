@@ -28,7 +28,6 @@ import fixtures
 from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
 import routes
-import six
 import webob
 
 from glance.api.v2 import router as router_v2
@@ -111,15 +110,9 @@ class RequestTest(test_utils.BaseTestCase):
         self.assertEqual("application/json", result)
 
     def test_params(self):
-        if six.PY2:
-            expected = webob.multidict.NestedMultiDict({
-                'limit': '20', 'name':
-                    '\xd0\x9f\xd1\x80\xd0\xb8\xd0\xb2\xd0\xb5\xd1\x82',
-                'sort_key': 'name', 'sort_dir': 'asc'})
-        else:
-            expected = webob.multidict.NestedMultiDict({
-                'limit': '20', 'name': 'Привет', 'sort_key': 'name',
-                'sort_dir': 'asc'})
+        expected = webob.multidict.NestedMultiDict({
+            'limit': '20', 'name': 'Привет', 'sort_key': 'name',
+            'sort_dir': 'asc'})
 
         request = wsgi.Request.blank("/?limit=20&name=%D0%9F%D1%80%D0%B8"
                                      "%D0%B2%D0%B5%D1%82&sort_key=name"
@@ -414,8 +407,7 @@ class ResourceTest(test_utils.BaseTestCase):
         response = resource.__call__(request)
 
         # ensure it has been encoded correctly
-        value = (response.headers['unicode_test'].decode('utf-8')
-                 if six.PY2 else response.headers['unicode_test'])
+        value = response.headers['unicode_test']
         self.assertEqual(for_openstack_comrades, value)
 
 

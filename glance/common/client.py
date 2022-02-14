@@ -44,7 +44,6 @@ except ImportError:
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import netutils
-import six
 
 from glance.common import auth
 from glance.common import exception
@@ -411,11 +410,7 @@ class BaseClient(object):
         :returns: Dictionary with encoded headers'
                   names and values
         """
-        if six.PY3:
-            to_str = str
-        else:
-            to_str = encodeutils.safe_encode
-        return {to_str(h): to_str(v) for h, v in headers.items()}
+        return {str(h): str(v) for h, v in headers.items()}
 
     @handle_redirects
     def _do_request(self, method, url, body, headers):
@@ -512,9 +507,7 @@ class BaseClient(object):
                 return res.getheader('Retry-After')
 
             def read_body(res):
-                body = res.read()
-                if six.PY3:
-                    body = body.decode('utf-8')
+                body = res.read().decode('utf-8')
                 return body
 
             status_code = self.get_status_code(res)

@@ -26,7 +26,6 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslo_utils import uuidutils
-import six
 from webob import exc
 
 from glance.common import config
@@ -395,11 +394,7 @@ def replication_dump(options, args):
                       'data_filename': data_filename})
 
             # Dump glance information
-            if six.PY3:
-                f = open(data_path, 'w', encoding='utf-8')
-            else:
-                f = open(data_path, 'w')
-            with f:
+            with open(data_path, 'w', encoding='utf-8') as f:
                 f.write(jsonutils.dumps(image))
 
             if image['status'] == 'active' and not options.metaonly:

@@ -26,7 +26,6 @@ from cryptography.hazmat.primitives.ciphers import algorithms
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers import modes
 from oslo_utils import encodeutils
-import six
 
 
 def urlsafe_encrypt(key, plaintext, blocksize=16):
@@ -48,7 +47,7 @@ def urlsafe_encrypt(key, plaintext, blocksize=16):
         # NOTE(rosmaita): I know this looks stupid, but we can't just
         # use os.urandom() to get the bytes because we use char(0) as
         # a delimiter
-        pad = b''.join(six.int2byte(random.SystemRandom().randint(1, 0xFF))
+        pad = b''.join(bytes((random.SystemRandom().randint(1, 0xFF),))
                        for i in range(pad_length - 1))
         # We use chr(0) as a delimiter between text and padding
         return text + b'\0' + pad
@@ -63,8 +62,7 @@ def urlsafe_encrypt(key, plaintext, blocksize=16):
     encryptor = cypher.encryptor()
     padded = encryptor.update(pad(plaintext)) + encryptor.finalize()
     encoded = base64.urlsafe_b64encode(init_vector + padded)
-    if six.PY3:
-        encoded = encoded.decode('ascii')
+    encoded = encoded.decode('ascii')
     return encoded
 
 
@@ -88,6 +86,5 @@ def urlsafe_decrypt(key, ciphertext):
     decryptor = cypher.decryptor()
     padded = decryptor.update(ciphertext[16:]) + decryptor.finalize()
     text = padded[:padded.rfind(b'\0')]
-    if six.PY3:
-        text = text.decode('utf-8')
+    text = text.decode('utf-8')
     return text
