@@ -33,3 +33,4 @@ Image Service API v2 (CURRENT)
 .. include:: discovery.inc
 .. include:: tasks.inc
 .. include:: tasks-schemas.inc
+.. include:: cache-manage.inc

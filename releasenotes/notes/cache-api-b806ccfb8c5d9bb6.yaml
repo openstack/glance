@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    This release introduces new APIs for cache related operations. This new
+    version of the cache API will help administrators to cache images on
+    dedicated glance nodes as well. For more information, see the
+    ``Cache Manage`` section in the `api-ref-guide
+    <https://developer.openstack.org/api-ref/image/v2/index.html#cache-manage>`_.
+

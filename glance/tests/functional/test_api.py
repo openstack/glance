@@ -30,7 +30,8 @@ class TestApiVersions(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
         url = 'http://127.0.0.1:%d' % self.api_port
-        versions = {'versions': tv.get_versions_list(url)}
+        versions = {'versions': tv.get_versions_list(url,
+                                                     enabled_cache=True)}
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -44,7 +45,8 @@ class TestApiVersions(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
         url = 'http://127.0.0.1:%d' % self.api_port
-        versions = {'versions': tv.get_versions_list(url)}
+        versions = {'versions': tv.get_versions_list(url,
+                                                     enabled_cache=True)}
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -62,7 +64,8 @@ class TestApiVersionsMultistore(functional.MultipleBackendFunctionalTest):
 
         url = 'http://127.0.0.1:%d' % self.api_port
         versions = {'versions': tv.get_versions_list(url,
-                                                     enabled_backends=True)}
+                                                     enabled_backends=True,
+                                                     enabled_cache=True)}
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -77,7 +80,8 @@ class TestApiVersionsMultistore(functional.MultipleBackendFunctionalTest):
 
         url = 'http://127.0.0.1:%d' % self.api_port
         versions = {'versions': tv.get_versions_list(url,
-                                                     enabled_backends=True)}
+                                                     enabled_backends=True,
+                                                     enabled_cache=True)}
 
         # Verify version choices returned.
         path = 'http://%s:%d' % ('127.0.0.1', self.api_port)
@@ -94,7 +98,8 @@ class TestApiPaths(functional.FunctionalTest):
         self.start_servers(**self.__dict__.copy())
 
         url = 'http://127.0.0.1:%d' % self.api_port
-        self.versions = {'versions': tv.get_versions_list(url)}
+        self.versions = {'versions': tv.get_versions_list(url,
+                                                          enabled_cache=True)}
         images = {'images': []}
         self.images_json = jsonutils.dumps(images)
 

@@ -17,6 +17,8 @@
 Controller for Image Cache Management API
 """
 
+import glance_store
+from oslo_config import cfg
 from oslo_log import log as logging
 import webob.exc
 
@@ -24,8 +26,14 @@ from glance.api import policy
 from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import wsgi
+import glance.db
+import glance.gateway
+from glance.i18n import _
 from glance import image_cache
+import glance.notifier
 
+
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -34,18 +42,35 @@ class CacheController(object):
     A controller for managing cached images.
     """
 
-    def __init__(self):
-        self.cache = image_cache.ImageCache()
-        self.policy = policy.Enforcer()
+    def __init__(self, db_api=None, policy_enforcer=None, notifier=None,
+                 store_api=None):
+        if not CONF.image_cache_dir:
+            self.cache = None
+        else:
+            self.cache = image_cache.ImageCache()
 
-    def _enforce(self, req):
-        """Authorize request against 'manage_image_cache' policy"""
+        self.policy = policy_enforcer or policy.Enforcer()
+        self.db_api = db_api or glance.db.get_api()
+        self.notifier = notifier or glance.notifier.Notifier()
+        self.store_api = store_api or glance_store
+        self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
+                                              self.notifier, self.policy)
+
+    def _enforce(self, req, image=None, new_policy=None):
+        """Authorize request against given policy"""
+        if not new_policy:
+            new_policy = 'manage_image_cache'
         try:
             api_policy.CacheImageAPIPolicy(
-                req.context, enforcer=self.policy).manage_image_cache()
+                req.context, image=image, enforcer=self.policy,
+                policy_str=new_policy).manage_image_cache()
         except exception.Forbidden:
-            LOG.debug("User not permitted to manage the image cache")
+            LOG.debug("User not permitted by '%s' policy" % new_policy)
             raise webob.exc.HTTPForbidden()
+
+        if not CONF.image_cache_dir:
+            msg = _("Caching via API is not supported at this site.")
+            raise webob.exc.HTTPNotFound(explanation=msg)
 
     def get_cached_images(self, req):
         """
@@ -113,6 +138,99 @@ class CacheController(object):
         """
         self._enforce(req)
         return dict(num_deleted=self.cache.delete_all_queued_images())
+
+    def delete_cache_entry(self, req, image_id):
+        """
+        DELETE /cache/<IMAGE_ID> - Remove image from cache
+
+        Removes the image from cache or queue.
+        """
+        image_repo = self.gateway.get_repo(
+            req.context, authorization_layer=False)
+        try:
+            image = image_repo.get(image_id)
+        except exception.NotFound:
+            # We are going to raise this error only if image is
+            # not present in cache or queue list
+            image = None
+            if not self.image_exists_in_cache(image_id):
+                msg = _("Image %s not found.") % image_id
+                LOG.warning(msg)
+                raise webob.exc.HTTPNotFound(explanation=msg)
+
+        self._enforce(req, new_policy='cache_delete', image=image)
+        self.cache.delete_cached_image(image_id)
+        self.cache.delete_queued_image(image_id)
+
+    def image_exists_in_cache(self, image_id):
+        queued_images = self.cache.get_queued_images()
+        if image_id in queued_images:
+            return True
+
+        cached_images = self.cache.get_cached_images()
+        if image_id in [image['image_id'] for image in cached_images]:
+            return True
+
+        return False
+
+    def clear_cache(self, req):
+        """
+        DELETE /cache - Clear cache and queue
+
+        Removes all images from cache and queue.
+        """
+        self._enforce(req, new_policy='cache_delete')
+        target = req.headers.get('x-image-cache-clear-target', '').lower()
+        if target == '':
+            res = dict(cache_deleted=self.cache.delete_all_cached_images(),
+                       queue_deleted=self.cache.delete_all_queued_images())
+        elif target == 'cache':
+            res = dict(cache_deleted=self.cache.delete_all_cached_images())
+        elif target == 'queue':
+            res = dict(queue_deleted=self.cache.delete_all_queued_images())
+        else:
+            reason = (_("If provided 'x-image-cache-clear-target' must be "
+                        "'cache', 'queue' or empty string."))
+            raise webob.exc.HTTPBadRequest(explanation=reason,
+                                           request=req,
+                                           content_type='text/plain')
+        return res
+
+    def get_cache_state(self, req):
+        """
+        GET /cache/ - Get currently cached and queued images
+
+        Returns dict of cached and queued images
+        """
+        self._enforce(req, new_policy='cache_list')
+        return dict(cached_images=self.cache.get_cached_images(),
+                    queued_images=self.cache.get_queued_images())
+
+    def queue_image_from_api(self, req, image_id):
+        """
+        PUT /cache/<IMAGE_ID>
+
+        Queues an image for caching. We do not check to see if
+        the image is in the registry here. That is done by the
+        prefetcher...
+        """
+        image_repo = self.gateway.get_repo(
+            req.context, authorization_layer=False)
+        try:
+            image = image_repo.get(image_id)
+        except exception.NotFound:
+            msg = _("Image %s not found.") % image_id
+            LOG.warning(msg)
+            raise webob.exc.HTTPNotFound(explanation=msg)
+
+        self._enforce(req, new_policy='cache_image', image=image)
+
+        if image.status != 'active':
+            msg = _("Only images with status active can be targeted for "
+                    "queueing")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        self.cache.queue_image(image_id)
 
 
 class CachedImageDeserializer(wsgi.JSONRequestDeserializer):

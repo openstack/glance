@@ -1550,6 +1550,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             CacheManageFilter.factory
             [pipeline:glance-api-cachemanagement]
             pipeline = context cache cachemanage rootapp
+            [pipeline:glance-api-caching]
+            pipeline = context cache rootapp
             [pipeline:glance-api]
             pipeline = context rootapp
             [composite:rootapp]

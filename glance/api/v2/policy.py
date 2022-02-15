@@ -105,14 +105,21 @@ class APIPolicyBase(object):
 
 
 class CacheImageAPIPolicy(APIPolicyBase):
-    def __init__(self, context, target=None, enforcer=None):
+    def __init__(self, context, image=None, policy_str=None,
+                 target=None, enforcer=None):
         self._context = context
-        self._target = target or {}
+        target = {}
+        self._image = image
+        if self._image:
+            target = policy.ImageTarget(self._image)
+
+        self._target = target
         self.enforcer = enforcer or policy.Enforcer()
+        self.policy_str = policy_str
         super(CacheImageAPIPolicy, self).__init__(context, target, enforcer)
 
     def manage_image_cache(self):
-        self._enforce('manage_image_cache')
+        self._enforce(self.policy_str)
 
 
 class ImageAPIPolicy(APIPolicyBase):
