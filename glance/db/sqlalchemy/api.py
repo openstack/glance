@@ -870,13 +870,13 @@ def image_set_property_atomic(image_id, name, value):
         table = models.ImageProperty.__table__
 
         # This should be:
-        #   UPDATE image_properties SET value=$value, deleted=0
-        #     WHERE name=$name AND deleted!=0
+        #   UPDATE image_properties SET value=$value, deleted=False
+        #     WHERE name=$name AND deleted!=False
         result = connection.execute(table.update().where(
             sa_sql.and_(table.c.name == name,
                         table.c.image_id == image_id,
-                        table.c.deleted != 0)).values(
-                            value=value, deleted=0))
+                        table.c.deleted != False)).values(
+                            value=value, deleted=False))
         if result.rowcount == 1:
             # Found and updated a deleted property, so we win
             return
@@ -921,7 +921,7 @@ def image_delete_property_atomic(image_id, name, value):
             sa_sql.and_(table.c.name == name,
                         table.c.value == value,
                         table.c.image_id == image_id,
-                        table.c.deleted == 0)))
+                        table.c.deleted == False)))
         if result.rowcount == 1:
             return
 
