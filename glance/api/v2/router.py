@@ -593,6 +593,15 @@ class API(wsgi.Router):
                        controller=info_resource,
                        action='get_usage',
                        conditions={'method': ['GET']})
+        mapper.connect('/info/stores/detail',
+                       controller=info_resource,
+                       action='get_stores_detail',
+                       conditions={'method': ['GET']},
+                       body_reject=True)
+        mapper.connect('/info/stores/detail',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET')
 
         # Cache Management API
         cache_manage_resource = cached_images.create_resource()

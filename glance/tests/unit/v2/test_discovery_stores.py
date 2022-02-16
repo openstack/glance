@@ -39,7 +39,8 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
                           req)
 
     def test_get_stores(self):
-        available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder']
+        available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder',
+                            'fast-rbd']
         req = unit_test_utils.get_fake_request()
         output = self.controller.get_stores(req)
         self.assertIn('stores', output)
@@ -48,7 +49,8 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
             self.assertIn(stores['id'], available_stores)
 
     def test_get_stores_read_only_store(self):
-        available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder']
+        available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder',
+                            'fast-rbd']
         req = unit_test_utils.get_fake_request()
         output = self.controller.get_stores(req)
         self.assertIn('stores', output)
@@ -72,3 +74,28 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
         self.assertEqual(2, len(output['stores']))
         for stores in output["stores"]:
             self.assertFalse(stores["id"].startswith("os_glance_"))
+
+    def test_get_stores_detail(self):
+        available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder',
+                            'fast-rbd']
+        available_store_type = ['file', 'file', 'http', 'cinder', 'rbd']
+        req = unit_test_utils.get_fake_request(roles=['admin'])
+        output = self.controller.get_stores_detail(req)
+        self.assertIn('stores', output)
+        for stores in output['stores']:
+            self.assertIn('id', stores)
+            self.assertIn(stores['id'], available_stores)
+            self.assertIn(stores['type'], available_store_type)
+            self.assertIsNotNone(stores['properties'])
+            if stores['id'] == 'fast-rbd':
+                self.assertIn('chunk_size', stores['properties'])
+                self.assertIn('pool', stores['properties'])
+                self.assertIn('thin_provisioning', stores['properties'])
+            else:
+                self.assertEqual({}, stores['properties'])
+
+    def test_get_stores_detail_non_admin(self):
+        req = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.get_stores_detail,
+                          req)

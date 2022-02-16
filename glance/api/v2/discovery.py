@@ -15,10 +15,15 @@
 
 import copy
 
+import glance_store as g_store
 from oslo_config import cfg
+from oslo_log import log as logging
 import oslo_serialization.jsonutils as json
 import webob.exc
 
+from glance.api import policy
+from glance.api.v2 import policy as api_policy
+from glance.common import exception
 from glance.common import wsgi
 import glance.db
 from glance.i18n import _
@@ -26,8 +31,13 @@ from glance.quota import keystone as ks_quota
 
 CONF = cfg.CONF
 
+LOG = logging.getLogger(__name__)
+
 
 class InfoController(object):
+    def __init__(self, policy_enforcer=None):
+        self.policy = policy_enforcer or policy.Enforcer()
+
     def get_image_import(self, req):
         # TODO(jokke): All the rest of the boundaries should be implemented.
         import_methods = {
@@ -66,6 +76,30 @@ class InfoController(object):
             backends.append(stores)
 
         return {'stores': backends}
+
+    def get_stores_detail(self, req):
+        enabled_backends = CONF.enabled_backends
+        stores = self.get_stores(req).get('stores')
+        try:
+            api_policy.DiscoveryAPIPolicy(
+                req.context,
+                enforcer=self.policy).stores_info_detail()
+            for store in stores:
+                store['type'] = enabled_backends[store['id']]
+                store['properties'] = {}
+                if store['type'] == 'rbd':
+                    store_detail = g_store.get_store_from_store_identifier(
+                        store['id'])
+                    store['properties'] = {'chunk_size':
+                                           store_detail.chunk_size,
+                                           'pool': store_detail.pool,
+                                           'thin_provisioning':
+                                           store_detail.thin_provisioning}
+        except exception.Forbidden as e:
+            LOG.debug("User not permitted to view details")
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
+
+        return {'stores': stores}
 
     def get_usage(self, req):
         project_usage = ks_quota.get_usage(req.context)

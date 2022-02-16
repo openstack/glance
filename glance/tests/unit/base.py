@@ -17,6 +17,7 @@ import os
 from unittest import mock
 
 import glance_store as store
+from glance_store._drivers import rbd as rbd_store
 from glance_store import location
 from oslo_concurrency import lockutils
 from oslo_config import cfg
@@ -70,9 +71,13 @@ class MultiStoreClearingUnitTest(test_utils.BaseTestCase):
         :param passing_config: making store driver passes basic configurations.
         :returns: the number of how many store drivers been loaded.
         """
+        rbd_store.rados = mock.MagicMock()
+        rbd_store.rbd = mock.MagicMock()
+        rbd_store.Store._set_url_prefix = mock.MagicMock()
         self.config(enabled_backends={'fast': 'file', 'cheap': 'file',
                                       'readonly_store': 'http',
-                                      'fast-cinder': 'cinder'})
+                                      'fast-cinder': 'cinder',
+                                      'fast-rbd': 'rbd'})
         store.register_store_opts(CONF)
 
         self.config(default_backend='fast',
@@ -82,6 +87,8 @@ class MultiStoreClearingUnitTest(test_utils.BaseTestCase):
                     group='fast')
         self.config(filesystem_store_datadir=self.test_dir2,
                     group='cheap')
+        self.config(rbd_store_chunk_size=8688388, rbd_store_pool='images',
+                    rbd_thin_provisioning=False, group='fast-rbd')
         store.create_multi_stores(CONF)
 
 

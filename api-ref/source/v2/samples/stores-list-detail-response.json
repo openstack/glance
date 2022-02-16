@@ -1,0 +1,19 @@
+{
+    "stores": [
+        {
+            "id":"reliable",
+            "type": "rbd",
+            "description": "More expensive store with data redundancy",
+            "default": true,
+            "properties": {
+                "pool": "pool1"
+            }
+        },
+        {
+            "id":"cheap",
+            "type": "file",
+            "description": "Less expensive store for seldom-used images",
+            "properties": {}
+        }
+    ]
+}

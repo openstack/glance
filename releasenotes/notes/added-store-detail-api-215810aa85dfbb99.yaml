@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    This release brings additional functionality to the stores API.
+    The stores detail API helps in providing the store specific
+    information.

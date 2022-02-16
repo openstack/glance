@@ -126,3 +126,39 @@ Response Example
 
 .. literalinclude:: samples/usage-response.json
    :language: json
+
+List stores detail
+~~~~~~~~~~~~~~~~~~
+
+.. rest_method::  GET /v2/info/stores/detail
+
+Lists all the backend stores, with detail, accessible to admins,
+for non-admin user API will return bad request.
+
+Normal response codes: 200
+
+Error response codes: 403, 404
+
+
+Request
+-------
+
+There are no request parameters.
+
+This call does not allow a request body.
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: discovery-parameters.yaml
+
+   - stores: stores-detail
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/stores-list-detail-response.json
+   :language: json
+
