@@ -1,0 +1,13 @@
+---
+features:
+  - |
+    A new optional header ``X-Openstack-Append`` has been added to append the
+    new metadef tags to the existing tags. If the header is present it will
+    append the new tags to the existing one, if not then it will default to the
+    old behaviour i.e. overwriting the existing tags with the new one.
+Fixes:
+  - |
+    * Bug 1939169_: glance md-tag-create-multiple overwrites existing tags
+
+     .. _1939169: https://bugs.launchpad.net/glance/+bug/1939169
+

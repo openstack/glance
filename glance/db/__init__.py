@@ -846,7 +846,7 @@ class MetadefTagRepo(object):
             self._format_metadef_tag_to_db(metadata_tag)
         )
 
-    def add_tags(self, metadata_tags):
+    def add_tags(self, metadata_tags, can_append=False):
         tag_list = []
         namespace = None
         for metadata_tag in metadata_tags:
@@ -855,7 +855,7 @@ class MetadefTagRepo(object):
                 namespace = metadata_tag.namespace
 
         self.db_api.metadef_tag_create_tags(
-            self.context, namespace, tag_list)
+            self.context, namespace, tag_list, can_append)
 
     def get(self, namespace, name):
         try:

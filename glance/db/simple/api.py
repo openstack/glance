@@ -1910,7 +1910,8 @@ def metadef_tag_create(context, namespace_name, values):
 
 
 @log_call
-def metadef_tag_create_tags(context, namespace_name, tag_list):
+def metadef_tag_create_tags(context, namespace_name, tag_list,
+                            can_append=False):
     """Create a metadef tag"""
     global DATA
 
@@ -1921,6 +1922,12 @@ def metadef_tag_create_tags(context, namespace_name, tag_list):
     allowed_attributes = ['name']
     data_tag_list = []
     tag_name_list = []
+    if can_append:
+        # NOTE(mrjoshi): We need to fetch existing tags here for duplicate
+        # check while adding new one
+        tag_name_list = [tag['name']
+                         for tag in metadef_tag_get_all(context,
+                                                        namespace_name)]
     for tag_value in tag_list:
         tag_values = copy.deepcopy(tag_value)
         tag_name = tag_values['name']
@@ -1945,8 +1952,8 @@ def metadef_tag_create_tags(context, namespace_name, tag_list):
 
         tag_values['namespace_id'] = namespace['id']
         data_tag_list.append(_format_tag(tag_values))
-
-    DATA['metadef_tags'] = []
+    if not can_append:
+        DATA['metadef_tags'] = []
     for tag in data_tag_list:
         DATA['metadef_tags'].append(tag)
 

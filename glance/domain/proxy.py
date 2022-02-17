@@ -547,11 +547,11 @@ class MetadefTagRepo(object):
     def add(self, meta_tag):
         self.base.add(self.tag_proxy_helper.unproxy(meta_tag))
 
-    def add_tags(self, meta_tags):
+    def add_tags(self, meta_tags, can_append=False):
         tags_list = []
         for meta_tag in meta_tags:
             tags_list.append(self.tag_proxy_helper.unproxy(meta_tag))
-        self.base.add_tags(tags_list)
+        self.base.add_tags(tags_list, can_append)
 
     def list(self, *args, **kwargs):
         tags = self.base.list(*args, **kwargs)

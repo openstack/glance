@@ -2002,6 +2002,94 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
             ]
         )
 
+    def test_tag_create_tags_with_append_true(self):
+        request = unit_test_utils.get_fake_request(
+            headers={'X-Openstack-Append': 'True'}, roles=['admin'])
+
+        metadef_tags = tags.MetadefTags()
+        # As TAG1 is already created in setup, just creating other two tags.
+        metadef_tags.tags = _db_tags_fixture([TAG2, TAG3])
+        output = self.tag_controller.create_tags(
+            request, metadef_tags, NAMESPACE1)
+        output = output.to_dict()
+        self.assertEqual(2, len(output['tags']))
+        actual = set([tag.name for tag in output['tags']])
+        expected = set([TAG2, TAG3])
+        self.assertEqual(expected, actual)
+        self.assertNotificationLog(
+            "metadef_tag.create", [
+                {'name': TAG2, 'namespace': NAMESPACE1},
+                {'name': TAG3, 'namespace': NAMESPACE1},
+            ]
+        )
+
+        metadef_tags = tags.MetadefTags()
+        metadef_tags.tags = _db_tags_fixture([TAG4, TAG5])
+        output = self.tag_controller.create_tags(
+            request, metadef_tags, NAMESPACE1)
+        output = output.to_dict()
+        self.assertEqual(2, len(output['tags']))
+        actual = set([tag.name for tag in output['tags']])
+        expected = set([TAG4, TAG5])
+        self.assertEqual(expected, actual)
+        self.assertNotificationLog(
+            "metadef_tag.create", [
+                {'name': TAG4, 'namespace': NAMESPACE1},
+                {'name': TAG5, 'namespace': NAMESPACE1},
+            ]
+        )
+
+        output = self.tag_controller.index(request, NAMESPACE1)
+        output = output.to_dict()
+        self.assertEqual(5, len(output['tags']))
+        actual = set([tag.name for tag in output['tags']])
+        expected = set([TAG1, TAG2, TAG3, TAG4, TAG5])
+        self.assertEqual(expected, actual)
+
+    def test_tag_create_tags_with_append_false(self):
+        request = unit_test_utils.get_fake_request(
+            headers={'X-Openstack-Append': 'False'}, roles=['admin'])
+
+        metadef_tags = tags.MetadefTags()
+        # As TAG1 is already created in setup, just creating other two tags.
+        metadef_tags.tags = _db_tags_fixture([TAG2, TAG3])
+        output = self.tag_controller.create_tags(
+            request, metadef_tags, NAMESPACE1)
+        output = output.to_dict()
+        self.assertEqual(2, len(output['tags']))
+        actual = set([tag.name for tag in output['tags']])
+        expected = set([TAG2, TAG3])
+        self.assertEqual(expected, actual)
+        self.assertNotificationLog(
+            "metadef_tag.create", [
+                {'name': TAG2, 'namespace': NAMESPACE1},
+                {'name': TAG3, 'namespace': NAMESPACE1},
+            ]
+        )
+
+        metadef_tags = tags.MetadefTags()
+        metadef_tags.tags = _db_tags_fixture([TAG4, TAG5])
+        output = self.tag_controller.create_tags(
+            request, metadef_tags, NAMESPACE1)
+        output = output.to_dict()
+        self.assertEqual(2, len(output['tags']))
+        actual = set([tag.name for tag in output['tags']])
+        expected = set([TAG4, TAG5])
+        self.assertEqual(expected, actual)
+        self.assertNotificationLog(
+            "metadef_tag.create", [
+                {'name': TAG4, 'namespace': NAMESPACE1},
+                {'name': TAG5, 'namespace': NAMESPACE1},
+            ]
+        )
+
+        output = self.tag_controller.index(request, NAMESPACE1)
+        output = output.to_dict()
+        self.assertEqual(2, len(output['tags']))
+        actual = set([tag.name for tag in output['tags']])
+        expected = set([TAG4, TAG5])
+        self.assertEqual(expected, actual)
+
     def test_tag_create_duplicate_tags(self):
         request = unit_test_utils.get_fake_request(roles=['admin'])
 
@@ -2028,6 +2116,42 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
         self.assertNotificationLog(
             "metadef_tag.create", [
                 {'name': TAG1, 'namespace': NAMESPACE1},
+                {'name': TAG2, 'namespace': NAMESPACE1},
+                {'name': TAG3, 'namespace': NAMESPACE1},
+            ]
+        )
+
+        metadef_tags = tags.MetadefTags()
+        metadef_tags.tags = _db_tags_fixture([TAG4, TAG5, TAG4])
+        self.assertRaises(
+            webob.exc.HTTPConflict,
+            self.tag_controller.create_tags,
+            request, metadef_tags, NAMESPACE1)
+        self.assertNotificationsLog([])
+
+        output = self.tag_controller.index(request, NAMESPACE1)
+        output = output.to_dict()
+        self.assertEqual(3, len(output['tags']))
+        actual = set([tag.name for tag in output['tags']])
+        expected = set([TAG1, TAG2, TAG3])
+        self.assertEqual(expected, actual)
+
+    def test_tag_create_duplicate_with_pre_existing_tags_with_append(self):
+        request = unit_test_utils.get_fake_request(
+            headers={'X-Openstack-Append': 'True'}, roles=['admin'])
+
+        metadef_tags = tags.MetadefTags()
+        # As TAG1 is already created in setup, just creating other two tags.
+        metadef_tags.tags = _db_tags_fixture([TAG2, TAG3])
+        output = self.tag_controller.create_tags(
+            request, metadef_tags, NAMESPACE1)
+        output = output.to_dict()
+        self.assertEqual(2, len(output['tags']))
+        actual = set([tag.name for tag in output['tags']])
+        expected = set([TAG2, TAG3])
+        self.assertEqual(expected, actual)
+        self.assertNotificationLog(
+            "metadef_tag.create", [
                 {'name': TAG2, 'namespace': NAMESPACE1},
                 {'name': TAG3, 'namespace': NAMESPACE1},
             ]
