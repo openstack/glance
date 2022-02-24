@@ -1,0 +1,24 @@
+---
+prelude: |
+    The Yoga release includes some important milestones in Glance
+    development priorities.
+
+    * Added support to get quota usage information.
+
+    * Added new APIs for cache related operations.
+
+    * Added support to append new metadef tags rather than overwriting the existing tags.
+
+    * Added support to fetch additional information about RBD store.
+
+fixes:
+  - |
+    Bug 1939169_: glance md-tag-create-multiple overwrites existing tags
+  - |
+    Bug 1953063_: Image import causes SQL type casting error on PostgreSQL
+  - |
+    Bug 1954321_: Python3.10 error
+
+    .. _1939169: https://code.launchpad.net/bugs/1939169
+    .. _1953063: https://code.launchpad.net/bugs/1953063
+    .. _1954321: https://code.launchpad.net/bugs/1954321
