@@ -15,6 +15,7 @@
 
 import json
 import os
+import sys
 from unittest import mock
 
 import glance_store
@@ -264,3 +265,22 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                 os_exists_mock.return_value = True
                 image_convert.revert(result=mock.MagicMock())
                 self.assertEqual(1, mock_os_remove.call_count)
+
+    def test_image_convert_interpreter_resolution(self):
+        # By default, wsgi.python_interpreter is None, which we should
+        # translate to sys.executable at runtime.
+        convert = image_conversion._ConvertImage(self.context,
+                                                 self.task.task_id,
+                                                 self.task_type,
+                                                 self.wrapper)
+        self.assertEqual(sys.executable, convert.python)
+
+        # If overridden, we should take the interpreter from config.
+        fake_interpreter = '/usr/bin/python2.7'
+        self.config(python_interpreter=fake_interpreter,
+                    group='wsgi')
+        convert = image_conversion._ConvertImage(self.context,
+                                                 self.task.task_id,
+                                                 self.task_type,
+                                                 self.wrapper)
+        self.assertEqual(fake_interpreter, convert.python)
