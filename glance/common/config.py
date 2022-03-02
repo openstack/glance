@@ -19,7 +19,6 @@ Routines for configuring Glance
 
 import logging
 import os
-import sys
 
 from oslo_config import cfg
 from oslo_middleware import cors
@@ -641,13 +640,13 @@ may overwhelm other system resources such as disk or outbound network
 bandwidth. If this is too small, image import requests will have to wait
 until a thread becomes available to begin processing.""")),
     cfg.StrOpt('python_interpreter',
-               default=sys.executable,
+               default=None,
                help=_("""
 Path to the python interpreter to use when spawning external
-processes. By default this is sys.executable, which should be the
-same interpreter running Glance itself. However, in some situations
-(i.e. uwsgi) this may not actually point to a python interpreter
-itself.""")),
+processes. If left unspecified, this will be sys.executable, which should
+be the same interpreter running Glance itself. However, in some situations
+(for example, uwsgi) sys.executable may not actually point to a python
+interpreter and an alternative value must be set.""")),
 ]
 
 
