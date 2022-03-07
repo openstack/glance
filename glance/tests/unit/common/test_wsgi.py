@@ -22,7 +22,6 @@ import os
 import socket
 from unittest import mock
 
-from babel import localedata
 import eventlet.patcher
 import fixtures
 from oslo_concurrency import processutils
@@ -44,13 +43,6 @@ class RequestTest(test_utils.BaseTestCase):
     def _set_expected_languages(self, all_locales=None, avail_locales=None):
         if all_locales is None:
             all_locales = []
-
-        # Override localedata.locale_identifiers to return some locales.
-        def returns_some_locales(*args, **kwargs):
-            return all_locales
-
-        self.mock_object(localedata, 'locale_identifiers',
-                         returns_some_locales)
 
         # Override gettext.find to return other than None for some languages.
         def fake_gettext_find(lang_id, *args, **kwargs):
