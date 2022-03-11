@@ -896,6 +896,24 @@ documentation for more information.
 
   Path to the rootwrap configuration file to use for running commands as root.
 
+``lock_path``
+  Required.  Defaults to environment variable OSLO_LOCK_PATH, though we
+  recommend setting a value in the configuration file.
+
+  This specifies the directory to use for lock files.
+
+  NOTE: This option must be set in the ``[oslo_concurrency]`` section of the
+  configuration file.
+
+  .. code-block:: ini
+
+     [oslo_concurrency]
+     # ...
+     lock_path = /var/lib/glance/tmp
+
+  .. end
+
+
 Configuring multiple Cinder Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
