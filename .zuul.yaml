@@ -350,9 +350,6 @@
             irrelevant-files: *tempest-irrelevant-files
         - glance-multistore-cinder-import:
             irrelevant-files: *tempest-irrelevant-files
-        - glance-multistore-cinder-import-fips:
-            voting: false
-            irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-ipv6-only:
@@ -387,6 +384,8 @@
         - barbican-tempest-plugin-simple-crypto
         - grenade-multinode
         - tempest-pg-full:
+            irrelevant-files: *tempest-irrelevant-files
+        - glance-multistore-cinder-import-fips:
             irrelevant-files: *tempest-irrelevant-files
     periodic:
       jobs:
@@ -429,4 +428,6 @@
         - glance-tox-functional-py39-cursive-tips:
             branches: master
         - glance-tox-functional-py36-cursive-tips:
+            branches: master
+        - glance-multistore-cinder-import-fips:
             branches: master
