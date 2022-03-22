@@ -4240,6 +4240,24 @@ class TestImageMembers(functional.FunctionalTest):
                                 data=body)
         self.assertEqual(http.BAD_REQUEST, response.status_code)
 
+        # Owner can Upload data to staging image
+        image_id = image_fixture[3]['id']
+        path = self._url('/v2/images/%s/stage' % image_id)
+        headers = get_auth_header('tenant1')
+        headers.update({'Content-Type': 'application/octet-stream'})
+        image_data = b'YYYYY'
+        response = requests.put(path, headers=headers,
+                                data=image_data)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        # Tenant3: can't upload data to tenant1-shared staging image
+        path = self._url('/v2/images/%s/stage' % image_id)
+        image_data = b'YYYYY'
+        headers.update(get_auth_header(TENANT3))
+        response = requests.put(path, headers=headers,
+                                data=image_data)
+        self.assertEqual(http.FORBIDDEN, response.status_code)
+
         # Owner cannot change status of image
         path = self._url('/v2/images/%s/members/%s' % (image_fixture[3]['id'],
                                                        TENANT3))
