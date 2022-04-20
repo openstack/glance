@@ -9,16 +9,17 @@
 # Robert Simai, 2014
 # Andreas Jaeger <jaegerandi@gmail.com>, 2016. #zanata
 # Andreas Jaeger <jaegerandi@gmail.com>, 2019. #zanata
+# Robert Holling <r.holling@protonmail.ch>, 2022. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-10-06 23:29+0000\n"
+"POT-Creation-Date: 2022-04-19 18:29+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-10-02 10:44+0000\n"
-"Last-Translator: Andreas Jaeger <jaegerandi@gmail.com>\n"
+"PO-Revision-Date: 2022-03-14 06:07+0000\n"
+"Last-Translator: Robert Holling <r.holling@protonmail.ch>\n"
 "Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.0\n"
@@ -28,6 +29,38 @@ msgstr ""
 #, python-format
 msgid "\t%s"
 msgstr "\t%s"
+
+msgid ""
+"\n"
+"Limit the request ID length.\n"
+"\n"
+"Provide  an integer value to limit the length of the request ID to\n"
+"the specified length. The default value is 64. Users can change this\n"
+"to any ineteger value between 0 and 16384 however keeping in mind that\n"
+"a larger value may flood the logs.\n"
+"\n"
+"Possible values:\n"
+"    * Integer value between 0 and 16384\n"
+"\n"
+"Related options:\n"
+"    * None\n"
+"\n"
+msgstr ""
+"\n"
+"Begrenzen Sie die Länge der Anforderungs-ID.\n"
+"\n"
+"Geben Sie einen ganzzahligen Wert an, um die Länge der Anforderungs-ID \n"
+"auf die angegebene Länge. Der Standardwert ist 64. Benutzer können dies "
+"ändern \n"
+"auf jeden Integer-Wert zwischen 0 und 16384, wobei zu beachten ist, \n"
+"dass ein größerer Wert die Protokolle überfluten kann.\n"
+"\n"
+"Mögliche Werte:\n"
+"    * Ganzzahliger Wert zwischen 0 und 16384\n"
+"\n"
+"Verwandte Optionen:\n"
+"    * Keine\n"
+"\n"
 
 #, python-format
 msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
@@ -98,6 +131,21 @@ msgstr "%s ist bereits gestoppt"
 #, python-format
 msgid "%s is stopped"
 msgstr "%s ist gestoppt"
+
+#, python-format
+msgid "%s of uploaded data is different from current value set on the image."
+msgstr ""
+"%s der hoch geladenen Daten unterscheidet sich vom aktuellen Wert, der in "
+"dem Abbild festgelegt ist."
+
+msgid "'container_format' needs to be set before import"
+msgstr "'container_format' muss vor dem Import gesetzt werden"
+
+msgid "'disk_format' needs to be set before import"
+msgstr "'disk_format' muss vor dem Import gesetzt werden"
+
+msgid "'glance-direct' method is not available at this site."
+msgstr "Die 'glance-direct'-Methode ist auf dieser Site nicht verfügbar."
 
 msgid ""
 "--os_auth_url option or OS_AUTH_URL environment variable required when "
@@ -252,6 +300,19 @@ msgstr "Darf kein negativer Wert sein."
 msgid "Cannot convert image %(key)s '%(value)s' to an integer."
 msgstr ""
 "Abbild %(key)s '%(value)s' kann nicht in eine Ganzzahl konvertiert werden. "
+
+msgid ""
+"Cannot delete image data from the only store containing it. Consider "
+"deleting the image instead."
+msgstr ""
+"Abbild Daten können nicht aus dem einzigen Speicher gelöscht werden, der sie "
+"enthält. Erwägen Sie stattdessen, das Abbild zu löschen."
+
+#, python-format
+msgid "Cannot delete staged image data %(fn)s [Errno %(en)d]"
+msgstr ""
+"Bereitgestellte Abbilddaten können nicht gelöscht werden %(fn)s [Errno "
+"%(en)d]"
 
 msgid "Cannot remove last location in the image."
 msgstr "Die letzte Position im Abbild kann nicht entfernt werden. "
@@ -484,6 +545,13 @@ msgstr ""
 "Informationsnachricht in Klarschrift nur eingeschlossen, wenn zweckdienlich "
 "(in der Regel bei einem Fehler)"
 
+msgid ""
+"If provided 'x-image-cache-clear-target' must be 'cache', 'queue' or empty "
+"string."
+msgstr ""
+"Falls angegeben, muss 'x-image-cache-clear-target' 'cache', 'queue' oder "
+"eine leere Zeichenfolge sein."
+
 msgid "If true, image will not be deletable."
 msgstr "Bei 'true' kann das Abbild nicht gelöscht werden."
 
@@ -549,6 +617,11 @@ msgstr "Grenzwert für Abbildschlagwort für Abbild %(id)s überschritten: %(e)s
 #, python-format
 msgid "Image upload problem: %s"
 msgstr "Problem beim Abbildupload: %s"
+
+msgid "Image with status active cannot be target for import"
+msgstr ""
+"Abbild mit dem Status aktiv kann nicht als Ziel für den Import verwendet "
+"werden"
 
 #, python-format
 msgid "Image with the given id %(image_id)s was not found"
@@ -722,6 +795,13 @@ msgstr ""
 "Es ist nicht zulässig, Positionen hinzuzufügen, wenn die Positionen nicht "
 "sichtbar sind. "
 
+msgid ""
+"It's not allowed to remove image data from store if image status is not "
+"'active'"
+msgstr ""
+"Es ist nicht erlaubt, Abbild Daten aus dem Speicher zu löschen, wenn der "
+"Abbild Status nicht 'aktiv' ist"
+
 msgid "It's not allowed to remove locations if locations are invisible."
 msgstr ""
 "Es ist nicht zulässig, Positionen zu entfernen, wenn die Positionen nicht "
@@ -825,6 +905,9 @@ msgstr "Der Wert für die Mindestzeilenanzahl ist 1."
 msgid "Missing required credential: %(required)s"
 msgstr "Erforderlicher Berechtigungsnachweis fehlt: %(required)s"
 
+msgid "Multi backend is not supported at this site."
+msgstr "Multi-Backend wird auf dieser Website nicht unterstützt."
+
 #, python-format
 msgid ""
 "Multiple 'image' service matches for region %(region)s. This generally means "
@@ -885,6 +968,18 @@ msgstr "OVA-Extraktion kann nur vom Administrator ausgeführt werden."
 
 msgid "Old and new sorting syntax cannot be combined"
 msgstr "Die alte und die neue Sortiersyntax können nicht kombiniert werden"
+
+msgid "Only images with status active can be targeted for copying"
+msgstr ""
+"Nur Abbilder mit dem Status aktiv können zum Kopieren ausgewählt werden"
+
+msgid "Only images with status active can be targeted for queueing"
+msgstr ""
+"Nur Abbilder mit dem Status aktiv können für die Warteschlange ausgewählt "
+"werden"
+
+msgid "Only shared images have members."
+msgstr "Nur öffentliche Abbilder haben Mitglieder."
 
 #, python-format
 msgid "Operation \"%s\" requires a member named \"value\"."
@@ -1659,6 +1754,10 @@ msgstr ""
 msgid "You are not permitted to modify '%s' on this image."
 msgstr "Sie können '%s' bei diesem Abbild nicht ändern."
 
+msgid "You are not permitted to modify 'status' on this image member."
+msgstr ""
+"Sie sind nicht berechtigt, den 'status' dieses Abbild Mitglieds zu ändern."
+
 msgid "You are not permitted to modify locations for this image."
 msgstr "Sie können Positionen für dieses Abbild nicht ändern."
 
@@ -1696,6 +1795,9 @@ msgstr "Hinzufügen von Abbildelement für %s nicht möglich"
 #, python-format
 msgid "You cannot delete image member for %s"
 msgstr "Löschen von Abbildelement für %s nicht möglich"
+
+msgid "You cannot delete image member."
+msgstr "Sie können das Abbild Mitglied nicht löschen."
 
 #, python-format
 msgid "You cannot get image member for %s"
