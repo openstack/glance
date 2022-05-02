@@ -1,0 +1,15 @@
+{
+    "cached_images": [
+        {
+            "image_id": "fe05d6c9-ef02-4161-9056-81ed046f3024",
+            "hits": 0,
+            "last_accessed": 1651504844.0860524,
+            "last_modified": 1651504844.0860524,
+            "size": 987654
+        }
+    ],
+    "queued_images": [
+        "e34e6e2f-fe16-420d-ad36-cebf69506106",
+        "6b9fbf2b-3031-429a-80b1-b509e4c44046"
+    ]
+}

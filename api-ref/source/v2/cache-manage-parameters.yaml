@@ -1,0 +1,25 @@
+cached_images:
+  description: |
+    A list of cached image JSON objects, possibly empty, where each
+    object contains the following fields:
+
+    ``image_id``
+        The id of the cached image
+    ``hits``
+        The number of cache hits for this image.
+    ``last_accessed``
+        Epoch time when the cached image was most recently accessed.
+    ``last_modified``
+        Epoch time when the cached image was installed into the cache.
+    ``size``
+        Size in bytes of the cached image.
+  in: body
+  required: true
+  type: array
+queued_images:
+  description: |
+    A list of image ids, possibly empty, of images queued to be
+    cached, listed in the order in which they will be processed.
+  in: body
+  required: true
+  type: array
