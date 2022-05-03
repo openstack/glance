@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    Glance to glance image import plugin. With this release users can import
+    an image from an other glance server from an other opensatck region.
+    The two glance services must use the same keystone service. The feature
+    use the same keystone authentication token on both glance services and
+    copy by default container_format, disk_format and customizable properties
+    from source image ``['hw_', 'trait:', 'os_distro', 'os_secure_boot',
+    'os_type']``

@@ -18,6 +18,7 @@ import http.client as http
 import os
 import re
 import urllib.parse as urlparse
+import uuid
 
 from castellan.common import exception as castellan_exception
 from castellan import key_manager
@@ -332,9 +333,10 @@ class ImagesController(object):
                 msg = _("Only images with status active can be targeted for "
                         "copying")
                 raise exception.Conflict(msg)
-            if image.status != 'queued' and import_method == 'web-download':
+            if (image.status != 'queued' and
+                    import_method in ['web-download', 'glance-download']):
                 msg = _("Image needs to be in 'queued' state to use "
-                        "'web-download' method")
+                        "'%s' method") % import_method
                 raise exception.Conflict(msg)
             if (image.status != 'uploading' and
                     import_method == 'glance-direct'):
@@ -347,6 +349,23 @@ class ImagesController(object):
             if not getattr(image, 'disk_format', None):
                 msg = _("'disk_format' needs to be set before import")
                 raise exception.Conflict(msg)
+            if import_method == 'glance-download':
+                if 'glance_region' not in body.get('method'):
+                    msg = _("'glance_region' needs to be set for "
+                            "glance-download import method")
+                    raise webob.exc.HTTPBadRequest(explanation=msg)
+                if 'glance_image_id' not in body.get('method'):
+                    msg = _("'glance_image_id' needs to be set for "
+                            "glance-download import method")
+                    raise webob.exc.HTTPBadRequest(explanation=msg)
+                try:
+                    uuid.UUID(body['method']['glance_image_id'])
+                except ValueError:
+                    msg = (_("Remote image id does not look like a UUID: %s")
+                           % body['method']['glance_image_id'])
+                    raise webob.exc.HTTPBadRequest(explanation=msg)
+                if 'glance_service_interface' not in body.get('method'):
+                    body.get('method')['glance_service_interface'] = 'public'
 
             # NOTE(danms): For copy-image only, we check policy to decide
             # if the user should be able to do this. Otherwise, we forbid

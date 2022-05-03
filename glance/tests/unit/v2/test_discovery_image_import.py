@@ -36,7 +36,7 @@ class TestInfoControllers(test_utils.BaseTestCase):
         # TODO(rosmaita): change this when import methods are
         # listed in the config file
         import_methods = ['glance-direct', 'web-download',
-                          'copy-image']
+                          'copy-image', 'glance-download']
 
         req = unit_test_utils.get_fake_request()
         output = self.controller.get_image_import(req)

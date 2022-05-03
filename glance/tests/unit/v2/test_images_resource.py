@@ -911,6 +911,45 @@ class TestImagesController(base.IsolatedUnitTest):
                               {'method': {'name': 'web-download',
                                           'uri': 'fake_uri'}})
 
+    def test_image_import_raises_bad_request_for_glance_download_missing_input(
+            self):
+        request = unit_test_utils.get_fake_request()
+        with mock.patch.object(
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='queued')
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.controller.import_image, request, UUID4,
+                              {'method': {'name': 'glance-download'}})
+
+    def test_image_import_raise_bad_request_wrong_id_for_glance_download(
+            self):
+        request = unit_test_utils.get_fake_request()
+        with mock.patch.object(
+                glance.notifier.ImageRepoProxy, 'get') as mock_get:
+            mock_get.return_value = FakeImage(status='queued')
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.controller.import_image, request, UUID4,
+                              {'method': {'name': 'glance-download',
+                                          'glance_image_id': 'fake_id',
+                                          'glance_region': 'REGION4'}})
+
+    @mock.patch.object(glance.domain.TaskFactory, 'new_task')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
+    def test_image_import_add_default_service_endpoint_for_glance_download(
+            self, mock_get, mock_nt):
+        request = unit_test_utils.get_fake_request()
+        mock_get.return_value = FakeImage(status='queued')
+        body = {'method': {'name': 'glance-download',
+                           'glance_image_id': UUID4,
+                           'glance_region': 'REGION2'}}
+        self.controller.import_image(request, UUID4, body)
+        expected_req = {'method': {'name': 'glance-download',
+                                   'glance_image_id': UUID4,
+                                   'glance_region': 'REGION2',
+                                   'glance_service_interface': 'public'}}
+        self.assertEqual(expected_req,
+                         mock_nt.call_args.kwargs['task_input']['import_req'])
+
     @mock.patch('glance.context.get_ksa_client')
     def test_image_import_proxies(self, mock_client):
         # Make sure that we proxy to the remote side when we need to
@@ -4865,7 +4904,7 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request.body = jsonutils.dump_as_bytes(import_body)
         return request
 
-    KNOWN_IMPORT_METHODS = ['glance-direct', 'web-download']
+    KNOWN_IMPORT_METHODS = ['glance-direct', 'web-download', 'glance-download']
 
     def test_import_image_invalid_import_method(self):
         # Bug 1754634: make sure that what's considered valid

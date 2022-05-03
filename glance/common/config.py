@@ -572,7 +572,7 @@ Related options:
                 item_type=cfg.types.String(quotes=True),
                 bounds=True,
                 default=['glance-direct', 'web-download',
-                         'copy-image'],
+                         'copy-image', 'glance-download'],
                 help=_("""
     List of enabled Image Import Methods
 

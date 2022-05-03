@@ -21,6 +21,7 @@ import urllib
 
 from oslo_config import cfg
 
+from glance.async_.flows._internal_plugins import base_download
 from glance.common import exception
 from glance.common import store_utils
 from glance.common import wsgi
@@ -373,3 +374,8 @@ class FakeTask(object):
     def fail(self, message):
         self.message = message
         self._status = 'failure'
+
+
+class FakeBaseDownloadPlugin(base_download.BaseDownload):
+    def execute(self):
+        pass
