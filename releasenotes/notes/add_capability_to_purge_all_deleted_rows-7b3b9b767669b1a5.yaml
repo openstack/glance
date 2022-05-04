@@ -1,0 +1,4 @@
+---
+features:
+  - |
+    "glance-manage" purges all deleted rows if "--max_rows" equals -1

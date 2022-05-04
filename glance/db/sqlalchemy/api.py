@@ -1510,9 +1510,12 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
     t = Table("tasks", metadata, autoload=True)
     ti = Table("task_info", metadata, autoload=True)
     joined_rec = ti.join(t, t.c.id == ti.c.task_id)
-    deleted_task_info = sql.select([ti.c.task_id],
-                                   t.c.deleted_at < deleted_age).\
-        select_from(joined_rec).order_by(t.c.deleted_at).limit(max_rows)
+    deleted_task_info = sql.\
+        select([ti.c.task_id], t.c.deleted_at < deleted_age).\
+        select_from(joined_rec).\
+        order_by(t.c.deleted_at)
+    if max_rows != -1:
+        deleted_task_info = deleted_task_info.limit(max_rows)
     delete_statement = DeleteFromSelect(ti, deleted_task_info,
                                         ti.c.task_id)
     LOG.info(_LI('Purging deleted rows older than %(age_in_days)d day(s) '
@@ -1556,9 +1559,10 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
         column = tab.c.id
         deleted_at_column = tab.c.deleted_at
 
-        query_delete = sql.select(
-            [column], deleted_at_column < deleted_age).order_by(
-            deleted_at_column).limit(max_rows)
+        query_delete = sql.select([column], deleted_at_column < deleted_age).\
+            order_by(deleted_at_column)
+        if max_rows != -1:
+            query_delete = query_delete.limit(max_rows)
 
         delete_statement = DeleteFromSelect(tab, query_delete, column)
 
@@ -1600,9 +1604,11 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows,
     column = tab.c.id
     deleted_at_column = tab.c.deleted_at
 
-    query_delete = sql.select(
-        [column], deleted_at_column < deleted_age).order_by(
-        deleted_at_column).limit(max_rows)
+    query_delete = sql.\
+        select([column], deleted_at_column < deleted_age).\
+        order_by(deleted_at_column)
+    if max_rows != -1:
+        query_delete = query_delete.limit(max_rows)
 
     delete_statement = DeleteFromSelect(tab, query_delete, column)
 

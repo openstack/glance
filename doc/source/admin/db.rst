@@ -184,7 +184,8 @@ This command takes two optional parameters:
                      than *NUM* days.  The default is 30 days.
 
 --max_rows NUM       Purge a maximum of *NUM* rows from each table.
-                     The default is 100.
+                     The default is 100. All deleted rows are purged if equals
+                     -1
 
 
 Purging the Images Table
@@ -212,7 +213,8 @@ It takes two optional parameters:
                      than *NUM* days.  The default is 180 days.
 
 --max_rows NUM       Purge a maximum of *NUM* rows from the **images** table.
-                     The default is 100.
+                     The default is 100. All deleted rows are purged if equals
+                     -1
 
 It is possible for this command to fail with an IntegrityError saying
 something like "Cannot delete or update a parent row: a foreign key
