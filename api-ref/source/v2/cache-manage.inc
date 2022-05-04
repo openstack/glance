@@ -47,7 +47,7 @@ Queue image
 Queues image for caching.
 *(Since Image API v2.14)*
 
-Normal response codes: 200
+Normal response codes: 202
 
 Error response codes: 400, 401, 403, 404
 

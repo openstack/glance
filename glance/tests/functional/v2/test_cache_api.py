@@ -79,7 +79,7 @@ class TestImageCache(functional.SynchronousAPIBase):
         if response.status_code == 200:
             return response.json
 
-    def cache_queue(self, image_id, expected_code=200):
+    def cache_queue(self, image_id, expected_code=202):
         # Queue image for prefetching
         path = '/v2/cache/%s' % image_id
         response = self.api_put(path)
