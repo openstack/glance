@@ -238,7 +238,9 @@ class CachedImageDeserializer(wsgi.JSONRequestDeserializer):
 
 
 class CachedImageSerializer(wsgi.JSONResponseSerializer):
-    pass
+
+    def queue_image_from_api(self, response, result):
+        response.status_int = 202
 
 
 def create_resource():
