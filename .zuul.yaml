@@ -275,7 +275,7 @@
     description: |
       The regular tempest-integrated-storage job but with multiple cinder
       stores with fips enabled
-    nodeset: devstack-single-node-centos-8-stream
+    nodeset: devstack-single-node-centos-9-stream
     pre-run: playbooks/enable-fips.yaml
     vars:
       configure_swap_size: 4096
