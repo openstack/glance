@@ -67,14 +67,13 @@
       tox_envlist: functional-py39
 
 - job:
-    name: glance-tox-functional-py36-oslo-tips
+    name: glance-tox-functional-py38-oslo-tips
     parent: glance-tox-oslo-tips-base
     description: |
-      Glance py36 functional tests vs. oslo libraries masters
-    nodeset: ubuntu-bionic
+      Glance py38 functional tests vs. oslo libraries masters
     vars:
-      python_version: 3.6
-      tox_envlist: functional-py36
+      python_version: 3.8
+      tox_envlist: functional-py38
 
 - job:
     name: glance-tox-keystone-tips-base
@@ -98,14 +97,13 @@
       tox_envlist: py39
 
 - job:
-    name: glance-tox-py36-keystone-tips
+    name: glance-tox-py38-keystone-tips
     parent: glance-tox-keystone-tips-base
     description: |
-      Glance py36 unit tests vs. keystone masters
-    nodeset: ubuntu-bionic
+      Glance py38 unit tests vs. keystone masters
     vars:
-      python_version: 3.6
-      tox_envlist: py36
+      python_version: 3.8
+      tox_envlist: py38
 
 - job:
     name: glance-tox-functional-py39-keystone-tips
@@ -117,14 +115,13 @@
       tox_envlist: functional-py39
 
 - job:
-    name: glance-tox-functional-py36-keystone-tips
+    name: glance-tox-functional-py38-keystone-tips
     parent: glance-tox-keystone-tips-base
     description: |
-      Glance py36 functional tests vs. keystone masters
-    nodeset: ubuntu-bionic
+      Glance py38 functional tests vs. keystone masters
     vars:
-      python_version: 3.6
-      tox_envlist: functional-py36
+      python_version: 3.8
+      tox_envlist: functional-py38
 
 - job:
     name: glance-tox-glance_store-tips-base
@@ -146,14 +143,13 @@
       tox_envlist: py39
 
 - job:
-    name: glance-tox-py36-glance_store-tips
+    name: glance-tox-py38-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     description: |
-      Glance py36 unit tests vs. glance_store master
-    nodeset: ubuntu-bionic
+      Glance py38 unit tests vs. glance_store master
     vars:
-      python_version: 3.6
-      tox_envlist: py36
+      python_version: 3.8
+      tox_envlist: py38
 
 - job:
     name: glance-tox-functional-py39-glance_store-tips
@@ -165,14 +161,13 @@
       tox_envlist: functional-py39
 
 - job:
-    name: glance-tox-functional-py36-glance_store-tips
+    name: glance-tox-functional-py38-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     description: |
-      Glance py36 functional tests vs. glance_store master
-    nodeset: ubuntu-bionic
+      Glance py38 functional tests vs. glance_store master
     vars:
-      python_version: 3.6
-      tox_envlist: functional-py36
+      python_version: 3.8
+      tox_envlist: functional-py38
 
 - job:
     name: glance-tox-cursive-tips-base
@@ -196,14 +191,13 @@
       tox_envlist: py39
 
 - job:
-    name: glance-tox-py36-cursive-tips
+    name: glance-tox-py38-cursive-tips
     parent: glance-tox-cursive-tips-base
     description: |
-      Glance py36 unit tests vs. cursive (and related libs) master
-    nodeset: ubuntu-bionic
+      Glance py38 unit tests vs. cursive (and related libs) master
     vars:
-      python_version: 3.6
-      tox_envlist: py36
+      python_version: 3.8
+      tox_envlist: py38
 
 - job:
     name: glance-tox-functional-py39-cursive-tips
@@ -215,14 +209,13 @@
       tox_envlist: functional-py39
 
 - job:
-    name: glance-tox-functional-py36-cursive-tips
+    name: glance-tox-functional-py38-cursive-tips
     parent: glance-tox-cursive-tips-base
     description: |
-      Glance py36 functional tests vs. cursive (and related libs) master
-    nodeset: ubuntu-bionic
+      Glance py38 functional tests vs. cursive (and related libs) master
     vars:
-      python_version: 3.6
-      tox_envlist: functional-py36
+      python_version: 3.8
+      tox_envlist: functional-py38
 
 - job:
     name: tempest-integrated-storage-import
@@ -318,13 +311,12 @@
     templates:
       - check-requirements
       - integrated-gate-storage
-      - openstack-python3-yoga-jobs
+      - openstack-python3-zed-jobs
       - periodic-stable-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
     check:
       jobs:
-        - openstack-tox-functional-py36-fips
         - openstack-tox-functional-py39
         - glance-tox-functional-py39-rbac-defaults
         - glance-code-constants-check
@@ -360,7 +352,7 @@
 
     gate:
       jobs:
-        - openstack-tox-functional-py36
+        - openstack-tox-functional-py38
         - openstack-tox-functional-py39
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
@@ -380,9 +372,9 @@
     experimental:
       jobs:
         - glance-tox-py39-glance_store-tips
-        - glance-tox-py36-glance_store-tips
+        - glance-tox-py38-glance_store-tips
         - glance-tox-functional-py39-glance_store-tips
-        - glance-tox-functional-py36-glance_store-tips
+        - glance-tox-functional-py38-glance_store-tips
         - barbican-tempest-plugin-simple-crypto
         - grenade-multinode
         - tempest-pg-full:
@@ -405,31 +397,31 @@
         # aren't doing that either.
         - glance-tox-functional-py39-oslo-tips:
             branches: master
-        - glance-tox-functional-py36-oslo-tips:
+        - glance-tox-functional-py38-oslo-tips:
             branches: master
         - glance-tox-py39-keystone-tips:
             branches: master
-        - glance-tox-py36-keystone-tips:
+        - glance-tox-py38-keystone-tips:
             branches: master
         - glance-tox-functional-py39-keystone-tips:
             branches: master
-        - glance-tox-functional-py36-keystone-tips:
+        - glance-tox-functional-py38-keystone-tips:
             branches: master
         - glance-tox-py39-glance_store-tips:
             branches: master
-        - glance-tox-py36-glance_store-tips:
+        - glance-tox-py38-glance_store-tips:
             branches: master
         - glance-tox-functional-py39-glance_store-tips:
             branches: master
-        - glance-tox-functional-py36-glance_store-tips:
+        - glance-tox-functional-py38-glance_store-tips:
             branches: master
         - glance-tox-py39-cursive-tips:
             branches: master
-        - glance-tox-py36-cursive-tips:
+        - glance-tox-py38-cursive-tips:
             branches: master
         - glance-tox-functional-py39-cursive-tips:
             branches: master
-        - glance-tox-functional-py36-cursive-tips:
+        - glance-tox-functional-py38-cursive-tips:
             branches: master
         - glance-multistore-cinder-import-fips:
             branches: master
