@@ -257,9 +257,10 @@
 
 - job:
     name: glance-multistore-cinder-import
-    parent: tempest-integrated-storage-import
+    parent: tempest-integrated-storage
     description: |
-      The regular import workflow job to test with multiple cinder stores
+      The regular tempest-integrated-storage job but with multiple cinder
+      stores
     vars:
       devstack_localrc:
         USE_CINDER_FOR_GLANCE: True
@@ -269,10 +270,10 @@
 
 - job:
     name: glance-multistore-cinder-import-fips
-    parent: tempest-integrated-storage-import
+    parent: tempest-integrated-storage
     description: |
-      The regular import workflow job to test with multiple cinder stores with
-      fips enabled
+      The regular tempest-integrated-storage job but with multiple cinder
+      stores with fips enabled
     nodeset: devstack-single-node-centos-8-stream
     pre-run: playbooks/enable-fips.yaml
     vars:
