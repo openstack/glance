@@ -98,7 +98,13 @@ class NamespaceController(object):
                 # Get resource type associations
                 filters = dict()
                 filters['namespace'] = db_namespace.namespace
-                repo_rs_type_list = rs_repo.list(filters=filters)
+                try:
+                    repo_rs_type_list = rs_repo.list(filters=filters)
+                except exception.NotFound:
+                    # NOTE(danms): If we fail to list resource_types
+                    # for this namespace, do not fail the entire
+                    # namespace list operation with NotFound.
+                    repo_rs_type_list = []
                 resource_type_list = [
                     ResourceTypeAssociation.to_wsme_model(
                         resource_type
