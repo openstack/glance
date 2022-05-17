@@ -77,6 +77,54 @@ class InfoController(object):
 
         return {'stores': backends}
 
+    @staticmethod
+    def _get_rbd_properties(store_detail):
+        return {
+            'chunk_size': store_detail.chunk_size,
+            'pool': store_detail.pool,
+            'thin_provisioning': store_detail.thin_provisioning
+        }
+
+    @staticmethod
+    def _get_file_properties(store_detail):
+        return {
+            'data_dir': store_detail.datadir,
+            'chunk_size': store_detail.chunk_size,
+            'thin_provisioning': store_detail.thin_provisioning
+        }
+
+    @staticmethod
+    def _get_cinder_properties(store_detail):
+        return {
+            'volume_type': store_detail.store_conf.cinder_volume_type,
+            'use_multipath': store_detail.store_conf.cinder_use_multipath
+        }
+
+    @staticmethod
+    def _get_swift_properties(store_detail):
+        return {
+            'container': store_detail.container,
+            'large_object_size': store_detail.large_object_size,
+            'large_object_chunk_size': store_detail.large_object_chunk_size
+        }
+
+    @staticmethod
+    def _get_s3_properties(store_detail):
+        return {
+            's3_store_large_object_size':
+            store_detail.s3_store_large_object_size,
+            's3_store_large_object_chunk_size':
+            store_detail.s3_store_large_object_chunk_size,
+            's3_store_thread_pools':
+            store_detail.s3_store_thread_pools
+        }
+
+    @staticmethod
+    def _get_http_properties(store_detail):
+        # NOTE(mrjoshi): Thre are no useful properties
+        # to be exposed.
+        return {}
+
     def get_stores_detail(self, req):
         enabled_backends = CONF.enabled_backends
         stores = self.get_stores(req).get('stores')
@@ -84,17 +132,24 @@ class InfoController(object):
             api_policy.DiscoveryAPIPolicy(
                 req.context,
                 enforcer=self.policy).stores_info_detail()
+
+            store_mapper = {
+                'rbd': self._get_rbd_properties,
+                'file': self._get_file_properties,
+                'cinder': self._get_cinder_properties,
+                'swift': self._get_swift_properties,
+                's3': self._get_s3_properties,
+                'http': self._get_http_properties
+            }
+
             for store in stores:
-                store['type'] = enabled_backends[store['id']]
-                store['properties'] = {}
-                if store['type'] == 'rbd':
-                    store_detail = g_store.get_store_from_store_identifier(
-                        store['id'])
-                    store['properties'] = {'chunk_size':
-                                           store_detail.chunk_size,
-                                           'pool': store_detail.pool,
-                                           'thin_provisioning':
-                                           store_detail.thin_provisioning}
+                store_type = enabled_backends[store['id']]
+                store['type'] = store_type
+                store_detail = g_store.get_store_from_store_identifier(
+                    store['id'])
+                store['properties'] = store_mapper.get(store_type)(
+                    store_detail)
+
         except exception.Forbidden as e:
             LOG.debug("User not permitted to view details")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
