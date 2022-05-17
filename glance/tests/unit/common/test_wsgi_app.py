@@ -17,6 +17,7 @@
 from unittest import mock
 
 from glance.api import common
+from glance.api.v2 import cached_images
 import glance.async_
 from glance.common import exception
 from glance.common import wsgi_app
@@ -49,10 +50,22 @@ class TestWsgiAppInit(test_utils.BaseTestCase):
                                               mock_load, mock_exit):
         mock_config_files.return_value = []
         wsgi_app.init_app()
-        mock_exit.assert_called_once_with(wsgi_app.drain_threadpools)
+        mock_exit.assert_called_once_with(wsgi_app.drain_workers)
 
+    @mock.patch('glance.common.config.load_paste_app')
+    @mock.patch('glance.async_.set_threadpool_model')
+    @mock.patch('glance.common.wsgi_app._get_config_files')
+    def test_uwsgi_init_registers_exit_handler(self, mock_config_files,
+                                               mock_set_model,
+                                               mock_load):
+        mock_config_files.return_value = []
+        with mock.patch.object(wsgi_app, 'uwsgi') as mock_u:
+            wsgi_app.init_app()
+            self.assertEqual(mock_u.atexit, wsgi_app.drain_workers)
+
+    @mock.patch('glance.api.v2.cached_images.WORKER')
     @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
-    def test_drain_threadpools(self):
+    def test_drain_workers(self, mock_cache_worker):
         # Initialize the thread pool model and tasks_pool, like API
         # under WSGI would, and so we have a pointer to that exact
         # pool object in the cache
@@ -60,10 +73,23 @@ class TestWsgiAppInit(test_utils.BaseTestCase):
         model = common.get_thread_pool('tasks_pool')
 
         with mock.patch.object(model.pool, 'shutdown') as mock_shutdown:
-            wsgi_app.drain_threadpools()
+            wsgi_app.drain_workers()
             # Make sure that shutdown() was called on the tasks_pool
             # ThreadPoolExecutor
             mock_shutdown.assert_called_once_with()
+
+            # Make sure we terminated the cache worker, if present.
+            mock_cache_worker.terminate.assert_called_once_with()
+
+    @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
+    def test_drain_workers_no_cache(self):
+        glance.async_.set_threadpool_model('native')
+        model = common.get_thread_pool('tasks_pool')
+
+        with mock.patch.object(model.pool, 'shutdown'):
+            # Make sure that with no WORKER initialized, we do not fail
+            wsgi_app.drain_workers()
+            self.assertIsNone(cached_images.WORKER)
 
     @mock.patch('glance.common.config.load_paste_app')
     @mock.patch('glance.async_.set_threadpool_model')
@@ -112,21 +138,6 @@ class TestWsgiAppInit(test_utils.BaseTestCase):
             target=mock_cleaner().clean_orphaned_staging_residue,
             daemon=True)
         mock_Thread.return_value.start.assert_called_once_with()
-
-    @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
-    @mock.patch('glance.common.config.load_paste_app')
-    @mock.patch('glance.common.wsgi_app._get_config_files')
-    @mock.patch('threading.Timer')
-    @mock.patch('glance.image_cache.prefetcher.Prefetcher')
-    def test_run_cache_prefetcher(self, mock_prefetcher,
-                                  mock_Timer, mock_conf,
-                                  mock_load):
-        self.config(cache_prefetcher_interval=10)
-        self.config(flavor='keystone+cachemanagement', group='paste_deploy')
-        mock_conf.return_value = []
-        wsgi_app.init_app()
-        mock_Timer.assert_called_once_with(10, mock.ANY, (mock_prefetcher(),))
-        mock_Timer.return_value.start.assert_called_once_with()
 
     @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
     @mock.patch('glance.common.config.load_paste_app')

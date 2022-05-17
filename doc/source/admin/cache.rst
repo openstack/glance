@@ -74,8 +74,6 @@ correctly.
   store, points to where the data is kept.
 - ``filesystem_store_datadirs`` This is used to point to multiple
   filesystem stores.
-- ``cache_prefetcher_interval`` The interval in seconds to run periodic
-  job 'cache_images'.
 
 Controlling the Growth of the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,37 +105,76 @@ executable.
 The recommended practice is to use ``cron`` to fire ``glance-cache-cleaner``
 at a semi-regular interval.
 
-Prefetching Images into the Image Cache
----------------------------------------
+Controlling Image Cache using V2 API
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In Train, Glance API has added a new periodic job ``cache_images`` which will
-run after every predefined time interval to fetch the queued images into cache.
-The default time interval for the ``cache_images`` periodic job is 300
-seconds. Admin/Operator can configure this interval in glance-api.conf file or
-glance-cache.conf file using ``cache_prefetcher_interval`` configuration
-option. The ``cache_images`` periodic job will only run if cache middleware
-is enabled in your cloud.
+In Yoga, Glance API has added new APIs for managing cache
+related operations. In Zed, Glance has removed support of ``cache_images``
+periodic job which was used to prefetch all queued images concurrently,
+logging the results of the fetch for each image. Instead the image can be
+immediately cached once it is queued for caching. You can use below API
+calls to control the cache related operations.
 
-To queue an image for prefetching, you can use one of the following methods:
+To queue an image for immediate caching, you can use one of the following
+methods:
 
-* If the ``cache_manage`` middleware is enabled in the application pipeline,
-  you may call ``PUT /queued/<IMAGE_ID>`` to queue the image with
-  identifier ``<IMAGE_ID>``
+* You can call ``PUT /cache/<IMAGE_ID>`` to queue the image for immediate
+  caching with identifier ``<IMAGE_ID>``
 
-* Alternately, you can use the ``glance-cache-manage`` program to queue the
-  image. This program may be run from a different host than the host
-  containing the image cache. Example usage::
+* Alternately, you can use the ``cache-queue`` command of glance client to
+  queue the image for immediate caching.
 
-    $ glance-cache-manage --host=<HOST> queue-image <IMAGE_ID>
+    $ glance cache-queue <IMAGE_ID>
 
-  This will queue the image with identifier ``<IMAGE_ID>`` for prefetching
+  This will queue the image with identifier ``<IMAGE_ID>`` for immediate
+  caching.
 
-Once you have queued the images you wish to prefetch, the ``cache_images``
-periodic job will prefetch all queued images concurrently, logging the
-results of the fetch for each image.
+To find out which images are in the image cache use one of the
+following methods:
 
-Finding Which Images are in the Image Cache
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* You can call ``GET /cache`` to see a JSON-serialized list of
+  mappings that show cached images, the number of cache hits on each image,
+  the size of the image, and the times they were last accessed as well as
+  images which are queued for caching.
+
+* Alternately, you can use the ``cache-list`` command of glance
+  client. Example usage::
+
+   $ glance cache-list
+
+To delete images which are already cached or queued for caching use one of
+the following methods:
+
+* You can call ``DELETE /cache/<IMAGE_ID>`` to remove the image file for image
+  with identifier ``<IMAGE_ID>`` from the cache or queued state.
+
+* Alternately, you can use the ``cache-delete`` command of glance
+  client. Example usage::
+
+  $ glance cache-delete <IMAGE_ID>
+
+* You can also call ``DELETE /cache`` with header
+  ``x-image-cache-clear-target`` to delete either only cached images or
+  only queued images or both. Possible values for header are ``cache``,
+  ``queue``, ``both``.
+
+* Alternately, you can use the ``cache-clear`` command of glance client
+  to delete only cached images or only queued images or both. Example usage::
+
+  $ glance cache-clear (default target is ``both``)
+  $ glance cache-clear --target cached
+  $ glance cache-clear --target queued
+
+* In Glance, image cache is local to each node, hence cache operations
+  must be performed on each node locally. If OpenStack cloud is deployed with
+  HA (3/5/7 controllers) then while running the cache related operations it is
+  necessary to specify the HOST address using -H option.
+  Example usage::
+
+   $ glance --host=<HOST> cache-list
+
+Finding Which Images are in the Image Cache with glance-cache-manage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can find out which images are in the image cache using one of the
 following methods:
@@ -171,8 +208,8 @@ following methods:
 
   Note that the image's cache hit is not shown using this method.
 
-Manually Removing Images from the Image Cache
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Manually Removing Images from the Image Cache with glance-cache-manage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If the ``cachemanage`` middleware is enabled, you may call
 ``DELETE /cached-images/<IMAGE_ID>`` to remove the image file for image

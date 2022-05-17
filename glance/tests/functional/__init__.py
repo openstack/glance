@@ -1600,7 +1600,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.setup_simple_paste()
         self.setup_stores()
 
-    def start_server(self, enable_cache=False):
+    def start_server(self, enable_cache=True):
         """Builds and "starts" the API server.
 
         Note that this doesn't actually "start" anything like

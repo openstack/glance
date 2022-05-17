@@ -41,6 +41,7 @@ from oslo_utils import units
 import testtools
 import webob
 
+from glance.api.v2 import cached_images
 from glance.common import config
 from glance.common import exception
 from glance.common import property_utils
@@ -93,6 +94,10 @@ class BaseTestCase(testtools.TestCase):
         # Make sure logging output is limited but still test debug formatting
         self.useFixture(log_fixture.get_logging_handle_error_fixture())
         self.useFixture(glance_fixtures.StandardLogging())
+
+        if cached_images.WORKER:
+            cached_images.WORKER.terminate()
+            cached_images.WORKER = None
 
     def set_policy(self):
         conf_file = "policy.yaml"

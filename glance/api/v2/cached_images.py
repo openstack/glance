@@ -17,6 +17,9 @@
 Controller for Image Cache Management API
 """
 
+import queue
+import threading
+
 import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -35,6 +38,7 @@ import glance.notifier
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
+WORKER = None
 
 
 class CacheController(object):
@@ -44,6 +48,7 @@ class CacheController(object):
 
     def __init__(self, db_api=None, policy_enforcer=None, notifier=None,
                  store_api=None):
+        global WORKER
         if not CONF.image_cache_dir:
             self.cache = None
         else:
@@ -55,6 +60,13 @@ class CacheController(object):
         self.store_api = store_api or glance_store
         self.gateway = glance.gateway.Gateway(self.db_api, self.store_api,
                                               self.notifier, self.policy)
+
+        # Initialize the worker only if cache is enabled
+        if CONF.image_cache_dir and not WORKER:
+            # If we're the first, start the thread
+            WORKER = CacheWorker()
+            WORKER.start()
+            LOG.debug('Started cache worker thread')
 
     def _enforce(self, req, image=None, new_policy=None):
         """Authorize request against given policy"""
@@ -229,6 +241,47 @@ class CacheController(object):
             raise webob.exc.HTTPBadRequest(explanation=msg)
 
         self.cache.queue_image(image_id)
+        WORKER.submit(image_id)
+
+
+class CacheWorker(threading.Thread):
+    EXIT_SENTINEL = object()
+
+    def __init__(self, *args, **kwargs):
+        self.q = queue.Queue(maxsize=-1)
+        # NOTE(abhishekk): Importing the prefetcher just in time to avoid
+        # import loop during initialization
+        from glance.image_cache import prefetcher  # noqa
+        self.prefetcher = prefetcher.Prefetcher()
+        super().__init__(*args, **kwargs)
+        # NOTE(abhishekk): Setting daemon to True because if `atexit` event
+        # handler is not called due to some reason the main process will
+        # not hang for the thread which will never exit.
+        self.setDaemon(True)
+
+    def submit(self, job):
+        self.q.put(job)
+
+    def terminate(self):
+        # NOTE(danms): Make the API workers call this before we exit
+        # to make sure any cache operations finish.
+        LOG.info('Signaling cache worker thread to exit')
+        self.q.put(self.EXIT_SENTINEL)
+        self.join()
+        LOG.info('Cache worker thread exited')
+
+    def run(self):
+        while True:
+            task = self.q.get()
+            if task == self.EXIT_SENTINEL:
+                LOG.debug("CacheWorker thread exiting")
+                break
+
+            LOG.debug("Processing image '%s' for caching", task)
+            self.prefetcher.fetch_image_into_cache(task)
+            # do whatever work you have to do on task
+            self.q.task_done()
+            LOG.debug("Caching of an image '%s' is complete", task)
 
 
 class CachedImageDeserializer(wsgi.JSONRequestDeserializer):
