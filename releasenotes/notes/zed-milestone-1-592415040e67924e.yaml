@@ -1,0 +1,21 @@
+---
+critical:
+  - |
+    * Correction of API response code for PUT /v2/cache/{image_id} from HTTP 200
+      to HTTP 202.
+      Bug <https://code.launchpad.net/bugs/1971521>
+
+fixes:
+  - |
+    Bug 1875629_: api-ref needs update about checksum image property
+  - |
+    Bug 1971176_: api-ref: cache manage needs improvements
+  - |
+    Bug 1973631_: List call for metadef namespaces returns 404 not found while fetching resource_types
+  - |
+    Bug 1939922_: Internal server error if shared member tries to stage data to image
+
+    .. _1875629: https://code.launchpad.net/bugs/1875629
+    .. _1971176: https://code.launchpad.net/bugs/1971176
+    .. _1973631: https://code.launchpad.net/bugs/1973631
+    .. _1939922: https://code.launchpad.net/bugs/1939922
