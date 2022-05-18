@@ -410,7 +410,7 @@ class Scrubber(object):
             LOG.info(_LI("Image %s is scrubbed from a location."), image_id)
         except Exception as e:
             LOG.error(_LE("Unable to scrub image %(id)s from a location. "
-                          "Reason: %(exc)s ") %
+                          "Reason: %(exc)s "),
                       {'id': image_id,
                        'exc': encodeutils.exception_to_unicode(e)})
             raise

@@ -537,7 +537,7 @@ class TaskExecutorFactory(object):
         except ImportError:
             with excutils.save_and_reraise_exception():
                 LOG.exception(_LE("Failed to load the %s executor provided "
-                                  "in the config.") % CONF.task.task_executor)
+                                  "in the config."), CONF.task.task_executor)
 
 
 class MetadefNamespace(object):

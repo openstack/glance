@@ -51,7 +51,7 @@ class Prefetcher(base.CacheApp):
             return False
 
         if image.status != 'active':
-            LOG.warning(_LW("Image '%s' is not active. Not caching.") %
+            LOG.warning(_LW("Image '%s' is not active. Not caching."),
                         image_id)
             return False
 

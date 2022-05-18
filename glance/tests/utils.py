@@ -314,16 +314,16 @@ def wait_for_fork(pid,
                     pass
                 elif not nice_timer.expired():
                     # Politely ask the process to GTFO
-                    LOG.warning('Killing child %i with SIGTERM' % pid)
+                    LOG.warning('Killing child %i with SIGTERM', pid)
                     os.kill(pid, signal.SIGTERM)
                 else:
                     # No more Mr. Nice Guy
-                    LOG.warning('Killing child %i with SIGKILL' % pid)
+                    LOG.warning('Killing child %i with SIGKILL', pid)
                     os.kill(pid, signal.SIGKILL)
                     expected_exitcode = signal.SIGKILL
                 time.sleep(1)
                 continue
-            LOG.info('waitpid(%i) returned %i,%i' % (pid, cpid, rc))
+            LOG.info('waitpid(%i) returned %i,%i', pid, cpid, rc)
             if rc != expected_exitcode:
                 raise RuntimeError('The exit code %d is not %d'
                                    % (rc, expected_exitcode))
@@ -332,7 +332,7 @@ def wait_for_fork(pid,
             # Nothing to wait for
             return 0
         except Exception as e:
-            LOG.error('Got wait error: %s' % e)
+            LOG.error('Got wait error: %s', e)
             if raise_error:
                 raise
 

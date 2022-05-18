@@ -152,7 +152,7 @@ def set_image_data(image, uri, task_id, backend=None, set_active=True,
     except Exception as e:
         with excutils.save_and_reraise_exception():
             LOG.warning(_LW("Task %(task_id)s failed with exception "
-                            "%(error)s") %
+                            "%(error)s"),
                         {"error": encodeutils.exception_to_unicode(e),
                          "task_id": task_id})
             LOG.info(_LI("Task %(task_id)s: Could not import image file"

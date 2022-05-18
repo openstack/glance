@@ -281,7 +281,7 @@ class ImagesController(object):
             raise webob.exc.HTTPBadGateway('Stage host is unavailable')
         req_id_hdr = 'x-openstack-request-id'
         if req_id_hdr in r.headers:
-            LOG.debug('Replying with remote request id %s' % (
+            LOG.debug('Replying with remote request id %s', (
                 r.headers[req_id_hdr]))
             req.context.request_id = r.headers[req_id_hdr]
         if r.status_code // 100 != 2:
@@ -391,7 +391,7 @@ class ImagesController(object):
                     if existing_store in stores:
                         LOG.debug("Removing store '%s' from all stores as "
                                   "image is already available in that "
-                                  "store." % existing_store)
+                                  "store.", existing_store)
                         stores.remove(existing_store)
 
                 if len(stores) == 0:
