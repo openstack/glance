@@ -1,9 +1,9 @@
 ---
 critical:
   - |
-    * Correction of API response code for PUT /v2/cache/{image_id} from HTTP 200
-      to HTTP 202.
-      Bug <https://code.launchpad.net/bugs/1971521>
+    Correction of API response code for PUT /v2/cache/{image_id} from HTTP 200
+    to HTTP 202.
+    (`Bug 1971521 <https://code.launchpad.net/bugs/1971521>`_)
 
 fixes:
   - |
