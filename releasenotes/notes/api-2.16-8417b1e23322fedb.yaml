@@ -1,0 +1,19 @@
+---
+features:
+  - |
+    When the Glance image cache is being used, the CURRENT version of
+    the Image service API, as indicated in the ``GET /versions`` response,
+    is 2.16.
+
+upgrade:
+  - |
+    The Image service API call ``PUT /v2/cache/{image_id}`` now returns
+    a 202 (Accepted) response code to indicate success.  In glance 24.0.0
+    (the initial Yoga release), it had mistakenly returned a 200.
+
+fixes:
+  - |
+    Bug `1971521 <https://bugs.launchpad.net/glance/+bug/1971521>`_:
+    Fixed the success response code of the REST API call
+    ``PUT /v2/cache/{image_id}`` to be 202 (Accepted), following the
+    original design of the feature.
