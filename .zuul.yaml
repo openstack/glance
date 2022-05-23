@@ -318,6 +318,7 @@
       - release-notes-jobs-python3
     check:
       jobs:
+        - openstack-tox-functional-py38-fips
         - openstack-tox-functional-py39
         - glance-tox-functional-py39-rbac-defaults
         - glance-code-constants-check
