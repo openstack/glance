@@ -1,0 +1,38 @@
+{
+    "namespace": "OS::Compute::VTPM",
+    "display_name": "Emulated Virtual TPM",
+    "description": "Configuration options for Emulated Virtual TPM",
+    "visibility": "public",
+    "protected": true,
+    "resource_type_associations": [
+        {
+            "name": "OS::Nova::Flavor",
+            "prefix": "traits:"
+        },
+        {
+            "name": "OS::Glance::Image",
+            "prefix": "traits:"
+        }
+    ],
+    "properties": {
+        "COMPUTE_SECURITY_TPM_1_2": {
+            "title": "Virtual TPM Version 1.2 Support",
+            "description": "Enables virtual TPM version 1.2.",
+            "type": "string",
+            "enum": [
+                "required"
+            ],
+            "default": "required"
+        },
+        "COMPUTE_SECURITY_TPM_2_0": {
+            "title": "Virtual TPM Version 2.0 Support",
+            "description": "Enables virtual TPM version 2.0.",
+            "type": "string",
+            "enum": [
+                "required"
+            ],
+            "default": "required"
+        }
+    },
+    "objects": []
+}
