@@ -79,7 +79,8 @@ class Controller(object):
         version_objs = []
         if CONF.image_cache_dir:
             version_objs.extend([
-                build_version_object(2.15, 'v2', 'CURRENT'),
+                build_version_object(2.16, 'v2', 'CURRENT'),
+                build_version_object(2.15, 'v2', 'SUPPORTED'),
                 build_version_object(2.14, 'v2', 'SUPPORTED'),
             ])
         else:
