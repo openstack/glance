@@ -1,0 +1,29 @@
+{
+    "namespace": "OS::Compute::CPUMode",
+    "display_name": "CPU Mode",
+    "description": "This provides the preferred CPU Model to be used when booting up a guest VM.",
+    "visibility": "public",
+    "resource_type_associations": [
+        {
+            "name": "OS::Glance::Image",
+            "prefix": "hw_"
+        },
+        {
+            "name": "OS::Nova::Flavor",
+            "prefix": "hw:"
+        }
+    ],
+    "properties": {
+        "cpu_mode": {
+            "title": "CPU Mode",
+            "description": "Type of CPU Mode.",
+            "type": "string",
+            "enum": [
+              "none",
+              "host-model",
+              "host-passthrough",
+              "custom"
+            ]
+        }
+    }
+}
