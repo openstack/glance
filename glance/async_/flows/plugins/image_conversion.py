@@ -15,7 +15,6 @@
 
 import json
 import os
-import sys
 
 from oslo_concurrency import processutils as putils
 from oslo_config import cfg
@@ -70,7 +69,7 @@ class _ConvertImage(task.Task):
         self.action_wrapper = action_wrapper
         self.image_id = action_wrapper.image_id
         self.dest_path = ""
-        self.python = CONF.wsgi.python_interpreter or sys.executable
+        self.python = CONF.wsgi.python_interpreter
         super(_ConvertImage, self).__init__(
             name='%s-Convert_Image-%s' % (task_type, task_id))
 
