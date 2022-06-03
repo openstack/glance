@@ -139,9 +139,16 @@ def get_versions_list(url, enabled_backends=False,
         ] + image_versions[2:]
 
     if enabled_cache:
+        image_versions[0]['status'] = 'SUPPORTED'
         image_versions.insert(1, {
             'id': 'v2.14',
             'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        })
+        image_versions.insert(0, {
+            'id': 'v2.16',
+            'status': 'CURRENT',
             'links': [{'rel': 'self',
                        'href': '%s/v2/' % url}],
         })
@@ -341,6 +348,11 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
+    def test_request_url_v2_15(self):
+        request = webob.Request.blank('/v2.15/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
     # note: these need separate unsupported/supported tests to reset the
     # the memoized allowed_versions in the VersionNegotiationFilter instance
     def test_request_url_v2_8_default_unsupported(self):
@@ -387,10 +399,21 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
+    def test_request_url_v2_13_default_unsupported(self):
+        request = webob.Request.blank('/v2.13/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
+
     def test_request_url_v2_13_enabled_supported(self):
+        self.config(enabled_backends='slow:one,fast:two')
         request = webob.Request.blank('/v2.13/images')
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
+
+    def test_request_url_v2_14_default_unsupported(self):
+        request = webob.Request.blank('/v2.14/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
 
     def test_request_url_v2_14_enabled_supported(self):
         self.config(image_cache_dir='/tmp/cache')
@@ -398,20 +421,26 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    def test_request_url_v2_15_enabled_supported(self):
-        request = webob.Request.blank('/v2.15/images')
-        self.middleware.process_request(request)
-        self.assertEqual('/v2/images', request.path_info)
-
-    # version 2.16 does not exist
     def test_request_url_v2_16_default_unsupported(self):
         request = webob.Request.blank('/v2.16/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
-    def test_request_url_v2_16_enabled_unsupported(self):
-        self.config(enabled_backends='slow:one,fast:two')
+    def test_request_url_v2_16_enabled_supported(self):
+        self.config(image_cache_dir='/tmp/cache')
         request = webob.Request.blank('/v2.16/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    # version 2.17 does not exist
+    def test_request_url_v2_17_default_unsupported(self):
+        request = webob.Request.blank('/v2.17/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
+
+    def test_request_url_v2_17_enabled_unsupported(self):
+        self.config(enabled_backends='slow:one,fast:two')
+        request = webob.Request.blank('/v2.17/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
@@ -438,38 +467,54 @@ class VersionsAndNegotiationTest(VersionNegotiationTest, VersionsTest):
         expected = "/%s/images" % major
         self.assertEqual(expected, request.path_info)
 
-    # the content of the version list depends on whether
-    # CONF.enabled_backends is set or not, so check both cases
-    default = ''
-    enabled = 'slow:one,fast:two'
+    # the content of the version list depends on two configuration
+    # options:
+    #   - CONF.enabled_backends
+    #   - CONF.image_cache_dir
+    # So we need to check a bunch of combinations
+    cache = '/var/cache'
+    multistore = 'slow:one,fast:two'
 
-    @ddt.data(default, enabled)
-    def test_current_is_negotiated(self, stores):
+    combos = ((None, None),
+              (None, multistore),
+              (cache, None),
+              (cache, multistore))
+
+    @ddt.data(*combos)
+    @ddt.unpack
+    def test_current_is_negotiated(self, cache, multistore):
         # NOTE(rosmaita): Bug 1609571: the versions response was correct, but
         # the negotiation had not been updated for the CURRENT version.
-        self.config(enabled_backends=stores)
+        self.config(enabled_backends=multistore)
+        self.config(image_cache_dir=cache)
         to_check = self._get_list_of_version_ids('CURRENT')
         self.assertTrue(to_check)
         for version_id in to_check:
             self._assert_version_is_negotiated(version_id)
 
-    @ddt.data(default, enabled)
-    def test_supported_is_negotiated(self, stores):
-        self.config(enabled_backends=stores)
+    @ddt.data(*combos)
+    @ddt.unpack
+    def test_supported_is_negotiated(self, cache, multistore):
+        self.config(enabled_backends=multistore)
+        self.config(image_cache_dir=cache)
         to_check = self._get_list_of_version_ids('SUPPORTED')
         for version_id in to_check:
             self._assert_version_is_negotiated(version_id)
 
-    @ddt.data(default, enabled)
-    def test_deprecated_is_negotiated(self, stores):
-        self.config(enabled_backends=stores)
+    @ddt.data(*combos)
+    @ddt.unpack
+    def test_deprecated_is_negotiated(self, cache, multistore):
+        self.config(enabled_backends=multistore)
+        self.config(image_cache_dir=cache)
         to_check = self._get_list_of_version_ids('DEPRECATED')
         for version_id in to_check:
             self._assert_version_is_negotiated(version_id)
 
-    @ddt.data(default, enabled)
-    def test_experimental_is_negotiated(self, stores):
-        self.config(enabled_backends=stores)
+    @ddt.data(*combos)
+    @ddt.unpack
+    def test_experimental_is_negotiated(self, cache, multistore):
+        self.config(enabled_backends=multistore)
+        self.config(image_cache_dir=cache)
         to_check = self._get_list_of_version_ids('EXPERIMENTAL')
         for version_id in to_check:
             self._assert_version_is_negotiated(version_id)
