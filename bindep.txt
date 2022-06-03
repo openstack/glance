@@ -20,11 +20,13 @@ postgresql
 postgresql-client [platform:dpkg]
 postgresql-devel [platform:rpm]
 postgresql-server [platform:rpm]
+postgresql-server-devel [platform:suse]  # Provides pg_config
 libpython3-dev [platform:dpkg]
 python3-devel [platform:rpm]
 qemu [platform:dpkg devstack build-image-dib]
 qemu-utils [platform:dpkg devstack build-image-dib]
-qemu-img [platform:rpm]
+qemu-img [platform:redhat]
+qemu-tools [platform:suse]  # Provides qemu-img
 libpq-dev [platform:dpkg]
 libpcre3-dev [platform:dpkg]
 pcre-devel [platform:redhat]
