@@ -1,6 +1,7 @@
+---
 fixes:
   - |
     Bug 1972666_: Added cli_opts and cache_opts to support configgen to pick all
-     groups from wsgi.py
+    groups from wsgi.py
 
     .. _1972666: https://code.launchpad.net/bugs/1972666
