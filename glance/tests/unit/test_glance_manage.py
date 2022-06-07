@@ -41,9 +41,9 @@ class DBCommandsTestCase(test_utils.BaseTestCase):
         self.commands.purge(0, 100)
         mock_db_purge.assert_called_once_with(self.context, 0, 100)
 
-    def test_purge_command_negative_rows(self):
-        exit = self.assertRaises(SystemExit, self.commands.purge, 1, -1)
-        self.assertEqual("Minimal rows limit is 1.", exit.code)
+    def test_purge_command_rows_less_minus_one(self):
+        exit = self.assertRaises(SystemExit, self.commands.purge, 1, -2)
+        self.assertEqual("Minimal rows limit is -1.", exit.code)
 
     def test_purge_invalid_age_in_days(self):
         age_in_days = 'abcd'
@@ -86,3 +86,17 @@ class DBCommandsTestCase(test_utils.BaseTestCase):
         exit = self.assertRaises(SystemExit, self.commands.purge, 10, 100)
         self.assertEqual("Purge command failed, check glance-manage logs"
                          " for more details.", exit.code)
+
+    @mock.patch.object(db_api, 'purge_deleted_rows')
+    @mock.patch.object(context, 'get_admin_context')
+    def test_purge_command_purge_all(self, mock_context, mock_db_purge):
+        mock_context.return_value = self.context
+        self.commands.purge(max_rows=-1)
+        mock_db_purge.assert_called_once_with(self.context, 30, -1)
+
+    @mock.patch.object(db_api, 'purge_deleted_rows_from_images')
+    @mock.patch.object(context, 'get_admin_context')
+    def test_purge_images_table_purge_all(self, mock_context, mock_db_purge):
+        mock_context.return_value = self.context
+        self.commands.purge_images_table(max_rows=-1)
+        mock_db_purge.assert_called_once_with(self.context, 180, -1)

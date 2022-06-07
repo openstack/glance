@@ -339,8 +339,8 @@ class DbCommands(object):
             sys.exit(_("Must supply a non-negative value for age."))
         if age_in_days >= (int(time.time()) / 86400):
             sys.exit(_("Maximal age is count of days since epoch."))
-        if max_rows < 1:
-            sys.exit(_("Minimal rows limit is 1."))
+        if max_rows < -1:
+            sys.exit(_("Minimal rows limit is -1."))
         ctx = context.get_admin_context(show_deleted=True)
         try:
             if purge_images_only:
@@ -357,7 +357,8 @@ class DbCommands(object):
     @args('--age_in_days', type=int,
           help='Purge deleted rows older than age in days')
     @args('--max_rows', type=int,
-          help='Limit number of records to delete')
+          help='Limit number of records to delete. All deleted rows will be '
+               'purged if equals -1.')
     def purge(self, age_in_days=30, max_rows=100):
         """Purge deleted rows older than a given age from glance tables."""
         self._purge(age_in_days, max_rows)
@@ -365,7 +366,8 @@ class DbCommands(object):
     @args('--age_in_days', type=int,
           help='Purge deleted rows older than age in days')
     @args('--max_rows', type=int,
-          help='Limit number of records to delete')
+          help='Limit number of records to delete. All deleted rows will be '
+               'purged if equals -1.')
     def purge_images_table(self, age_in_days=180, max_rows=100):
         """Purge deleted rows older than a given age from images table."""
         self._purge(age_in_days, max_rows, purge_images_only=True)
