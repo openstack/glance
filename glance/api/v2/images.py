@@ -90,10 +90,8 @@ class ImagesController(object):
 
     @utils.mutating
     def create(self, req, image, extra_properties, tags):
-        image_factory = self.gateway.get_image_factory(
-            req.context, authorization_layer=False)
-        image_repo = self.gateway.get_repo(req.context,
-                                           authorization_layer=False)
+        image_factory = self.gateway.get_image_factory(req.context)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             if 'owner' not in image:
                 image['owner'] = req.context.project_id
@@ -166,10 +164,8 @@ class ImagesController(object):
 
     def _enforce_import_lock(self, req, image):
         admin_context = req.context.elevated()
-        admin_image_repo = self.gateway.get_repo(
-            admin_context, authorization_layer=False)
-        admin_task_repo = self.gateway.get_task_repo(
-            admin_context, authorization_layer=False)
+        admin_image_repo = self.gateway.get_repo(admin_context)
+        admin_task_repo = self.gateway.get_task_repo(admin_context)
         other_task = image.extra_properties['os_glance_import_task']
 
         expiry = datetime.timedelta(minutes=60)
@@ -313,12 +309,9 @@ class ImagesController(object):
     @utils.mutating
     def import_image(self, req, image_id, body):
         ctxt = req.context
-        image_repo = self.gateway.get_repo(ctxt,
-                                           authorization_layer=False)
-        task_factory = self.gateway.get_task_factory(
-            ctxt, authorization_layer=False)
-        task_repo = self.gateway.get_task_repo(
-            ctxt, authorization_layer=False)
+        image_repo = self.gateway.get_repo(ctxt)
+        task_factory = self.gateway.get_task_factory(ctxt)
+        task_repo = self.gateway.get_task_repo(ctxt)
         import_method = body.get('method').get('name')
         uri = body.get('method').get('uri')
         all_stores_must_succeed = body.get('all_stores_must_succeed', True)
@@ -439,7 +432,7 @@ class ImagesController(object):
             admin_context = None
 
         executor_factory = self.gateway.get_task_executor_factory(
-            ctxt, admin_context=admin_context, authorization_layer=False)
+            ctxt, admin_context=admin_context)
 
         if (import_method == 'web-download' and
                 not utils.validate_import_uri(uri)):
@@ -528,8 +521,7 @@ class ImagesController(object):
             limit = CONF.limit_param_default
         limit = min(CONF.api_limit_max, limit)
 
-        image_repo = self.gateway.get_repo(req.context,
-                                           authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             # NOTE(danms): This is just a "do you have permission to
             # list images" check. Each image is checked against
@@ -568,8 +560,7 @@ class ImagesController(object):
         return result
 
     def show(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context,
-                                           authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
             api_policy.ImageAPIPolicy(req.context, image,
@@ -581,8 +572,7 @@ class ImagesController(object):
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
     def get_task_info(self, req, image_id):
-        image_repo = self.gateway.get_repo(
-            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
 
         try:
             # NOTE (abhishekk): Just to check image is valid
@@ -600,8 +590,7 @@ class ImagesController(object):
 
     @utils.mutating
     def update(self, req, image_id, changes):
-        image_repo = self.gateway.get_repo(req.context,
-                                           authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
             api_pol = api_policy.ImageAPIPolicy(req.context, image,
@@ -734,8 +723,7 @@ class ImagesController(object):
                    store_id)
             raise webob.exc.HTTPConflict(explanation=msg)
 
-        image_repo = self.gateway.get_repo(
-            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
         except exception.NotAuthenticated as e:
@@ -837,14 +825,11 @@ class ImagesController(object):
             # continue on the local worker to match the user's
             # expectations. If the image is already deleted, the caller
             # will catch this NotFound like normal.
-            return self.gateway.get_repo(
-                req.context,
-                authorization_layer=False).get(image.image_id)
+            return self.gateway.get_repo(req.context).get(image.image_id)
 
     @utils.mutating
     def delete(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context,
-                                           authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
 

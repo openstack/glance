@@ -145,8 +145,7 @@ class CacheController(object):
 
         Removes the image from cache or queue.
         """
-        image_repo = self.gateway.get_repo(
-            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
         except exception.NotFound:
@@ -214,8 +213,7 @@ class CacheController(object):
         the image is in the registry here. That is done by the
         prefetcher...
         """
-        image_repo = self.gateway.get_repo(
-            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
         except exception.NotFound:

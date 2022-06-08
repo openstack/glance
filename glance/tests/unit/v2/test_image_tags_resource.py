@@ -66,7 +66,7 @@ class TestImageTagsController(base.IsolatedUnitTest):
         image_repo = image_data_tests.FakeImageRepo()
         image_repo.get = fake_get
 
-        def get_fake_repo(self, authorization_layer=False):
+        def get_fake_repo(self):
             return image_repo
 
         self.controller.gateway.get_repo = get_fake_repo
