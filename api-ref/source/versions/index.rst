@@ -24,6 +24,37 @@ Image Service Versions
 Version History
 ***************
 
+**Zed changes**
+- version 2.16 is CURRENT
+- version 2.15 is SUPPORTED
+- version 2.14 is SUPPORTED
+- version 2.13 is SUPPORTED
+
+**Yoga changes**
+
+- version 2.15 is CURRENT
+- version 2.14 is SUPPORTED
+- version 2.13 is SUPPORTED
+- version 2.12 is SUPPORTED
+
+**Wallaby changes**
+
+- version 2.12 is CURRENT
+- version 2.11 is SUPPORTED
+- version 2.10 is SUPPORTED
+
+**Victoria changes**
+
+- version 2.11 is CURRENT
+- version 2.10 is SUPPORTED
+- version 2.9 is SUPPORTED
+
+**Ussuri changes**
+
+- version 2.10 is CURRENT
+- version 2.9 is SUPPORTED
+- version 2.8 is SUPPORTED
+
 **Train changes**
 
 - version 2.9 is CURRENT
