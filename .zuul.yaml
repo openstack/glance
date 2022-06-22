@@ -247,6 +247,10 @@
                 "glance_devstack_test":"doyouseeme?"
             image_conversion:
               output_format: raw
+        test-config:
+          "$TEMPEST_CONFIG":
+            image:
+              image_caching_enabled: True
 
 - job:
     name: glance-multistore-cinder-import
