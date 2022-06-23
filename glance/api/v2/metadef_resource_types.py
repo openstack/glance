@@ -50,7 +50,7 @@ class ResourceTypeController(object):
         try:
             filters = {'namespace': None}
             rs_type_repo = self.gateway.get_metadef_resource_type_repo(
-                req.context, authorization_layer=False)
+                req.context)
             # NOTE(abhishekk): Here we are just checking if user is
             # authorized to view/list metadef resource types or not.
             # Also there is no relation between list_metadef_resource_types
@@ -75,8 +75,7 @@ class ResourceTypeController(object):
         return resource_types
 
     def show(self, req, namespace):
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -97,7 +96,7 @@ class ResourceTypeController(object):
 
             filters = {'namespace': namespace}
             rs_type_repo = self.gateway.get_metadef_resource_type_repo(
-                req.context, authorization_layer=False)
+                req.context)
             db_type_list = rs_type_repo.list(filters=filters)
 
             rs_type_list = [
@@ -120,11 +119,11 @@ class ResourceTypeController(object):
 
     def create(self, req, resource_type, namespace):
         rs_type_factory = self.gateway.get_metadef_resource_type_factory(
-            req.context, authorization_layer=False)
+            req.context)
         rs_type_repo = self.gateway.get_metadef_resource_type_repo(
-            req.context, authorization_layer=False)
+            req.context)
         ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+            req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -158,9 +157,9 @@ class ResourceTypeController(object):
 
     def delete(self, req, namespace, resource_type):
         rs_type_repo = self.gateway.get_metadef_resource_type_repo(
-            req.context, authorization_layer=False)
+            req.context)
         ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+            req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):

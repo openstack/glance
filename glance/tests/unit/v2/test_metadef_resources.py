@@ -443,14 +443,11 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
                                               notifier=self.notifier,
                                               policy_enforcer=self.policy)
         req = unit_test_utils.get_fake_request(roles=['admin'])
-        ns_factory = fake_gateway.get_metadef_namespace_factory(
-            req.context)
-        ns_repo = fake_gateway.get_metadef_namespace_repo(req.context)
         namespace = namespaces.Namespace()
         namespace.namespace = 'FakeNamespace'
-        new_namespace = ns_factory.new_namespace(**namespace.to_dict())
-        ns_repo.add(new_namespace)
+        namespace = self.namespace_controller.create(req, namespace)
 
+        ns_repo = fake_gateway.get_metadef_namespace_repo(req.context)
         self.namespace_controller._cleanup_namespace(ns_repo, namespace, True)
 
         mock_log.debug.assert_called_with(
@@ -458,22 +455,18 @@ class TestMetadefsControllers(base.IsolatedUnitTest):
             {'namespace': namespace.namespace})
 
     @mock.patch('glance.api.v2.metadef_namespaces.LOG')
-    @mock.patch('glance.api.authorization.MetadefNamespaceRepoProxy.remove')
+    @mock.patch('glance.notifier.MetadefNamespaceRepoProxy.remove')
     def test_cleanup_namespace_exception(self, mock_remove, mock_log):
         mock_remove.side_effect = Exception(u'Mock remove was called')
-
         fake_gateway = glance.gateway.Gateway(db_api=self.db,
                                               notifier=self.notifier,
                                               policy_enforcer=self.policy)
         req = unit_test_utils.get_fake_request(roles=['admin'])
-        ns_factory = fake_gateway.get_metadef_namespace_factory(
-            req.context)
-        ns_repo = fake_gateway.get_metadef_namespace_repo(req.context)
         namespace = namespaces.Namespace()
         namespace.namespace = 'FakeNamespace'
-        new_namespace = ns_factory.new_namespace(**namespace.to_dict())
-        ns_repo.add(new_namespace)
+        namespace = self.namespace_controller.create(req, namespace)
 
+        ns_repo = fake_gateway.get_metadef_namespace_repo(req.context)
         self.namespace_controller._cleanup_namespace(ns_repo, namespace, True)
 
         called_msg = 'Failed to delete namespace %(namespace)s.' \

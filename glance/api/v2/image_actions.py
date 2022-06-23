@@ -45,8 +45,7 @@ class ImageActionsController(object):
 
     @utils.mutating
     def deactivate(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context,
-                                           authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             # FIXME(danms): This will still enforce the get_image policy
             # which we don't want
@@ -75,8 +74,7 @@ class ImageActionsController(object):
 
     @utils.mutating
     def reactivate(self, req, image_id):
-        image_repo = self.gateway.get_repo(req.context,
-                                           authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             # FIXME(danms): This will still enforce the get_image policy
             # which we don't want

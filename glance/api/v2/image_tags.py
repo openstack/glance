@@ -46,8 +46,7 @@ class Controller(object):
 
     @utils.mutating
     def update(self, req, image_id, tag_value):
-        image_repo = self.gateway.get_repo(
-            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
             api_policy.ImageAPIPolicy(req.context, image,
@@ -76,8 +75,7 @@ class Controller(object):
 
     @utils.mutating
     def delete(self, req, image_id, tag_value):
-        image_repo = self.gateway.get_repo(
-            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
             api_policy.ImageAPIPolicy(req.context, image,

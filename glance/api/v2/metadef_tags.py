@@ -50,12 +50,9 @@ class TagsController(object):
         self.tag_schema_link = '/v2/schemas/metadefs/tag'
 
     def create(self, req, namespace, tag_name):
-        tag_factory = self.gateway.get_metadef_tag_factory(
-            req.context, authorization_layer=False)
-        tag_repo = self.gateway.get_metadef_tag_repo(
-            req.context, authorization_layer=False)
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        tag_factory = self.gateway.get_metadef_tag_factory(req.context)
+        tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -98,12 +95,9 @@ class TagsController(object):
         return MetadefTag.to_wsme_model(new_meta_tag)
 
     def create_tags(self, req, metadata_tags, namespace):
-        tag_factory = self.gateway.get_metadef_tag_factory(
-            req.context, authorization_layer=False)
-        tag_repo = self.gateway.get_metadef_tag_repo(
-            req.context, authorization_layer=False)
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        tag_factory = self.gateway.get_metadef_tag_factory(req.context)
+        tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -146,8 +140,7 @@ class TagsController(object):
 
     def index(self, req, namespace, marker=None, limit=None,
               sort_key='created_at', sort_dir='desc', filters=None):
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -168,8 +161,7 @@ class TagsController(object):
             filters = filters or dict()
             filters['namespace'] = namespace
 
-            tag_repo = self.gateway.get_metadef_tag_repo(
-                req.context, authorization_layer=False)
+            tag_repo = self.gateway.get_metadef_tag_repo(req.context)
             if marker:
                 metadef_tag = tag_repo.get(namespace, marker)
                 marker = metadef_tag.tag_id
@@ -193,10 +185,8 @@ class TagsController(object):
         return metadef_tags
 
     def show(self, req, namespace, tag_name):
-        meta_tag_repo = self.gateway.get_metadef_tag_repo(
-            req.context, authorization_layer=False)
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        meta_tag_repo = self.gateway.get_metadef_tag_repo(req.context)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -224,10 +214,8 @@ class TagsController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
 
     def update(self, req, metadata_tag, namespace, tag_name):
-        meta_repo = self.gateway.get_metadef_tag_repo(
-            req.context, authorization_layer=False)
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        meta_repo = self.gateway.get_metadef_tag_repo(req.context)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -266,10 +254,8 @@ class TagsController(object):
         return MetadefTag.to_wsme_model(updated_metadata_tag)
 
     def delete(self, req, namespace, tag_name):
-        meta_repo = self.gateway.get_metadef_tag_repo(
-            req.context, authorization_layer=False)
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        meta_repo = self.gateway.get_metadef_tag_repo(req.context)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):

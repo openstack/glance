@@ -63,8 +63,7 @@ class NamespacePropertiesController(object):
         return property_type
 
     def index(self, req, namespace):
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -84,8 +83,7 @@ class NamespacePropertiesController(object):
 
             filters = dict()
             filters['namespace'] = namespace
-            prop_repo = self.gateway.get_metadef_property_repo(
-                req.context, authorization_layer=False)
+            prop_repo = self.gateway.get_metadef_property_repo(req.context)
             db_properties = prop_repo.list(filters=filters)
             property_list = Namespace.to_model_properties(db_properties)
             namespace_properties = PropertyTypes()
@@ -99,8 +97,7 @@ class NamespacePropertiesController(object):
         return namespace_properties
 
     def show(self, req, namespace, property_name, filters=None):
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -124,7 +121,7 @@ class NamespacePropertiesController(object):
                 api_pol.get_metadef_resource_type()
 
                 rs_repo = self.gateway.get_metadef_resource_type_repo(
-                    req.context, authorization_layer=False)
+                    req.context)
                 db_resource_type = rs_repo.get(filters['resource_type'],
                                                namespace)
                 prefix = db_resource_type.prefix
@@ -138,8 +135,7 @@ class NamespacePropertiesController(object):
                               'prefix': prefix})
                     raise exception.NotFound(msg)
 
-            prop_repo = self.gateway.get_metadef_property_repo(
-                req.context, authorization_layer=False)
+            prop_repo = self.gateway.get_metadef_property_repo(req.context)
             db_property = prop_repo.get(namespace, property_name)
             property = self._to_model(db_property)
         except exception.Forbidden as e:
@@ -151,12 +147,9 @@ class NamespacePropertiesController(object):
         return property
 
     def create(self, req, namespace, property_type):
-        prop_factory = self.gateway.get_metadef_property_factory(
-            req.context, authorization_layer=False)
-        prop_repo = self.gateway.get_metadef_property_repo(
-            req.context, authorization_layer=False)
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        prop_factory = self.gateway.get_metadef_property_factory(req.context)
+        prop_repo = self.gateway.get_metadef_property_repo(req.context)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -192,10 +185,8 @@ class NamespacePropertiesController(object):
         return self._to_model(new_property_type)
 
     def update(self, req, namespace, property_name, property_type):
-        prop_repo = self.gateway.get_metadef_property_repo(
-            req.context, authorization_layer=False)
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        prop_repo = self.gateway.get_metadef_property_repo(req.context)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):
@@ -233,10 +224,8 @@ class NamespacePropertiesController(object):
         return self._to_model(updated_property_type)
 
     def delete(self, req, namespace, property_name):
-        prop_repo = self.gateway.get_metadef_property_repo(
-            req.context, authorization_layer=False)
-        ns_repo = self.gateway.get_metadef_namespace_repo(
-            req.context, authorization_layer=False)
+        prop_repo = self.gateway.get_metadef_property_repo(req.context)
+        ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
         try:
             namespace_obj = ns_repo.get(namespace)
         except (exception.Forbidden, exception.NotFound):

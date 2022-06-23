@@ -49,13 +49,10 @@ class MetadefObjectsController(object):
         self.obj_schema_link = '/v2/schemas/metadefs/object'
 
     def create(self, req, metadata_object, namespace):
-        object_factory = self.gateway.get_metadef_object_factory(
-            req.context, authorization_layer=False)
-        object_repo = self.gateway.get_metadef_object_repo(
-            req.context, authorization_layer=False)
+        object_factory = self.gateway.get_metadef_object_factory(req.context)
+        object_repo = self.gateway.get_metadef_object_repo(req.context)
         try:
-            ns_repo = self.gateway.get_metadef_namespace_repo(
-                req.context, authorization_layer=False)
+            ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
             try:
                 # NOTE(abhishekk): Verifying that namespace is visible
                 # to user
@@ -99,8 +96,7 @@ class MetadefObjectsController(object):
     def index(self, req, namespace, marker=None, limit=None,
               sort_key='created_at', sort_dir='desc', filters=None):
         try:
-            ns_repo = self.gateway.get_metadef_namespace_repo(
-                req.context, authorization_layer=False)
+            ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
             try:
                 namespace_obj = ns_repo.get(namespace)
             except exception.Forbidden:
@@ -119,8 +115,7 @@ class MetadefObjectsController(object):
 
             filters = filters or dict()
             filters['namespace'] = namespace
-            object_repo = self.gateway.get_metadef_object_repo(
-                req.context, authorization_layer=False)
+            object_repo = self.gateway.get_metadef_object_repo(req.context)
 
             db_metaobject_list = object_repo.list(
                 marker=marker, limit=limit, sort_key=sort_key,
@@ -146,11 +141,9 @@ class MetadefObjectsController(object):
         return metadef_objects
 
     def show(self, req, namespace, object_name):
-        meta_object_repo = self.gateway.get_metadef_object_repo(
-            req.context, authorization_layer=False)
+        meta_object_repo = self.gateway.get_metadef_object_repo(req.context)
         try:
-            ns_repo = self.gateway.get_metadef_namespace_repo(
-                req.context, authorization_layer=False)
+            ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
             try:
                 namespace_obj = ns_repo.get(namespace)
             except exception.Forbidden:
@@ -181,11 +174,9 @@ class MetadefObjectsController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
 
     def update(self, req, metadata_object, namespace, object_name):
-        meta_repo = self.gateway.get_metadef_object_repo(
-            req.context, authorization_layer=False)
+        meta_repo = self.gateway.get_metadef_object_repo(req.context)
         try:
-            ns_repo = self.gateway.get_metadef_namespace_repo(
-                req.context, authorization_layer=False)
+            ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
             try:
                 # NOTE(abhishekk): Verifying that namespace is visible
                 # to user
@@ -233,11 +224,9 @@ class MetadefObjectsController(object):
             self.obj_schema_link)
 
     def delete(self, req, namespace, object_name):
-        meta_repo = self.gateway.get_metadef_object_repo(
-            req.context, authorization_layer=False)
+        meta_repo = self.gateway.get_metadef_object_repo(req.context)
         try:
-            ns_repo = self.gateway.get_metadef_namespace_repo(
-                req.context, authorization_layer=False)
+            ns_repo = self.gateway.get_metadef_namespace_repo(req.context)
             try:
                 # NOTE(abhishekk): Verifying that namespace is visible
                 # to user

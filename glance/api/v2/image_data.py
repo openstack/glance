@@ -124,8 +124,7 @@ class ImageDataController(object):
                                                request=req,
                                                content_type='text/plain')
 
-        image_repo = self.gateway.get_repo(req.context,
-                                           authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         image = None
         refresher = None
         cxt = req.context
@@ -311,8 +310,7 @@ class ImageDataController(object):
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
                                                       request=req)
 
-        image_repo = self.gateway.get_repo(
-            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         # NOTE(abhishekk): stage API call does not have its own policy but
         # it requires get_image access, this is the right place to check
         # whether user has access to image or not
@@ -440,8 +438,7 @@ class ImageDataController(object):
                 self._restore(image_repo, image)
 
     def download(self, req, image_id):
-        image_repo = self.gateway.get_repo(
-            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
             if image.status == 'deactivated' and not req.context.is_admin:

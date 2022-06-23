@@ -52,8 +52,7 @@ class ImageMembersController(object):
 
     def _get_member_repo(self, req, image):
         try:
-            return self.gateway.get_member_repo(image, req.context,
-                                                authorization_layer=False)
+            return self.gateway.get_member_repo(image, req.context)
         except exception.Forbidden as e:
             msg = (_("Error fetching members of image %(image_id)s: "
                      "%(inner_msg)s") % {"image_id": image.image_id,
@@ -62,8 +61,7 @@ class ImageMembersController(object):
             raise webob.exc.HTTPForbidden(explanation=msg)
 
     def _lookup_image(self, req, image_id):
-        image_repo = self.gateway.get_repo(
-            req.context, authorization_layer=False)
+        image_repo = self.gateway.get_repo(req.context)
         try:
             return image_repo.get(image_id)
         except exception.NotFound:
@@ -160,7 +158,7 @@ class ImageMembersController(object):
                 enforcer=self.policy).add_member()
 
             image_member_factory = self.gateway.get_image_member_factory(
-                req.context, authorization_layer=False)
+                req.context)
             new_member = image_member_factory.new_image_member(image,
                                                                member_id)
             member_repo.add(new_member)

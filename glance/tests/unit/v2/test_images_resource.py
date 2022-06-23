@@ -3430,8 +3430,7 @@ class TestImagesController(base.IsolatedUnitTest):
             # Make sure we passed an admin context to our task executor factory
             mock_tef.assert_called_once_with(
                 request.context,
-                admin_context=mock_elevated.return_value,
-                authorization_layer=False)
+                admin_context=mock_elevated.return_value)
 
         expected_input = {'image_id': UUID4,
                           'import_req': mock.ANY,

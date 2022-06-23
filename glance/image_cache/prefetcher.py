@@ -44,7 +44,7 @@ class Prefetcher(base.CacheApp):
         ctx = context.RequestContext(is_admin=True, show_deleted=True,
                                      roles=['admin'])
         try:
-            image_repo = self.gateway.get_repo(ctx, authorization_layer=False)
+            image_repo = self.gateway.get_repo(ctx)
             image = image_repo.get(image_id)
         except exception.NotFound:
             LOG.warning(_LW("Image '%s' not found"), image_id)

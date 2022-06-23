@@ -109,7 +109,7 @@ class FakeGateway(object):
         self.policy = policy
         self.repo = repo
 
-    def get_repo(self, context, authorization_layer=True):
+    def get_repo(self, context):
         return self.repo
 
 
@@ -852,7 +852,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
                           response, image)
 
     def test_download_failure_with_valid_range(self):
-        with mock.patch.object(glance.api.policy.ImageProxy,
+        with mock.patch.object(glance.domain.proxy.Image,
                                'get_data') as mock_get_data:
             mock_get_data.side_effect = glance_store.NotFound(image="image")
         request = wsgi.Request.blank('/')
@@ -914,7 +914,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         download_failures_ContentRange('bytes 4-8/3')
 
     def test_download_failure_with_valid_content_range(self):
-        with mock.patch.object(glance.api.policy.ImageProxy,
+        with mock.patch.object(glance.domain.proxy.Image,
                                'get_data') as mock_get_data:
             mock_get_data.side_effect = glance_store.NotFound(image="image")
         request = wsgi.Request.blank('/')
@@ -949,7 +949,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         def get_data(*args, **kwargs):
             raise exception.Forbidden()
 
-        self.mock_object(glance.api.policy.ImageProxy,
+        self.mock_object(glance.domain.proxy.Image,
                          'get_data',
                          get_data)
         request = wsgi.Request.blank('/')
@@ -968,7 +968,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         Make sure that serializer returns 204 no content error in case of
         image data is not available at specified location.
         """
-        with mock.patch.object(glance.api.policy.ImageProxy,
+        with mock.patch.object(glance.domain.proxy.Image,
                                'get_data') as mock_get_data:
             mock_get_data.side_effect = glance_store.NotFound(image="image")
 
@@ -983,7 +983,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
 
     def test_download_service_unavailable(self):
         """Test image download returns HTTPServiceUnavailable."""
-        with mock.patch.object(glance.api.policy.ImageProxy,
+        with mock.patch.object(glance.domain.proxy.Image,
                                'get_data') as mock_get_data:
             mock_get_data.side_effect = glance_store.RemoteServiceUnavailable()
 
@@ -1002,7 +1002,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         Make sure that serializer returns 400 bad request error in case of
         getting images from this store is not supported at specified location.
         """
-        with mock.patch.object(glance.api.policy.ImageProxy,
+        with mock.patch.object(glance.domain.proxy.Image,
                                'get_data') as mock_get_data:
             mock_get_data.side_effect = glance_store.StoreGetNotSupported()
 
@@ -1022,7 +1022,7 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
         getting randomly images from this store is not supported at
         specified location.
         """
-        with mock.patch.object(glance.api.policy.ImageProxy,
+        with mock.patch.object(glance.domain.proxy.Image,
                                'get_data') as m_get_data:
             err = glance_store.StoreRandomGetNotSupported(offset=0,
                                                           chunk_size=0)

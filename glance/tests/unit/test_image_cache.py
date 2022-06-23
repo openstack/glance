@@ -533,9 +533,8 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
 
         ctx = context.RequestContext(is_admin=True, roles=['admin'])
         gateway = glance_gateway.Gateway()
-        image_factory = gateway.get_image_factory(ctx,
-                                                  authorization_layer=False)
-        image_repo = gateway.get_repo(ctx, authorization_layer=False)
+        image_factory = gateway.get_image_factory(ctx)
+        image_repo = gateway.get_repo(ctx)
         fetcher = prefetcher.Prefetcher()
 
         # Create an image with no values set and queue it
@@ -642,5 +641,4 @@ class TestImagePrefetcher(test_utils.BaseTestCase):
         with mock.patch.object(self.prefetcher.gateway,
                                'get_repo') as mock_get:
             self.prefetcher.fetch_image_into_cache('fake-image-id')
-            mock_get.assert_called_once_with(mock.ANY,
-                                             authorization_layer=False)
+            mock_get.assert_called_once_with(mock.ANY)
