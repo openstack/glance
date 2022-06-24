@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    `Bug #1979699 <https://bugs.launchpad.net/glance/+bug/1979699>`_: Fix
+    the ``glance-cache-prefetcher`` command to set up access to backend stores
+    when the multi store feature is used.
