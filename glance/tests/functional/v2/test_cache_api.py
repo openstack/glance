@@ -85,12 +85,12 @@ class TestImageCache(functional.SynchronousAPIBase):
         response = self.api_put(path)
         self.assertEqual(expected_code, response.status_code)
 
-    def cache_delete(self, image_id, expected_code=200):
+    def cache_delete(self, image_id, expected_code=204):
         path = '/v2/cache/%s' % image_id
         response = self.api_delete(path)
         self.assertEqual(expected_code, response.status_code)
 
-    def cache_clear(self, target='', expected_code=200):
+    def cache_clear(self, target='', expected_code=204):
         path = '/v2/cache'
         headers = {}
         if target:
