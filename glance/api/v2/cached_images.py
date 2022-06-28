@@ -242,6 +242,12 @@ class CachedImageSerializer(wsgi.JSONResponseSerializer):
     def queue_image_from_api(self, response, result):
         response.status_int = 202
 
+    def clear_cache(self, response, result):
+        response.status_int = 204
+
+    def delete_cache_entry(self, response, result):
+        response.status_int = 204
+
 
 def create_resource():
     """Cached Images resource factory method"""

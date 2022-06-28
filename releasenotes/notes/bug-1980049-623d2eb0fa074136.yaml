@@ -1,0 +1,14 @@
+---
+upgrade:
+  - |
+    The Image service API call ``DELETE /v2/cache/{image_id}`` and
+    ``DELETE /v2/cache`` now returns a 204 (No Content) response code
+    to indicate success. In glance 24.0.0 (the initial Yoga release),
+    it had mistakenly returned a 200.
+
+fixes:
+  - |
+    Bug `1980049 <https://bugs.launchpad.net/glance/+bug/1980049>`_:
+    Fixed the success response code of the REST API call
+    ``DELETE /v2/cache/{image_id}`` and ``DELETE /v2/cache`` to be
+    204 (No Content), following the original design of the feature.
