@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-10-06 23:29+0000\n"
+"POT-Creation-Date: 2022-06-30 00:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -776,9 +776,6 @@ msgstr ""
 msgid "Metadata definition tag not found for id=%s"
 msgstr "Не найден тег определения метаданных для ИД %s"
 
-msgid "Minimal rows limit is 1."
-msgstr "Минимальное число строк равно 1."
-
 #, python-format
 msgid "Missing required credential: %(required)s"
 msgstr "Отсутствуют обязательные идентификационные данные: %(required)s"
@@ -867,9 +864,6 @@ msgstr "Исходные расположения не пусты: %s"
 
 msgid "Owner can't be updated by non admin."
 msgstr "Обычный пользователь не может изменить владельца."
-
-msgid "Owner must be specified to create a tag."
-msgstr "Для создания тега необходимо указать владельца."
 
 msgid "Owner of the image"
 msgstr "Владелец образа"
@@ -1502,113 +1496,12 @@ msgstr "У вас нет прав доступа для поиска образ�
 msgid "You are not authorized to lookup the members of the image %s."
 msgstr "У вас нет прав доступа для поиска элементов образа %s."
 
-#, python-format
-msgid "You are not permitted to create a tag in the namespace owned by '%s'"
-msgstr ""
-"У вас нет прав доступа для создания тега в пространстве имен, владельцем "
-"которого является '%s'"
-
 msgid "You are not permitted to create image members for the image."
 msgstr "Вам не разрешено создавать участники образов для данного образа."
 
 #, python-format
 msgid "You are not permitted to create images owned by '%s'."
 msgstr "Вам не разрешено создавать образы, принадлежащие '%s'."
-
-#, python-format
-msgid "You are not permitted to create namespace owned by '%s'"
-msgstr "Нет прав доступа на создание пространства имен, принадлежащего %s."
-
-#, python-format
-msgid "You are not permitted to create object owned by '%s'"
-msgstr "Нет прав доступа на создание объекта, принадлежащего %s."
-
-#, python-format
-msgid "You are not permitted to create property owned by '%s'"
-msgstr "Нет прав доступа на создание свойства, принадлежащего %s."
-
-#, python-format
-msgid "You are not permitted to create resource_type owned by '%s'"
-msgstr "Нет прав доступа на создание resource_type, принадлежащего %s."
-
-#, python-format
-msgid "You are not permitted to create this task with owner as: %s"
-msgstr "Вам не разрешено создавать эту задачу с владельцем: %s"
-
-msgid "You are not permitted to deactivate this image."
-msgstr "Вам не разрешено деактивировать этот образ."
-
-msgid "You are not permitted to delete this image."
-msgstr "Вам не разрешено удалять этот образ."
-
-msgid "You are not permitted to delete this meta_resource_type."
-msgstr "Нет прав доступа на удаление этого meta_resource_type."
-
-msgid "You are not permitted to delete this namespace."
-msgstr "Нет прав доступа на удаление этого пространства имен."
-
-msgid "You are not permitted to delete this object."
-msgstr "Нет прав доступа на удаление этого объекта."
-
-msgid "You are not permitted to delete this property."
-msgstr "Нет прав доступа на удаление этого свойства."
-
-msgid "You are not permitted to delete this tag."
-msgstr "У вас нет прав доступа для удаления этого тега."
-
-#, python-format
-msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
-msgstr "Вам не разрешено изменять '%(attr)s' в этом %(resource)s."
-
-#, python-format
-msgid "You are not permitted to modify '%s' on this image."
-msgstr "Вам не разрешено изменять '%s' в этом образе."
-
-msgid "You are not permitted to modify locations for this image."
-msgstr "Вам не разрешено изменять расположения этого образа."
-
-msgid "You are not permitted to modify tags on this image."
-msgstr "Вам не разрешено изменять теги этого образа."
-
-msgid "You are not permitted to modify this image."
-msgstr "Вам не разрешено изменять этот образ."
-
-msgid "You are not permitted to reactivate this image."
-msgstr "Вам не разрешено повторно активировать этот образ."
-
-msgid "You are not permitted to set status on this task."
-msgstr "Вам не разрешено указывать состояние этой задачи."
-
-msgid "You are not permitted to update this namespace."
-msgstr "Нет прав доступа на обновление этого пространства имен."
-
-msgid "You are not permitted to update this object."
-msgstr "Нет прав доступа на обновление этого объекта."
-
-msgid "You are not permitted to update this property."
-msgstr "Нет прав доступа на обновление этого свойства."
-
-msgid "You are not permitted to update this tag."
-msgstr "У вас нет прав доступа для изменения этого тега."
-
-msgid "You are not permitted to upload data for this image."
-msgstr "Вам не разрешено загружать данные для этого образа."
-
-#, python-format
-msgid "You cannot add image member for %s"
-msgstr "Невозможно добавить участник образа для %s"
-
-#, python-format
-msgid "You cannot delete image member for %s"
-msgstr "Невозможно удалить участник образа для %s"
-
-#, python-format
-msgid "You cannot get image member for %s"
-msgstr "Невозможно получить участник образа для %s"
-
-#, python-format
-msgid "You cannot update image member %s"
-msgstr "Невозможно обновить участник образа %s"
 
 msgid "You do not own this image"
 msgstr "Этот образ вам не принадлежит"

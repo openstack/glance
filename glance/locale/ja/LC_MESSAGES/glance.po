@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-10-06 23:29+0000\n"
+"POT-Creation-Date: 2022-06-30 00:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -921,9 +921,6 @@ msgstr "メタデータ定義タグ %(tag_name)s は保護されており、削�
 msgid "Metadata definition tag not found for id=%s"
 msgstr "id=%s のメタデータ定義タグが見つかりません"
 
-msgid "Minimal rows limit is 1."
-msgstr "最少行数制限は 1 です。"
-
 #, python-format
 msgid "Missing required credential: %(required)s"
 msgstr "必須の資格情報がありません: %(required)s"
@@ -1020,9 +1017,6 @@ msgstr "元の場所は空ではありません: %s"
 
 msgid "Owner can't be updated by non admin."
 msgstr "管理者以外は所有者を更新できません。"
-
-msgid "Owner must be specified to create a tag."
-msgstr "タグを作成するには、所有者を指定する必要があります。"
 
 msgid "Owner of the image"
 msgstr "イメージの所有者"
@@ -1700,111 +1694,12 @@ msgstr "イメージ %s を調べる権限がありません。"
 msgid "You are not authorized to lookup the members of the image %s."
 msgstr "イメージ %s のメンバーを調べる権限がありません。"
 
-#, python-format
-msgid "You are not permitted to create a tag in the namespace owned by '%s'"
-msgstr "'%s' が所有する名前空間でのタグの作成は許可されていません"
-
 msgid "You are not permitted to create image members for the image."
 msgstr "そのイメージのイメージメンバーの作成は許可されていません。"
 
 #, python-format
 msgid "You are not permitted to create images owned by '%s'."
 msgstr "'%s' によって所有されているイメージの作成は許可されていません。"
-
-#, python-format
-msgid "You are not permitted to create namespace owned by '%s'"
-msgstr "'%s' によって所有される名前空間の作成は許可されません"
-
-#, python-format
-msgid "You are not permitted to create object owned by '%s'"
-msgstr "'%s' によって所有されるオブジェクトの作成は許可されません"
-
-#, python-format
-msgid "You are not permitted to create property owned by '%s'"
-msgstr "'%s' によって所有されるプロパティーの作成は許可されません"
-
-#, python-format
-msgid "You are not permitted to create resource_type owned by '%s'"
-msgstr "'%s' によって所有される resource_type の作成は許可されません"
-
-#, python-format
-msgid "You are not permitted to create this task with owner as: %s"
-msgstr "所有者 %s を使用してこのタスクを作成することは許可されません"
-
-msgid "You are not permitted to deactivate this image."
-msgstr "このイメージの非アクティブ化は許可されていません。"
-
-msgid "You are not permitted to delete this image."
-msgstr "このイメージの削除は許可されていません。"
-
-msgid "You are not permitted to delete this meta_resource_type."
-msgstr "この meta_resource_type の削除は許可されません。"
-
-msgid "You are not permitted to delete this namespace."
-msgstr "この名前空間の削除は許可されません。"
-
-msgid "You are not permitted to delete this object."
-msgstr "このオブジェクトの削除は許可されません。"
-
-msgid "You are not permitted to delete this property."
-msgstr "このプロパティーの削除は許可されません。"
-
-msgid "You are not permitted to delete this tag."
-msgstr "このタグの削除は許可されていません。"
-
-#, python-format
-msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
-msgstr "この %(resource)s 上の '%(attr)s' の変更は許可されません。"
-
-#, python-format
-msgid "You are not permitted to modify '%s' on this image."
-msgstr "このイメージ上の '%s' の変更は許可されません。"
-
-msgid "You are not permitted to modify locations for this image."
-msgstr "このイメージの場所の変更は許可されていません。"
-
-msgid "You are not permitted to modify tags on this image."
-msgstr "このイメージ上のタグの変更は許可されていません。"
-
-msgid "You are not permitted to modify this image."
-msgstr "このイメージの変更は許可されていません。"
-
-msgid "You are not permitted to reactivate this image."
-msgstr "このイメージの再アクティブ化は許可されていません。"
-
-msgid "You are not permitted to set status on this task."
-msgstr "このタスクに関する状況を設定することは許可されません。"
-
-msgid "You are not permitted to update this namespace."
-msgstr "この名前空間の更新は許可されません。"
-
-msgid "You are not permitted to update this object."
-msgstr "このオブジェクトの更新は許可されません。"
-
-msgid "You are not permitted to update this property."
-msgstr "このプロパティーの更新は許可されません。"
-
-msgid "You are not permitted to update this tag."
-msgstr "このタグの更新は許可されていません。"
-
-msgid "You are not permitted to upload data for this image."
-msgstr "このイメージのデータのアップロードは許可されていません。"
-
-#, python-format
-msgid "You cannot add image member for %s"
-msgstr "%s のイメージメンバーを追加できません"
-
-#, python-format
-msgid "You cannot delete image member for %s"
-msgstr "%s のイメージメンバーを削除できません"
-
-#, python-format
-msgid "You cannot get image member for %s"
-msgstr "%s のイメージメンバーを取得できません"
-
-#, python-format
-msgid "You cannot update image member %s"
-msgstr "イメージメンバー %s を更新できません"
 
 msgid "You do not own this image"
 msgstr "このイメージを所有していません"

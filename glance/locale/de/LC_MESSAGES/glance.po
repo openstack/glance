@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2022-04-19 18:29+0000\n"
+"POT-Creation-Date: 2022-06-30 00:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -898,9 +898,6 @@ msgstr ""
 msgid "Metadata definition tag not found for id=%s"
 msgstr "Metadatendefinitionstag für id=%s nicht gefunden"
 
-msgid "Minimal rows limit is 1."
-msgstr "Der Wert für die Mindestzeilenanzahl ist 1."
-
 #, python-format
 msgid "Missing required credential: %(required)s"
 msgstr "Erforderlicher Berechtigungsnachweis fehlt: %(required)s"
@@ -1010,9 +1007,6 @@ msgid "Owner can't be updated by non admin."
 msgstr ""
 "Eigner kann durch einen Benutzer, der kein Administrator ist, nicht "
 "aktualisiert werden."
-
-msgid "Owner must be specified to create a tag."
-msgstr "Der Eigentümer muss zum Erstellen eines Schlagwortes angegeben werden."
 
 msgid "Owner of the image"
 msgstr "Eigentümer des Abbildes"
@@ -1692,11 +1686,6 @@ msgstr "Sie sind nicht berechtigt, Abbild %s zu suchen."
 msgid "You are not authorized to lookup the members of the image %s."
 msgstr "Sie sind nicht berechtigt, die Mitglieder des Abbild %s zu suchen."
 
-#, python-format
-msgid "You are not permitted to create a tag in the namespace owned by '%s'"
-msgstr ""
-"Sie können keine Schlagwörter in Namensbereichen erstellen, die '%s' gehören."
-
 msgid "You are not permitted to create image members for the image."
 msgstr "Sie können keine Abbildelemente für das Abbild erstellen."
 
@@ -1704,108 +1693,12 @@ msgstr "Sie können keine Abbildelemente für das Abbild erstellen."
 msgid "You are not permitted to create images owned by '%s'."
 msgstr "Sie können keine Abbilder erstellen, die '%s' gehören."
 
-#, python-format
-msgid "You are not permitted to create namespace owned by '%s'"
-msgstr "Sie können keine Namensbereiche erstellen, die '%s' gehören."
-
-#, python-format
-msgid "You are not permitted to create object owned by '%s'"
-msgstr "Sie können keine Objekte erstellen, die '%s' gehören."
-
-#, python-format
-msgid "You are not permitted to create property owned by '%s'"
-msgstr "Sie können keine Eigenschaften erstellen, die '%s' gehören."
-
-#, python-format
-msgid "You are not permitted to create resource_type owned by '%s'"
-msgstr "Sie können keinen resource_type erstellen, der '%s' gehört."
-
-#, python-format
-msgid "You are not permitted to create this task with owner as: %s"
-msgstr "Sie können diese Task nicht mit dem Eigentümer %s erstellen"
-
-msgid "You are not permitted to deactivate this image."
-msgstr "Sie können dieses Abbild nicht deaktivieren. "
-
-msgid "You are not permitted to delete this image."
-msgstr "Sie können dieses Abbild nicht löschen."
-
-msgid "You are not permitted to delete this meta_resource_type."
-msgstr "Sie können diesen meta_resource_type nicht löschen."
-
-msgid "You are not permitted to delete this namespace."
-msgstr "Sie können diesen Namensbereich nicht löschen."
-
-msgid "You are not permitted to delete this object."
-msgstr "Sie können dieses Objekt nicht löschen."
-
-msgid "You are not permitted to delete this property."
-msgstr "Sie können diese Eigenschaft nicht löschen."
-
-msgid "You are not permitted to delete this tag."
-msgstr "Sie können dieses Schlagwort nicht löschen."
-
-#, python-format
-msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
-msgstr ""
-"Sie haben keine Berechtigung, um '%(attr)s' für %(resource)s zu ändern."
-
-#, python-format
-msgid "You are not permitted to modify '%s' on this image."
-msgstr "Sie können '%s' bei diesem Abbild nicht ändern."
-
 msgid "You are not permitted to modify 'status' on this image member."
 msgstr ""
 "Sie sind nicht berechtigt, den 'status' dieses Abbild Mitglieds zu ändern."
 
-msgid "You are not permitted to modify locations for this image."
-msgstr "Sie können Positionen für dieses Abbild nicht ändern."
-
-msgid "You are not permitted to modify tags on this image."
-msgstr "Sie können Schlagwörter bei diesem Abbild nicht ändern."
-
-msgid "You are not permitted to modify this image."
-msgstr "Sie können dieses Abbild nicht ändern."
-
-msgid "You are not permitted to reactivate this image."
-msgstr "Sie können dieses Abbild nicht erneut aktivieren. "
-
-msgid "You are not permitted to set status on this task."
-msgstr "Sie können den Status für diese Task nicht festlegen. "
-
-msgid "You are not permitted to update this namespace."
-msgstr "Sie können diesen Namensbereich nicht aktualisieren. "
-
-msgid "You are not permitted to update this object."
-msgstr "Sie können dieses Objekt nicht aktualisieren. "
-
-msgid "You are not permitted to update this property."
-msgstr "Sie können diese Eigenschaft nicht aktualisieren. "
-
-msgid "You are not permitted to update this tag."
-msgstr "Sie können dieses Schlagwort nicht aktualisieren."
-
-msgid "You are not permitted to upload data for this image."
-msgstr "Sie können keine Daten für dieses Abbild hochladen."
-
-#, python-format
-msgid "You cannot add image member for %s"
-msgstr "Hinzufügen von Abbildelement für %s nicht möglich"
-
-#, python-format
-msgid "You cannot delete image member for %s"
-msgstr "Löschen von Abbildelement für %s nicht möglich"
-
 msgid "You cannot delete image member."
 msgstr "Sie können das Abbild Mitglied nicht löschen."
-
-#, python-format
-msgid "You cannot get image member for %s"
-msgstr "Abrufen von Abbildelement für %s nicht möglich"
-
-#, python-format
-msgid "You cannot update image member %s"
-msgstr "Aktualisieren von Abbildelement %s nicht möglich"
 
 msgid "You do not own this image"
 msgstr "Sie sind nicht Eigner dieses Images"
