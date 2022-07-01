@@ -857,6 +857,19 @@ documentation for more information.
   project in order to hide the volume from users, and to make the image
   shareable among projects.
 
+``cinder_store_user_domain_name=NAME``
+  Optional. Default: ``Default``
+
+  Can only be specified in configuration files.
+
+  `This option is specific to the Cinder storage backend.`
+
+  Domain of the user to authenticate against cinder.
+
+  **NOTE**: This option is applied only if all of ``cinder_store_user_name``,
+  ``cinder_store_password``, ``cinder_store_project_name`` and
+  ``cinder_store_auth_address`` are set.
+
 ``cinder_store_password=PASSWORD``
   Optional. Default: ``None``
 
@@ -866,6 +879,10 @@ documentation for more information.
 
   Password for the user authenticating against Cinder. If <None>, the current
   context auth token is used.
+
+  **NOTE**: This option is applied only if all of ``cinder_store_user_name``,
+  ``cinder_store_password``, ``cinder_store_project_name`` and
+  ``cinder_store_auth_address`` are set.
 
 ``cinder_store_project_name=NAME``
   Optional. Default: ``None``
@@ -877,6 +894,23 @@ documentation for more information.
   Project name where the image is stored in Cinder. If <None>, the project
   in current context is used.
 
+  **NOTE**: This option is applied only if all of ``cinder_store_user_name``,
+  ``cinder_store_password``, ``cinder_store_project_name`` and
+  ``cinder_store_auth_address`` are set.
+
+``cinder_store_project_domain_name=NAME``
+  Optional. Default: ``Default``
+
+  Can only be specified in configuration files.
+
+  `This option is specific to the Cinder storage backend.`
+
+  Domain of the project where the image volume is stored in cinder.
+
+  **NOTE**: This option is applied only if all of ``cinder_store_user_name``,
+  ``cinder_store_password``, ``cinder_store_project_name`` and
+  ``cinder_store_auth_address`` are set.
+
 ``cinder_store_auth_address=URL``
   Optional. Default: ``None``
 
@@ -886,6 +920,10 @@ documentation for more information.
 
   The address where the Cinder authentication service is listening. If <None>,
   the cinder endpoint in the service catalog is used.
+
+  **NOTE**: This option is applied only if all of ``cinder_store_user_name``,
+  ``cinder_store_password``, ``cinder_store_project_name`` and
+  ``cinder_store_auth_address`` are set.
 
 ``rootwrap_config=NAME``
   Optional. Default: ``/etc/glance/rootwrap.conf``
