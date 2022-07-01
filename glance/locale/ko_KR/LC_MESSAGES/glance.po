@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-11-24 12:20+0000\n"
+"POT-Creation-Date: 2022-06-30 00:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -780,9 +780,6 @@ msgstr "메타데이터 정의 태그 %(tag_name)s은(는) 보호되므로 삭�
 msgid "Metadata definition tag not found for id=%s"
 msgstr "id=%s에 대한 메타데이터 정의 태그를 찾을 수 없음"
 
-msgid "Minimal rows limit is 1."
-msgstr "최소 행 제한은 1입니다."
-
 msgid "Missing required 'image_id' field"
 msgstr "필수인 'image_id' 필드가 없습니다."
 
@@ -875,9 +872,6 @@ msgstr "원본 위치가 비어있지 않음: %s"
 
 msgid "Owner can't be updated by non admin."
 msgstr "비관리자는 소유자를 업데이트할 수 없습니다."
-
-msgid "Owner must be specified to create a tag."
-msgstr "태그를 작성하려면 소유자로 지정되어야 합니다."
 
 msgid "Owner of the image"
 msgstr "이미지의 소유자"
@@ -1529,111 +1523,12 @@ msgstr "이미지 %s을(를) 검색할 권한이 없습니다."
 msgid "You are not authorized to lookup the members of the image %s."
 msgstr "이미지 %s의 멤버를 검색할 권한이 없습니다."
 
-#, python-format
-msgid "You are not permitted to create a tag in the namespace owned by '%s'"
-msgstr "'%s' 소유의 네임스페이스에 태그를 작성할 권한이 없습니다."
-
 msgid "You are not permitted to create image members for the image."
 msgstr "이미지에 대한 이미지 멤버를 작성할 권한이 없습니다."
 
 #, python-format
 msgid "You are not permitted to create images owned by '%s'."
 msgstr "'%s' 소유의 이미지를 작성할 권한이 없습니다."
-
-#, python-format
-msgid "You are not permitted to create namespace owned by '%s'"
-msgstr "'%s' 소유의 네임스페이스를 작성할 권한이 없습니다."
-
-#, python-format
-msgid "You are not permitted to create object owned by '%s'"
-msgstr "'%s' 소유의 오브젝트를 작성할 권한이 없습니다."
-
-#, python-format
-msgid "You are not permitted to create property owned by '%s'"
-msgstr "'%s' 소유의 특성을 작성할 권한이 없습니다."
-
-#, python-format
-msgid "You are not permitted to create resource_type owned by '%s'"
-msgstr "'%s' 소유의 resource_type을 작성할 권한이 없습니다."
-
-#, python-format
-msgid "You are not permitted to create this task with owner as: %s"
-msgstr "다음 소유자로 이 태스크를 작성하도록 허용되지 않았습니다. %s"
-
-msgid "You are not permitted to deactivate this image."
-msgstr "이 이미지를 비활성화할 권한이 없습니다."
-
-msgid "You are not permitted to delete this image."
-msgstr "이 이미지를 삭제할 권한이 없습니다."
-
-msgid "You are not permitted to delete this meta_resource_type."
-msgstr "이  meta_resource_type을 삭제할 권한이 없습니다."
-
-msgid "You are not permitted to delete this namespace."
-msgstr "이 네임스페이스를 삭제할 권한이 없습니다."
-
-msgid "You are not permitted to delete this object."
-msgstr "이 오브젝트를 삭제할 권한이 없습니다."
-
-msgid "You are not permitted to delete this property."
-msgstr "이 특성을 삭제할 권한이 없습니다."
-
-msgid "You are not permitted to delete this tag."
-msgstr "이 태그를 삭제할 권한이 없습니다."
-
-#, python-format
-msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
-msgstr "이 %(resource)s에서 '%(attr)s'을(를) 수정하도록 허용되지 않았습니다."
-
-#, python-format
-msgid "You are not permitted to modify '%s' on this image."
-msgstr "이 이미지에서 '%s'을(를) 수정할 권한이 없습니다."
-
-msgid "You are not permitted to modify locations for this image."
-msgstr "이 이미지의 위치를 수정할 권한이 없습니다."
-
-msgid "You are not permitted to modify tags on this image."
-msgstr "이 이미지의 태그를 수정할 권한이 없습니다."
-
-msgid "You are not permitted to modify this image."
-msgstr "이 이미지를 수정할 권한이 없습니다."
-
-msgid "You are not permitted to reactivate this image."
-msgstr "이 이미지를 재활성화할 권한이 없습니다."
-
-msgid "You are not permitted to set status on this task."
-msgstr "이 태스크에서 상태를 설정하도록 허용되지 않았습니다."
-
-msgid "You are not permitted to update this namespace."
-msgstr "이 네임스페이스를 업데이트할 권한이 없습니다."
-
-msgid "You are not permitted to update this object."
-msgstr "이 오브젝트를 업데이트할 권한이 없습니다."
-
-msgid "You are not permitted to update this property."
-msgstr "이 특성을 업데이트할 권한이 없습니다."
-
-msgid "You are not permitted to update this tag."
-msgstr "이 태그를 업데이트할 권한이 없습니다."
-
-msgid "You are not permitted to upload data for this image."
-msgstr "이 이미지에 대한 데이터를 작성할 권한이 없습니다."
-
-#, python-format
-msgid "You cannot add image member for %s"
-msgstr "%s에 대한 이미지 멤버를 추가할 수 없음"
-
-#, python-format
-msgid "You cannot delete image member for %s"
-msgstr "%s에 대한 이미지 멤버를 삭제할 수 없음"
-
-#, python-format
-msgid "You cannot get image member for %s"
-msgstr "%s에 대한 이미지 멤버를 가져올 수 없음"
-
-#, python-format
-msgid "You cannot update image member %s"
-msgstr "이미지 멤버 %s을(를) 업데이트할 수 없음"
 
 msgid "You do not own this image"
 msgstr "이 이미지를 소유하지 않음"

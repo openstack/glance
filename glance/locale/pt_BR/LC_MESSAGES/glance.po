@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-10-06 23:29+0000\n"
+"POT-Creation-Date: 2022-06-30 00:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -796,9 +796,6 @@ msgstr ""
 msgid "Metadata definition tag not found for id=%s"
 msgstr "Identificação de definição de metadados não localizada para o id=%s"
 
-msgid "Minimal rows limit is 1."
-msgstr "O limite mínimo de linhas é 1."
-
 #, python-format
 msgid "Missing required credential: %(required)s"
 msgstr "Credencial necessária ausente: %(required)s"
@@ -891,9 +888,6 @@ msgstr "Localidade original não está vazia: %s"
 
 msgid "Owner can't be updated by non admin."
 msgstr "O proprietário não pode ser atualizado por um não administrador."
-
-msgid "Owner must be specified to create a tag."
-msgstr "O proprietário deve ser especificado para criar uma identificação."
 
 msgid "Owner of the image"
 msgstr "Proprietário da imagem"
@@ -1530,115 +1524,12 @@ msgstr "Você não está autorizado a consultar a imagem %s."
 msgid "You are not authorized to lookup the members of the image %s."
 msgstr "Você não está autorizado a consultar os membros da imagem %s."
 
-#, python-format
-msgid "You are not permitted to create a tag in the namespace owned by '%s'"
-msgstr ""
-"Você não tem permissão para criar uma identificação no namespace de "
-"propriedade de '%s'"
-
 msgid "You are not permitted to create image members for the image."
 msgstr "Você não tem permissão para criar membros da imagem."
 
 #, python-format
 msgid "You are not permitted to create images owned by '%s'."
 msgstr "Você não tem permissão para criar imagens de propriedade de '%s'."
-
-#, python-format
-msgid "You are not permitted to create namespace owned by '%s'"
-msgstr "Você não tem permissão para criar namespace de propriedade de '%s'"
-
-#, python-format
-msgid "You are not permitted to create object owned by '%s'"
-msgstr "Você não tem permissão para criar objeto de propriedade de '%s'"
-
-#, python-format
-msgid "You are not permitted to create property owned by '%s'"
-msgstr ""
-"Você não tem permissão para criar essa propriedade de propriedade de '%s'"
-
-#, python-format
-msgid "You are not permitted to create resource_type owned by '%s'"
-msgstr "Você não tem permissão para criar resource_type de propriedade de '%s'"
-
-#, python-format
-msgid "You are not permitted to create this task with owner as: %s"
-msgstr ""
-"Você não tem permissão para criar essa tarefa com proprietário como: %s"
-
-msgid "You are not permitted to deactivate this image."
-msgstr "Você não tem permissão para desativar esta imagem."
-
-msgid "You are not permitted to delete this image."
-msgstr "Você não tem permissão para excluir esta imagem."
-
-msgid "You are not permitted to delete this meta_resource_type."
-msgstr "Você não tem permissão para excluir esse meta_resource_type."
-
-msgid "You are not permitted to delete this namespace."
-msgstr "Você não tem permissão para excluir esse namespace."
-
-msgid "You are not permitted to delete this object."
-msgstr "Você não tem permissão para excluir esse objeto."
-
-msgid "You are not permitted to delete this property."
-msgstr "Você não tem permissão para excluir essa propriedade."
-
-msgid "You are not permitted to delete this tag."
-msgstr "Você não tem permissão para excluir esta identificação."
-
-#, python-format
-msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
-msgstr "Você não ter permissão para modificar '%(attr)s' nesse %(resource)s."
-
-#, python-format
-msgid "You are not permitted to modify '%s' on this image."
-msgstr "Você não tem permissão para modificar '%s' nesta imagem."
-
-msgid "You are not permitted to modify locations for this image."
-msgstr "Você não tem permissão para modificar locais para esta imagem."
-
-msgid "You are not permitted to modify tags on this image."
-msgstr "Você não tem permissão para modificar tags nesta imagem."
-
-msgid "You are not permitted to modify this image."
-msgstr "Você não tem permissão para modificar esta imagem."
-
-msgid "You are not permitted to reactivate this image."
-msgstr "Você não tem permissão para reativar essa imagem."
-
-msgid "You are not permitted to set status on this task."
-msgstr "Você não tem permissão para definir o status dessa tarefa."
-
-msgid "You are not permitted to update this namespace."
-msgstr "Você não tem permissão para editar esse namespace."
-
-msgid "You are not permitted to update this object."
-msgstr "Você não tem permissão para atualizar esse objeto."
-
-msgid "You are not permitted to update this property."
-msgstr "Você não tem permissão para atualizar essa propriedade."
-
-msgid "You are not permitted to update this tag."
-msgstr "Você não tem permissão para atualizar esta identificação."
-
-msgid "You are not permitted to upload data for this image."
-msgstr "Você não tem permissão para fazer upload de dados para esta imagem."
-
-#, python-format
-msgid "You cannot add image member for %s"
-msgstr "Não é possível incluir o membro da imagem para %s"
-
-#, python-format
-msgid "You cannot delete image member for %s"
-msgstr "Não é possível excluir o membro da imagem para %s"
-
-#, python-format
-msgid "You cannot get image member for %s"
-msgstr "Não é possível obter o membro da imagem para %s"
-
-#, python-format
-msgid "You cannot update image member %s"
-msgstr "Não é possível atualizar o membro da imagem %s"
 
 msgid "You do not own this image"
 msgstr "Você não possui essa imagem"

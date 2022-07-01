@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-10-06 23:29+0000\n"
+"POT-Creation-Date: 2022-06-30 00:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -722,9 +722,6 @@ msgstr "meta 資料定義標籤 %(tag_name)s 受保護，無法將其刪除。"
 msgid "Metadata definition tag not found for id=%s"
 msgstr "找不到 ID 為 %s 的 meta 資料定義標籤"
 
-msgid "Minimal rows limit is 1."
-msgstr "列數下限限制為 1。"
-
 #, python-format
 msgid "Missing required credential: %(required)s"
 msgstr "遺漏了必要認證：%(required)s"
@@ -810,9 +807,6 @@ msgstr "原始位置不是空的：%s"
 
 msgid "Owner can't be updated by non admin."
 msgstr "擁有者無法由非管理者進行更新。"
-
-msgid "Owner must be specified to create a tag."
-msgstr "必須指定擁有者才能建立標籤。"
 
 msgid "Owner of the image"
 msgstr "映像檔的擁有者"
@@ -1406,111 +1400,12 @@ msgstr "您未獲授權來查閱映像檔 %s。"
 msgid "You are not authorized to lookup the members of the image %s."
 msgstr "您未獲授權來查閱映像檔 %s 的成員。"
 
-#, python-format
-msgid "You are not permitted to create a tag in the namespace owned by '%s'"
-msgstr "不允許您在 '%s' 擁有的名稱空間中建立標籤"
-
 msgid "You are not permitted to create image members for the image."
 msgstr "不允許您給映像檔建立映像檔成員。"
 
 #, python-format
 msgid "You are not permitted to create images owned by '%s'."
 msgstr "不允許您建立擁有者為 '%s' 的映像檔。"
-
-#, python-format
-msgid "You are not permitted to create namespace owned by '%s'"
-msgstr "不允許您建立擁有者為 '%s' 的名稱空間"
-
-#, python-format
-msgid "You are not permitted to create object owned by '%s'"
-msgstr "不允許您建立擁有者為 '%s' 的物件"
-
-#, python-format
-msgid "You are not permitted to create property owned by '%s'"
-msgstr "不允許您建立擁有者為 '%s' 的內容"
-
-#, python-format
-msgid "You are not permitted to create resource_type owned by '%s'"
-msgstr "不允許您建立擁有者為 '%s' 的 resource_type"
-
-#, python-format
-msgid "You are not permitted to create this task with owner as: %s"
-msgstr "不允許您以擁有者身分來建立此作業：%s"
-
-msgid "You are not permitted to deactivate this image."
-msgstr "不允許您取消啟動此映像檔。"
-
-msgid "You are not permitted to delete this image."
-msgstr "不允許您刪除此映像檔。"
-
-msgid "You are not permitted to delete this meta_resource_type."
-msgstr "不允許您刪除此 meta_resource_type。"
-
-msgid "You are not permitted to delete this namespace."
-msgstr "不允許您刪除此名稱空間。"
-
-msgid "You are not permitted to delete this object."
-msgstr "不允許您刪除此物件。"
-
-msgid "You are not permitted to delete this property."
-msgstr "不允許您刪除此內容。"
-
-msgid "You are not permitted to delete this tag."
-msgstr "不允許您刪除此標籤。"
-
-#, python-format
-msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
-msgstr "不允許您修改此 %(resource)s 上的 '%(attr)s'。"
-
-#, python-format
-msgid "You are not permitted to modify '%s' on this image."
-msgstr "不允許您修改此映像檔上的 '%s'。"
-
-msgid "You are not permitted to modify locations for this image."
-msgstr "不允許您修改此映像檔的位置。"
-
-msgid "You are not permitted to modify tags on this image."
-msgstr "不允許您修改此映像檔上的標籤。"
-
-msgid "You are not permitted to modify this image."
-msgstr "不允許您修改此映像檔。"
-
-msgid "You are not permitted to reactivate this image."
-msgstr "不允許您重新啟動此映像檔。"
-
-msgid "You are not permitted to set status on this task."
-msgstr "不允許您在此作業上設定狀態。"
-
-msgid "You are not permitted to update this namespace."
-msgstr "不允許您更新此名稱空間。"
-
-msgid "You are not permitted to update this object."
-msgstr "不允許您更新此物件。"
-
-msgid "You are not permitted to update this property."
-msgstr "不允許您更新此內容。"
-
-msgid "You are not permitted to update this tag."
-msgstr "不允許您更新此標籤。"
-
-msgid "You are not permitted to upload data for this image."
-msgstr "不允許您給此映像檔上傳資料。"
-
-#, python-format
-msgid "You cannot add image member for %s"
-msgstr "無法給 %s 新增映像檔成員"
-
-#, python-format
-msgid "You cannot delete image member for %s"
-msgstr "無法刪除 %s 的映像檔成員"
-
-#, python-format
-msgid "You cannot get image member for %s"
-msgstr "無法取得 %s 的映像檔成員"
-
-#, python-format
-msgid "You cannot update image member %s"
-msgstr "無法更新映像檔成員 %s"
 
 msgid "You do not own this image"
 msgstr "您不是此映像檔的擁有者"

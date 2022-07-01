@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2021-10-06 23:29+0000\n"
+"POT-Creation-Date: 2022-06-30 00:05+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -729,9 +729,6 @@ msgstr "İşlemler JSON nesnesi olmalıdır."
 msgid "Original locations is not empty: %s"
 msgstr "Özgün konumlar boş değil: %s"
 
-msgid "Owner must be specified to create a tag."
-msgstr "Etiket oluşturmak için sahibi belirtilmelidir."
-
 msgid "Owner of the image"
 msgstr "İmajın sahibi"
 
@@ -1322,105 +1319,12 @@ msgstr "Kimliğiniz doğrulanamadı."
 msgid "You are not authorized to complete this action."
 msgstr "Bu eylemi tamamlamak için yetkili değilsiniz."
 
-#, python-format
-msgid "You are not permitted to create a tag in the namespace owned by '%s'"
-msgstr "'%s''ye ait ad alanında bir etiket oluşturma izniniz yok"
-
 msgid "You are not permitted to create image members for the image."
 msgstr "İmaj için üye oluşturma izniniz yok."
 
 #, python-format
 msgid "You are not permitted to create images owned by '%s'."
 msgstr "'%s''ye ait imaj oluşturma izniniz yok."
-
-#, python-format
-msgid "You are not permitted to create namespace owned by '%s'"
-msgstr "'%s''ye ait ad alanı oluşturma izniniz yok"
-
-#, python-format
-msgid "You are not permitted to create object owned by '%s'"
-msgstr "'%s''ye ait nesne oluşturma izniniz yok"
-
-#, python-format
-msgid "You are not permitted to create property owned by '%s'"
-msgstr "'%s''ye ait özellik oluşturma izniniz yok."
-
-#, python-format
-msgid "You are not permitted to create resource_type owned by '%s'"
-msgstr "'%s''ye ait resource_type oluşturma izniniz yok."
-
-#, python-format
-msgid "You are not permitted to create this task with owner as: %s"
-msgstr "Sahibi olarak bu görevi oluşturma izniniz yok: %s"
-
-msgid "You are not permitted to delete this image."
-msgstr "Bu imajı silme izniniz yok."
-
-msgid "You are not permitted to delete this meta_resource_type."
-msgstr "meta_resource_type silme izniniz yok."
-
-msgid "You are not permitted to delete this namespace."
-msgstr "Bu ad alanını silme izniniz yok."
-
-msgid "You are not permitted to delete this object."
-msgstr "Bu nesneyi silme izniniz yok."
-
-msgid "You are not permitted to delete this property."
-msgstr "Bu özelliği silme izniniz yok."
-
-msgid "You are not permitted to delete this tag."
-msgstr "Bu etiketi silme izniniz yok."
-
-#, python-format
-msgid "You are not permitted to modify '%(attr)s' on this %(resource)s."
-msgstr "Bu %(resource)s üzerinde '%(attr)s' değiştirme izniniz yok."
-
-#, python-format
-msgid "You are not permitted to modify '%s' on this image."
-msgstr "Bu imajda '%s' değiştirme izniniz yok."
-
-msgid "You are not permitted to modify locations for this image."
-msgstr "Bu imajın konumunu değiştirme izniniz yok."
-
-msgid "You are not permitted to modify tags on this image."
-msgstr "Bu imaj üzerindeki etiketleri değiştirme izniniz yok."
-
-msgid "You are not permitted to modify this image."
-msgstr "Bu imajı değiştirme izniniz yok."
-
-msgid "You are not permitted to set status on this task."
-msgstr "Bu görev üzerinde durum ayarlama izniniz yok."
-
-msgid "You are not permitted to update this namespace."
-msgstr "Bu ad alanını güncelleme izniniz yok."
-
-msgid "You are not permitted to update this object."
-msgstr "Bu nesneyi güncelleme izniniz yok."
-
-msgid "You are not permitted to update this property."
-msgstr "Bu özelliği güncelleme izniniz yok."
-
-msgid "You are not permitted to update this tag."
-msgstr "Bu etiketi güncelleme izniniz yok."
-
-msgid "You are not permitted to upload data for this image."
-msgstr "Bu imaj için veri yükleme izniniz yok."
-
-#, python-format
-msgid "You cannot add image member for %s"
-msgstr "%s için imaj üyesi ekleyemiyorsunuz"
-
-#, python-format
-msgid "You cannot delete image member for %s"
-msgstr "%s için imaj üyesini silemiyorsunuz"
-
-#, python-format
-msgid "You cannot get image member for %s"
-msgstr "%s için imaj üyesini alamıyorsunuz"
-
-#, python-format
-msgid "You cannot update image member %s"
-msgstr "%s imaj üyesini güncelleyemiyorsunuz"
 
 msgid "You do not own this image"
 msgstr "Bu imajın sahibi değilsiniz"
