@@ -71,7 +71,7 @@ Possible values:
     * metadef_tag
 
     For a complete listing and description of each event refer to:
-    http://docs.openstack.org/developer/glance/notifications.html
+    https://docs.openstack.org/glance/latest/admin/notifications.html
 
     The values must be specified as: <group_name>.<event_name>
     For example: image.create,task.success,metadef_tag

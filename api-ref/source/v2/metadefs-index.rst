@@ -52,7 +52,7 @@ image.)
 A metadefs definition includes a property's key, its description, its
 constraints, and the resource types to which it can be associated.  See
 `Metadata Definition Concepts
-<http://docs.openstack.org/developer/glance/metadefs-concepts.html>`_ in the
+<https://docs.openstack.org/glance/latest/user/metadefs-concepts.html>`_ in the
 Glance Developer documentation for more information.
 
 .. note:: By default, only admins can manipulate the data exposed by

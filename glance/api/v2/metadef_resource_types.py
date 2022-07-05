@@ -266,7 +266,7 @@ def _get_base_properties():
             'type': 'string',
             'description': _('Resource type names should be aligned with Heat '
                              'resource types whenever possible: '
-                             'http://docs.openstack.org/developer/heat/'
+                             'https://docs.openstack.org/heat/latest/'
                              'template_guide/openstack.html'),
             'maxLength': 80,
         },
