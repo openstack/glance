@@ -2104,15 +2104,6 @@ class DBPurgeTests(test_utils.BaseTestCase):
 
         dialect = engine.url.get_dialect()
         if dialect == sqlite.dialect:
-            # We're seeing issues with foreign key support in SQLite 3.6.20
-            # SQLAlchemy doesn't support it at all with SQLite < 3.6.19
-            # It works fine in SQLite 3.7.
-            # So return early to skip this test if running SQLite < 3.7
-            if test_utils.is_sqlite_version_prior_to(3, 7):
-                self.skipTest(
-                    'sqlite version too old for reliable SQLA foreign_keys')
-            # This is required for enforcing Foreign Key Constraint
-            # in SQLite 3.x
             connection.execute("PRAGMA foreign_keys = ON")
 
         images = sqlalchemyutils.get_table(
