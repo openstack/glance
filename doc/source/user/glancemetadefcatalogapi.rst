@@ -401,7 +401,7 @@ We want to de-associate namespace from a resource type
 We issue a ``DELETE`` request to de-associate namespace resource type to
 Glance::
 
-  DELETE http://glance.openstack.example.org/v2//metadefs/namespaces/{namespace}/resource_types/{resource_type}
+  DELETE http://glance.openstack.example.org/v2/metadefs/namespaces/{namespace}/resource_types/{resource_type}
 
 
 List Objects in Namespace
