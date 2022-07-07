@@ -36,6 +36,7 @@ Development Practices
    blueprints
    release-notes
    releasecycle
+   glance-groups
    documentation
    database_migrations
 .. bugs
@@ -73,3 +74,4 @@ Managing the Development Cycle
    :maxdepth: 1
 
    releasecycle
+   glance-groups
