@@ -19,7 +19,7 @@ consult your cloud provider's documentation for more information.
 
 **Conceptual Overview**
 
-Please see the `Tasks <http://docs.openstack.org/developer/glance/tasks.html>`_
+Please see the `Tasks <https://docs.openstack.org/glance/latest/admin/tasks.html>`_
 section of the Glance Developers Documentation for a conceptual overview of
 tasks.
 
