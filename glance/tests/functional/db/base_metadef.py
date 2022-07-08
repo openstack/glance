@@ -23,12 +23,12 @@ from glance.tests import utils as test_utils
 
 def build_namespace_fixture(**kwargs):
     namespace = {
-        'namespace': u'MyTestNamespace',
-        'display_name': u'test-display-name',
-        'description': u'test-description',
-        'visibility': u'public',
+        'namespace': 'MyTestNamespace',
+        'display_name': 'test-display-name',
+        'description': 'test-description',
+        'visibility': 'public',
         'protected': 0,
-        'owner': u'test-owner'
+        'owner': 'test-owner'
     }
     namespace.update(kwargs)
     return namespace
@@ -36,7 +36,7 @@ def build_namespace_fixture(**kwargs):
 
 def build_resource_type_fixture(**kwargs):
     resource_type = {
-        'name': u'MyTestResourceType',
+        'name': 'MyTestResourceType',
         'protected': 0
     }
     resource_type.update(kwargs)
@@ -45,7 +45,7 @@ def build_resource_type_fixture(**kwargs):
 
 def build_association_fixture(**kwargs):
     association = {
-        'name': u'MyTestResourceType',
+        'name': 'MyTestResourceType',
         'properties_target': 'test-properties-target',
         'prefix': 'test-prefix'
     }
@@ -57,10 +57,10 @@ def build_object_fixture(**kwargs):
     # Full testing of required and schema done via rest api tests
     object = {
         'namespace_id': 1,
-        'name': u'test-object-name',
-        'description': u'test-object-description',
-        'required': u'fake-required-properties-list',
-        'json_schema': u'{fake-schema}'
+        'name': 'test-object-name',
+        'description': 'test-object-description',
+        'required': 'fake-required-properties-list',
+        'json_schema': '{fake-schema}'
     }
     object.update(kwargs)
     return object
@@ -70,8 +70,8 @@ def build_property_fixture(**kwargs):
     # Full testing of required and schema done via rest api tests
     property = {
         'namespace_id': 1,
-        'name': u'test-property-name',
-        'json_schema': u'{fake-schema}'
+        'name': 'test-property-name',
+        'json_schema': '{fake-schema}'
     }
     property.update(kwargs)
     return property
@@ -81,7 +81,7 @@ def build_tag_fixture(**kwargs):
     # Full testing of required and schema done via rest api tests
     tag = {
         'namespace_id': 1,
-        'name': u'test-tag-name',
+        'name': 'test-tag-name',
     }
     tag.update(kwargs)
     return tag
@@ -162,7 +162,7 @@ class MetadefNamespaceTests(object):
             self._assert_saved_fields(ns_fixture, item)
 
     def test_namespace_update(self):
-        delta = {'owner': u'New Owner'}
+        delta = {'owner': 'New Owner'}
         fixture = build_namespace_fixture()
 
         created = self.db_api.metadef_namespace_create(self.context, fixture)
@@ -285,7 +285,7 @@ class MetadefPropertyTests(object):
         self.assertEqual(2, len(found))
 
     def test_property_update(self):
-        delta = {'name': u'New-name', 'json_schema': u'new-schema'}
+        delta = {'name': 'New-name', 'json_schema': 'new-schema'}
 
         fixture_ns = build_namespace_fixture()
         created_ns = self.db_api.metadef_namespace_create(
@@ -412,8 +412,8 @@ class MetadefObjectTests(object):
         self.assertEqual(2, len(found))
 
     def test_object_update(self):
-        delta = {'name': u'New-name', 'json_schema': u'new-schema',
-                 'required': u'new-required'}
+        delta = {'name': 'New-name', 'json_schema': 'new-schema',
+                 'required': 'new-required'}
 
         fixture_ns = build_namespace_fixture()
         created_ns = self.db_api.metadef_namespace_create(self.context,
@@ -701,7 +701,7 @@ class MetadefTagTests(object):
         self.assertEqual(2, len(found))
 
     def test_tag_update(self):
-        delta = {'name': u'New-name'}
+        delta = {'name': 'New-name'}
 
         fixture_ns = build_namespace_fixture()
         created_ns = self.db_api.metadef_namespace_create(self.context,

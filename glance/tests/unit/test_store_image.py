@@ -164,7 +164,7 @@ class TestStoreMultiBackends(utils.BaseTestCase):
                                            store_api, self.store_utils)
         image.set_data('YYYY', 4, backend='ceph1')
         self.assertEqual('active', image.status)
-        call = mock.call(u'Successfully verified signature for image %s',
+        call = mock.call('Successfully verified signature for image %s',
                          UUID2)
         mock_log.info.assert_has_calls([call])
 
@@ -362,7 +362,7 @@ class TestStoreImage(utils.BaseTestCase):
         image.set_data('YYYY', 4)
         self.assertEqual('active', image.status)
         mock_log.info.assert_any_call(
-            u'Successfully verified signature for image %s',
+            'Successfully verified signature for image %s',
             UUID2)
 
     def test_image_set_data_invalid_signature(self):
@@ -1035,25 +1035,25 @@ class TestStoreMetaDataChecker(utils.BaseTestCase):
         glance_store.check_location_metadata({})
 
     def test_unicode(self):
-        m = {'key': u'somevalue'}
+        m = {'key': 'somevalue'}
         glance_store.check_location_metadata(m)
 
     def test_unicode_list(self):
-        m = {'key': [u'somevalue', u'2']}
+        m = {'key': ['somevalue', '2']}
         glance_store.check_location_metadata(m)
 
     def test_unicode_dict(self):
-        inner = {'key1': u'somevalue', 'key2': u'somevalue'}
+        inner = {'key1': 'somevalue', 'key2': 'somevalue'}
         m = {'topkey': inner}
         glance_store.check_location_metadata(m)
 
     def test_unicode_dict_list(self):
-        inner = {'key1': u'somevalue', 'key2': u'somevalue'}
-        m = {'topkey': inner, 'list': [u'somevalue', u'2'], 'u': u'2'}
+        inner = {'key1': 'somevalue', 'key2': 'somevalue'}
+        m = {'topkey': inner, 'list': ['somevalue', '2'], 'u': '2'}
         glance_store.check_location_metadata(m)
 
     def test_nested_dict(self):
-        inner = {'key1': u'somevalue', 'key2': u'somevalue'}
+        inner = {'key1': 'somevalue', 'key2': 'somevalue'}
         inner = {'newkey': inner}
         inner = {'anotherkey': inner}
         m = {'topkey': inner}
@@ -1066,13 +1066,13 @@ class TestStoreMetaDataChecker(utils.BaseTestCase):
                           m)
 
     def test_list_bad(self):
-        m = {'key1': [u'somevalue', object()]}
+        m = {'key1': ['somevalue', object()]}
         self.assertRaises(glance_store.BackendException,
                           glance_store.check_location_metadata,
                           m)
 
     def test_nested_dict_bad(self):
-        inner = {'key1': u'somevalue', 'key2': object()}
+        inner = {'key1': 'somevalue', 'key2': object()}
         inner = {'newkey': inner}
         inner = {'anotherkey': inner}
         m = {'topkey': inner}

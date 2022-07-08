@@ -107,14 +107,14 @@ class TestMetadefObjects(metadef_base.MetadefFunctionalTestBase):
         # Returned object should match the created object
         metadata_object = jsonutils.loads(response.text)
         checked_keys = set([
-            u'name',
-            u'description',
-            u'properties',
-            u'required',
-            u'self',
-            u'schema',
-            u'created_at',
-            u'updated_at'
+            'name',
+            'description',
+            'properties',
+            'required',
+            'self',
+            'schema',
+            'created_at',
+            'updated_at'
         ])
         self.assertEqual(set(metadata_object.keys()), checked_keys)
         expected_metadata_object = {
@@ -151,8 +151,8 @@ class TestMetadefObjects(metadef_base.MetadefFunctionalTestBase):
 
         # Simple key values
         checked_values = set([
-            u'name',
-            u'description',
+            'name',
+            'description',
         ])
         for key, value in expected_metadata_object.items():
             if(key in checked_values):

@@ -230,7 +230,7 @@ class DriverTests(object):
                           self.db_api.image_create, self.context, fixture)
 
     def test_image_create_bad_name(self):
-        bad_name = u'A name with forbidden symbol \U0001f62a'
+        bad_name = 'A name with forbidden symbol \U0001f62a'
         fixture = {'name': bad_name, 'size': 12, 'status': 'queued'}
         self.assertRaises(exception.Invalid, self.db_api.image_create,
                           self.context, fixture)
@@ -243,7 +243,7 @@ class DriverTests(object):
                           self.context, fixture)
         # if checksum is not longer than 32 characters but non-ascii ->
         # still raise 400
-        fixture = {'checksum': u'\u042f' * 32}
+        fixture = {'checksum': '\u042f' * 32}
         self.assertRaises(exception.Invalid, self.db_api.image_create,
                           self.context, fixture)
 
@@ -257,18 +257,18 @@ class DriverTests(object):
     def test_image_create_bad_property(self):
         # bad value
         fixture = {'status': 'queued',
-                   'properties': {'bad': u'Bad \U0001f62a'}}
+                   'properties': {'bad': 'Bad \U0001f62a'}}
         self.assertRaises(exception.Invalid, self.db_api.image_create,
                           self.context, fixture)
         # bad property names are also not allowed
-        fixture = {'status': 'queued', 'properties': {u'Bad \U0001f62a': 'ok'}}
+        fixture = {'status': 'queued', 'properties': {'Bad \U0001f62a': 'ok'}}
         self.assertRaises(exception.Invalid, self.db_api.image_create,
                           self.context, fixture)
 
     def test_image_create_bad_location(self):
         location_data = [{'url': 'a', 'metadata': {'key': 'value'},
                           'status': 'active'},
-                         {'url': u'Bad \U0001f60a', 'metadata': {},
+                         {'url': 'Bad \U0001f60a', 'metadata': {},
                           'status': 'active'}]
         fixture = {'status': 'queued', 'locations': location_data}
         self.assertRaises(exception.Invalid, self.db_api.image_create,
@@ -342,25 +342,25 @@ class DriverTests(object):
         self.assertTrue(properties['foo']['deleted'])
 
     def test_image_update_bad_name(self):
-        fixture = {'name': u'A new name with forbidden symbol \U0001f62a'}
+        fixture = {'name': 'A new name with forbidden symbol \U0001f62a'}
         self.assertRaises(exception.Invalid, self.db_api.image_update,
                           self.adm_context, UUID1, fixture)
 
     def test_image_update_bad_property(self):
         # bad value
         fixture = {'status': 'queued',
-                   'properties': {'bad': u'Bad \U0001f62a'}}
+                   'properties': {'bad': 'Bad \U0001f62a'}}
         self.assertRaises(exception.Invalid, self.db_api.image_update,
                           self.adm_context, UUID1, fixture)
         # bad property names are also not allowed
-        fixture = {'status': 'queued', 'properties': {u'Bad \U0001f62a': 'ok'}}
+        fixture = {'status': 'queued', 'properties': {'Bad \U0001f62a': 'ok'}}
         self.assertRaises(exception.Invalid, self.db_api.image_update,
                           self.adm_context, UUID1, fixture)
 
     def test_image_update_bad_location(self):
         location_data = [{'url': 'a', 'metadata': {'key': 'value'},
                           'status': 'active'},
-                         {'url': u'Bad \U0001f60a', 'metadata': {},
+                         {'url': 'Bad \U0001f60a', 'metadata': {},
                           'status': 'active'}]
         fixture = {'status': 'queued', 'locations': location_data}
         self.assertRaises(exception.Invalid, self.db_api.image_update,
@@ -380,7 +380,7 @@ class DriverTests(object):
         self.assertEqual(1, len(image['locations']))
         self.assertIn('id', image['locations'][0])
         loc_id = image['locations'][0].pop('id')
-        bad_location = {'url': u'Bad \U0001f60a', 'metadata': {},
+        bad_location = {'url': 'Bad \U0001f60a', 'metadata': {},
                         'status': 'active', 'id': loc_id}
         self.assertRaises(exception.Invalid,
                           self.db_api.image_location_update,
@@ -1201,7 +1201,7 @@ class DriverTests(object):
     def test_image_tag_create_bad_value(self):
         self.assertRaises(exception.Invalid,
                           self.db_api.image_tag_create, self.context,
-                          UUID1, u'Bad \U0001f62a')
+                          UUID1, 'Bad \U0001f62a')
 
     def test_image_tag_set_all(self):
         tags = self.db_api.image_tag_get_all(self.context, UUID1)

@@ -89,19 +89,19 @@ class TestTasks(functional.FunctionalTest):
         self.assertIn('Location', response.headers)
         self.assertEqual(path + '/' + task_id, response.headers['Location'])
 
-        checked_keys = set([u'created_at',
-                            u'id',
-                            u'input',
-                            u'message',
-                            u'owner',
-                            u'schema',
-                            u'self',
-                            u'status',
-                            u'type',
-                            u'result',
-                            u'updated_at',
-                            u'request_id',
-                            u'user_id',
+        checked_keys = set(['created_at',
+                            'id',
+                            'input',
+                            'message',
+                            'owner',
+                            'schema',
+                            'self',
+                            'status',
+                            'type',
+                            'result',
+                            'updated_at',
+                            'request_id',
+                            'user_id'
                             ])
         self.assertEqual(checked_keys, set(task.keys()))
         expected_task = {

@@ -29,7 +29,7 @@ class TestClient(testtools.TestCase):
         super(TestClient, self).setUp()
         self.endpoint = 'example.com'
         self.client = client.BaseClient(self.endpoint, port=9191,
-                                        auth_token=u'abc123')
+                                        auth_token='abc123')
 
     def tearDown(self):
         super(TestClient, self).tearDown()
@@ -49,7 +49,7 @@ class TestClient(testtools.TestCase):
         fake = utils.FakeHTTPResponse(data=b"Ok")
         _mock_resp.return_value = fake
 
-        headers = {"test": u'ni\xf1o'}
+        headers = {"test": 'ni\xf1o'}
         resp = self.client.do_request('GET', '/v1/images/detail',
                                       headers=headers)
         self.assertEqual(fake, resp)
@@ -62,7 +62,7 @@ class TestClient(testtools.TestCase):
         fake = utils.FakeHTTPResponse(data=b"Ok")
         _mock_resp.return_value = fake
 
-        params = {"test": u'ni\xf1o'}
+        params = {"test": 'ni\xf1o'}
         resp = self.client.do_request('GET', '/v1/images/detail',
                                       params=params)
         self.assertEqual(fake, resp)
