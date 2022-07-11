@@ -48,10 +48,16 @@ def main():
     try:
         config.parse_cache_args()
         logging.setup(CONF, 'glance')
+        CONF.import_opt('enabled_backends', 'glance.common.wsgi')
 
-        glance_store.register_opts(config.CONF)
-        glance_store.create_stores(config.CONF)
-        glance_store.verify_default_store()
+        if CONF.enabled_backends:
+            glance_store.register_store_opts(CONF)
+            glance_store.create_multi_stores(CONF)
+            glance_store.verify_store()
+        else:
+            glance_store.register_opts(CONF)
+            glance_store.create_stores(CONF)
+            glance_store.verify_default_store()
 
         app = prefetcher.Prefetcher()
         app.run()
