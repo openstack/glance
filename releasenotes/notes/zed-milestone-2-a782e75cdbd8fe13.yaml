@@ -1,0 +1,18 @@
+---
+fixes:
+  - |
+    Bug 1636243_: Add CPU Mode Metadata Def
+  - |
+    Bug 1973136_: glance-multistore-cinder-import is failing consistently
+  - |
+    Bug 1962581_: bad default value for [wsgi] /python_interpreter option
+  - |
+    Bug 1962480_: api-ref: versions response needs an update
+  - |
+    Bug 1946100_: [oslo_limit] parameters are missing from glance-api.conf
+
+    .. _1636243: https://code.launchpad.net/bugs/1636243
+    .. _1973136: https://code.launchpad.net/bugs/1973136
+    .. _1962581: https://code.launchpad.net/bugs/1962581
+    .. _1962480: https://code.launchpad.net/bugs/1962480
+    .. _1946100: https://code.launchpad.net/bugs/1946100
