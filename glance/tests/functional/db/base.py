@@ -193,9 +193,9 @@ class DriverTests(object):
         fixture = {'status': 'queued',
                    'locations': locations}
         image = self.db_api.image_create(self.context, fixture)
-        actual = [{'url': l['url'], 'metadata': l['metadata'],
-                   'status': l['status']}
-                  for l in image['locations']]
+        actual = [{'url': location['url'], 'metadata': location['metadata'],
+                   'status': location['status']}
+                  for location in image['locations']]
         self.assertEqual(locations, actual)
 
     def test_image_create_without_locations(self):
@@ -211,9 +211,9 @@ class DriverTests(object):
                           'status': 'active'}]
         fixture = {'status': 'queued', 'locations': location_data}
         image = self.db_api.image_create(self.context, fixture)
-        actual = [{'url': l['url'], 'metadata': l['metadata'],
-                   'status': l['status']}
-                  for l in image['locations']]
+        actual = [{'url': location['url'], 'metadata': location['metadata'],
+                   'status': location['status']}
+                  for location in image['locations']]
         self.assertEqual(location_data, actual)
 
     def test_image_create_properties(self):

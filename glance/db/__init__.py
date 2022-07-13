@@ -103,8 +103,8 @@ class ImageRepo(object):
                      if loc['status'] == 'active']
         if CONF.metadata_encryption_key:
             key = CONF.metadata_encryption_key
-            for l in locations:
-                l['url'] = crypt.urlsafe_decrypt(key, l['url'])
+            for location in locations:
+                location['url'] = crypt.urlsafe_decrypt(key, location['url'])
 
         # NOTE(danms): If the image is shared and we are not the
         # owner, we must have found it because we are a member. Set
