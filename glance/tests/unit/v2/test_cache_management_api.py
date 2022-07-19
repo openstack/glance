@@ -116,8 +116,47 @@ class TestCacheManageAPI(test_utils.BaseTestCase):
                                 'get_cache_state',
                                 'cache_list'], image_mock=False)
 
-    def test_queue_image_from_api(self):
+    @mock.patch.object(cached_images, 'WORKER')
+    def test_queue_image_from_api(self, mock_worker):
         self._main_test_helper(['queue_image',
                                 'queue_image_from_api',
                                 'cache_image',
                                 UUID1])
+        mock_worker.submit.assert_called_once_with(UUID1)
+
+    def test_init_no_config(self):
+        # Make sure the worker was reset to uninitialized
+        self.assertIsNone(cached_images.WORKER)
+        self.config(image_cache_dir=None)
+        cached_images.CacheController()
+
+        # Make sure it is still None because image_cache_dir was not
+        # set
+        self.assertIsNone(cached_images.WORKER)
+
+    def test_init_with_config(self):
+        # Make sure the worker was reset to uninitialized
+        self.assertIsNone(cached_images.WORKER)
+        self.config(image_cache_dir='/tmp')
+        cached_images.CacheController()
+
+        # Make sure we initialized it because config told us to
+        self.assertIsNotNone(cached_images.WORKER)
+        self.assertTrue(cached_images.WORKER.is_alive())
+        cached_images.WORKER.terminate()
+
+
+class TestCacheWorker(test_utils.BaseTestCase):
+    @mock.patch('glance.image_cache.prefetcher.Prefetcher')
+    def test_worker_lifecycle(self, mock_pf):
+        worker = cached_images.CacheWorker()
+        self.assertFalse(worker.is_alive())
+        worker.start()
+        self.assertTrue(worker.is_alive())
+        worker.submit('123')
+        worker.submit('456')
+        self.assertTrue(worker.is_alive())
+        worker.terminate()
+        self.assertFalse(worker.is_alive())
+        mock_pf.return_value.fetch_image_into_cache.assert_has_calls([
+            mock.call('123'), mock.call('456')])

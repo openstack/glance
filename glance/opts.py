@@ -54,7 +54,6 @@ _api_opts = [
         glance.common.wsgi.eventlet_opts,
         glance.common.wsgi.socket_opts,
         glance.common.wsgi.store_opts,
-        glance.common.wsgi.cache_opts,
         glance.common.wsgi.cli_opts,
         glance.image_cache.drivers.sqlite.sqlite_opts,
         glance.image_cache.image_cache_opts,

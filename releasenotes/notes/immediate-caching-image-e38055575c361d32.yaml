@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    Added support to immediately start caching of an image.
+upgrade:
+  - |
+    Periodic job to prefetch image(s) into cache has been removed from the
+    glance api service with config option ``cache_prefetcher_interval``
+    which was added as an interval for the same periodic job also been
+    removed as image(s) will be immediately queued for caching.

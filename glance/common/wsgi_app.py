@@ -34,6 +34,14 @@ CONF.import_opt("enabled_backends", "glance.common.wsgi")
 logging.register_options(CONF)
 LOG = logging.getLogger(__name__)
 
+# Detect if we're running under the uwsgi server
+try:
+    import uwsgi
+    LOG.debug('Detected running under uwsgi')
+except ImportError:
+    LOG.debug('Detected not running under uwsgi')
+    uwsgi = None
+
 CONFIG_FILES = ['glance-api-paste.ini',
                 'glance-image-import.conf',
                 'glance-api.conf']
@@ -82,7 +90,7 @@ def _validate_policy_enforcement_configuration():
         raise exception.ServerError(fail_message)
 
 
-def drain_threadpools():
+def drain_workers():
     # NOTE(danms): If there are any other named pools that we need to
     # drain before exit, they should be in this list.
     pools_to_drain = ['tasks_pool']
@@ -90,6 +98,12 @@ def drain_threadpools():
         pool_model = common.get_thread_pool(pool_name)
         LOG.info('Waiting for remaining threads in pool %r', pool_name)
         pool_model.pool.shutdown()
+
+    from glance.api.v2 import cached_images  # noqa
+    if cached_images.WORKER:
+        # If we started a cache worker, signal it to exit
+        # and wait until it does.
+        cached_images.WORKER.terminate()
 
 
 def run_staging_cleanup():
@@ -103,28 +117,6 @@ def run_staging_cleanup():
     cleanup_thread.start()
 
 
-def cache_images(cache_prefetcher):
-    # After every 'cache_prefetcher_interval' this call will run and fetch
-    # all queued images into cache if there are any
-    cache_thread = threading.Timer(CONF.cache_prefetcher_interval,
-                                   cache_images, (cache_prefetcher,))
-    cache_thread.daemon = True
-    cache_thread.start()
-    cache_prefetcher.run()
-
-
-def run_cache_prefetcher():
-    if not CONF.paste_deploy.flavor == 'keystone+cachemanagement':
-        LOG.debug('Cache not enabled, skipping prefetching images in cache!!!')
-        return
-
-    # NOTE(abhishekk): Importing the prefetcher just in time to avoid
-    # import loop during initialization
-    from glance.image_cache import prefetcher  # noqa
-    cache_prefetcher = prefetcher.Prefetcher()
-    cache_images(cache_prefetcher)
-
-
 def init_app():
     config.set_config_defaults()
     config_files = _get_config_files()
@@ -134,7 +126,10 @@ def init_app():
     # NOTE(danms): We are running inside uwsgi or mod_wsgi, so no eventlet;
     # use native threading instead.
     glance.async_.set_threadpool_model('native')
-    atexit.register(drain_threadpools)
+    if uwsgi:
+        uwsgi.atexit = drain_workers
+    else:
+        atexit.register(drain_workers)
 
     # NOTE(danms): Change the default threadpool size since we
     # are dealing with native threads and not greenthreads.
@@ -157,7 +152,6 @@ def init_app():
         glance_store.create_stores(CONF)
         glance_store.verify_default_store()
 
-    run_cache_prefetcher()
     run_staging_cleanup()
 
     _setup_os_profiler()

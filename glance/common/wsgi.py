@@ -29,7 +29,6 @@ import signal
 import struct
 import subprocess
 import sys
-import threading
 import time
 
 from eventlet.green import socket
@@ -259,22 +258,6 @@ cli_opts = [
                     'used for inter-process communication.'),
 ]
 
-cache_opts = [
-    cfg.FloatOpt('cache_prefetcher_interval',
-                 default=300,
-                 help=_("""
-The interval in seconds to run periodic job cache_images.
-
-The cache_images method will fetch all images which are in queued state
-for caching in cache directory. The default value is 300.
-
-Possible values:
-    * Positive integer
-
-Related options:
-    * None
-"""))
-]
 
 LOG = logging.getLogger(__name__)
 
@@ -283,7 +266,6 @@ CONF.register_opts(bind_opts)
 CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
 CONF.register_opts(store_opts)
-CONF.register_opts(cache_opts)
 profiler_opts.set_defaults(CONF)
 
 ASYNC_EVENTLET_THREAD_POOL_LIST = []
@@ -422,8 +404,7 @@ class BaseServer(metaclass=abc.ABCMeta):
     This class requires initialize_glance_store set to True if
     glance store needs to be initialized.
     """
-    def __init__(self, threads=1000, initialize_glance_store=False,
-                 initialize_prefetcher=False):
+    def __init__(self, threads=1000, initialize_glance_store=False):
         os.umask(0o27)  # ensure files are created with the correct privileges
         self._logger = logging.getLogger("eventlet.wsgi.server")
         self.threads = threads
@@ -433,21 +414,6 @@ class BaseServer(metaclass=abc.ABCMeta):
         # NOTE(abhishek): Allows us to only re-initialize glance_store when
         # the API's configuration reloads.
         self.initialize_glance_store = initialize_glance_store
-        self.initialize_prefetcher = initialize_prefetcher
-        if self.initialize_prefetcher:
-            # NOTE(abhishekk): Importing the prefetcher just in time to avoid
-            # import loop during initialization
-            from glance.image_cache import prefetcher # noqa
-            self.prefetcher = prefetcher.Prefetcher()
-
-    def cache_images(self):
-        # After every 'cache_prefetcher_interval' this call will run and fetch
-        # all queued images into cache if there are any
-        cache_thread = threading.Timer(CONF.cache_prefetcher_interval,
-                                       self.cache_images)
-        cache_thread.daemon = True
-        cache_thread.start()
-        self.prefetcher.run()
 
     @staticmethod
     def set_signal_handler(signal_name, handler):
@@ -492,9 +458,6 @@ class BaseServer(metaclass=abc.ABCMeta):
 
         cleaner = housekeeping.StagingStoreCleaner(glance.db.get_api())
         self.pool.spawn_n(cleaner.clean_orphaned_staging_residue)
-
-        if self.initialize_prefetcher:
-            self.cache_images()
 
     def start_wsgi(self):
         workers = get_num_workers()
@@ -569,6 +532,14 @@ class BaseServer(metaclass=abc.ABCMeta):
         if ASYNC_EVENTLET_THREAD_POOL_LIST:
             for pool in ASYNC_EVENTLET_THREAD_POOL_LIST:
                 pool.waitall()
+
+        # NOTE(abhishekk): Importing the cache_images API module just
+        #  in time to avoid partial initialization of wsgi module
+        from glance.api.v2 import cached_images  # noqa
+        if cached_images.WORKER:
+            # If we started a cache worker, signal it to exit
+            # and wait until it does.
+            cached_images.WORKER.terminate()
 
     def _single_run(self, application, sock):
         """Start a WSGI server in a new green thread."""
