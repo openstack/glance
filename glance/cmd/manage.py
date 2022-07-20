@@ -504,7 +504,7 @@ def add_command_parsers(subparsers):
 
         parser.add_argument('action_args', nargs='*')
 
-        add_legacy_command_parsers(command_object, subparsers)
+    add_legacy_command_parsers(command_object, subparsers)
 
 
 command_opt = cfg.SubCommandOpt('command',
