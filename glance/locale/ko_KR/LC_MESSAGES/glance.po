@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2022-06-30 00:05+0000\n"
+"POT-Creation-Date: 2022-07-28 16:11+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -984,14 +984,6 @@ msgstr "시간이 경과된 pid 파일 %s을(를) 제거하는 중"
 msgid "Request body must be a JSON array of operation objects."
 msgstr "요청 본문은 오퍼레이션 오브젝트의 JSON 배열이어야 합니다."
 
-msgid ""
-"Resource type names should be aligned with Heat resource types whenever "
-"possible: http://docs.openstack.org/developer/heat/template_guide/openstack."
-"html"
-msgstr ""
-"자원 유형 이름은 히트 자원 유형에 맞게 지정되어야 합니다.사용 가능: http://"
-"docs.openstack.org/developer/heat/template_guide/openstack.html"
-
 msgid "Response from Keystone does not contain a Glance endpoint."
 msgstr "Keystone의 응답에 Glance 엔드포인트가 들어있지 않습니다."
 
@@ -1487,9 +1479,6 @@ msgstr "알 수 없는 정렬 방향입니다. 'desc' 또는 'asc'여야 함"
 
 msgid "Unrecognized JSON Schema draft version"
 msgstr "인식되지 않는 JSON 스키마 드래프트 버전"
-
-msgid "Use the http_proxy_to_wsgi middleware instead."
-msgstr "대신 http_proxy_to_wsgi 미들웨어를 사용합니다."
 
 msgid "Virtual size of image in bytes"
 msgstr "이미지의 가상 크기(바이트)"
