@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import socket
 from unittest import mock
 import uuid
 
@@ -52,6 +53,8 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
                 get=lambda v_id: mock.MagicMock(volume_type='fast'),
                 create=lambda size_gb, name, metadata, volume_type:
                 self.volume))
+        fake_ip = '127.0.0.1'
+        self.fake_socket_return = [[0, 1, 2, 3, [fake_ip]]]
 
     def setup_stores(self):
         pass
@@ -138,14 +141,16 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     @mock.patch.object(cinder, 'open')
     @mock.patch('glance_store._drivers.cinder.Store._wait_volume_status')
     @mock.patch.object(strutils, 'mask_dict_password')
-    def test_create_image(self, mock_mask_pass, mock_wait, mock_open,
-                          mock_connector, mock_chown, mocked_cc):
+    @mock.patch.object(socket, 'getaddrinfo')
+    def test_create_image(self, mock_host_addr, mock_mask_pass, mock_wait,
+                          mock_open, mock_connector, mock_chown, mocked_cc):
         # setup multiple cinder stores
         self.setup_multiple_stores()
         self.start_server()
 
         mocked_cc.return_value = self.cinder_store_mock
         mock_wait.side_effect = self._mock_wait_volume_status
+        mock_host_addr.return_value = self.fake_socket_return
         # create an image
         image_id = self._create_and_import(stores=['store1'])
         image = self.api_get('/v2/images/%s' % image_id).json
@@ -166,8 +171,9 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     @mock.patch.object(cinder, 'open')
     @mock.patch('glance_store._drivers.cinder.Store._wait_volume_status')
     @mock.patch.object(strutils, 'mask_dict_password')
-    def test_migrate_image_after_upgrade(self, mock_mask_pass, mock_wait,
-                                         mock_open, mock_connector,
+    @mock.patch.object(socket, 'getaddrinfo')
+    def test_migrate_image_after_upgrade(self, mock_host_addr, mock_mask_pass,
+                                         mock_wait, mock_open, mock_connector,
                                          mock_chown, mocked_cc):
         """Test to check if an image is successfully migrated when we
 
@@ -178,6 +184,7 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         self.start_server()
         mocked_cc.return_value = self.cinder_store_mock
         mock_wait.side_effect = self._mock_wait_volume_status
+        mock_host_addr.return_value = self.fake_socket_return
 
         # create image in single store
         image_id = self._create_and_import(stores=['store1'])
@@ -212,7 +219,9 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     @mock.patch.object(cinder, 'open')
     @mock.patch('glance_store._drivers.cinder.Store._wait_volume_status')
     @mock.patch.object(strutils, 'mask_dict_password')
-    def test_migrate_image_after_upgrade_not_owner(self, mock_mask_pass,
+    @mock.patch.object(socket, 'getaddrinfo')
+    def test_migrate_image_after_upgrade_not_owner(self, mock_host_addr,
+                                                   mock_mask_pass,
                                                    mock_wait, mock_open,
                                                    mock_connector,
                                                    mock_chown, mocked_cc):
@@ -225,6 +234,7 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         self.start_server()
         mocked_cc.return_value = self.cinder_store_mock
         mock_wait.side_effect = self._mock_wait_volume_status
+        mock_host_addr.return_value = self.fake_socket_return
 
         # create image in single store, owned by someone else
         image_id = self._create_and_import(stores=['store1'],
