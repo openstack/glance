@@ -159,12 +159,6 @@ new header ``OpenStack-image-store-ids`` which contains the list of
 available stores will be included in response. This header is only
 included if multiple backend stores are supported.
 
-.. note:: The Multi Store feature is introduced as EXPERIMENTAL in Rocky and
-          its use in production systems is currently **not supported**.
-          However we encourage people to use this feature for testing
-          purposes and report the issues so that we can make it stable and
-          fully supported in Stein release.
-
 The response body contains the new image entity.
 
 Synchronous Postconditions

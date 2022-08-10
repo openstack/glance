@@ -31,12 +31,6 @@ header.  If the store identifier specified is not recognized, a 400 (Bad
 Request) response is returned.  When the header is not present, the image
 data is placed into the default backing store.
 
-.. note:: The Multi Store feature is introduced as EXPERIMENTAL in Rocky and
-          its use in production systems is currently **not supported**.
-          However we encourage people to use this feature for testing
-          purposes and report the issues so that we can make it stable and
-          fully supported in Stein release.
-
 * Store identifiers are site-specific.  Use the :ref:`Store
   Discovery <store-discovery-call>` call to determine what
   stores are available in a particular cloud.

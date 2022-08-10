@@ -68,11 +68,6 @@ List stores
 A multiple store backend support is introduced in the Rocky release
 as a part of the EXPERIMENTAL Image API v2.8.
 
-.. note:: The Multi Store feature is introduced as EXPERIMENTAL in Rocky and
-          its use in production systems is currently **not supported**.
-          The feature is being finalized during the Train development
-          cycle and is expected to be fully supported in Image API v2.9.
-
 In version 2.7 of the API, this call will return a 404 (Not Found).
 Use the :ref:`API versions call <versions-call>` to determine
 what API versions are available in your cloud.
