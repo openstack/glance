@@ -257,7 +257,7 @@ class CacheWorker(threading.Thread):
         # NOTE(abhishekk): Setting daemon to True because if `atexit` event
         # handler is not called due to some reason the main process will
         # not hang for the thread which will never exit.
-        self.setDaemon(True)
+        self.daemon = True
 
     def submit(self, job):
         self.q.put(job)
