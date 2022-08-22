@@ -1,0 +1,8 @@
+{
+  "method": {
+    "name": "glance-download",
+    "glance_image_id": "c4705b36-b281-40f6-a01d-bf98883ead8e",
+    "glance_region": "REGION2",
+    "glance_service_interface": "public"
+  }
+}
