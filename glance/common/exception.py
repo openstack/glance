@@ -453,3 +453,8 @@ class InvalidDataMigrationScript(GlanceException):
     message = _("Invalid data migration script '%(script)s'. A valid data "
                 "migration script must implement functions 'has_migrations' "
                 "and 'migrate'.")
+
+
+class GlanceEndpointNotFound(NotFound):
+    message = _("%(interface)s glance endpoint not "
+                "found for region %(region)s")

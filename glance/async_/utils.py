@@ -19,6 +19,7 @@ from oslo_utils import encodeutils
 from oslo_utils import units
 from taskflow import task
 
+from glance.common import exception as glance_exception
 from glance.i18n import _LW
 
 
@@ -77,3 +78,20 @@ class OptionalTask(task.Task):
                        encodeutils.exception_to_unicode(exc))
                 LOG.warning(msg)
         return wrapper
+
+
+def get_glance_endpoint(context, region, interface):
+    """Return glance endpoint depending the input tasks
+
+    """
+    # We use the current context to retrieve the image
+    catalog = context.service_catalog
+
+    for service in catalog:
+        if service['type'] == 'image':
+            for endpoint in service['endpoints']:
+                if endpoint['region'].lower() == region.lower():
+                    return endpoint.get('%sURL' % interface)
+
+    raise glance_exception.GlanceEndpointNotFound(region=region,
+                                                  interface=interface)
