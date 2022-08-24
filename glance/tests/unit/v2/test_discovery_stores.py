@@ -40,7 +40,7 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
 
     def test_get_stores(self):
         available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder',
-                            'fast-rbd']
+                            'fast-rbd', 'reliable']
         req = unit_test_utils.get_fake_request()
         output = self.controller.get_stores(req)
         self.assertIn('stores', output)
@@ -50,7 +50,7 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
 
     def test_get_stores_read_only_store(self):
         available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder',
-                            'fast-rbd']
+                            'fast-rbd', 'reliable']
         req = unit_test_utils.get_fake_request()
         output = self.controller.get_stores(req)
         self.assertIn('stores', output)
@@ -77,22 +77,36 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
 
     def test_get_stores_detail(self):
         available_stores = ['cheap', 'fast', 'readonly_store', 'fast-cinder',
-                            'fast-rbd']
-        available_store_type = ['file', 'file', 'http', 'cinder', 'rbd']
+                            'fast-rbd', 'reliable']
+        available_store_type = ['file', 'file', 'http', 'cinder', 'rbd',
+                                'swift']
         req = unit_test_utils.get_fake_request(roles=['admin'])
         output = self.controller.get_stores_detail(req)
+        self.assertEqual(len(CONF.enabled_backends), len(output['stores']))
         self.assertIn('stores', output)
         for stores in output['stores']:
             self.assertIn('id', stores)
             self.assertIn(stores['id'], available_stores)
             self.assertIn(stores['type'], available_store_type)
             self.assertIsNotNone(stores['properties'])
-            if stores['id'] == 'fast-rbd':
-                self.assertIn('chunk_size', stores['properties'])
-                self.assertIn('pool', stores['properties'])
-                self.assertIn('thin_provisioning', stores['properties'])
-            else:
-                self.assertEqual({}, stores['properties'])
+
+    def test_get_stores_detail_properties(self):
+        store_attributes = {'rbd': ['chunk_size', 'pool', 'thin_provisioning'],
+                            'file': ['data_dir', 'chunk_size',
+                                     'thin_provisioning'],
+                            'cinder': ['volume_type', 'use_multipath'],
+                            'swift': ['container',
+                                      'large_object_size',
+                                      'large_object_chunk_size'],
+                            'http': []}
+        req = unit_test_utils.get_fake_request(roles=['admin'])
+        output = self.controller.get_stores_detail(req)
+        self.assertEqual(len(CONF.enabled_backends), len(output['stores']))
+        self.assertIn('stores', output)
+        for store in output['stores']:
+            actual_attribute = list(store['properties'].keys())
+            expected_attribute = store_attributes[store['type']]
+            self.assertEqual(actual_attribute, expected_attribute)
 
     def test_get_stores_detail_non_admin(self):
         req = unit_test_utils.get_fake_request()

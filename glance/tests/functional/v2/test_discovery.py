@@ -14,6 +14,7 @@
 #    under the License.
 
 import fixtures
+import http.client as http
 
 from oslo_utils import units
 
@@ -96,3 +97,68 @@ class TestDiscovery(functional.SynchronousAPIBase):
         expected['image_count_total']['usage'] = 1
         expected['image_size_total']['usage'] = 1
         self._assert_usage(expected)
+
+    def test_stores(self):
+        # NOTE(mrjoshi): As this is a functional test, we are
+        # testing the functionality with file stores.
+
+        self.start_server()
+
+        # If user is admin or non-admin the store list will be
+        # displayed.
+        stores = self.api_get('/v2/info/stores').json['stores']
+        expected = {
+            "stores": [
+                {
+                    "id": "store1",
+                    "default": "true"
+                },
+                {
+                    "id": "store2"
+                },
+                {
+                    "id": "store3"
+                }]}
+
+        self.assertEqual(expected['stores'], stores)
+
+        # If user is admin the store list will be displayed
+        # along with store properties.
+        stores = self.api_get('/v2/info/stores/detail').json['stores']
+        expected = {
+            "stores": [
+                {
+                    "id": "store1",
+                    "default": "true",
+                    "type": "file",
+                    "properties": {
+                          "data_dir": self._store_dir('store1'),
+                          "chunk_size": 65536,
+                          "thin_provisioning": False
+                    }
+                },
+                {
+                    "id": "store2",
+                    "type": "file",
+                    "properties": {
+                          "data_dir": self._store_dir('store2'),
+                          "chunk_size": 65536,
+                          "thin_provisioning": False
+                    }
+                },
+                {
+                    "id": "store3",
+                    "type": "file",
+                    "properties": {
+                          "data_dir": self._store_dir('store3'),
+                          "chunk_size": 65536,
+                          "thin_provisioning": False
+                    }
+                }]}
+
+        self.assertEqual(expected['stores'], stores)
+
+        # If user is non-admin 403 Error response will be returned.
+        response = self.api_get('/v2/info/stores/detail',
+                                headers={'X-Roles': 'member'})
+        self.assertEqual(http.FORBIDDEN, response.status_code)

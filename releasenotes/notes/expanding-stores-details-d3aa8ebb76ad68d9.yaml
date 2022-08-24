@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    This release brings expansion in the  functionality of
+    stores-detail API. The stores detail API will list the
+    way each store is configured, whereas previously this
+    worked only for rbd store. The API remains admin-only
+    by default as it exposes backend information.
