@@ -1,6 +1,28 @@
 [DEFAULT]
 
 
+[glance_download_opts]
+
+#
+# From glance
+#
+
+#
+# Specify metadata prefix to be set on the target image when using
+# glance-download. All other properties coming from the source image won't be
+# set
+# on the target image. If specified metadata does not exist on the source image
+# it won't be set on the target image. Note you can't set the os_glance prefix
+# as it is reserved by glance, so the related properties won't be set on the
+# target image.
+#
+# Possible values:
+#     * List containing extra_properties prefixes: ['os_', 'architecture']
+#
+#  (list value)
+#extra_properties = [hw_,trait:,os_distro,os_secure_boot,os_type]
+
+
 [image_conversion]
 
 #
