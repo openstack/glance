@@ -33,12 +33,12 @@ class TestInfoControllers(test_utils.BaseTestCase):
         self.assertEqual([], output['import-methods']['value'])
 
     def test_get_import_info(self):
-        # TODO(rosmaita): change this when import methods are
-        # listed in the config file
-        import_methods = ['glance-direct', 'web-download',
-                          'copy-image', 'glance-download']
+        """Testing defaults, not all possible values"""
+        default_import_methods = ['glance-direct', 'web-download',
+                                  'copy-image']
 
         req = unit_test_utils.get_fake_request()
         output = self.controller.get_image_import(req)
         self.assertIn('import-methods', output)
-        self.assertEqual(import_methods, output['import-methods']['value'])
+        self.assertEqual(default_import_methods,
+                         output['import-methods']['value'])

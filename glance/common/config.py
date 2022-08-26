@@ -572,11 +572,12 @@ Related options:
                 item_type=cfg.types.String(quotes=True),
                 bounds=True,
                 default=['glance-direct', 'web-download',
-                         'copy-image', 'glance-download'],
+                         'copy-image'],
                 help=_("""
     List of enabled Image Import Methods
 
     'glance-direct', 'copy-image' and 'web-download' are enabled by default.
+    'glance-download' is available, but requires federated deployments.
 
     Related options:
         * [DEFAULT]/node_staging_uri""")),
