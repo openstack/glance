@@ -79,9 +79,9 @@ task-related policies:
 Image Import Methods
 --------------------
 
-Glance provides three import methods that you can make available to your
-users: ``glance-direct``, ``web-download`` and ``copy-image``.  By default,
-all three methods are enabled.
+Glance provides four import methods that you can make available to your
+users: ``glance-direct``, ``web-download``, ``glance-download``, and
+``copy-image``. By default, all four methods are enabled.
 
 * The ``glance-direct`` import method allows your users to upload image data
   directly to Glance.
@@ -94,6 +94,10 @@ all three methods are enabled.
      The ``web-download`` import method replaces the copy-from functionality
      that was available in the Image API v1 but previously absent from v2.
      Additionally, the Image API v1 was removed in Glance 17.0.0 (Rocky).
+
+* The ``glance-download`` method allows an end user to import an image from a
+  remote glance. This import method is used to import an image from another
+  openstack region which is federated by the same keystone.
 
 * The ``copy-image`` method allows and end user to copy existing image to
   other Glance backends available in deployment. This import method is
@@ -259,6 +263,43 @@ be either 80 or 443.)
    The **glance-image-import.conf** is an optional file.  You can find an
    example file named glance-image-import.conf.sample_ in the **etc/**
    subdirectory of the Glance source code tree.  Make sure that you are looking
+   in the correct branch for the OpenStack release you are working with.
+
+Configuring the glance-download method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To enable the ``glance-download`` import method, make sure that it is included
+in the list of methods in the ``enabled_import_methods`` option, and that all
+the options described above are set properly.
+
+Additionally, you have the following configuration available.
+
+Depending your needs on image properties you may configure addional properties
+to be copied from the remote image to the local image.
+
+You can do this by configuring options in the
+``[glance_download_opts]`` section of the **glance-image-import.conf** file.
+
+``extra_properties`` options is a list of properties that should be copied from
+the remote image. The properties listed should be read as properties that
+"start with" as it allows you to set a namespace instead of explicitly listing
+each property of the namespace.
+
+Default values are :
+``['hw_', 'trait:', 'os_distro', 'os_secure_boot', 'os_type']``
+
+If you decide to set this option the default values will be totally ignored
+unless you explicitly set them.
+
+.. note::
+   The ``extra_properties`` option will ignore namespaces reserved by glance,
+   meaning that all the properties starting with ``os_glance`` won't be set
+   on the local image.
+
+.. note::
+   The **glance-image-import.conf** is an optional file.  You can find an
+   example file named glance-image-import.conf.sample in the **etc/**
+   subdirectory of the Glance source code tree. Make sure that you are looking
    in the correct branch for the OpenStack release you are working with.
 
 Configuring the copy-image method

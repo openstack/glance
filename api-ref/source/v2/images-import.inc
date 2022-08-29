@@ -18,11 +18,12 @@ the import methods available in the cloud in which you want to import
 an image.  Each of these methods is well defined (which is what makes
 this process interoperable among different OpenStack clouds).
 
-Three import methods are defined:
+Four import methods are defined:
 
 * ``glance-direct``
 * ``web-download``
 * ``copy-image``
+* ``glance-download``
 
 .. note::
 
@@ -91,6 +92,17 @@ The ``copy-image`` workflow has **two** parts:
 2.  Issue the :ref:`Image Import <image-import-call>` call to complete
     the import process.  You will specify that you are using the
     ``copy-image`` import method in the body of the import call.
+
+The glance-download import method
+---------------------------------
+
+The ``glance-download`` workflow has **two** parts:
+
+1.  Create an image record as described above.
+
+2.  Issue the :ref:`Image Import <image-import-call>` call to complete
+    the import process.  You will specify that you are using the
+    ``glance-download`` import method in the body of the import call.
 
 .. _image-stage-call:
 
@@ -182,6 +194,10 @@ service by being posted to an accessible location with a URL that you know.
 
 In the ``copy-image`` workflow, the data is made available to the Image
 service by copying existing image data to the staging area.
+
+In the ``glance-download`` workflow, the data is made available to the Image
+service by fetching an image accessible from another glance service specified
+by a region name and an image id that you know.
 
 Beginning with API version 2.8, an optional ``stores`` parameter may be added
 to the body request. When present, it contains the list of backing store
@@ -289,11 +305,22 @@ If you are using the ``copy-image`` import method:
   permission to copy unowned images. Consult your cloud's local
   documentation for details.
 
+If you are using the ``glance-download`` import method:
+
+- The image status must be ``queued``.  (This indicates that no image data
+  has yet been associated with the image.)
+
+- The body of your request must indicate that you are using the
+  ``glance-download`` import method, and it must contain the region name of the
+  remote openstack region and the image id to fetch.
+  You might optionaly set the service interface name (public by default) to
+  request.
+
 **Synchronous Postconditions**
 
 - With correct permissions, you can see the image status as
-  ``importing`` (only for glance-direct and web-download import methods)
-  through API calls.  (Be aware, however, that if the import
+  ``importing`` (only for glance-direct, web-download and glance-download
+  import methods) through API calls.  (Be aware, however, that if the import
   process completes before you make the API call, the image may already
   show as ``active``.)
 
@@ -334,4 +361,10 @@ Request Example - copy-image import method
 --------------------------------------------
 
 .. literalinclude:: samples/image-import-c-i-request.json
+   :language: json
+
+Request Example - glance-download import method
+-----------------------------------------------
+
+.. literalinclude:: samples/image-import-gd-request.json
    :language: json
