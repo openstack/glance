@@ -81,7 +81,7 @@ Image Import Methods
 
 Glance provides four import methods that you can make available to your
 users: ``glance-direct``, ``web-download``, ``glance-download``, and
-``copy-image``. By default, all four methods are enabled.
+``copy-image``. By default, ``glance-download`` is not enabled.
 
 * The ``glance-direct`` import method allows your users to upload image data
   directly to Glance.
@@ -162,8 +162,8 @@ Configuring the glance-direct method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For the ``glance-direct`` method, make sure that ``glance-direct`` is included
-in the list specified by your ``enabled_import_methods`` setting, and that all
-the options described above are set properly.
+in the list specified by your ``enabled_import_methods`` setting, and that
+staging directory config options are set properly.
 
 Note that in order to use ``glance-direct``, the
 ``worker_self_reference_url`` configuration option must be set as
@@ -174,8 +174,8 @@ Configuring the web-download method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To enable the ``web-download`` import method, make sure that it is included in
-the list of methods in the ``enabled_import_methods`` option, and that all the
-options described above are set properly.
+the list of methods in the ``enabled_import_methods`` option, and that staging
+directory config options are set properly.
 
 Additionally, you have the following configuration available.
 
@@ -269,8 +269,8 @@ Configuring the glance-download method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To enable the ``glance-download`` import method, make sure that it is included
-in the list of methods in the ``enabled_import_methods`` option, and that all
-the options described above are set properly.
+in the list of methods in the ``enabled_import_methods`` option, and that
+staging directory config options are set properly.
 
 Additionally, you have the following configuration available.
 
