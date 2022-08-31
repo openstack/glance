@@ -47,7 +47,7 @@ task_policies = [
         # All policies except tasks_api_access are internal policies that are
         # only called by glance as a result of some other operation.
         check_str='rule:default',
-        scope_types=['system', 'project'],
+        scope_types=['project'],
         description='Get an image task.\n' + TASK_DESCRIPTION,
         operations=[
             {'path': '/v2/tasks/{task_id}',
@@ -61,7 +61,7 @@ task_policies = [
     policy.DocumentedRuleDefault(
         name="get_tasks",
         check_str='rule:default',
-        scope_types=['system', 'project'],
+        scope_types=['project'],
         description='List tasks for all images.\n' + TASK_DESCRIPTION,
         operations=[
             {'path': '/v2/tasks',
@@ -75,7 +75,7 @@ task_policies = [
     policy.DocumentedRuleDefault(
         name="add_task",
         check_str='rule:default',
-        scope_types=['system', 'project'],
+        scope_types=['project'],
         description='List tasks for all images.\n' + TASK_DESCRIPTION,
         operations=[
             {'path': '/v2/tasks',
@@ -89,7 +89,7 @@ task_policies = [
     policy.DocumentedRuleDefault(
         name="modify_task",
         check_str='rule:default',
-        scope_types=['system', 'project'],
+        scope_types=['project'],
         description="This policy is not used.",
         operations=[
             {'path': '/v2/tasks/{task_id}',
@@ -102,7 +102,7 @@ task_policies = [
     policy.DocumentedRuleDefault(
         name="tasks_api_access",
         check_str="role:admin",
-        scope_types=['system', 'project'],
+        scope_types=['project'],
         description=TASK_ACCESS_DESCRIPTION,
         operations=[
             {'path': '/v2/tasks/{task_id}',
