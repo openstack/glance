@@ -54,16 +54,9 @@ PROJECT_READER_OR_PUBLIC_NAMESPACE = (
 #
 # These check strings do not support tenancy with the `admin` role. This means
 # anyone with the `admin` role on any project can execute a policy, which is
-# typical in OpenStack services. Eventually, these check strings will be
-# superseded by check strings that implement scope checking and system-scope
-# for applicable APIs (e.g., making an image public). But, we have a lot of
-# cleanup to do in different parts of glance to sweep all the authorization
-# code into a single layer before we can safely consume system-scope and
-# implement scope checking. This refactoring also needs significant API testing
-# to ensure we don't leave doors open to unintended users, or expose
-# authoritative regressions. In the mean time, we can use the following check
-# strings to offer formal support for project membership and a read-only
-# variant consistent with other OpenStack services.
+# typical in OpenStack services. But following check strings offer formal
+# support for project membership and a read-only variant consistent with
+# other OpenStack services.
 ADMIN_OR_PROJECT_MEMBER = f'role:admin or ({PROJECT_MEMBER})'
 ADMIN_OR_PROJECT_READER = f'role:admin or ({PROJECT_READER})'
 ADMIN_OR_PROJECT_READER_GET_IMAGE = (

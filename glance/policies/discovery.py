@@ -19,7 +19,7 @@ discovery_policies = [
     policy.DocumentedRuleDefault(
         name="stores_info_detail",
         check_str='role:admin',
-        scope_types=['system', 'project'],
+        scope_types=['project'],
         description='Expose store specific information',
         operations=[
             {'path': '/v2/info/stores/detail',
