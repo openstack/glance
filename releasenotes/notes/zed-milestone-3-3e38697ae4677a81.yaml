@@ -1,0 +1,21 @@
+---
+prelude: >
+    The Zed release includes some important milestones in Glance
+    development priorities.
+
+    * Extended the functionality of stores-detail API
+
+    * Added glance-download internal plugin to download the image from remote glance
+
+    * Added support for immediate caching of an image
+
+    * Removed dead code of auth and policy layers
+
+fixes:
+  - |
+    Bug 1905672_: Non existing property protection file raises 500 Internal server error
+  - |
+    Bug 1982426_: Python3.11: "glance-manage" crashes
+
+    .. _1905672: https://code.launchpad.net/bugs/1905672
+    .. _1982426: https://code.launchpad.net/bugs/1982426
