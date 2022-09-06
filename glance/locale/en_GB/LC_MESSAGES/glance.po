@@ -15,11 +15,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2022-08-24 12:13+0000\n"
+"POT-Creation-Date: 2022-09-01 19:25+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2022-08-02 08:42+0000\n"
+"PO-Revision-Date: 2022-09-05 10:23+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language: en_GB\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -37,6 +37,7 @@ msgid ""
 "\n"
 "    'glance-direct', 'copy-image' and 'web-download' are enabled by "
 "default.\n"
+"    'glance-download' is available, but requires federated deployments.\n"
 "\n"
 "    Related options:\n"
 "        * [DEFAULT]/node_staging_uri"
@@ -46,6 +47,7 @@ msgstr ""
 "\n"
 "    'glance-direct', 'copy-image' and 'web-download' are enabled by "
 "default.\n"
+"    'glance-download' is available, but requires federated deployments.\n"
 "\n"
 "    Related options:\n"
 "        * [DEFAULT]/node_staging_uri"
@@ -1954,6 +1956,37 @@ msgstr ""
 
 msgid ""
 "\n"
+"Specify metadata prefix to be set on the target image when using\n"
+"glance-download. All other properties coming from the source image won't be "
+"set\n"
+"on the target image. If specified metadata does not exist on the source "
+"image\n"
+"it won't be set on the target image. Note you can't set the os_glance "
+"prefix\n"
+"as it is reserved by glance, so the related properties won't be set on the\n"
+"target image.\n"
+"\n"
+"Possible values:\n"
+"    * List containing extra_properties prefixes: ['os_', 'architecture']\n"
+"\n"
+msgstr ""
+"\n"
+"Specify metadata prefix to be set on the target image when using\n"
+"glance-download. All other properties coming from the source image won't be "
+"set\n"
+"on the target image. If specified metadata does not exist on the source "
+"image\n"
+"it won't be set on the target image. Note you can't set the os_glance "
+"prefix\n"
+"as it is reserved by Glance, so the related properties won't be set on the\n"
+"target image.\n"
+"\n"
+"Possible values:\n"
+"    * List containing extra_properties prefixes: ['os_', 'architecture']\n"
+"\n"
+
+msgid ""
+"\n"
 "Specify name of user roles to be ignored for injecting metadata\n"
 "properties in the image.\n"
 "\n"
@@ -2790,6 +2823,10 @@ msgid "%(cls)s exception was raised in the last rpc call: %(val)s"
 msgstr "%(cls)s exception was raised in the last rpc call: %(val)s"
 
 #, python-format
+msgid "%(interface)s glance endpoint not found for region %(region)s"
+msgstr "%(interface)s glance endpoint not found for region %(region)s"
+
+#, python-format
 msgid "%(m_id)s not found in the member list of the image %(i_id)s."
 msgstr "%(m_id)s not found in the member list of the image %(i_id)s."
 
@@ -2895,6 +2932,12 @@ msgstr "'disk_format' needs to be set before import"
 
 msgid "'glance-direct' method is not available at this site."
 msgstr "'glance-direct' method is not available at this site."
+
+msgid "'glance_image_id' needs to be set for glance-download import method"
+msgstr "'glance_image_id' needs to be set for glance-download import method"
+
+msgid "'glance_region' needs to be set for glance-download import method"
+msgstr "'glance_region' needs to be set for glance-download import method"
 
 msgid "'node_staging_uri' is not set correctly. Could not load staging store."
 msgstr "'node_staging_uri' is not set correctly. Could not load staging store."
@@ -3565,6 +3608,10 @@ msgstr "Image is already present at store '%s'"
 msgid "Image member limit exceeded for image %(id)s: %(e)s:"
 msgstr "Image member limit exceeded for image %(id)s: %(e)s:"
 
+#, python-format
+msgid "Image needs to be in 'queued' state to use '%s' method"
+msgstr "Image needs to be in 'queued' state to use '%s' method"
+
 msgid "Image needs to be staged before 'glance-direct' method can be used"
 msgstr "Image needs to be staged before 'glance-direct' method can be used"
 
@@ -4163,6 +4210,10 @@ msgid "Reloading %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 msgstr "Reloading %(serv)s (pid %(pid)s) with signal(%(sig)s)"
 
 #, python-format
+msgid "Remote image id does not look like a UUID: %s"
+msgstr "Remote image id does not look like a UUID: %s"
+
+#, python-format
 msgid "Removing stale pid file %s"
 msgstr "Removing stale pid file %s"
 
@@ -4204,6 +4255,10 @@ msgstr "Server worker creation failed: %(reason)s."
 msgid "Signature verification failed"
 msgstr "Signature verification failed"
 
+#, python-format
+msgid "Size attribute of remote image %s could not be determined."
+msgstr "Size attribute of remote image %s could not be determined."
+
 msgid "Size of image file in bytes"
 msgstr "Size of image file in bytes"
 
@@ -4223,6 +4278,10 @@ msgstr "Sort direction supplied was not valid."
 
 msgid "Sort key supplied was not valid."
 msgstr "Sort key supplied was not valid."
+
+#, python-format
+msgid "Source image status should be active instead of %s"
+msgstr "Source image status should be active instead of %s"
 
 msgid ""
 "Specifies the prefix to use for the given resource type. Any properties in "
