@@ -253,7 +253,7 @@ class TestImagesController(base.StoreClearingUnitTest):
             mock.call(mock.ANY, 'upload_image', mock.ANY),
             mock.call(mock.ANY, 'get_image', mock.ANY)
         ]
-        mock_enforce.has_calls(expected_call)
+        mock_enforce.assert_has_calls(expected_call)
 
     def test_upload_invalid(self):
         request = unit_test_utils.get_fake_request()
