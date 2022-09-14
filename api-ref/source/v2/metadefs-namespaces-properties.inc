@@ -28,7 +28,7 @@ Request
 .. rest_parameters:: metadefs-parameters.yaml
 
    - namespace_name: namespace_name
-   - name: name
+   - name: name-property
    - title: title
    - type: type
    - additionalItems: additionalItems
@@ -76,7 +76,7 @@ Response Parameters
    - pattern: pattern
    - type: type
    - minLength: minLength
-   - name: name
+   - name: name-property
 
 Response Example
 ----------------
@@ -176,7 +176,7 @@ Response Parameters
    - pattern: pattern
    - type: type
    - minLength: minLength
-   - name: name
+   - name: name-property
 
 
 
