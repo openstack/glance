@@ -63,4 +63,4 @@
 
    .. end
 
-   Be sure to also set ``use_keystone_quotas=True`` in your ``glance-api.conf`` file.
+   Be sure to also set ``use_keystone_limits=True`` in your ``glance-api.conf`` file.
