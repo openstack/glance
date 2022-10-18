@@ -63,21 +63,44 @@ class TestVersions(test_utils.BaseTestCase):
                     for prefix in exception_releases]):
                 continue
 
-            # File format should be release_phaseNN_description.py
-            try:
-                _rest = ''  # noqa
-                release, phasever, _rest = version_file.split('_', 2)
-            except ValueError:
-                release = phasever = ''
-            phase = ''.join(x for x in phasever if x.isalpha())
-            # Grab the non-numeric part of phaseNN
-            if phase not in required_phases:
-                # Help make sure that going forward developers stick to the
-                # consistent format.
-                self.fail('Migration files should be in the form of: '
-                          'release_phaseNN_some_description.py '
-                          '(while processing %r)' % version_file)
-            releases[release].add(phase)
+            # For legacy database scripts does not starts with
+            # YYYY i.e. pre Antelope
+            if not version_file.split('_', 2)[0].isnumeric():
+                # File format should be release_phaseNN_description.py
+                try:
+                    _rest = ''  # noqa
+                    release, phasever, _rest = version_file.split('_', 2)
+                except ValueError:
+                    release = phasever = ''
+                phase = ''.join(x for x in phasever if x.isalpha())
+                # Grab the non-numeric part of phaseNN
+                if phase not in required_phases:
+                    # Help make sure that going forward developers stick to the
+                    # consistent format.
+                    self.fail('Migration files should be in the form of: '
+                              'release_phaseNN_some_description.py '
+                              '(while processing %r)' % version_file)
+                releases[release].add(phase)
+            else:
+                # For new database scripts i.e. Antelope onwards
+                # File format should be
+                # releaseYear_releaseN_phaseNN_description.py
+                # For example 2023_1_expand01_empty.py
+                try:
+                    _rest = ''  # noqa
+                    release_y, release_n, phasever, _rest = version_file.split(
+                        '_', 3)
+                except ValueError:
+                    release_y = phasever = ''
+                phase = ''.join(x for x in phasever if x.isalpha())
+                # Grab the non-numeric part of phaseNN
+                if phase not in required_phases:
+                    # Help make sure that going forward developers stick to the
+                    # consistent format.
+                    self.fail('Migration files should be in the form of: '
+                              'releaseYear_releaseN_phaseNN_description.py '
+                              '(while processing %r)' % version_file)
+                releases[release_y].add(phase)
 
         for release, phases in releases.items():
             missing = required_phases - phases
