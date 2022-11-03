@@ -33,7 +33,7 @@
   .. code-block:: ini
 
      [DEFAULT]
-     use_keystone_quotas = True
+     use_keystone_limits = True
 
   .. end
 
