@@ -1,23 +1,4 @@
 - job:
-    name: glance-code-constants-check
-    parent: tox
-    description: |
-      Tests to catch when code constants have gotten out of sync.
-    vars:
-      tox_envlist: gateonly
-    irrelevant-files:
-      - ^(test-|)requirements.txt$
-      - ^lower-constraints.txt$
-      - ^.*\.rst$
-      - ^api-ref/.*$
-      - ^doc/.*$
-      - ^etc/.*$
-      - ^releasenotes/.*$
-      - ^setup.cfg$
-      - ^tox.ini$
-      - ^\.zuul\.yaml$
-
-- job:
     name: glance-tox-oslo-tips-base
     parent: tox
     abstract: true
@@ -298,7 +279,6 @@
       jobs:
         - openstack-tox-functional-py36
         - openstack-tox-functional-py38
-        - glance-code-constants-check
         - glance-ceph-thin-provisioning:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
