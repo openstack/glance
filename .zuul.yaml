@@ -18,24 +18,6 @@
       - ^\.zuul\.yaml$
 
 - job:
-    name: glance-code-constants-check
-    parent: tox
-    description: |
-      Tests to catch when code constants have gotten out of sync.
-    vars:
-      tox_envlist: gateonly
-    irrelevant-files:
-      - ^(test-|)requirements.txt$
-      - ^.*\.rst$
-      - ^api-ref/.*$
-      - ^doc/.*$
-      - ^etc/.*$
-      - ^releasenotes/.*$
-      - ^setup.cfg$
-      - ^tox.ini$
-      - ^\.zuul\.yaml$
-
-- job:
     name: glance-tox-oslo-tips-base
     parent: tox
     abstract: true
@@ -220,7 +202,6 @@
         - openstack-tox-functional-py37
         - glance-eventlet-ssl-handshake-broken-py3:
             voting: false
-        - glance-code-constants-check
         - devstack-plugin-ceph-tempest:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
