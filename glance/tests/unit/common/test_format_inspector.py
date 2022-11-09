@@ -153,6 +153,24 @@ class TestFormatInspectors(test_utils.BaseTestCase):
     def test_vdi_invalid(self):
         self._test_format_with_invalid_data('vdi')
 
+    def test_vmdk_invalid_type(self):
+        fmt = format_inspector.get_inspector('vmdk')()
+        wrapper = format_inspector.InfoWrapper(open(__file__, 'rb'), fmt)
+        while True:
+            chunk = wrapper.read(32)
+            if not chunk:
+                break
+
+        wrapper.close()
+
+        fake_rgn = mock.MagicMock()
+        fake_rgn.complete = True
+        fake_rgn.data = b'foocreateType="someunknownformat"bar'
+
+        with mock.patch.object(fmt, 'has_region', return_value=True):
+            with mock.patch.object(fmt, 'region', return_value=fake_rgn):
+                self.assertEqual(0, fmt.virtual_size)
+
 
 class TestFormatInspectorInfra(test_utils.BaseTestCase):
     def _test_capture_region_bs(self, bs):
