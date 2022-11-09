@@ -283,6 +283,37 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual('active', image.status)
         self.assertEqual(0, image.virtual_size)
 
+    @mock.patch('glance.common.format_inspector.QcowInspector.virtual_size',
+                new_callable=mock.PropertyMock)
+    @mock.patch('glance.common.format_inspector.QcowInspector.format_match',
+                new_callable=mock.PropertyMock)
+    def test_image_set_data_inspector_virtual_size_failure(self, mock_fm,
+                                                           mock_vs):
+        # Force our format to match
+        mock_fm.return_value = True
+
+        # Make virtual_size fail in some unexpected way
+        mock_vs.side_effect = ValueError('some error')
+
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = 'qcow2'
+        # We are going to pass an iterable data source, so use the
+        # FakeStoreAPIReader that actually reads from that data
+        store_api = unit_test_utils.FakeStoreAPIReader()
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+
+        # Make sure set_data proceeds even though the format clearly
+        # does not match
+        image.set_data(iter(['YYYY']), 4)
+        self.assertEqual(4, image.size)
+        # NOTE(markwash): FakeStore returns image_id for location
+        self.assertEqual(UUID2, image.locations[0]['url'])
+        self.assertEqual('Z', image.checksum)
+        self.assertEqual('active', image.status)
+        self.assertEqual(0, image.virtual_size)
+
     @mock.patch('glance.common.format_inspector.get_inspector')
     def test_image_set_data_inspector_not_needed(self, mock_gi):
         context = glance.context.RequestContext(user=USER1)

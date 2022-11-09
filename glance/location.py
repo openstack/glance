@@ -584,14 +584,22 @@ class ImageProxy(glance.domain.proxy.Image):
 
         self._upload_to_store(data, verifier, backend, size)
 
-        if fmt and fmt.format_match and fmt.virtual_size:
-            self.image.virtual_size = fmt.virtual_size
-            LOG.info('Image format matched and virtual size computed: %i',
-                     self.image.virtual_size)
+        virtual_size = 0
+        if fmt and fmt.format_match:
+            try:
+                virtual_size = fmt.virtual_size
+                LOG.info('Image format matched and virtual size computed: %i',
+                         virtual_size)
+            except Exception as e:
+                LOG.error(_LE('Unable to determine virtual_size because: %s'),
+                          e)
         elif fmt:
             LOG.warning('Image format %s did not match; '
                         'unable to calculate virtual size',
                         self.image.disk_format)
+
+        if virtual_size:
+            self.image.virtual_size = fmt.virtual_size
 
         if set_active and self.image.status != 'active':
             self.image.status = 'active'
