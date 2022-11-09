@@ -567,7 +567,7 @@ class VMDKInspector(FileInspector):
         else:
             vmdktype = b'formatnotfound'
         if vmdktype != b'monolithicSparse':
-            raise ImageFormatError('Unsupported VMDK format %s' % vmdktype)
+            LOG.warning('Unsupported VMDK format %s', vmdktype)
             return 0
 
         # If we have the descriptor, we definitely have the header
