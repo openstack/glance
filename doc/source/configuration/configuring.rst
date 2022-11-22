@@ -735,9 +735,8 @@ Debian-based distributions.
   `This option is specific to the RBD storage backend.`
 
   Sets the RADOS user to authenticate as. This is only needed
-  when `RADOS authentication <https://docs.ceph.com/docs/emperor/rados/operations/authentication/>`_
-  is `enabled.
-  <https://docs.ceph.com/docs/emperor/rados/operations/authentication/#enabling-cephx>`_
+  when `RADOS authentication <https://docs.ceph.com/en/latest/rados/configuration/auth-config-ref/>`_
+  is enabled.
 
 A keyring must be set for this user in the Ceph
 configuration file, e.g. with a user ``glance``::
