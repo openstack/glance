@@ -221,17 +221,6 @@ class TestUtils(test_utils.BaseTestCase):
         reader = utils.CooperativeReader([])
         self.assertEqual(b'', reader.read())
 
-    def test_cooperative_reader_of_iterator_stop_iteration_err(self):
-        """Ensure cooperative reader supports iterator backends too"""
-        reader = utils.CooperativeReader([l * 3 for l in ''])
-        chunks = []
-        while True:
-            chunks.append(reader.read(3))
-            if chunks[-1] == b'':
-                break
-        meat = b''.join(chunks)
-        self.assertEqual(b'', meat)
-
     def _create_generator(self, chunk_size, max_iterations):
         chars = b'abc'
         iteration = 0
