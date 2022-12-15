@@ -82,6 +82,38 @@ COMMANDS
       metadef_objects, metadef_resource_types, metadef_namespaces and
       metadef_properties.
 
+``db_purge``
+      Purge deleted rows older than a given age from glance db tables.
+
+      This command interprets the following options when it is invoked:
+
+      --max_rows      Purge deleted rows older than age in days (default
+                      value if not specified: 100)
+      --age_in_days   Limit number of records to delete (default value if
+                      not specified: 30 days)
+
+      WARNING: This function is useful primarily in test systems. We do not
+      recommend its use in production systems unless you have reviewed
+      OpenStack Security Note `OSSN-0075`_ and understand the risk involved.
+
+      .. _`OSSN-0075`: https://wiki.openstack.org/wiki/OSSN/OSSN-0075
+
+``db_purge_images_table``
+      Purge deleted rows older than a given age from images db tables.
+
+      This command interprets the following options when it is invoked:
+
+      --max_rows      Purge deleted rows older than age in days (default
+                      value if not specified: 100)
+      --age_in_days   Limit number of records to delete (default value if
+                      not specified: 30 days)
+
+      WARNING: This function is useful primarily in test systems. We do not
+      recommend its use in production systems unless you have reviewed
+      OpenStack Security Note `OSSN-0075`_ and understand the risk involved.
+
+      .. _`OSSN-0075`: https://wiki.openstack.org/wiki/OSSN/OSSN-0075
+
 OPTIONS
 =======
 
