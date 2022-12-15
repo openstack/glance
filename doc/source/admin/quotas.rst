@@ -12,6 +12,11 @@
       License for the specific language governing permissions and limitations
       under the License.
 
+.. versionadded:: 23.0.0 (Xena)
+
+   This functionality was first introduced in the 23.0.0 (Xena) release. Prior
+   to this, only global resource limits were supported.
+
 .. _quotas:
 
 Per-Tenant Quotas
