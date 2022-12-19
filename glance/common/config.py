@@ -98,6 +98,18 @@ image_format_opts = [
                        "image attribute"),
                 deprecated_opts=[cfg.DeprecatedOpt('disk_formats',
                                                    group='DEFAULT')]),
+    cfg.ListOpt('vmdk_allowed_types',
+                default=['streamOptimized', 'monolithicSparse'],
+                help=_("A list of strings describing allowed VMDK "
+                       "'create-type' subformats that will be allowed. "
+                       "This is recommended to only include "
+                       "single-file-with-sparse-header variants to avoid "
+                       "potential host file exposure due to processing named "
+                       "extents. If this list is empty, then no VDMK image "
+                       "types allowed. Note that this is currently only "
+                       "checked during image conversion (if enabled), and "
+                       "limits the types of VMDK images we will convert "
+                       "from.")),
 ]
 task_opts = [
     cfg.IntOpt('task_time_to_live',
