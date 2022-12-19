@@ -172,6 +172,53 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         # Make sure we did not update the image
         self.img_repo.save.assert_not_called()
 
+    def test_image_convert_invalid_qcow(self):
+        data = {'format': 'qcow2',
+                'backing-filename': '/etc/hosts'}
+
+        convert = self._setup_image_convert_info_fail()
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.return_value = json.dumps(data), ''
+            e = self.assertRaises(RuntimeError,
+                                  convert.execute, 'file:///test/path.qcow')
+            self.assertEqual('QCOW images with backing files are not allowed',
+                             str(e))
+
+    def _test_image_convert_invalid_vmdk(self):
+        data = {'format': 'vmdk',
+                'format-specific': {
+                    'data': {
+                        'create-type': 'monolithicFlat',
+                    }}}
+
+        convert = self._setup_image_convert_info_fail()
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.return_value = json.dumps(data), ''
+            convert.execute('file:///test/path.vmdk')
+
+    def test_image_convert_invalid_vmdk(self):
+        e = self.assertRaises(RuntimeError,
+                              self._test_image_convert_invalid_vmdk)
+        self.assertEqual('Invalid VMDK create-type specified', str(e))
+
+    def test_image_convert_valid_vmdk_no_types(self):
+        with mock.patch.object(CONF.image_format, 'vmdk_allowed_types',
+                               new=[]):
+            # We make it past the VMDK check and fail because our file
+            # does not exist
+            e = self.assertRaises(RuntimeError,
+                                  self._test_image_convert_invalid_vmdk)
+            self.assertEqual('Image is a VMDK, but no VMDK createType is '
+                             'specified', str(e))
+
+    def test_image_convert_valid_vmdk(self):
+        with mock.patch.object(CONF.image_format, 'vmdk_allowed_types',
+                               new=['monolithicSparse', 'monolithicFlat']):
+            # We make it past the VMDK check and fail because our file
+            # does not exist
+            self.assertRaises(FileNotFoundError,
+                              self._test_image_convert_invalid_vmdk)
+
     def test_image_convert_fails(self):
         convert = self._setup_image_convert_info_fail()
         with mock.patch.object(processutils, 'execute') as exc_mock:
