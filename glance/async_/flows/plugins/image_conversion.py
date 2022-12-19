@@ -116,6 +116,29 @@ class _ConvertImage(task.Task):
         virtual_size = metadata.get('virtual-size', 0)
         action.set_image_attribute(virtual_size=virtual_size)
 
+        if 'backing-filename' in metadata:
+            LOG.warning('Refusing to process QCOW image with a backing file')
+            raise RuntimeError(
+                'QCOW images with backing files are not allowed')
+
+        if metadata.get('format') == 'vmdk':
+            create_type = metadata.get(
+                'format-specific', {}).get(
+                    'data', {}).get('create-type')
+            allowed = CONF.image_format.vmdk_allowed_types
+            if not create_type:
+                raise RuntimeError(_('Unable to determine VMDK create-type'))
+            if not len(allowed):
+                LOG.warning(_('Refusing to process VMDK file as '
+                              'vmdk_allowed_types is empty'))
+                raise RuntimeError(_('Image is a VMDK, but no VMDK createType '
+                                     'is specified'))
+            if create_type not in allowed:
+                LOG.warning(_('Refusing to process VMDK file with create-type '
+                              'of %r which is not in allowed set of: %s'),
+                            create_type, ','.join(allowed))
+                raise RuntimeError(_('Invalid VMDK create-type specified'))
+
         if source_format == target_format:
             LOG.debug("Source is already in target format, "
                       "not doing conversion for %s", self.image_id)
