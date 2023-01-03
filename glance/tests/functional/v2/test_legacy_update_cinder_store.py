@@ -19,13 +19,22 @@ import uuid
 
 from cinderclient.v3 import client as cinderclient
 import glance_store
-from glance_store._drivers import cinder
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import strutils
 
 from glance.common import wsgi
 from glance.tests import functional
+
+# Keeping backward compatibility to support importing from old
+# path
+try:
+    from glance_store._drivers.cinder import base
+    from glance_store._drivers.cinder import store as cinder
+except ImportError:
+    from glance_store._drivers import cinder
+    base = mock.Mock()
+
 
 LOG = logging.getLogger(__name__)
 
@@ -135,6 +144,7 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         volume.status = status_expected
         return volume
 
+    @mock.patch.object(base, 'connector')
     @mock.patch.object(cinderclient, 'Client')
     @mock.patch.object(cinder.Store, 'temporary_chown')
     @mock.patch.object(cinder, 'connector')
@@ -143,7 +153,8 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     @mock.patch.object(strutils, 'mask_dict_password')
     @mock.patch.object(socket, 'getaddrinfo')
     def test_create_image(self, mock_host_addr, mock_mask_pass, mock_wait,
-                          mock_open, mock_connector, mock_chown, mocked_cc):
+                          mock_open, mock_connector, mock_chown, mocked_cc,
+                          mock_base):
         # setup multiple cinder stores
         self.setup_multiple_stores()
         self.start_server()
@@ -165,6 +176,7 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         mock_chown.assert_called()
         mock_connector.get_connector_properties.assert_called()
 
+    @mock.patch.object(base, 'connector')
     @mock.patch.object(cinderclient, 'Client')
     @mock.patch.object(cinder.Store, 'temporary_chown')
     @mock.patch.object(cinder, 'connector')
@@ -174,7 +186,7 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
     @mock.patch.object(socket, 'getaddrinfo')
     def test_migrate_image_after_upgrade(self, mock_host_addr, mock_mask_pass,
                                          mock_wait, mock_open, mock_connector,
-                                         mock_chown, mocked_cc):
+                                         mock_chown, mocked_cc, mock_base):
         """Test to check if an image is successfully migrated when we
 
         upgrade from a single cinder store to multiple cinder stores.
@@ -213,6 +225,7 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
         mock_chown.assert_called()
         mock_connector.get_connector_properties.assert_called()
 
+    @mock.patch.object(base, 'connector')
     @mock.patch.object(cinderclient, 'Client')
     @mock.patch.object(cinder.Store, 'temporary_chown')
     @mock.patch.object(cinder, 'connector')
@@ -224,7 +237,8 @@ class TestLegacyUpdateCinderStore(functional.SynchronousAPIBase):
                                                    mock_mask_pass,
                                                    mock_wait, mock_open,
                                                    mock_connector,
-                                                   mock_chown, mocked_cc):
+                                                   mock_chown, mocked_cc,
+                                                   mock_base):
         """Test to check if an image is successfully migrated when we upgrade
         from a single cinder store to multiple cinder stores, and that
         GETs from non-owners in the meantime are not interrupted.
