@@ -1,0 +1,18 @@
+---
+fixes:
+  - |
+    Bug 1990854_: oslo_limit section not clear
+  - |
+    Bug 1779781_: virt/vmware not support VirtualSriovEthernetCard
+  - |
+    Bug 1647491_: Missing documentation for glance-manage db_purge command
+  - |
+    Bug 1983279_: Cannot upload vmdk images due to unsupported vmdk format
+  - |
+    Bug 1989268_: Wrong assertion method
+
+    .. _1990854: https://code.launchpad.net/bugs/1990854
+    .. _1779781: https://code.launchpad.net/bugs/1779781
+    .. _1647491: https://code.launchpad.net/bugs/1647491
+    .. _1983279: https://code.launchpad.net/bugs/1983279
+    .. _1989268: https://code.launchpad.net/bugs/1989268
