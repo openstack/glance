@@ -16,6 +16,7 @@
 import io
 import os
 import re
+import struct
 import subprocess
 import tempfile
 from unittest import mock
@@ -60,6 +61,28 @@ class TestFormatInspectors(test_utils.BaseTestCase):
         self._created_files.append(fn)
         subprocess.check_output(
             'qemu-img create -f %s %s %i' % (fmt, fn, size),
+            shell=True)
+        return fn
+
+    def _create_allocated_vmdk(self, size_mb):
+        # We need a "big" VMDK file to exercise some parts of the code of the
+        # format_inspector. A way to create one is to first create an empty
+        # file, and then to convert it with the -S 0 option.
+        fn = tempfile.mktemp(prefix='glance-unittest-formatinspector-',
+                             suffix='.vmdk')
+        self._created_files.append(fn)
+        zeroes = tempfile.mktemp(prefix='glance-unittest-formatinspector-',
+                                 suffix='.zero')
+        self._created_files.append(zeroes)
+
+        # Create an empty file
+        subprocess.check_output(
+            'dd if=/dev/zero of=%s bs=1M count=%i' % (zeroes, size_mb),
+            shell=True)
+
+        # Convert it to VMDK
+        subprocess.check_output(
+            'qemu-img convert -f raw -O vmdk -S 0 %s %s' % (zeroes, fn),
             shell=True)
         return fn
 
@@ -118,6 +141,64 @@ class TestFormatInspectors(test_utils.BaseTestCase):
 
     def test_vmdk(self):
         self._test_format('vmdk')
+
+    def test_vmdk_bad_descriptor_offset(self):
+        format_name = 'vmdk'
+        image_size = 10 * units.Mi
+        descriptorOffsetAddr = 0x1c
+        BAD_ADDRESS = 0x400
+        img = self._create_img(format_name, image_size)
+
+        # Corrupt the header
+        fd = open(img, 'r+b')
+        fd.seek(descriptorOffsetAddr)
+        fd.write(struct.pack('<Q', BAD_ADDRESS // 512))
+        fd.close()
+
+        # Read the format in various sizes, some of which will read whole
+        # sections in a single read, others will be completely unaligned, etc.
+        for block_size in (64 * units.Ki, 512, 17, 1 * units.Mi):
+            fmt = self._test_format_at_block_size(format_name, img, block_size)
+            self.assertTrue(fmt.format_match,
+                            'Failed to match %s at size %i block %i' % (
+                                format_name, image_size, block_size))
+            self.assertEqual(0, fmt.virtual_size,
+                             ('Calculated a virtual size for a corrupt %s at '
+                              'size %i block %i') % (format_name, image_size,
+                                                     block_size))
+
+    def test_vmdk_bad_descriptor_mem_limit(self):
+        format_name = 'vmdk'
+        image_size = 5 * units.Mi
+        virtual_size = 5 * units.Mi
+        descriptorOffsetAddr = 0x1c
+        descriptorSizeAddr = descriptorOffsetAddr + 8
+        twoMBInSectors = (2 << 20) // 512
+        # We need a big VMDK because otherwise we will not have enough data to
+        # fill-up the CaptureRegion.
+        img = self._create_allocated_vmdk(image_size // units.Mi)
+
+        # Corrupt the end of descriptor address so it "ends" at 2MB
+        fd = open(img, 'r+b')
+        fd.seek(descriptorSizeAddr)
+        fd.write(struct.pack('<Q', twoMBInSectors))
+        fd.close()
+
+        # Read the format in various sizes, some of which will read whole
+        # sections in a single read, others will be completely unaligned, etc.
+        for block_size in (64 * units.Ki, 512, 17, 1 * units.Mi):
+            fmt = self._test_format_at_block_size(format_name, img, block_size)
+            self.assertTrue(fmt.format_match,
+                            'Failed to match %s at size %i block %i' % (
+                                format_name, image_size, block_size))
+            self.assertEqual(virtual_size, fmt.virtual_size,
+                             ('Failed to calculate size for %s at size %i '
+                              'block %i') % (format_name, image_size,
+                                             block_size))
+            memory = sum(fmt.context_info.values())
+            self.assertLess(memory, 1.5 * units.Mi,
+                            'Format used more than 1.5MiB of memory: %s' % (
+                                fmt.context_info))
 
     def test_vdi(self):
         self._test_format('vdi')
@@ -275,3 +356,42 @@ class TestFormatInspectorInfra(test_utils.BaseTestCase):
         self.assertEqual(format_inspector.QcowInspector,
                          format_inspector.get_inspector('qcow2'))
         self.assertIsNone(format_inspector.get_inspector('foo'))
+
+
+class TestFormatInspectorsTargeted(test_utils.BaseTestCase):
+    def _make_vhd_meta(self, guid_raw, item_length):
+        # Meta region header, padded to 32 bytes
+        data = struct.pack('<8sHH', b'metadata', 0, 1)
+        data += b'0' * 20
+
+        # Metadata table entry, 16-byte GUID, 12-byte information,
+        # padded to 32-bytes
+        data += guid_raw
+        data += struct.pack('<III', 256, item_length, 0)
+        data += b'0' * 6
+
+        return data
+
+    def test_vhd_table_over_limit(self):
+        ins = format_inspector.VHDXInspector()
+        meta = format_inspector.CaptureRegion(0, 0)
+        desired = b'012345678ABCDEF0'
+        # This is a poorly-crafted image that specifies a larger table size
+        # than is allowed
+        meta.data = self._make_vhd_meta(desired, 33 * 2048)
+        ins.new_region('metadata', meta)
+        new_region = ins._find_meta_entry(ins._guid(desired))
+        # Make sure we clamp to our limit of 32 * 2048
+        self.assertEqual(
+            format_inspector.VHDXInspector.VHDX_METADATA_TABLE_MAX_SIZE,
+            new_region.length)
+
+    def test_vhd_table_under_limit(self):
+        ins = format_inspector.VHDXInspector()
+        meta = format_inspector.CaptureRegion(0, 0)
+        desired = b'012345678ABCDEF0'
+        meta.data = self._make_vhd_meta(desired, 16 * 2048)
+        ins.new_region('metadata', meta)
+        new_region = ins._find_meta_entry(ins._guid(desired))
+        # Table size was under the limit, make sure we get it back
+        self.assertEqual(16 * 2048, new_region.length)
