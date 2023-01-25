@@ -101,7 +101,7 @@ task_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="tasks_api_access",
-        check_str="role:admin",
+        check_str="rule:context_is_admin",
         scope_types=['project'],
         description=TASK_ACCESS_DESCRIPTION,
         operations=[

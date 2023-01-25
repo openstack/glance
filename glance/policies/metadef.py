@@ -23,7 +23,8 @@ The metadata API now supports project scope and default roles.
 
 metadef_policies = [
     policy.RuleDefault(name="metadef_default", check_str=""),
-    policy.RuleDefault(name="metadef_admin", check_str="role:admin"),
+    policy.RuleDefault(name="metadef_admin",
+                       check_str="rule:context_is_admin"),
     policy.DocumentedRuleDefault(
         name="get_metadef_namespace",
         check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,

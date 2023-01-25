@@ -93,7 +93,7 @@ image_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="publicize_image",
-        check_str='role:admin',
+        check_str='rule:context_is_admin',
         scope_types=['project'],
         description='Publicize given image',
         operations=[
@@ -147,7 +147,7 @@ image_policies = [
 
     policy.DocumentedRuleDefault(
         name="delete_image_location",
-        check_str="role:admin",
+        check_str="rule:context_is_admin",
         scope_types=['project'],
         description='Deletes the location of given image',
         operations=[
@@ -261,7 +261,7 @@ image_policies = [
 
     policy.RuleDefault(
         name="manage_image_cache",
-        check_str='role:admin',
+        check_str='rule:context_is_admin',
         scope_types=['project'],
         description='Manage image cache'
     ),
@@ -297,7 +297,7 @@ image_policies = [
 
     policy.DocumentedRuleDefault(
         name="copy_image",
-        check_str='role:admin',
+        check_str='rule:context_is_admin',
         # For now this is restricted to project-admins.
         # That might change in the future if we decide to push
         # this functionality down to project-members.

@@ -57,33 +57,33 @@ PROJECT_READER_OR_PUBLIC_NAMESPACE = (
 # typical in OpenStack services. But following check strings offer formal
 # support for project membership and a read-only variant consistent with
 # other OpenStack services.
-ADMIN_OR_PROJECT_MEMBER = f'role:admin or ({PROJECT_MEMBER})'
-ADMIN_OR_PROJECT_READER = f'role:admin or ({PROJECT_READER})'
+ADMIN_OR_PROJECT_MEMBER = f'rule:context_is_admin or ({PROJECT_MEMBER})'
+ADMIN_OR_PROJECT_READER = f'rule:context_is_admin or ({PROJECT_READER})'
 ADMIN_OR_PROJECT_READER_GET_IMAGE = (
-    f'role:admin or '
+    f'rule:context_is_admin or '
     f'({PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED})'
 )
 ADMIN_OR_PROJECT_MEMBER_DOWNLOAD_IMAGE = (
-    f'role:admin or '
+    f'rule:context_is_admin or '
     f'({PROJECT_MEMBER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED})'
 )
 ADMIN_OR_PROJECT_MEMBER_CREATE_IMAGE = (
-    f'role:admin or ({PROJECT_MEMBER} and project_id:%(owner)s)'
+    f'rule:context_is_admin or ({PROJECT_MEMBER} and project_id:%(owner)s)'
 )
 ADMIN_OR_PROJECT_READER_GET_NAMESPACE = (
-    f'role:admin or ({PROJECT_READER_OR_PUBLIC_NAMESPACE})'
+    f'rule:context_is_admin or ({PROJECT_READER_OR_PUBLIC_NAMESPACE})'
 )
 
 
 ADMIN_OR_SHARED_MEMBER = (
-    f'role:admin or (role:member and {IMAGE_MEMBER_CHECK})'
+    f'rule:context_is_admin or (role:member and {IMAGE_MEMBER_CHECK})'
 )
 ADMIN_OR_PROJECT_READER_OR_SHARED_MEMBER = (
-    f'role:admin or '
+    f'rule:context_is_admin or '
     f'role:reader and (project_id:%(project_id)s or {IMAGE_MEMBER_CHECK})'
 )
 
-ADMIN = f'role:admin'
+ADMIN = f'rule:context_is_admin'
 
 rules = [
     policy.RuleDefault(name='default', check_str='',
@@ -92,7 +92,7 @@ rules = [
                                    'policy in the supplied policy.json file.',
                        deprecated_rule=policy.DeprecatedRule(
                            name='default',
-                           check_str='role:admin',
+                           check_str='rule:context_is_admin',
                            deprecated_reason='In order to allow operators to '
                            'accept the default policies from code by not '
                            'defining them in the policy file, while still '
