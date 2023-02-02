@@ -289,6 +289,20 @@
             glance_store:
               rbd_thin_provisioning: True
 
+# TODO(pdeore): Remove this jobs once all the glance jobs will be tested
+# with new RBAC in integrated way and we do not need this separate job.
+- job:
+    name: tempest-integrated-storage-enforce-scope-new-defaults
+    parent: tempest-integrated-storage
+    description: |
+      This job runs the Tempest tests with scope and new defaults enabled
+      Glance services.
+    vars:
+      devstack_localrc:
+        NOVA_ENFORCE_SCOPE: true
+        CINDER_ENFORCE_SCOPE: true
+        GLANCE_ENFORCE_SCOPE: true
+
 - project:
     templates:
       - check-requirements
@@ -319,6 +333,8 @@
               - ^\.zuul\.yaml$
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
+        - tempest-integrated-storage-enforce-scope-new-defaults:
+            irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import-standalone:
@@ -338,6 +354,8 @@
         - openstack-tox-functional-py38
         - openstack-tox-functional-py39
         - tempest-integrated-storage:
+            irrelevant-files: *tempest-irrelevant-files
+        - tempest-integrated-storage-enforce-scope-new-defaults:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import:
             irrelevant-files: *tempest-irrelevant-files

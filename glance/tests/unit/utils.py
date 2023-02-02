@@ -20,6 +20,7 @@ from unittest import mock
 import urllib
 
 from oslo_config import cfg
+from oslo_policy import policy
 
 from glance.async_.flows._internal_plugins import base_download
 from glance.common import exception
@@ -85,6 +86,14 @@ def get_fake_request(path='', method='POST', is_admin=False, user=USER1,
 
     req.context = glance.context.RequestContext(**kwargs)
     return req
+
+
+def enforcer_from_rules(unparsed_rules):
+    rules = policy.Rules.from_dict(unparsed_rules)
+    enforcer = glance.api.policy.Enforcer(
+        suppress_deprecation_warnings=True)
+    enforcer.set_rules(rules, overwrite=True)
+    return enforcer
 
 
 def fake_get_size_from_backend(uri, context=None):

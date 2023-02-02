@@ -409,7 +409,8 @@ class TestCacheMiddlewareProcessResponse(base.IsolatedUnitTest):
         rules = {
             "restricted":
             "not ('test_1234':%(x_test_key)s and role:_member_)",
-            "download_image": "role:admin or rule:restricted"
+            "download_image": "role:admin or rule:restricted",
+            "get_image": ""
         }
         self.set_policy_rules(rules)
         cache_filter.policy = glance.api.policy.Enforcer(

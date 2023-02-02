@@ -320,7 +320,8 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         self.assertEqual(False, enforcer.check(context, 'get_image', {}))
 
     def test_policy_file_get_image_default_everybody(self):
-        rules = {"default": ''}
+        rules = {"default": '',
+                 "get_image": ''}
         self.set_policy_rules(rules)
 
         enforcer = glance.api.policy.Enforcer(

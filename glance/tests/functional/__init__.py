@@ -585,6 +585,9 @@ class ApiServerForMultipleBackend(Server):
         self.image_location_quota = 2
         self.disable_path = None
 
+        self.enforce_secure_rbac = True
+        self.enforce_new_defaults = True
+
         self.needs_database = True
         default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
         self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
@@ -626,9 +629,11 @@ image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
 allow_additional_image_properties = True
 enabled_backends=file1:file,file2:file,file3:file
+enforce_secure_rbac=%(enforce_secure_rbac)s
 [oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
+enforce_new_defaults=%(enforce_new_defaults)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
 [store_type_location_strategy]

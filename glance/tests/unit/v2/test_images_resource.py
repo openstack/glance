@@ -1253,17 +1253,25 @@ class TestImagesController(base.IsolatedUnitTest):
                           tags=tags)
 
     def test_create_with_owner_non_admin(self):
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "add_image": "role:member,reader",
+        })
         request = unit_test_utils.get_fake_request()
         request.context.is_admin = False
         image = {'owner': '12345'}
+        self.controller.policy = enforcer
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.controller.create,
                           request, image=image, extra_properties={},
                           tags=[])
 
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "add_image": "'{0}':%(owner)s".format(TENANT1),
+        })
         request = unit_test_utils.get_fake_request()
         request.context.is_admin = False
         image = {'owner': TENANT1}
+        self.controller.policy = enforcer
         output = self.controller.create(request, image=image,
                                         extra_properties={}, tags=[])
         self.assertEqual(TENANT1, output.owner)
@@ -1616,7 +1624,7 @@ class TestImagesController(base.IsolatedUnitTest):
                                                                 enforcer,
                                                                 self.notifier,
                                                                 self.store)
-        request = unit_test_utils.get_fake_request(roles=['spl_role'])
+        request = unit_test_utils.get_fake_request(roles=['spl_role', 'admin'])
         image = {'name': 'image-1'}
         extra_props = {'spl_creator_policy': 'bar'}
         created_image = self.controller.create(request, image=image,
@@ -1629,8 +1637,19 @@ class TestImagesController(base.IsolatedUnitTest):
         changes = [
             {'op': 'replace', 'path': ['spl_creator_policy'], 'value': 'par'},
         ]
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "modify_image": "role:spl_role"
+        })
+
+        self.controller.policy = enforcer
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           another_request, created_image.image_id, changes)
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "modify_image": "role:admin"
+        })
+        self.controller.policy = enforcer
         another_request = unit_test_utils.get_fake_request(roles=['admin'])
         output = self.controller.update(another_request,
                                         created_image.image_id, changes)
@@ -1655,9 +1674,19 @@ class TestImagesController(base.IsolatedUnitTest):
         changes = [
             {'op': 'add', 'path': ['spl_creator_policy'], 'value': 'bar'},
         ]
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "modify_image": "role:fake_role"
+        })
+
+        self.controller.policy = enforcer
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           another_request, created_image.image_id, changes)
-
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "modify_image": "role:member"
+        })
+        self.controller.policy = enforcer
         another_request = unit_test_utils.get_fake_request(roles=['member',
                                                                   'spl_role'])
         output = self.controller.update(another_request,
@@ -1679,6 +1708,11 @@ class TestImagesController(base.IsolatedUnitTest):
                                                extra_properties={},
                                                tags=[])
         roles = ['fake_member']
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "modify_image": "role:fake_member"
+        })
+        self.controller.policy = enforcer
         another_request = unit_test_utils.get_fake_request(roles=roles)
         changes = [
             {'op': 'add', 'path': ['x_owner_foo'], 'value': 'bar'},
@@ -1762,6 +1796,11 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "modify_image": "role:fake_role"
+        })
+        self.controller.policy = enforcer
         another_request = unit_test_utils.get_fake_request(roles=['fake_role'])
         changes = [
             {'op': 'replace', 'path': ['x_owner_foo'], 'value': 'baz'},
@@ -1806,6 +1845,11 @@ class TestImagesController(base.IsolatedUnitTest):
         created_image = self.controller.create(request, image=image,
                                                extra_properties=extra_props,
                                                tags=[])
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "modify_image": "role:fake_role"
+        })
+        self.controller.policy = enforcer
         another_request = unit_test_utils.get_fake_request(roles=['fake_role'])
         changes = [
             {'op': 'remove', 'path': ['x_owner_foo']}
@@ -3420,7 +3464,12 @@ class TestImagesController(base.IsolatedUnitTest):
     def test_image_import_not_allowed(self, mock_get, mock_new_task):
         # NOTE(danms): FakeImage is owned by utils.TENANT1. Try to do the
         # import as TENANT2 and we should get an HTTPForbidden
-        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "modify_image": "'{0}':%(owner)s".format(TENANT2)
+        })
+        request = unit_test_utils.get_fake_request()
+        self.controller.policy = enforcer
         mock_get.return_value = FakeImage(status='uploading')
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.controller.import_image,
@@ -6008,7 +6057,13 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                           {'method': {'name': 'glance-direct'}})
 
     def test_delete_from_store_as_non_owner(self):
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "delete_image_location": "'TENANT4':%(owner)s",
+            "get_image_location": ""
+        })
         request = unit_test_utils.get_fake_request()
+        self.controller.policy = enforcer
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.controller.delete_from_store,
                           request,
