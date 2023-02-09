@@ -25,3 +25,4 @@ Glance Administration Guide
    useful-image-properties
    requirements
    quotas
+   os_hash_algo
