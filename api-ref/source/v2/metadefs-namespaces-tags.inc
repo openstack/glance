@@ -212,7 +212,7 @@ Response Parameters
 Response Example
 ----------------
 
-.. literalinclude:: samples/metadef-tag-create-response.json
+.. literalinclude:: samples/metadef-tags-create-response.json
    :language: json
 
 
