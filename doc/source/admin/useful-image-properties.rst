@@ -637,7 +637,7 @@ Here is a list of useful image properties and the values they expect.
   The valid options depend on the configured hypervisor.
 
   * ``KVM`` and ``QEMU``: ``e1000``, ``e1000e``, ``ne2k_pci``, ``pcnet``,
-    ``rtl8139``, ``virtio`` and vmxnet3``.
+    ``rtl8139``, ``virtio`` and ``vmxnet3``.
   * VMware: ``e1000``, ``e1000e``, ``VirtualE1000``, ``VirtualE1000e``,
     ``VirtualPCNet32``, ``VirtualVmxnet`` and ``VirtualVmxnet3``.
   * Xen: ``e1000``, ``netfront``, ``ne2k_pci``, ``pcnet``, and
