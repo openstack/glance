@@ -1,0 +1,17 @@
+---
+upgrade:
+  - |
+    As per the revised SRBAC community goals, glance service is switching to
+    new defaults by default in Antelope cycle, hence removing the deprecated
+    ``enforce_secure_rbac`` option which is no longer needed.
+    The ``enforce_secure_rbac`` option was introduced EXPERIMENTAL in Wallaby
+    release for operators to opt into enforcing authorization based on common
+    RBAC personas.
+
+    Now operator can control the scope and new defaults flag with the below
+    config options in
+    ``glance-api.conf`` file::
+
+      [oslo_policy]
+      enforce_new_defaults=True
+      enforce_scope=True

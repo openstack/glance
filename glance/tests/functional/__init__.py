@@ -408,9 +408,7 @@ class ApiServer(Server):
         self.image_location_quota = 2
         self.disable_path = None
 
-        secure_rbac = bool(os.getenv('OS_GLANCE_TEST_RBAC_DEFAULTS'))
-        self.enforce_secure_rbac = secure_rbac
-        self.enforce_new_defaults = secure_rbac
+        self.enforce_new_defaults = True
 
         self.needs_database = True
         default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
@@ -456,7 +454,6 @@ image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
 allow_additional_image_properties = True
 node_staging_uri=%(node_staging_uri)s
-enforce_secure_rbac=%(enforce_secure_rbac)s
 [oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
@@ -585,7 +582,6 @@ class ApiServerForMultipleBackend(Server):
         self.image_location_quota = 2
         self.disable_path = None
 
-        self.enforce_secure_rbac = True
         self.enforce_new_defaults = True
 
         self.needs_database = True
@@ -629,7 +625,6 @@ image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
 allow_additional_image_properties = True
 enabled_backends=file1:file,file2:file,file3:file
-enforce_secure_rbac=%(enforce_secure_rbac)s
 [oslo_policy]
 policy_file = %(policy_file)s
 policy_default_rule = %(policy_default_rule)s
@@ -1620,9 +1615,9 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
 
         self.api = config.load_paste_app(root_app,
                                          conf_file=self.paste_config)
-        secure_rbac = bool(os.getenv('OS_GLANCE_TEST_RBAC_DEFAULTS'))
-        self.config(enforce_secure_rbac=secure_rbac)
-        self.config(enforce_new_defaults=secure_rbac,
+        self.config(enforce_new_defaults=True,
+                    group='oslo_policy')
+        self.config(enforce_scope=True,
                     group='oslo_policy')
 
     def _headers(self, custom_headers=None):

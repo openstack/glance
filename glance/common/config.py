@@ -593,30 +593,6 @@ Related options:
 
     Related options:
         * [DEFAULT]/node_staging_uri""")),
-    cfg.BoolOpt('enforce_secure_rbac', default=True,
-                deprecated_for_removal=True,
-                deprecated_reason=_("""
-This option has been introduced to require operators to opt into enforcing
-authorization based on common RBAC personas, which is EXPERIMENTAL as of the
-Wallaby release. This behavior will be the default and STABLE in a future
-release, allowing this option to be removed.
-"""),
-                deprecated_since='Wallaby',
-                help=_("""
-Enforce API access based on common persona definitions used across OpenStack.
-Enabling this option formalizes project-specific read/write operations, like
-creating private images or updating the status of shared image, behind the
-`member` role. It also formalizes a read-only variant useful for
-project-specific API operations, like listing private images in a project,
-behind the `reader` role.
-
-Operators should take an opportunity to understand glance's new image policies,
-audit assignments in their deployment, and update permissions using the default
-roles in keystone (e.g., `admin`, `member`, and `reader`).
-
-Related options:
-    * [oslo_policy]/enforce_new_defaults
-""")),
     cfg.StrOpt('worker_self_reference_url',
                default=None,
                help=_("""

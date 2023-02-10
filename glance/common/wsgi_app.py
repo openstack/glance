@@ -22,7 +22,6 @@ import osprofiler.initializer
 from glance.api import common
 import glance.async_
 from glance.common import config
-from glance.common import exception
 from glance.common import store_utils
 from glance import housekeeping
 from glance.i18n import _
@@ -78,16 +77,6 @@ def _setup_os_profiler():
                                               project='glance',
                                               service='api',
                                               host=CONF.bind_host)
-
-
-def _validate_policy_enforcement_configuration():
-    if CONF.enforce_secure_rbac != CONF.oslo_policy.enforce_new_defaults:
-        fail_message = (
-            "[DEFAULT] enforce_secure_rbac does not match "
-            "[oslo_policy] enforce_new_defaults. Please set both to "
-            "True to enable secure RBAC personas. Otherwise, make sure "
-            "both are False.")
-        raise exception.ServerError(fail_message)
 
 
 def drain_workers():
@@ -155,5 +144,4 @@ def init_app():
     run_staging_cleanup()
 
     _setup_os_profiler()
-    _validate_policy_enforcement_configuration()
     return config.load_paste_app('glance-api')

@@ -225,7 +225,8 @@ class ImageAPIPolicy(APIPolicyBase):
         self._enforce('delete_image_location')
         # TODO(danms): Remove this legacy fallback when secure RBAC
         # replaces the legacy policy.
-        if not CONF.enforce_secure_rbac:
+        if not (CONF.oslo_policy.enforce_new_defaults or
+                CONF.oslo_policy.enforce_scope):
             check_is_image_mutable(self._context, self._image)
 
     def get_image_location(self):
@@ -247,7 +248,8 @@ class ImageAPIPolicy(APIPolicyBase):
                 raise
         if 'visibility' in self._target:
             self._enforce_visibility(self._target['visibility'])
-        if not CONF.enforce_secure_rbac:
+        if not (CONF.oslo_policy.enforce_new_defaults or
+                CONF.oslo_policy.enforce_scope):
             check_admin_or_same_owner(self._context, self._target)
 
     def get_image(self):
@@ -260,14 +262,16 @@ class ImageAPIPolicy(APIPolicyBase):
         self._enforce('delete_image')
         # TODO(danms): Remove this legacy fallback when secure RBAC
         # replaces the legacy policy.
-        if not CONF.enforce_secure_rbac:
+        if not (CONF.oslo_policy.enforce_new_defaults or
+                CONF.oslo_policy.enforce_scope):
             check_is_image_mutable(self._context, self._image)
 
     def upload_image(self):
         self._enforce('upload_image')
         # TODO(danms): Remove this legacy fallback when secure RBAC
         # replaces the legacy policy.
-        if not CONF.enforce_secure_rbac:
+        if not (CONF.oslo_policy.enforce_new_defaults or
+                CONF.oslo_policy.enforce_scope):
             check_is_image_mutable(self._context, self._image)
 
     def download_image(self):
@@ -277,21 +281,24 @@ class ImageAPIPolicy(APIPolicyBase):
         self._enforce('modify_image')
         # TODO(danms): Remove this legacy fallback when secure RBAC
         # replaces the legacy policy.
-        if not CONF.enforce_secure_rbac:
+        if not (CONF.oslo_policy.enforce_new_defaults or
+                CONF.oslo_policy.enforce_scope):
             check_is_image_mutable(self._context, self._image)
 
     def deactivate_image(self):
         self._enforce('deactivate')
         # TODO(danms): Remove this legacy fallback when secure RBAC
         # replaces the legacy policy.
-        if not CONF.enforce_secure_rbac:
+        if not (CONF.oslo_policy.enforce_new_defaults or
+                CONF.oslo_policy.enforce_scope):
             check_is_image_mutable(self._context, self._image)
 
     def reactivate_image(self):
         self._enforce('reactivate')
         # TODO(danms): Remove this legacy fallback when secure RBAC
         # replaces the legacy policy.
-        if not CONF.enforce_secure_rbac:
+        if not (CONF.oslo_policy.enforce_new_defaults or
+                CONF.oslo_policy.enforce_scope):
             check_is_image_mutable(self._context, self._image)
 
     def copy_image(self):

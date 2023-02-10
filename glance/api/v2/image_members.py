@@ -82,7 +82,8 @@ class ImageMembersController(object):
         # NOTE(abhishekk): Ownership check only needs to performed while
         # adding new members to image
         owner = image.owner
-        if not CONF.enforce_secure_rbac and not context.is_admin:
+        if not (CONF.oslo_policy.enforce_new_defaults or
+                CONF.oslo_policy.enforce_scope) and not context.is_admin:
             if ownership_check == 'create':
                 if owner is None or owner != context.owner:
                     message = _("You are not permitted to create image "
