@@ -2,23 +2,6 @@
 OpenStack Glance
 ================
 
-.. image:: https://governance.openstack.org/tc/badges/glance.svg
-    :target: https://governance.openstack.org/tc/reference/tags/index.html
-    :alt: The following tags have been asserted for the Glance project:
-          "project:official",
-          "tc:approved-release",
-          "stable:follows-policy",
-          "tc:starter-kit:compute",
-          "vulnerability:managed",
-          "assert:supports-upgrade",
-          "assert:follows-standard-deprecation".
-          Follow the link for an explanation of these tags.
-.. NOTE(rosmaita): the alt text above will have to be updated when
-   additional tags are asserted for Glance.  (The SVG in the
-   governance repo is updated automatically.)
-
-.. Change things from this point on
-
 Glance is an OpenStack project that provides services and associated libraries
 to store, browse, share, distribute and manage bootable disk images,
 other data closely associated with initializing compute resources,
