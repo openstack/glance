@@ -1,0 +1,20 @@
+---
+prelude: >
+    In this cycle Glance enabled the API policies (RBAC) new defaults and scope by
+    default and removed the deprecated ``enforce_secure_rbac`` option which is no
+    longer needed after switching to new defaults.
+    The Default value of config options ``[oslo_policy] enforce_scope``
+    and ``[oslo_policy] oslo_policy.enforce_new_defaults`` have been changed
+    to ``True``. Old policies are still there but they are disabled by default.
+
+fixes:
+  - |
+    Bug 1996188_: [OSSA-2023-002] Arbitrary file access through custom VMDK flat descriptor (CVE-2022-47951)
+  - |
+    Bug 1939690_: The api-ref response and the actual response returned from the Create Tags API does not match
+  - |
+    Bug 1983279_: Cannot upload vmdk images due to unsupported vmdk format
+
+    .. _1996188: https://code.launchpad.net/bugs/1996188
+    .. _1939690: https://code.launchpad.net/bugs/1939690
+    .. _1983279: https://code.launchpad.net/bugs/1983279
