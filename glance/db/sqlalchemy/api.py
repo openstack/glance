@@ -739,7 +739,8 @@ def _image_get_disk_usage_by_owner(owner, session, image_id=None):
 
     total = 0
     for i in images:
-        locations = [l for l in i.locations if l['status'] != 'deleted']
+        locations = [location for location in i.locations
+                     if location['status'] != 'deleted']
         total += (i.size * len(locations))
     return total
 

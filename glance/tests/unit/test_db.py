@@ -605,9 +605,11 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
         self.image_repo.add(image)
         db_data = self.db.image_get(self.context, UUID1)
         self.assertNotEqual(db_data['locations'], ['foo', 'bar'])
-        decrypted_locations = [crypt.urlsafe_decrypt(self.crypt_key, l['url'])
-                               for l in db_data['locations']]
-        self.assertEqual([l['url'] for l in self.foo_bar_location],
+        decrypted_locations = [crypt.urlsafe_decrypt(self.crypt_key,
+                                                     location['url'])
+                               for location in db_data['locations']]
+        self.assertEqual([location['url']
+                          for location in self.foo_bar_location],
                          decrypted_locations)
 
     def test_encrypt_locations_on_save(self):
@@ -617,19 +619,23 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
         self.image_repo.save(image)
         db_data = self.db.image_get(self.context, UUID1)
         self.assertNotEqual(db_data['locations'], ['foo', 'bar'])
-        decrypted_locations = [crypt.urlsafe_decrypt(self.crypt_key, l['url'])
-                               for l in db_data['locations']]
-        self.assertEqual([l['url'] for l in self.foo_bar_location],
+        decrypted_locations = [crypt.urlsafe_decrypt(self.crypt_key,
+                                                     location['url'])
+                               for location in db_data['locations']]
+        self.assertEqual([location['url']
+                          for location in self.foo_bar_location],
                          decrypted_locations)
 
     def test_decrypt_locations_on_get(self):
         url_loc = ['ping', 'pong']
-        orig_locations = [{'url': l, 'metadata': {}, 'status': 'active'}
-                          for l in url_loc]
-        encrypted_locs = [crypt.urlsafe_encrypt(self.crypt_key, l)
-                          for l in url_loc]
-        encrypted_locations = [{'url': l, 'metadata': {}, 'status': 'active'}
-                               for l in encrypted_locs]
+        orig_locations = [{'url': location, 'metadata': {}, 'status': 'active'}
+                          for location in url_loc]
+        encrypted_locs = [crypt.urlsafe_encrypt(self.crypt_key, location)
+                          for location in url_loc]
+        encrypted_locations = [{'url': location,
+                                'metadata': {},
+                                'status': 'active'}
+                               for location in encrypted_locs]
         self.assertNotEqual(encrypted_locations, orig_locations)
         db_data = _db_fixture(UUID1, owner=TENANT1,
                               locations=encrypted_locations)
@@ -643,12 +649,14 @@ class TestEncryptedLocations(test_utils.BaseTestCase):
 
     def test_decrypt_locations_on_list(self):
         url_loc = ['ping', 'pong']
-        orig_locations = [{'url': l, 'metadata': {}, 'status': 'active'}
-                          for l in url_loc]
-        encrypted_locs = [crypt.urlsafe_encrypt(self.crypt_key, l)
-                          for l in url_loc]
-        encrypted_locations = [{'url': l, 'metadata': {}, 'status': 'active'}
-                               for l in encrypted_locs]
+        orig_locations = [{'url': location, 'metadata': {}, 'status': 'active'}
+                          for location in url_loc]
+        encrypted_locs = [crypt.urlsafe_encrypt(self.crypt_key, location)
+                          for location in url_loc]
+        encrypted_locations = [{'url': location,
+                                'metadata': {},
+                                'status': 'active'}
+                               for location in encrypted_locs]
         self.assertNotEqual(encrypted_locations, orig_locations)
         db_data = _db_fixture(UUID1, owner=TENANT1,
                               locations=encrypted_locations)
