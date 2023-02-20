@@ -25,7 +25,6 @@ from oslo_policy import policy
 
 from glance.common import exception
 from glance.domain import proxy
-from glance.i18n import _LW
 from glance import policies
 
 
@@ -64,15 +63,6 @@ class Enforcer(policy.Enforcer):
         if suppress_deprecation_warnings:
             self.suppress_deprecation_warnings = True
         self.register_defaults(policies.list_rules())
-        if CONF.enforce_secure_rbac and CONF.oslo_policy.enforce_new_defaults:
-            LOG.warning(_LW(
-                "Deploying glance with secure RBAC personas enabled via "
-                "`glance-api.conf [DEFAULT] enforce_secure_rbac=True` and "
-                "`glance-api.conf [oslo_policy] enforce_new_defaults=True` "
-                "is marked as EXPERIMENTAL in Wallaby. The status of this "
-                "feature will graduate to SUPPORTED as glance adopts more "
-                "personas, specifically for system-scope."
-            ))
 
     def add_rules(self, rules):
         """Add new rules to the Rules object"""

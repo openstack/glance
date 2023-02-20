@@ -394,29 +394,6 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         enforcer.check(context, 'foo', {})
         mock_enforcer.assert_called_once_with('foo', {}, context)
 
-    def test_ensure_experimental_warning_is_logged_for_secure_rbac(self):
-        self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_secure_rbac=True)
-        expected_log_string = (
-            "Deploying glance with secure RBAC personas enabled via "
-            "`glance-api.conf [DEFAULT] enforce_secure_rbac=True` and "
-            "`glance-api.conf [oslo_policy] enforce_new_defaults=True` "
-            "is marked as EXPERIMENTAL in Wallaby. The status of this "
-            "feature will graduate to SUPPORTED as glance adopts more "
-            "personas, specifically for system-scope."
-        )
-        with mock.patch.object(glance.api.policy, 'LOG') as mock_log:
-            glance.api.policy.Enforcer(
-                suppress_deprecation_warnings=True)
-            mock_log.warning.assert_called_once_with(expected_log_string)
-
-    def test_ensure_experimental_warning_is_not_logged_for_legacy_rbac(self):
-        self.config(enforce_new_defaults=False, group='oslo_policy')
-        with mock.patch.object(glance.api.policy, 'LOG') as mock_log:
-            glance.api.policy.Enforcer(
-                suppress_deprecation_warnings=True)
-            mock_log.warning.assert_not_called()
-
 
 class TestPolicyEnforcerNoFile(base.IsolatedUnitTest):
 

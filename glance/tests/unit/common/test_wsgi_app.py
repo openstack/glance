@@ -19,7 +19,6 @@ from unittest import mock
 from glance.api import common
 from glance.api.v2 import cached_images
 import glance.async_
-from glance.common import exception
 from glance.common import wsgi_app
 from glance.tests import utils as test_utils
 
@@ -90,40 +89,6 @@ class TestWsgiAppInit(test_utils.BaseTestCase):
             # Make sure that with no WORKER initialized, we do not fail
             wsgi_app.drain_workers()
             self.assertIsNone(cached_images.WORKER)
-
-    @mock.patch('glance.common.config.load_paste_app')
-    @mock.patch('glance.async_.set_threadpool_model')
-    @mock.patch('glance.common.wsgi_app._get_config_files')
-    def test_policy_enforcement_kills_service_if_misconfigured(
-            self, mock_load_app, mock_set, mock_config_files):
-        self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_secure_rbac=False)
-        self.assertRaises(exception.ServerError, wsgi_app.init_app)
-
-        self.config(enforce_new_defaults=False, group='oslo_policy')
-        self.config(enforce_secure_rbac=True)
-        self.assertRaises(exception.ServerError, wsgi_app.init_app)
-
-    @mock.patch('glance.common.config.load_paste_app')
-    @mock.patch('glance.async_.set_threadpool_model')
-    @mock.patch('glance.common.wsgi_app._get_config_files')
-    def test_policy_enforcement_valid_truthy_configuration(
-            self, mock_load_app, mock_set, mock_config_files):
-        self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_secure_rbac=True)
-        self.assertTrue(wsgi_app.init_app())
-
-    @mock.patch('glance.common.config.load_paste_app')
-    @mock.patch('glance.async_.set_threadpool_model')
-    @mock.patch('glance.common.wsgi_app._get_config_files')
-    def test_policy_enforcement_valid_falsy_configuration(
-            self, mock_load_app, mock_set, mock_config_files):
-        # This is effectively testing the default values, but we're doing that
-        # to make sure nothing bad happens at runtime in the default case when
-        # validating policy enforcement configuration.
-        self.config(enforce_new_defaults=False, group='oslo_policy')
-        self.config(enforce_secure_rbac=False)
-        self.assertTrue(wsgi_app.init_app())
 
     @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
     @mock.patch('glance.common.config.load_paste_app')
