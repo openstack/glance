@@ -135,7 +135,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.addCleanup(patcher.stop)
 
     def test_download(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd',
                           locations=[{'url': 'http://example.com/image',
                                       'metadata': {}, 'status': 'active'}])
@@ -156,7 +156,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_download_no_location(self):
         # NOTE(mclaren): NoContent will be raised by the ResponseSerializer
         # That's tested below.
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         self.image_repo.result = FakeImage('abcd')
         image = self.controller.download(request, unit_test_utils.UUID2)
         self.assertEqual('abcd', image.image_id)
@@ -179,7 +179,7 @@ class TestImagesController(base.StoreClearingUnitTest):
             def __len__(self):
                 raise exception.Forbidden()
 
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd')
         self.image_repo.result = image
         image.locations = ImageLocations()
@@ -187,7 +187,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual('abcd', image.image_id)
 
     def test_upload(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd', owner='tenant1')
         self.image_repo.result = image
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
@@ -217,7 +217,7 @@ class TestImagesController(base.StoreClearingUnitTest):
             self.assertTrue(mock_enf.called)
 
     def test_upload_status(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd')
         self.image_repo.result = image
         insurance = {'called': False}
@@ -234,7 +234,7 @@ class TestImagesController(base.StoreClearingUnitTest):
                          self.image_repo.saved_image.status)
 
     def test_upload_no_size(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd')
         self.image_repo.result = image
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
@@ -256,7 +256,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         mock_enforce.assert_has_calls(expected_call)
 
     def test_upload_invalid(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd')
         image.status = ValueError()
         self.image_repo.result = image
@@ -270,7 +270,7 @@ class TestImagesController(base.StoreClearingUnitTest):
 
         mocked_save = mock.Mock(side_effect=side_effect)
         mocked_delete = mock.Mock()
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd')
         image.delete = mocked_delete
         self.image_repo.result = image
@@ -287,7 +287,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         mocked_save.side_effect = [lambda *a: None,
                                    exception.NotAuthenticated(),
                                    lambda *a: None]
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         request.environ['keystone.token_info'] = {
             'token': {
                 'roles': [{'name': 'member'}]
@@ -309,7 +309,8 @@ class TestImagesController(base.StoreClearingUnitTest):
             raise exception.Conflict()
 
         for fun in [fake_save_not_found, fake_save_conflict]:
-            request = unit_test_utils.get_fake_request()
+            request = unit_test_utils.get_fake_request(
+                roles=['admin', 'member'])
             image = FakeImage('abcd', locations=['http://example.com/image'])
             self.image_repo.result = image
             self.image_repo.save = fun
@@ -325,7 +326,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         def fake_delete():
             raise exception.ImageNotFound()
 
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd', locations=['http://example.com/image'])
         self.image_repo.result = image
         self.image_repo.save = fake_save
@@ -340,7 +341,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         def fake_delete():
             raise exception.ImageNotFound()
 
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd', locations=['http://example.com/image'])
         self.image_repo.result = image
         self.image_repo.save = fake_save
@@ -355,7 +356,7 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, str(uuid.uuid4()), 'ABC', 3)
 
     def test_upload_data_exists(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage()
         exc = exception.InvalidImageStatusTransition(cur_status='active',
                                                      new_status='queued')
@@ -365,7 +366,7 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, unit_test_utils.UUID1, 'YYYY', 4)
 
     def test_upload_storage_full(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage()
         image.set_data = Raise(glance_store.StorageFull)
         self.image_repo.result = image
@@ -374,7 +375,7 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, unit_test_utils.UUID2, 'YYYYYYY', 7)
 
     def test_upload_signature_verification_fails(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage()
         image.set_data = Raise(cursive_exception.SignatureVerificationError)
         self.image_repo.result = image
@@ -383,7 +384,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual('queued', self.image_repo.saved_image.status)
 
     def test_image_size_limit_exceeded(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage()
         image.set_data = Raise(exception.ImageSizeLimitExceeded)
         self.image_repo.result = image
@@ -399,7 +400,8 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, unit_test_utils.UUID1, 'YYYYYYY', 7)
 
     def test_upload_storage_forbidden(self):
-        request = unit_test_utils.get_fake_request(user=unit_test_utils.USER2)
+        request = unit_test_utils.get_fake_request(
+            user=unit_test_utils.USER2, roles=['admin', 'member'])
         image = FakeImage()
         image.set_data = Raise(exception.Forbidden)
         self.image_repo.result = image
@@ -414,7 +416,8 @@ class TestImagesController(base.StoreClearingUnitTest):
                           request, unit_test_utils.UUID1, 'ABC', 3)
 
     def test_upload_storage_write_denied(self):
-        request = unit_test_utils.get_fake_request(user=unit_test_utils.USER3)
+        request = unit_test_utils.get_fake_request(
+            user=unit_test_utils.USER3, roles=['admin', 'member'])
         image = FakeImage()
         image.set_data = Raise(glance_store.StorageWriteDenied)
         self.image_repo.result = image
@@ -424,7 +427,8 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_upload_storage_store_disabled(self):
         """Test that uploading an image file raises StoreDisabled exception"""
-        request = unit_test_utils.get_fake_request(user=unit_test_utils.USER3)
+        request = unit_test_utils.get_fake_request(
+            user=unit_test_utils.USER3, roles=['admin', 'member'])
         image = FakeImage()
         image.set_data = Raise(glance_store.StoreAddDisabled)
         self.image_repo.result = image
@@ -484,7 +488,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual(activate_log, output_log[2])
 
     def test_restore_image_when_upload_failed(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('fake')
         image.set_data = Raise(glance_store.StorageWriteDenied)
         self.image_repo.result = image
@@ -496,7 +500,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     @mock.patch.object(filesystem.Store, 'add')
     def test_restore_image_when_staging_failed(self, mock_store_add):
         mock_store_add.side_effect = glance_store.StorageWriteDenied()
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image_id = str(uuid.uuid4())
         image = FakeImage('fake')
         self.image_repo.result = image
@@ -507,7 +511,7 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_stage(self):
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         with mock.patch.object(filesystem.Store, 'add') as mock_add:
@@ -518,7 +522,7 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def test_image_already_on_staging(self):
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         with mock.patch.object(filesystem.Store, 'add') as mock_store_add:
@@ -534,7 +538,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_image_stage_raises_bad_store_uri(self, mock_store_configure):
         mock_store_configure.side_effect = AttributeError()
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         self.assertRaises(exception.BadStoreUri, self.controller.stage,
                           request, image_id, 'YYYY', 4)
 
@@ -542,7 +546,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_image_stage_raises_storage_full(self, mock_store_add):
         mock_store_add.side_effect = glance_store.StorageFull()
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         with mock.patch.object(self.controller, "_unstage"):
@@ -554,7 +558,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_image_stage_raises_storage_quota_full(self, mock_store_add):
         mock_store_add.side_effect = exception.StorageQuotaFull("message")
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         with mock.patch.object(self.controller, "_unstage"):
@@ -566,7 +570,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_image_stage_raises_storage_write_denied(self, mock_store_add):
         mock_store_add.side_effect = glance_store.StorageWriteDenied()
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         with mock.patch.object(self.controller, "_unstage"):
@@ -592,7 +596,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     def test_image_stage_raises_image_size_exceeded(self, mock_store_add):
         mock_store_add.side_effect = exception.ImageSizeLimitExceeded()
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         with mock.patch.object(self.controller, "_unstage"):
@@ -603,7 +607,7 @@ class TestImagesController(base.StoreClearingUnitTest):
     @mock.patch.object(filesystem.Store, 'add')
     def test_image_stage_invalid_image_transition(self, mock_store_add):
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         with mock.patch.object(filesystem.Store, 'add') as mock_add:
@@ -619,7 +623,7 @@ class TestImagesController(base.StoreClearingUnitTest):
 
     def _test_image_stage_records_host(self, expected_url):
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         with mock.patch.object(filesystem.Store, 'add') as mock_add:
@@ -651,7 +655,7 @@ class TestImagesController(base.StoreClearingUnitTest):
         # image staged.
         self.config(public_endpoint='http://worker1.example.com')
         image_id = str(uuid.uuid4())
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage(image_id=image_id)
         self.image_repo.result = image
         exc_cls = glance_store.exceptions.StorageFull
@@ -732,7 +736,7 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
                           self.deserializer.upload, request)
 
     def test_stage(self):
-        req = unit_test_utils.get_fake_request()
+        req = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         req.headers['Content-Type'] = 'application/octet-stream'
         req.headers['Content-Length'] = 4
         req.body_file = io.BytesIO(b'YYYY')
@@ -1078,7 +1082,7 @@ class TestMultiBackendImagesController(base.MultiStoreClearingUnitTest):
         self.addCleanup(patcher.stop)
 
     def test_upload(self):
-        request = unit_test_utils.get_fake_request()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image = FakeImage('abcd')
         self.image_repo.result = image
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)

@@ -316,6 +316,11 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.assertEqual('accepted', output.status)
 
     def test_update_done_by_owner(self):
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "modify_image": "'{0}':%(owner)s".format(TENANT1)
+        })
+        self.controller.policy = enforcer
         request = unit_test_utils.get_fake_request(tenant=TENANT1)
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.update,
                           request, UUID2, TENANT4, status='accepted')
@@ -331,6 +336,10 @@ class TestImageMembersController(test_utils.BaseTestCase):
                           request, UUID2, TENANT4, status='accept')
 
     def test_create_private_image(self):
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+        })
+        self.controller.policy = enforcer
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.create,
                           request, UUID4, TENANT2)
@@ -359,7 +368,14 @@ class TestImageMembersController(test_utils.BaseTestCase):
         self.assertEqual([], found_member)
 
     def test_delete_by_member(self):
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "delete_member": "'{0}':%(owner)s".format(TENANT4),
+            "get_members": "",
+            "get_member": ""
+        })
         request = unit_test_utils.get_fake_request(tenant=TENANT4)
+        self.controller.policy = enforcer
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.delete,
                           request, UUID2, TENANT4)
         request = unit_test_utils.get_fake_request()
@@ -395,6 +411,12 @@ class TestImageMembersController(test_utils.BaseTestCase):
                           request, UUID2, TENANT4)
 
     def test_delete_private_image(self):
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "delete_member": "'{0}':%(owner)s".format(TENANT1),
+            "get_member": ""
+        })
+        self.controller.policy = enforcer
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.delete,
                           request, UUID4, TENANT1)

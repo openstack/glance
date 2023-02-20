@@ -1,0 +1,14 @@
+---
+upgrade:
+  - |
+    The Glance service enables the API policies (RBAC) new defaults and scope by
+    default. The Default value of config options ``[oslo_policy] enforce_scope``
+    and ``[oslo_policy] oslo_policy.enforce_new_defaults`` have been changed
+    to ``True``.
+
+    If you want to disable them then modify the below config options value in
+    ``glance-api.conf`` file::
+
+      [oslo_policy]
+      enforce_new_defaults=False
+      enforce_scope=False

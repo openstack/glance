@@ -593,7 +593,7 @@ Related options:
 
     Related options:
         * [DEFAULT]/node_staging_uri""")),
-    cfg.BoolOpt('enforce_secure_rbac', default=False,
+    cfg.BoolOpt('enforce_secure_rbac', default=True,
                 deprecated_for_removal=True,
                 deprecated_reason=_("""
 This option has been introduced to require operators to opt into enforcing
