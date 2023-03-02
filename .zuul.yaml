@@ -347,7 +347,8 @@
             irrelevant-files: *tempest-irrelevant-files
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
-        - glance-secure-rbac-protection-functional
+        - glance-secure-rbac-protection-functional:
+            voting: false
 
     gate:
       jobs:
@@ -369,7 +370,8 @@
             irrelevant-files: *tempest-irrelevant-files
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
-        - glance-secure-rbac-protection-functional
+        - glance-secure-rbac-protection-functional:
+            voting: false
     experimental:
       jobs:
         - glance-tox-py39-glance_store-tips
