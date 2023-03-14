@@ -456,6 +456,15 @@ class BaseServer(metaclass=abc.ABCMeta):
         self.configure()
         self.start_wsgi()
 
+        # NOTE(danms): This may raise GlanceException if the staging store is
+        # not configured properly, which will be caught and printed by
+        # cmd/api.py as an error message and abort startup.
+        staging = housekeeping.staging_store_path()
+        if not os.path.exists(staging) and CONF.enabled_import_methods:
+            LOG.warning(_LW('Import methods are enabled but staging directory '
+                            '%(path)s does not exist; Imports will fail!'),
+                        {'path': staging})
+
         cleaner = housekeeping.StagingStoreCleaner(glance.db.get_api())
         self.pool.spawn_n(cleaner.clean_orphaned_staging_residue)
 
