@@ -515,8 +515,7 @@ backends = disable_by_file
 disable_by_file_path = %(disable_path)s
 
 [filter:versionnegotiation]
-paste.filter_factory =
- glance.api.middleware.version_negotiation:VersionNegotiationFilter.factory
+paste.filter_factory = glance.api.middleware.version_negotiation:VersionNegotiationFilter.factory
 
 [filter:gzip]
 paste.filter_factory = glance.api.middleware.gzip:GzipMiddleware.factory
@@ -525,15 +524,13 @@ paste.filter_factory = glance.api.middleware.gzip:GzipMiddleware.factory
 paste.filter_factory = glance.api.middleware.cache:CacheFilter.factory
 
 [filter:cache_manage]
-paste.filter_factory =
- glance.api.middleware.cache_manage:CacheManageFilter.factory
+paste.filter_factory = glance.api.middleware.cache_manage:CacheManageFilter.factory
 
 [filter:context]
 paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
 
 [filter:unauthenticated-context]
-paste.filter_factory =
- glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
+paste.filter_factory = glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
 
 [filter:fakeauth]
 paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
@@ -693,8 +690,7 @@ backends = disable_by_file
 disable_by_file_path = %(disable_path)s
 
 [filter:versionnegotiation]
-paste.filter_factory =
- glance.api.middleware.version_negotiation:VersionNegotiationFilter.factory
+paste.filter_factory = glance.api.middleware.version_negotiation:VersionNegotiationFilter.factory
 
 [filter:gzip]
 paste.filter_factory = glance.api.middleware.gzip:GzipMiddleware.factory
@@ -703,15 +699,13 @@ paste.filter_factory = glance.api.middleware.gzip:GzipMiddleware.factory
 paste.filter_factory = glance.api.middleware.cache:CacheFilter.factory
 
 [filter:cache_manage]
-paste.filter_factory =
- glance.api.middleware.cache_manage:CacheManageFilter.factory
+paste.filter_factory = glance.api.middleware.cache_manage:CacheManageFilter.factory
 
 [filter:context]
 paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
 
 [filter:unauthenticated-context]
-paste.filter_factory =
- glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
+paste.filter_factory = glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
 
 [filter:fakeauth]
 paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
