@@ -316,6 +316,7 @@
       jobs:
         - openstack-tox-functional-py38-fips
         - openstack-tox-functional-py39
+        - openstack-tox-functional-py310
         - glance-tox-functional-py39-rbac-defaults
         - glance-ceph-thin-provisioning:
             voting: false
@@ -351,8 +352,8 @@
 
     gate:
       jobs:
-        - openstack-tox-functional-py38
         - openstack-tox-functional-py39
+        - openstack-tox-functional-py310
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-enforce-scope-new-defaults:
