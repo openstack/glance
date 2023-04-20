@@ -928,6 +928,27 @@ class ImagesController(object):
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
 
+    def _validate_hashing_data(self, val_data):
+        if 'os_hash_value' in val_data:
+            try:
+                hashval = bytearray.fromhex(val_data['os_hash_value'])
+            except ValueError:
+                msg = (_("os_hash_value (%s) is not a valid hexadecimal"
+                         " value") % (val_data['os_hash_value']))
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+
+            hash_algo = val_data.get('os_hash_algo',
+                                     CONF['hashing_algorithm'])
+            want_size = hashlib.new(hash_algo).digest_size
+            if len(hashval) != want_size:
+                msg = (_("os_hash_value: (%(value)s) is not the correct "
+                         "size for (%(algo)s) "
+                         "(should be (%(want)d) bytes)") %
+                       {'value': val_data['os_hash_value'],
+                        'algo': hash_algo,
+                        'want': want_size})
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+
     def _validate_validation_data(self, image, locations):
         val_data = {}
         for loc in locations:
@@ -1107,6 +1128,94 @@ class ImagesController(object):
         except Exception as e:
             raise webob.exc.HTTPInternalServerError(
                 explanation=encodeutils.exception_to_unicode(e))
+
+    def add_location(self, req, image_id, body):
+        url = body.get('url')
+        validation_data = body.get('validation_data', {})
+        image_repo = self.gateway.get_repo(req.context)
+        ctxt = req.context
+        stole_lock_from_task = None
+        task_factory = self.gateway.get_task_factory(ctxt)
+        task_repo = self.gateway.get_task_repo(ctxt)
+        try:
+            image = image_repo.get(image_id)
+            if image.status != 'queued':
+                msg = _("It's not allowed to add locations if image status is "
+                        "%s.") % image.status
+                raise webob.exc.HTTPConflict(explanation=msg)
+
+            api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                                self.policy)
+            api_pol.add_location()
+
+            roles = list(set(req.context.roles + req.context.service_roles))
+            if 'service' not in roles:
+                # NOTE(pdeore): Add location API is disabled for other stores
+                # than http
+                if not utils.is_http_store_configured(url):
+                    msg = _("http store must be enabled to use location API"
+                            " by normal user.")
+                    raise exception.Forbidden(msg)
+
+            if validation_data is not None:
+                self._validate_hashing_data(validation_data)
+
+            if 'os_glance_import_task' in image.extra_properties:
+                # NOTE(pdeore): This will raise exception.Conflict if the
+                # lock is present and valid, or return if absent or invalid.
+                stole_lock_from_task = self._enforce_import_lock(req, image)
+
+            task_input = {'image_id': image_id,
+                          'loc_url': url,
+                          'validation_data': validation_data}
+
+            executor_factory = self.gateway.get_task_executor_factory(
+                ctxt)
+            add_location_task = task_factory.new_task(
+                task_type='location_import',
+                owner=ctxt.owner,
+                task_input=task_input,
+                image_id=image_id,
+                user_id=ctxt.user_id,
+                request_id=ctxt.request_id)
+
+            try:
+                # NOTE(pdeore): Try to grab the lock for this task
+                image_repo.set_property_atomic(image, 'os_glance_import_task',
+                                               add_location_task.task_id)
+            except exception.Duplicate:
+                msg = (_("New operation on image '%s' is not "
+                         "permitted as prior operation is still "
+                         "in progress") % image_id)
+                raise exception.Conflict(msg)
+
+            # NOTE(pdeore): We now have the import lock on this image.
+            # If we busted the lock above and have a reference to that
+            # task, try to clean up the import status information left
+            # over from that execution.
+            if stole_lock_from_task:
+                self._cleanup_stale_task_progress(image_repo, image,
+                                                  stole_lock_from_task)
+
+            task_repo.add(add_location_task)
+            task_executor = executor_factory.new_task_executor(ctxt)
+            pool = common.get_thread_pool("tasks_pool")
+            pool.spawn(add_location_task.run, task_executor)
+        except exception.Conflict as e:
+            raise webob.exc.HTTPConflict(explanation=e.msg)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
+        except exception.Forbidden as e:
+            LOG.debug("User not permitted to add location to image '%s'",
+                      image_id)
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.NotAuthenticated as e:
+            raise webob.exc.HTTPUnauthorized(explanation=e.msg)
+        except ValueError as e:
+            raise webob.exc.HTTPBadRequest(
+                explanation=encodeutils.exception_to_unicode(e))
+
+        return image_id
 
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
@@ -1550,6 +1659,16 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         self._validate_import_body(body)
         return {'body': body}
 
+    def add_location(self, request):
+        body = self._get_request_body(request)
+        values = {'add_location': body}
+        try:
+            self.schema.validate(values)
+        except exception.InvalidObject as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
+
+        return {'body': body}
+
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     # These properties will be filtered out from the response and not
@@ -1690,6 +1809,9 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
         response.status_int = http.NO_CONTENT
 
     def import_image(self, response, result):
+        response.status_int = http.ACCEPTED
+
+    def add_location(self, response, result):
         response.status_int = http.ACCEPTED
 
 
@@ -1833,6 +1955,48 @@ def get_base_properties():
             'type': 'string',
             'readOnly': True,
             'description': _('An image schema url'),
+        },
+        'add_location': {
+            'type': 'object',
+            'description': _('Values of location url, do_secure_hash and '
+                             'validation_data for new add location API'),
+            'properties': {
+                'url': {
+                    'type': 'string',
+                    'readOnly': True,
+                    'description': _('The URL of the new location to be '
+                                     'added in the image.')
+                },
+                'validation_data': {
+                    'description': _('Values to be used to populate the '
+                                     'corresponding image properties.'
+                                     'do_secure_hash is not True then '
+                                     'image checksum and hash will not be '
+                                     'calculated so it is the responsibility'
+                                     ' of the consumer of location ADD API '
+                                     'to provide the correct values in the '
+                                     'validation_data parameter'),
+                    'type': 'object',
+                    'writeOnly': True,
+                    'additionalProperties': False,
+                    'properties': {
+                        'os_hash_algo': {
+                            'type': 'string',
+                            'maxLength': 64,
+                            'enum': ['sha1', 'sha256', 'sha512', 'md5'],
+                        },
+                        'os_hash_value': {
+                            'type': 'string',
+                            'maxLength': 128,
+                        },
+                    },
+                    'dependentRequired': {
+                        "os_hash_value": ["os_hash_algo"],
+                        "os_hash_algo": ["os_hash_value"]
+                    },
+                },
+            },
+            'required': ['url'],
         },
         'locations': {
             'type': 'array',

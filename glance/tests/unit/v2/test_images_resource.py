@@ -3933,6 +3933,319 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertTrue(image['deleted'])
         self.assertEqual('deleted', image['status'])
 
+    @mock.patch.object(glance.notifier.TaskFactoryProxy, 'new_task')
+    def test_add_location(self, mock_task):
+        # Test add location without service role but with http store
+        self.config(do_secure_hash=True)
+        self.config(default_store='http', group='glance_store')
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        url = '%s/fake_location_1' % BASE_URI
+        task_input = {
+            "image_id": image_id,
+            "loc_url": url,
+            "validation_data": {}
+        }
+        request = unit_test_utils.get_fake_request()
+        req_body = {'url': url}
+        self.controller.add_location(request, image_id, req_body)
+        mock_task.assert_called_with(task_type='location_import',
+                                     owner=TENANT1,
+                                     task_input=task_input,
+                                     image_id=image_id,
+                                     user_id=request.context.user_id,
+                                     request_id=request.context.request_id)
+
+    @mock.patch.object(glance.notifier.TaskFactoryProxy, 'new_task')
+    def test_add_location_with_service_role(self, mock_task):
+        # Need to make sure 'http' store is not enabled
+        self.config(stores='file', group='glance_store')
+        self.config(do_secure_hash=True)
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request(roles=['service'])
+        url = '%s/fake_location_1' % BASE_URI
+        task_input = {
+            "image_id": image_id,
+            "loc_url": url,
+            "validation_data": {}
+        }
+        req_body = {'url': url}
+        self.controller.add_location(request, image_id, req_body)
+        mock_task.assert_called_with(task_type='location_import',
+                                     owner=TENANT1,
+                                     task_input=task_input,
+                                     image_id=image_id,
+                                     user_id=request.context.user_id,
+                                     request_id=request.context.request_id)
+
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
+    def test_add_location_locked(self, mock_get):
+        task = test_tasks_resource._db_fixture(test_tasks_resource.UUID1,
+                                               status='pending')
+        self.db.task_create(None, task)
+        image = FakeImage(status='queued')
+        # Image is locked with a valid task that has not aged out, so
+        # the lock will not be busted.
+        image.extra_properties['os_glance_import_task'] = task['id']
+        mock_get.return_value = image
+
+        request = unit_test_utils.get_fake_request(tenant=TENANT1)
+        url = '%s/fake_location_1' % BASE_URI
+        req_body = {'url': url}
+
+        exc = self.assertRaises(webob.exc.HTTPConflict,
+                                self.controller.add_location,
+                                request, UUID1, req_body)
+        self.assertEqual('Image has active task', str(exc))
+
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'save')
+    @mock.patch('glance.db.simple.api.image_set_property_atomic')
+    @mock.patch('glance.db.simple.api.image_delete_property_atomic')
+    @mock.patch.object(glance.notifier.TaskFactoryProxy, 'new_task')
+    @mock.patch.object(glance.notifier.ImageRepoProxy, 'get')
+    def test_add_location_locked_by_bustable_task(self, mock_get, mock_nt,
+                                                  mock_dpi, mock_spi,
+                                                  mock_save,
+                                                  task_status='processing'):
+        if task_status == 'processing':
+            # NOTE(danms): Only set task_input on one of the tested
+            # states to make sure we don't choke on a task without
+            # some of the data set yet.
+            task_input = {'backend': ['store2']}
+        else:
+            task_input = {}
+        task = test_tasks_resource._db_fixture(
+            test_tasks_resource.UUID1,
+            status=task_status,
+            input=task_input)
+        self.db.task_create(None, task)
+        image = FakeImage(status='queued')
+        # Image is locked by a task in 'processing' state
+        image.extra_properties['os_glance_import_task'] = task['id']
+        image.extra_properties['os_glance_importing_to_stores'] = 'store2'
+        mock_get.return_value = image
+
+        request = unit_test_utils.get_fake_request(tenant=TENANT1)
+        url = '%s/fake_location_1' % BASE_URI
+        req_body = {'url': url}
+
+        # Task has only been running for ten minutes
+        time_fixture = fixture.TimeFixture(task['updated_at'] +
+                                           datetime.timedelta(minutes=10))
+        self.useFixture(time_fixture)
+
+        mock_nt.return_value.task_id = 'mytask'
+
+        # Task holds the lock, API refuses to bust it
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.add_location,
+                          request, UUID1, req_body)
+        mock_dpi.assert_not_called()
+        mock_spi.assert_not_called()
+        mock_nt.assert_not_called()
+
+        # Fast forward to 90 minutes from now
+        time_fixture.advance_time_delta(datetime.timedelta(minutes=90))
+        self.controller.add_location(request, UUID1, req_body)
+
+        # API deleted the other task's lock and locked it for us
+        mock_dpi.assert_called_once_with(image.id, 'os_glance_import_task',
+                                         task['id'])
+        mock_spi.assert_called_once_with(image.id, 'os_glance_import_task',
+                                         'mytask')
+
+        # If previous operation is still in processing, new operation
+        # is not allowed
+        mock_nt.return_value.task_id = 'mytask1'
+        mock_spi.side_effect = exception.Duplicate
+        request = unit_test_utils.get_fake_request(tenant=TENANT2)
+        url = '%s/fake_location_2' % BASE_URI
+        req_body = {'url': url}
+        self.assertRaises(webob.exc.HTTPConflict,
+                          self.controller.add_location,
+                          request, UUID1, req_body)
+        # If we stored task_input with information about the stores
+        # and thus triggered the cleanup code, make sure that cleanup
+        # happened here.
+        if task_status == 'processing':
+            self.assertNotIn('store2',
+                             image.extra_properties[
+                                 'os_glance_importing_to_stores'])
+
+    def test_add_location_locked_by_bustable_terminal_task_failure(self):
+        # Make sure we don't fail with a task status transition error
+        self.test_add_location_locked_by_bustable_task(task_status='failure')
+
+    def test_add_location_locked_by_bustable_terminal_task_success(self):
+        # Make sure we don't fail with a task status transition error
+        self.test_add_location_locked_by_bustable_task(task_status='success')
+
+    def test_add_location_by_non_owner(self):
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "add_location": "'{0}':%(owner)s".format(TENANT2)
+        })
+        self.controller.policy = enforcer
+        req_body = {'url': '%s/fake_location_1' % BASE_URI}
+        self.assertRaisesRegex(
+            webob.exc.HTTPForbidden,
+            'You are not authorized to complete add_image_location action.',
+            self.controller.add_location,
+            request, image_id, req_body)
+
+    def test_add_location_without_service_role(self):
+        # Need to make sure 'http' store is not enabled
+        self.config(stores='file', group='glance_store')
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        req_body = {'url': 'file://%s/%s' % (self.test_dir, UUID7)}
+        self.assertRaisesRegex(
+            webob.exc.HTTPForbidden,
+            'http store must be enabled to use location API by normal user.',
+            self.controller.add_location, request, image_id, req_body)
+
+    def test_add_location_to_invalid_image(self):
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        req_body = {'url': '%s/fake_location_1' % BASE_URI}
+        self.assertRaisesRegex(
+            webob.exc.HTTPNotFound,
+            'No image found with ID .*',
+            self.controller.add_location,
+            request, str(uuid.uuid4()), req_body)
+
+    def test_add_location_to_active_image(self):
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        req_body = {'url': '%s/fake_location_1' % BASE_URI}
+        self.assertRaises(
+            webob.exc.HTTPConflict,
+            self.controller.add_location,
+            request, image_id, req_body)
+
+    @mock.patch.object(store, 'get_size_from_backend')
+    def test_add_location_with_invalid_validation_data(
+            self, mock_get_size):
+        mock_get_size.return_value = 1
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        checksum=None,
+                        os_hash_algo=None,
+                        os_hash_value=None,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        validation_data = {
+            'os_hash_algo': 'sha256',
+            'os_hash_value': MULTIHASH1,
+        }
+        req_body = {
+            'url': '%s/fake_location_1' % BASE_URI,
+            'validation_data': validation_data
+        }
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'os_hash_value: .* is not the correct size',
+            self.controller.add_location,
+            request, image_id, req_body)
+
+        validation_data = {
+            'os_hash_algo': 'sha123',
+            'os_hash_value': MULTIHASH1,
+        }
+        req_body = {
+            'url': '%s/fake_location_1' % BASE_URI,
+            'validation_data': validation_data
+        }
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'unsupported hash type .*',
+            self.controller.add_location,
+            request, image_id, req_body)
+
+        validation_data = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': 'not a hex value',
+        }
+        req_body = {
+            'url': '%s/fake_location_1' % BASE_URI,
+            'validation_data': validation_data
+        }
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'os_hash_value .* is not a valid hexadecimal value',
+            self.controller.add_location,
+            request, image_id, req_body)
+
+        validation_data = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': '0123456789abcdef',
+        }
+        req_body = {
+            'url': '%s/fake_location_1' % BASE_URI,
+            'validation_data': validation_data
+        }
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'os_hash_value: .* is not the correct size',
+            self.controller.add_location,
+            request, image_id, req_body)
+
 
 class TestImagesControllerPolicies(base.IsolatedUnitTest):
 
@@ -4070,6 +4383,14 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.delete,
                           request, UUID1)
+
+    def test_add_location_unauthorized(self):
+        rules = {"add_image_location": False}
+        self.policy.set_rules(rules)
+        body = {'url': '%s/fake_location' % BASE_URI}
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.add_location, request, UUID1, body)
 
 
 class TestImagesDeserializer(test_utils.BaseTestCase):
@@ -4961,6 +5282,106 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                               self.deserializer.import_image,
                               request)
 
+    def test_add_location_no_body(self):
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPBadRequest,
+                          self.deserializer.add_location,
+                          request)
+
+    def test_add_location(self):
+        request = unit_test_utils.get_fake_request()
+        body = {
+            'url': 'scheme1://path1',
+        }
+        request.body = jsonutils.dump_as_bytes(body)
+        output = self.deserializer.add_location(request)
+        expected = {"body": body}
+        self.assertEqual(expected, output)
+
+    def test_add_location_with_invalid_body(self):
+        request = self._get_fake_patch_request()
+        body = {
+            'do_secure_hash': True
+        }
+        request.body = jsonutils.dump_as_bytes(body)
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'Provided object does not match schema',
+            self.deserializer.add_location, request)
+
+        body = {
+            'url': 'scheme1://path2',
+            'validation_data': {
+                'os_hash_algo': 'sha123',
+                'os_hash_value': MULTIHASH1,
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(body)
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'Provided object does not match schema',
+            self.deserializer.add_location, request)
+
+        body = {
+            'url': 'scheme1://path2',
+            'validation_data': {
+                'os_hash_algo': 'sha123',
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(body)
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'Provided object does not match schema',
+            self.deserializer.add_location, request)
+
+        body = {
+            'url': 'scheme1://path2',
+            'validation_data': {
+                'os_hash_value': MULTIHASH1,
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(body)
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'Provided object does not match schema',
+            self.deserializer.add_location, request)
+
+        body = {
+            'url': 'scheme1://path2',
+            'validation_data': {
+                'os_hash_algo': 'sha512',
+                'os_hash_value': MULTIHASH1,
+                'bogus_value': 'test'
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(body)
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'Provided object does not match schema',
+            self.deserializer.add_location, request)
+
+        body = {
+            'url': 'scheme1://path2',
+            'validation_data': {
+                'bogus_value': 'test'
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(body)
+        self.assertRaisesRegex(
+            webob.exc.HTTPBadRequest,
+            'Provided object does not match schema',
+            self.deserializer.add_location, request)
+
+        body = {
+            'url': 'scheme1://path2',
+            'validation_data': {
+                'os_hash_algo': 'sha512',
+                'os_hash_value': MULTIHASH1,
+            }
+        }
+        request.body = jsonutils.dump_as_bytes(body)
+        self.deserializer.add_location(request)
+
 
 class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
 
@@ -5390,6 +5811,12 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         actual = jsonutils.loads(response.body)
         self.assertIn('foo', actual)
         self.assertNotIn('os_glance_stage_host', actual)
+
+    def test_add_location(self):
+        response = webob.Response()
+        self.serializer.add_location(response, {})
+        self.assertEqual(http.ACCEPTED, response.status_int)
+        self.assertEqual('0', response.headers['Content-Length'])
 
 
 class TestImagesSerializerWithUnicode(test_utils.BaseTestCase):
@@ -6200,6 +6627,48 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
                                  'stores': ["cheap"]})
 
         self.assertEqual(UUID7, output)
+
+    @mock.patch.object(glance.notifier.TaskFactoryProxy, 'new_task')
+    @mock.patch.object(glance.quota, '_calc_required_size')
+    @mock.patch.object(glance.location, '_check_image_location')
+    @mock.patch.object(glance.location.ImageRepoProxy, '_set_acls')
+    @mock.patch.object(store, 'get_size_from_uri_and_backend')
+    def test_add_location(self,
+                          mock_get_size_uri,
+                          mock_set_acls,
+                          mock_check_loc,
+                          mock_calc,
+                          mock_task):
+        self.config(do_secure_hash=True)
+        mock_calc.return_value = 1
+        mock_get_size_uri.return_value = 1
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued',
+                        checksum=None,
+                        os_hash_algo=None,
+                        os_hash_value=None),
+        ]
+        self.db.image_create(None, self.images[0])
+        url = 'file://%s/%s' % (self.test_dir, UUID7)
+        task_input = {
+            "image_id": image_id,
+            "loc_url": url,
+            "validation_data": {}
+        }
+        request = unit_test_utils.get_fake_request(roles=['service'])
+        req_body = {'url': url}
+        self.controller.add_location(request, image_id, req_body)
+        mock_task.assert_called_with(task_type='location_import',
+                                     owner=TENANT1,
+                                     task_input=task_input,
+                                     image_id=image_id,
+                                     user_id=request.context.user_id,
+                                     request_id=request.context.request_id)
 
 
 class TestProxyHelpers(base.IsolatedUnitTest):

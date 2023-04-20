@@ -84,6 +84,9 @@ ADMIN_OR_PROJECT_READER_OR_SHARED_MEMBER = (
     f'{ADMIN} or '
     f'role:reader and (project_id:%(project_id)s or {IMAGE_MEMBER_CHECK})'
 )
+SERVICE_OR_PROJECT_MEMBER = (
+    f'rule:service_api or ({PROJECT_MEMBER} and project_id:%(owner)s)'
+)
 
 rules = [
     policy.RuleDefault(name='default', check_str='',
@@ -106,6 +109,9 @@ rules = [
     policy.RuleDefault(name='context_is_admin', check_str='role:admin',
                        description='Defines the rule for the is_admin:True '
                                    'check.'),
+    policy.RuleDefault(name='service_api', check_str='role:service',
+                       description='Default rule for the service-to-service '
+                       'API.'),
 ]
 
 

@@ -735,3 +735,14 @@ def sort_image_locations(locations):
     sorted_locations = sorted(locations, key=get_store_weight, reverse=True)
     LOG.debug(('Sorted locations: %s'), sorted_locations)
     return sorted_locations
+
+
+def is_http_store_configured(url):
+    if not url.startswith("http"):
+        return False
+
+    enabled_backends = CONF.enabled_backends
+    if enabled_backends:
+        return 'http' in enabled_backends.values()
+    else:
+        return 'http' in CONF.glance_store.stores

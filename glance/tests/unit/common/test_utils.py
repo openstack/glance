@@ -28,9 +28,12 @@ from glance.common import exception
 from glance.common import store_utils
 from glance.common import utils
 from glance.tests.unit import base
+import glance.tests.unit.utils as unit_test_utils
 from glance.tests import utils as test_utils
 
 CONF = cfg.CONF
+
+BASE_URI = unit_test_utils.BASE_URI
 
 
 class TestStoreUtils(test_utils.BaseTestCase):
@@ -791,6 +794,56 @@ class TestUtils(test_utils.BaseTestCase):
         req = webob.Request.blank("/some_request", headers=headers)
         self.assertRaises(webob.exc.HTTPBadRequest,
                           utils.get_stores_from_request, req, body)
+
+    def test_single_store_http_enabled_and_http_not_in_url(self):
+        self.config(stores="http,file", group="glance_store")
+        loc_url = "rbd://aaaaaaaa/images/id"
+        self.assertFalse(utils.is_http_store_configured(loc_url))
+
+    def test_single_store_http_disabled_and_http_in_url(self):
+        self.config(stores="rbd,file", group="glance_store")
+        loc_url = BASE_URI
+        self.assertFalse(utils.is_http_store_configured(loc_url))
+
+    def test_single_store_http_enabled_and_http_in_url(self):
+        self.config(stores="http,file", group="glance_store")
+        loc_url = BASE_URI
+        self.assertTrue(utils.is_http_store_configured(loc_url))
+
+    def test_multiple_store_http_enabled_and_http_not_in_url(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd",
+            "http": "http"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="http", group="glance_store")
+        loc_url = "rbd://aaaaaaaa/images/id"
+        self.assertFalse(utils.is_http_store_configured(loc_url))
+
+    def test_multiple_store_http_disabled_and_http_in_url(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd",
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="ceph1", group="glance_store")
+        loc_url = BASE_URI
+        self.assertFalse(utils.is_http_store_configured(loc_url))
+
+    def test_multiple_store_http_enabled_and_http_in_url(self):
+        enabled_backends = {
+            "ceph1": "rbd",
+            "ceph2": "rbd",
+            "http": "http"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="http", group="glance_store")
+        loc_url = BASE_URI
+        self.assertTrue(utils.is_http_store_configured(loc_url))
 
 
 class SplitFilterOpTestCase(test_utils.BaseTestCase):

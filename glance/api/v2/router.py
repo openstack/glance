@@ -492,6 +492,17 @@ class API(wsgi.Router):
                        action='reject',
                        allowed_methods='PUT')
 
+        # Location APIs
+        image_actions_resource = image_actions.create_resource()
+        mapper.connect('/images/{image_id}/locations',
+                       controller=images_resource,
+                       action='add_location',
+                       conditions={'method': ['POST']})
+        mapper.connect('/images/{image_id}/locations',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='POST')
+
         image_tags_resource = image_tags.create_resource()
         mapper.connect('/images/{image_id}/tags/{tag_value}',
                        controller=image_tags_resource,

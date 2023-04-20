@@ -523,6 +523,13 @@ class TestDefaultPolicyCheckStrings(base.IsolatedUnitTest):
             PROJECT_READER_OR_IMAGE_MEMBER_OR_COMMUNITY_OR_PUBLIC_OR_SHARED
         )
 
+    def test_service_or_member_check_string(self):
+        expected = (
+            'rule:service_api or (role:member and project_id:%(project_id)s'
+            ' and project_id:%(owner)s)'
+        )
+        self.assertEqual(expected, base_policy.SERVICE_OR_PROJECT_MEMBER)
+
 
 class TestImageTarget(base.IsolatedUnitTest):
     def test_image_target_ignores_locations(self):

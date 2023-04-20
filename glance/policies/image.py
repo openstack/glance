@@ -189,6 +189,17 @@ image_policies = [
     ),
 
     policy.DocumentedRuleDefault(
+        name="add_image_location",
+        check_str=base.SERVICE_OR_PROJECT_MEMBER,
+        scope_types=['project'],
+        description='Add location URI to given image',
+        operations=[
+            {'path': '/v2/images/{image_id}/locations',
+             'method': 'POST'}
+        ],
+    ),
+
+    policy.DocumentedRuleDefault(
         name="add_member",
         check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=['project'],

@@ -1,0 +1,21 @@
+---
+features:
+  - |
+    This release brings the additional functionality of adding new
+    location to a ``queued`` state image which will replace the
+    image-update mechanism for consumers like cinder and nova to
+    address OSSN-0090 and OSSN-0065.
+issues:
+  - |
+    In case of ``http`` store if bad value is passed for ``os_hash_value``
+    in validation data then task fails which is expected but it stores
+    location of the image which is wrong, that needs to be popped out.
+    The location doesn't get deleted because deletion of locatio is not
+    allowed for ``http`` store. Here image needs to be deleted as it is
+    of no use.
+  - |
+    During validation of hashing data when do_secure_hash is `false`,
+    we can just validate length expected for hash_algo and not actual
+    expected hash value. If garbage hash_value with expected size has
+    been provided, image becomes active after adding location but it will
+    be of no use as download or boot will fail with corrupt image error.
