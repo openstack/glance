@@ -446,6 +446,15 @@ Here is a list of useful image properties and the values they expect.
 
   Only supported by the libvirt driver.
 
+``hw_virtio_packed_ring``
+  :Type: bool
+
+  Enables Packed VIRT-IO Queue feature. When set to true, instance will be
+  scheduled to hosts that support negotiating the packed virt queue format.
+  This feature may or may not be enabled depending on the guest driver.
+  When used it will improve the small packet performance of network io.
+  Only supported by the libvirt driver.
+
 ``hw_pointer_model``
   :Type: str
 

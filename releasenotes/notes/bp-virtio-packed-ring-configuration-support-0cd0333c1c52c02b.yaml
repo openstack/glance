@@ -1,0 +1,12 @@
+---
+upgrade:
+  - |
+    The following metadata definitions have been modified:
+
+    * Added ``hw:virtio_packed_ring`` boolean in the ``OS::Nova::Flavor``
+      namespace, and ``hw_virtio_packed_ring`` boolean in the
+      ``OS::Glance::Image`` namespace.
+
+    You may upgrade these definitions using:
+
+    ``glance-manage db load_metadefs [--path <path>] [--merge] [--prefer_new]``
