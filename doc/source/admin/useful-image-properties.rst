@@ -221,6 +221,7 @@ Here is a list of useful image properties and the values they expect.
     ``org.opensolaris``.
   * ``opensuse`` - openSUSE. Do not use ``suse``, ``SuSE``, or
     `` org.opensuse``.
+  * ``rocky`` - Rocky Linux. Do not use ``Rocky`` or ``rockylinux``.
   * ``rhel`` - Red Hat Enterprise Linux. Do not use ``redhat``, ``RedHat``,
     or ``com.redhat``.
   * ``sled`` - SUSE Linux Enterprise Desktop. Do not use ``com.suse``.
