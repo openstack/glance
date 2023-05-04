@@ -18,7 +18,7 @@ from oslo_policy import policy
 discovery_policies = [
     policy.DocumentedRuleDefault(
         name="stores_info_detail",
-        check_str='role:admin',
+        check_str='rule:context_is_admin',
         scope_types=['project'],
         description='Expose store specific information',
         operations=[

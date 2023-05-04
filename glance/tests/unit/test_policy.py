@@ -486,7 +486,8 @@ class TestDefaultPolicyCheckStrings(base.IsolatedUnitTest):
         self.assertEqual(expected, base_policy.PROJECT_MEMBER)
 
     def test_admin_or_project_member_check_string(self):
-        expected = 'role:admin or (role:member and project_id:%(project_id)s)'
+        expected = ('rule:context_is_admin or '
+                    '(role:member and project_id:%(project_id)s)')
         self.assertEqual(expected, base_policy.ADMIN_OR_PROJECT_MEMBER)
 
     def test_project_member_download_image_check_string(self):
@@ -506,7 +507,8 @@ class TestDefaultPolicyCheckStrings(base.IsolatedUnitTest):
         self.assertEqual(expected, base_policy.PROJECT_READER)
 
     def test_admin_or_project_reader_check_string(self):
-        expected = 'role:admin or (role:reader and project_id:%(project_id)s)'
+        expected = ('rule:context_is_admin or '
+                    '(role:reader and project_id:%(project_id)s)')
         self.assertEqual(expected, base_policy.ADMIN_OR_PROJECT_READER)
 
     def test_project_reader_get_image_check_string(self):
