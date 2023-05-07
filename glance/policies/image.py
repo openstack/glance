@@ -198,6 +198,16 @@ image_policies = [
              'method': 'POST'}
         ],
     ),
+    policy.DocumentedRuleDefault(
+        name="fetch_image_location",
+        check_str=base.SERVICE,
+        scope_types=['project'],
+        description='Show all locations associated to given image',
+        operations=[
+            {'path': '/v2/images/{image_id}/locations',
+             'method': 'GET'}
+        ],
+    ),
 
     policy.DocumentedRuleDefault(
         name="add_member",

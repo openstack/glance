@@ -4246,6 +4246,73 @@ class TestImagesController(base.IsolatedUnitTest):
             self.controller.add_location,
             request, image_id, req_body)
 
+    def test_get_locations_by_owner_or_admin(self):
+        url = '%s/fake_location_1' % BASE_URI
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        locations=[{'url': url,
+                                    'metadata': {}, 'status': 'active'}]),
+        ]
+        self.db.image_create(None, self.images[0])
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "fetch_image_location": "role:service"
+        })
+        self.controller.policy = enforcer
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        self.assertRaises(
+            webob.exc.HTTPForbidden,
+            self.controller.get_locations, request, image_id)
+
+    def test_get_locations(self):
+        image_id = str(uuid.uuid4())
+        url = '%s/fake_location_1' % BASE_URI
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        locations=[{'url': url,
+                                    'metadata': {}, 'status': 'active'}]),
+        ]
+        self.db.image_create(None, self.images[0])
+        enforcer = unit_test_utils.enforcer_from_rules({
+            "get_image": "",
+            "fetch_image_location": "role:service"
+        })
+        self.controller.policy = enforcer
+        request = unit_test_utils.get_fake_request(roles=['service'])
+        output = self.controller.get_locations(request, image_id)
+        self.assertEqual(1, len(output))
+        self.assertEqual(url, output[0]['url'])
+
+    def test_get_locations_of_non_existing_image(self):
+        url = '%s/fake_location_1' % BASE_URI
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1, checksum=CHKSUM,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='active',
+                        locations=[{'url': url,
+                                    'metadata': {}, 'status': 'active'}]),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request(roles=['member'])
+
+        self.assertRaisesRegex(
+            webob.exc.HTTPNotFound,
+            'No image found with ID .*',
+            self.controller.get_locations,
+            request, str(uuid.uuid4()))
+
 
 class TestImagesControllerPolicies(base.IsolatedUnitTest):
 
@@ -4391,6 +4458,13 @@ class TestImagesControllerPolicies(base.IsolatedUnitTest):
         request = unit_test_utils.get_fake_request()
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.controller.add_location, request, UUID1, body)
+
+    def test_get_locations_unauthorized(self):
+        rules = {"fetch_image_location": False}
+        self.policy.set_rules(rules)
+        request = unit_test_utils.get_fake_request()
+        self.assertRaises(webob.exc.HTTPForbidden,
+                          self.controller.get_locations, request, UUID1)
 
 
 class TestImagesDeserializer(test_utils.BaseTestCase):

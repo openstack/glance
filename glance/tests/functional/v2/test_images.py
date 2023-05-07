@@ -3978,6 +3978,109 @@ class TestImages(functional.FunctionalTest):
 
         self.stop_servers()
 
+    def test_get_location(self):
+        self.start_servers(**self.__dict__.copy())
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        # Get locations of `queued` image
+        headers = self._headers({'X-Roles': 'service'})
+        path = self._url('/v2/images/%s/locations' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(0, len(jsonutils.loads(response.text)))
+        self.assertEqual('queued', image['status'])
+
+        # Get location of invalid image
+        image_id = str(uuid.uuid4())
+        path = self._url('/v2/images/%s/locations' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.NOT_FOUND, response.status_code, response.text)
+
+        # Add Location with valid URL and image owner
+        image_id = image['id']
+        path = self._url('/v2/images/%s/locations' % image_id)
+        url = 'http://127.0.0.1:%s/foo_image' % self.http_port1
+        data = jsonutils.dumps({'url': url})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(202, response.status_code, response.text)
+        path = self._url('/v2/images/%s' % image_id)
+        headers = self._headers({'content-type': 'application/json'})
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=10,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1)
+
+        # Get Locations not allowed for any other user
+        headers = self._headers({'X-Roles': 'admin,member'})
+        path = self._url('/v2/images/%s/locations' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
+
+        # Get Locations allowed only for service user
+        headers = self._headers({'X-Roles': 'service'})
+        path = self._url('/v2/images/%s/locations' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code, response.text)
+
+        self.stop_servers()
+
+    def test_get_location_with_data_upload(self):
+        self.start_servers(**self.__dict__.copy())
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        # Upload some image data
+        path = self._url('/v2/images/%s/file' % image_id)
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        image_data = b'ZZZZZ'
+        response = requests.put(path, headers=headers, data=image_data)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        expect_c = str(md5(image_data, usedforsecurity=False).hexdigest())
+        expect_h = str(hashlib.sha512(image_data).hexdigest())
+        func_utils.verify_image_hashes_and_status(self, image_id, expect_c,
+                                                  expect_h, 'active',
+                                                  size=len(image_data))
+
+        # Get Locations not allowed for any other user
+        headers = self._headers({'X-Roles': 'admin,member'})
+        path = self._url('/v2/images/%s/locations' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
+
+        # Get Locations allowed only for service user
+        headers = self._headers({'X-Roles': 'service'})
+        path = self._url('/v2/images/%s/locations' % image_id)
+        response = requests.get(path, headers=headers)
+        self.assertEqual(200, response.status_code, response.text)
+        output = jsonutils.loads(response.text)
+        self.assertTrue(output[0]['url'])
+
+        self.stop_servers()
+
 
 class TestImagesIPv6(functional.FunctionalTest):
     """Verify that API and REG servers running IPv6 can communicate"""
@@ -7952,3 +8055,62 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         image = jsonutils.loads(resp.text)
         self.assertEqual(expect_c, image['checksum'])
         self.assertEqual(expect_h, image['os_hash_value'])
+
+    def test_get_location(self):
+        self._setup_multiple_stores()
+
+        # Create an image
+        path = '/v2/images'
+        headers = self._headers({'content-type': 'application/json'})
+        data = {'name': 'image-1', 'disk_format': 'aki',
+                'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        # Get location of `queued` image
+        headers = self._headers({'X-Roles': 'service'})
+        path = '/v2/images/%s/locations' % image_id
+        response = self.api_get(path, headers=headers)
+        self.assertEqual(200, response.status_code, response.text)
+        self.assertEqual(0, len(jsonutils.loads(response.text)))
+
+        # Get location of invalid image
+        image_id = str(uuid.uuid4())
+        path = '/v2/images/%s/locations' % image_id
+        response = self.api_get(path, headers=headers)
+        self.assertEqual(http.NOT_FOUND, response.status_code, response.text)
+
+        # Add Location with valid URL and image owner
+        image_id = image['id']
+        path = '/v2/images/%s/locations' % image_id
+        url = 'http://127.0.0.1:%s/store1/foo_image' % self.http_port0
+        data = {'url': url}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(202, response.status_code, response.text)
+        path = '/v2/images/%s' % image_id
+        headers = self._headers({'content-type': 'application/json'})
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=10,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1, multistore=True)
+
+        # Get Locations not allowed for any other user
+        headers = self._headers({'X-Roles': 'admin,member'})
+        path = '/v2/images/%s/locations' % image_id
+        response = self.api_get(path, headers=headers)
+        self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
+
+        # Get Locations allowed only for service user
+        headers = self._headers({'X-Roles': 'service'})
+        path = '/v2/images/%s/locations' % image_id
+        response = self.api_get(path, headers=headers)
+        self.assertEqual(200, response.status_code, response.text)
+        output = jsonutils.loads(response.text)
+        self.assertEqual(url, output[0]['url'])

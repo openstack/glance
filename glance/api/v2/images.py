@@ -1217,6 +1217,29 @@ class ImagesController(object):
 
         return image_id
 
+    def get_locations(self, req, image_id):
+        image_repo = self.gateway.get_repo(req.context)
+        try:
+            image = image_repo.get(image_id)
+
+            # NOTE(pdeore): This is the right place to check whether user
+            # have permission to get the image locations
+            api_pol = api_policy.ImageAPIPolicy(req.context, image,
+                                                self.policy)
+            api_pol.get_locations()
+            locations = list(image.locations)
+
+            for loc in locations:
+                loc.pop('id', None)
+                loc.pop('status', None)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.msg)
+        except exception.Forbidden as e:
+            LOG.debug("User not permitted to get the image locations.")
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
+
+        return locations
+
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
 

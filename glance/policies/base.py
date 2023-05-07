@@ -88,6 +88,8 @@ SERVICE_OR_PROJECT_MEMBER = (
     f'rule:service_api or ({PROJECT_MEMBER} and project_id:%(owner)s)'
 )
 
+SERVICE = 'rule:service_api'
+
 rules = [
     policy.RuleDefault(name='default', check_str='',
                        description='Defines the default rule used for '

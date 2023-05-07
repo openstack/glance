@@ -235,6 +235,9 @@ class ImageAPIPolicy(APIPolicyBase):
     def add_location(self):
         self._enforce('add_image_location')
 
+    def get_locations(self):
+        self._enforce('fetch_image_location')
+
     def add_image(self):
         try:
             self._enforce('add_image')

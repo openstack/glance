@@ -499,6 +499,10 @@ class API(wsgi.Router):
                        action='add_location',
                        conditions={'method': ['POST']})
         mapper.connect('/images/{image_id}/locations',
+                       controller=images_resource,
+                       action='get_locations',
+                       conditions={'method': ['GET']})
+        mapper.connect('/images/{image_id}/locations',
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='POST')

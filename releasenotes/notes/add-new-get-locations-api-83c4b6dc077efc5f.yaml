@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    This release brings the additional functionality of get locations
+    associated to an image accessible to only service users
+    i.e., consumers like cinder and nova for OSSN-0090 and OSSN-0065.
+

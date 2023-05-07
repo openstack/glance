@@ -530,6 +530,12 @@ class TestDefaultPolicyCheckStrings(base.IsolatedUnitTest):
         )
         self.assertEqual(expected, base_policy.SERVICE_OR_PROJECT_MEMBER)
 
+    def test_service_check_string(self):
+        expected = (
+            'rule:service_api'
+        )
+        self.assertEqual(expected, base_policy.SERVICE)
+
 
 class TestImageTarget(base.IsolatedUnitTest):
     def test_image_target_ignores_locations(self):
