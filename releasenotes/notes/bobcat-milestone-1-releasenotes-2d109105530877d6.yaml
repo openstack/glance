@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Bug 2007354_: duplicate values in compute-host-capabilities.json
+
+    .. _2007354: https://code.launchpad.net/bugs/2007354
+
