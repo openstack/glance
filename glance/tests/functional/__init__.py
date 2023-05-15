@@ -468,23 +468,35 @@ default_store = %(default_store)s
 [import_filtering_opts]
 allowed_ports = []
 """
-        self.paste_conf_base = """[pipeline:glance-api]
+        self.paste_conf_base = """[composite:glance-api]
+paste.composite_factory = glance.api:root_app_factory
+/: api
+/healthcheck: healthcheck
+
+[pipeline:api]
 pipeline =
     cors
-    healthcheck
     versionnegotiation
     gzip
     unauthenticated-context
     rootapp
 
-[pipeline:glance-api-caching]
-pipeline = cors healthcheck versionnegotiation gzip context
- cache rootapp
+[composite:glance-api-caching]
+paste.composite_factory = glance.api:root_app_factory
+/: api-caching
+/healthcheck: healthcheck
 
-[pipeline:glance-api-cachemanagement]
+[pipeline:api-caching]
+pipeline = cors versionnegotiation gzip context cache rootapp
+
+[composite:glance-api-cachemanagement]
+paste.composite_factory = glance.api:root_app_factory
+/: api-cachemanagement
+/healthcheck: healthcheck
+
+[pipeline:api-cachemanagement]
 pipeline =
     cors
-    healthcheck
     versionnegotiation
     gzip
     unauthenticated-context
@@ -492,11 +504,21 @@ pipeline =
     cache_manage
     rootapp
 
-[pipeline:glance-api-fakeauth]
-pipeline = cors healthcheck versionnegotiation gzip fakeauth context rootapp
+[composite:glance-api-fakeauth]
+paste.composite_factory = glance.api:root_app_factory
+/: api-fakeauth
+/healthcheck: healthcheck
 
-[pipeline:glance-api-noauth]
-pipeline = cors healthcheck versionnegotiation gzip context rootapp
+[pipeline:api-fakeauth]
+pipeline = cors versionnegotiation gzip fakeauth context rootapp
+
+[composite:glance-api-noauth]
+paste.composite_factory = glance.api:root_app_factory
+/: api-noauth
+/healthcheck: healthcheck
+
+[pipeline:api-noauth]
+pipeline = cors versionnegotiation gzip context rootapp
 
 [composite:rootapp]
 paste.composite_factory = glance.api:root_app_factory
@@ -509,8 +531,8 @@ paste.app_factory = glance.api.versions:create_resource
 [app:apiv2app]
 paste.app_factory = glance.api.v2.router:API.factory
 
-[filter:healthcheck]
-paste.filter_factory = oslo_middleware:Healthcheck.factory
+[app:healthcheck]
+paste.app_factory = oslo_middleware:Healthcheck.app_factory
 backends = disable_by_file
 disable_by_file_path = %(disable_path)s
 
@@ -643,23 +665,35 @@ allowed_ports = []
 [os_glance_staging_store]
 filesystem_store_datadir=%(staging_dir)s
 """
-        self.paste_conf_base = """[pipeline:glance-api]
+        self.paste_conf_base = """[composite:glance-api]
+paste.composite_factory = glance.api:root_app_factory
+/: api
+/healthcheck: healthcheck
+
+[pipeline:api]
 pipeline =
     cors
-    healthcheck
     versionnegotiation
     gzip
     unauthenticated-context
     rootapp
 
-[pipeline:glance-api-caching]
-pipeline = cors healthcheck versionnegotiation gzip unauthenticated-context
- cache rootapp
+[composite:glance-api-caching]
+paste.composite_factory = glance.api:root_app_factory
+/: api-caching
+/healthcheck: healthcheck
 
-[pipeline:glance-api-cachemanagement]
+[pipeline:api-caching]
+pipeline = cors versionnegotiation gzip unauthenticated-context cache rootapp
+
+[composite:glance-api-cachemanagement]
+paste.composite_factory = glance.api:root_app_factory
+/: api-cachemanagement
+/healthcheck: healthcheck
+
+[pipeline:api-cachemanagement]
 pipeline =
     cors
-    healthcheck
     versionnegotiation
     gzip
     unauthenticated-context
@@ -667,11 +701,21 @@ pipeline =
     cache_manage
     rootapp
 
-[pipeline:glance-api-fakeauth]
-pipeline = cors healthcheck versionnegotiation gzip fakeauth context rootapp
+[composite:glance-api-fakeauth]
+paste.composite_factory = glance.api:root_app_factory
+/: api-fakeauth
+/healthcheck: healthcheck
 
-[pipeline:glance-api-noauth]
-pipeline = cors healthcheck versionnegotiation gzip context rootapp
+[pipeline:api-fakeauth]
+pipeline = cors versionnegotiation gzip fakeauth context rootapp
+
+[composite:glance-api-noauth]
+paste.composite_factory = glance.api:root_app_factory
+/: api-noauth
+/healthcheck: healthcheck
+
+[pipeline:api-noauth]
+pipeline = cors versionnegotiation gzip context rootapp
 
 [composite:rootapp]
 paste.composite_factory = glance.api:root_app_factory
@@ -684,8 +728,8 @@ paste.app_factory = glance.api.versions:create_resource
 [app:apiv2app]
 paste.app_factory = glance.api.v2.router:API.factory
 
-[filter:healthcheck]
-paste.filter_factory = oslo_middleware:Healthcheck.factory
+[app:healthcheck]
+paste.app_factory = oslo_middleware:Healthcheck.app_factory
 backends = disable_by_file
 disable_by_file_path = %(disable_path)s
 

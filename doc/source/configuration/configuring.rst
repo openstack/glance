@@ -1697,19 +1697,21 @@ To enable the health check middleware, it must occur in the beginning of the
 application pipeline.
 
 The health check middleware should be placed in your
-``glance-api-paste.ini`` in a section titled ``[filter:healthcheck]``.
+``glance-api-paste.ini`` in a section titled ``[app:healthcheck]``.
 It should look like this::
 
-  [filter:healthcheck]
-  paste.filter_factory = oslo_middleware:Healthcheck.factory
+  [app:healthcheck]
+  paste.app_factory = oslo_middleware:Healthcheck.app_factory
   backends = disable_by_file
   disable_by_file_path = /etc/glance/healthcheck_disable
 
-A ready-made application pipeline including this filter is defined e.g. in
+A ready-made composite including this application is defined e.g. in
 the ``glance-api-paste.ini`` file, looking like so::
 
-  [pipeline:glance-api]
-  pipeline = healthcheck versionnegotiation osprofiler unauthenticated-context rootapp
+  [composite:glance-api]
+  paste.composite_factory = glance.api:root_app_factory
+  /: apiv2app
+  /healthcheck: healthcheck
 
 For more information see
 `oslo.middleware <https://docs.openstack.org/oslo.middleware/latest/reference/api.html#oslo_middleware.Healthcheck>`_.
