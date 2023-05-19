@@ -331,7 +331,6 @@
               - ^releasenotes/.*$
               - ^tools/.*$
               - ^tox.ini$
-              - ^\.zuul\.yaml$
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-enforce-scope-new-defaults:
