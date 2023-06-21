@@ -50,10 +50,15 @@
   .. path /etc/glance/glance.conf
   .. code-block:: ini
 
+     [DEFAULT]
+     # ...
+     enabled_backends=fs:file
+
      [glance_store]
      # ...
-     stores = file,http
-     default_store = file
+     default_backend = fs
+
+     [fs]
      filesystem_store_datadir = /var/lib/glance/images/
 
   .. end
