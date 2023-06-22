@@ -39,6 +39,33 @@ class TestScriptsUtils(test_utils.BaseTestCase):
         self.assertEqual(task_input,
                          script_utils.unpack_task_input(task))
 
+    def test_unpack_task_type_location_import(self):
+        task_type = 'location_import'
+        task_input = {'image_id': mock.ANY,
+                      'loc_url': mock.ANY,
+                      'validation_data': {}}
+        task = mock.Mock(type=task_type, task_input=task_input)
+        self.assertEqual(task_input,
+                         script_utils.unpack_task_input(task))
+
+    def test_unpack_task_type_location_import_error(self):
+        task_type = 'location_import'
+        task_input1 = {'image_id': mock.ANY,
+                       'validation_data': {}}
+        task_input2 = {'loc_url': mock.ANY,
+                       'validation_data': {}}
+        task_input3 = {'image_id': mock.ANY,
+                       'loc_url': mock.ANY}
+        task1 = mock.Mock(type=task_type, task_input=task_input1)
+        task2 = mock.Mock(type=task_type, task_input=task_input2)
+        task3 = mock.Mock(type=task_type, task_input=task_input3)
+        self.assertRaises(exception.Invalid,
+                          script_utils.unpack_task_input, task1)
+        self.assertRaises(exception.Invalid,
+                          script_utils.unpack_task_input, task2)
+        self.assertRaises(exception.Invalid,
+                          script_utils.unpack_task_input, task3)
+
     def test_unpack_task_input_error(self):
         task_input1 = {"import_from_format": "bar", "image_properties": "baz"}
         task_input2 = {"import_from": "foo", "image_properties": "baz"}

@@ -378,6 +378,22 @@ Related options:
     * location_strategy
 
 """)),
+    cfg.BoolOpt('do_secure_hash', default=True,
+                help=_("""
+Calculate hash and checksum for the image.
+
+This configuration option indicates that /v2/images/{image_id}/locations
+POST API will calculate hash and checksum of the image on the fly.
+If False it will silently ignore the hash and checksum calculation.
+
+Possible values:
+    * True
+    * False
+""")),
+    cfg.IntOpt('http_retries', default=3,
+               help=_("""
+The number of times to retry when any operation fails.
+""")),
     cfg.IntOpt('image_size_cap', default=1099511627776, min=1,
                max=9223372036854775808,
                help=_("""

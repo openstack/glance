@@ -351,7 +351,7 @@ class ImageMemberFactory(object):
 
 
 class Task(object):
-    _supported_task_type = ('import', 'api_image_import')
+    _supported_task_type = ('import', 'api_image_import', 'location_import')
 
     _supported_task_status = ('pending', 'processing', 'success', 'failure')
 

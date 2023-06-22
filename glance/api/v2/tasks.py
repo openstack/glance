@@ -351,7 +351,8 @@ _TASK_SCHEMA = {
         "description": _("The type of task represented by this content"),
         "enum": [
             "import",
-            "api_image_import"
+            "api_image_import",
+            "location_import",
         ],
         "type": "string"
     },

@@ -63,6 +63,15 @@ def unpack_task_input(task):
         if 'image_id' not in task_input:
             msg = _("Missing required 'image_id' field")
             raise exception.Invalid(msg)
+    elif task_type == 'location_import':
+        if not task_input:
+            msg = _("Input to location_import task is empty.")
+            raise exception.Invalid(msg)
+        for key in ['image_id', 'loc_url', 'validation_data']:
+            if key not in task_input:
+                msg = (_("Input does not contain '%(key)s' field") %
+                       {"key": key})
+                raise exception.Invalid(msg)
     else:
         for key in ["import_from", "import_from_format", "image_properties"]:
             if key not in task_input:
