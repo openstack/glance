@@ -149,6 +149,7 @@ class InfoController(object):
                     store['id'])
                 store['properties'] = store_mapper.get(store_type)(
                     store_detail)
+                store['weight'] = getattr(CONF, store['id']).weight
 
         except exception.Forbidden as e:
             LOG.debug("User not permitted to view details")

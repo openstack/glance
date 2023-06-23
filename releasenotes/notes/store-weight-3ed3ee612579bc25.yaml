@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    "GET" images API will now sort image locations based on store weight
+    configured for each store in configuration files. Image will be
+    downloaded from the store having highest weight configured. For default
+    weight scenario the locations will remain same as per insertion order.

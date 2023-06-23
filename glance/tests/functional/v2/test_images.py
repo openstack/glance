@@ -7318,3 +7318,38 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
 
         # Make sure we can still import.
         self._create_and_import(stores=['store1'])
+
+
+class TestStoreWeight(functional.SynchronousAPIBase):
+    def setUp(self):
+        super(TestStoreWeight, self).setUp()
+
+    def test_store_weight_combinations(self):
+        self.start_server()
+        # Import image in all available stores
+        image_id = self._create_and_import(stores=['store1', 'store2',
+                                                   'store3'])
+        # make sure as weight is default, we will get locations based
+        # on insertion order
+        image = self.api_get('/v2/images/%s' % image_id).json
+        self.assertEqual("store1,store2,store3", image['stores'])
+
+        # give highest weight to store2 then store3 and then store1
+        self.config(weight=200, group='store2')
+        self.config(weight=100, group='store3')
+        self.config(weight=50, group='store1')
+        self.start_server()
+        # make sure as per store weight locations will be sorted
+        # as store2,store3,store1
+        image = self.api_get('/v2/images/%s' % image_id).json
+        self.assertEqual("store2,store3,store1", image['stores'])
+
+        # give highest weight to store3 then store1 and then store2
+        self.config(weight=20, group='store2')
+        self.config(weight=100, group='store3')
+        self.config(weight=50, group='store1')
+        self.start_server()
+        # make sure as per store weight locations will be sorted
+        # as store3,store1,store2
+        image = self.api_get('/v2/images/%s' % image_id).json
+        self.assertEqual("store3,store1,store2", image['stores'])

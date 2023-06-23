@@ -155,6 +155,139 @@ class TestCinderStoreUtils(base.MultiStoreClearingUnitTest):
 class TestUtils(test_utils.BaseTestCase):
     """Test routines in glance.utils"""
 
+    def test_sort_image_locations_multistore_disabled(self):
+        self.config(enabled_backends=None)
+        locations = [{
+            'url': 'rbd://aaaaaaaa/images/id',
+            'metadata': {'store': 'rbd1'}
+        }, {
+            'url': 'rbd://bbbbbbbb/images/id',
+            'metadata': {'store': 'rbd2'}
+        }, {
+            'url': 'rbd://cccccccc/images/id',
+            'metadata': {'store': 'rbd3'}
+        }]
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            utils.sort_image_locations(locations)
+
+        # Since multistore is not enabled, it will not sort the locations
+        self.assertEqual(0, mock_get_store.call_count)
+
+    def test_sort_image_locations(self):
+        enabled_backends = {
+            "rbd1": "rbd",
+            "rbd2": "rbd",
+            "rbd3": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="rbd1", group="glance_store")
+        locations = [{
+            'url': 'rbd://aaaaaaaa/images/id',
+            'metadata': {'store': 'rbd1'}
+        }, {
+            'url': 'rbd://bbbbbbbb/images/id',
+            'metadata': {'store': 'rbd2'}
+        }, {
+            'url': 'rbd://cccccccc/images/id',
+            'metadata': {'store': 'rbd3'}
+        }]
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            mock_store = mock_get_store.return_value
+            mock_store.weight = 100
+            utils.sort_image_locations(locations)
+
+        # Since 3 stores are configured, internal method will be called 3 times
+        self.assertEqual(3, mock_get_store.call_count)
+
+    def test_sort_image_locations_without_metadata(self):
+        enabled_backends = {
+            "rbd1": "rbd",
+            "rbd2": "rbd",
+            "rbd3": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="rbd1", group="glance_store")
+        locations = [{
+            'url': 'rbd://aaaaaaaa/images/id',
+            'metadata': {}
+        }, {
+            'url': 'rbd://bbbbbbbb/images/id',
+            'metadata': {}
+        }, {
+            'url': 'rbd://cccccccc/images/id',
+            'metadata': {}
+        }]
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            utils.sort_image_locations(locations)
+
+        # Since 3 stores are configured, without store in metadata the internal
+        # method will be called 0 times
+        self.assertEqual(0, mock_get_store.call_count)
+
+    def test_sort_image_locations_with_partial_metadata(self):
+        enabled_backends = {
+            "rbd1": "rbd",
+            "rbd2": "rbd",
+            "rbd3": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="rbd1", group="glance_store")
+        locations = [{
+            'url': 'rbd://aaaaaaaa/images/id',
+            'metadata': {'store': 'rbd1'}
+        }, {
+            'url': 'rbd://bbbbbbbb/images/id',
+            'metadata': {}
+        }, {
+            'url': 'rbd://cccccccc/images/id',
+            'metadata': {}
+        }]
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            mock_store = mock_get_store.return_value
+            mock_store.weight = 100
+            utils.sort_image_locations(locations)
+
+        # Since 3 stores are configured, but only one location has
+        # store in metadata the internal
+        # method will be called 1 time only
+        self.assertEqual(1, mock_get_store.call_count)
+
+    def test_sort_image_locations_unknownscheme(self):
+        enabled_backends = {
+            "rbd1": "rbd",
+            "rbd2": "rbd",
+            "rbd3": "rbd"
+        }
+        self.config(enabled_backends=enabled_backends)
+        store.register_store_opts(CONF)
+        self.config(default_backend="rbd1", group="glance_store")
+        locations = [{
+            'url': 'rbd://aaaaaaaa/images/id',
+            'metadata': {'store': 'rbd1'}
+        }, {
+            'url': 'rbd://bbbbbbbb/images/id',
+            'metadata': {'store': 'rbd2'}
+        }, {
+            'url': 'rbd://cccccccc/images/id',
+            'metadata': {'store': 'rbd3'}
+        }]
+        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        with mock.patch(mp) as mock_get_store:
+            mock_get_store.side_effect = store.UnknownScheme()
+            sorted_locations = utils.sort_image_locations(locations)
+
+        # Even though UnknownScheme exception is raised, processing continues
+        self.assertEqual(3, mock_get_store.call_count)
+        # Since we return 0 weight, original location order should be preserved
+        self.assertEqual(locations, sorted_locations)
+
     def test_cooperative_reader(self):
         """Ensure cooperative reader class accesses all bytes of file"""
         BYTES = 1024

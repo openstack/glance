@@ -24,7 +24,7 @@ from wsme.rest import json
 from glance.api.v2.model.metadef_property_type import PropertyType
 from glance.common import crypt
 from glance.common import exception
-from glance.common import location_strategy
+from glance.common import utils as common_utils
 import glance.domain
 import glance.domain.proxy
 from glance.i18n import _
@@ -127,7 +127,7 @@ class ImageRepo(object):
             min_disk=db_image['min_disk'],
             min_ram=db_image['min_ram'],
             protected=db_image['protected'],
-            locations=location_strategy.get_ordered_locations(locations),
+            locations=common_utils.sort_image_locations(locations),
             checksum=db_image['checksum'],
             os_hash_algo=db_image['os_hash_algo'],
             os_hash_value=db_image['os_hash_value'],

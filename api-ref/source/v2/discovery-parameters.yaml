@@ -37,6 +37,9 @@ stores-detail:
         for more information.)
     ``read-only`` (optional)
         Included only when the store is read only.
+    ``weight`` (default 0)
+        Contains weight (positive integer) to sort image locations for
+        preference.
     ``properties``
         Contains store specific properties
   in: body

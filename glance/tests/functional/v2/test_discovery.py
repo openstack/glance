@@ -131,6 +131,7 @@ class TestDiscovery(functional.SynchronousAPIBase):
                     "id": "store1",
                     "default": "true",
                     "type": "file",
+                    "weight": 0,
                     "properties": {
                           "data_dir": self._store_dir('store1'),
                           "chunk_size": 65536,
@@ -140,6 +141,7 @@ class TestDiscovery(functional.SynchronousAPIBase):
                 {
                     "id": "store2",
                     "type": "file",
+                    "weight": 0,
                     "properties": {
                           "data_dir": self._store_dir('store2'),
                           "chunk_size": 65536,
@@ -149,6 +151,7 @@ class TestDiscovery(functional.SynchronousAPIBase):
                 {
                     "id": "store3",
                     "type": "file",
+                    "weight": 0,
                     "properties": {
                           "data_dir": self._store_dir('store3'),
                           "chunk_size": 65536,

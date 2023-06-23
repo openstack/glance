@@ -46,6 +46,7 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
         self.assertIn('stores', output)
         for stores in output['stores']:
             self.assertIn('id', stores)
+            self.assertNotIn('weight', stores)
             self.assertIn(stores['id'], available_stores)
 
     def test_get_stores_read_only_store(self):
@@ -107,6 +108,20 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
             actual_attribute = list(store['properties'].keys())
             expected_attribute = store_attributes[store['type']]
             self.assertEqual(actual_attribute, expected_attribute)
+
+    def test_get_stores_detail_with_store_weight(self):
+        self.config(weight=100, group='fast')
+        self.config(weight=200, group='cheap')
+        self.config(weight=300, group='fast-rbd')
+        self.config(weight=400, group='fast-cinder')
+        self.config(weight=500, group='reliable')
+
+        req = unit_test_utils.get_fake_request(roles=['admin'])
+        output = self.controller.get_stores_detail(req)
+        self.assertEqual(len(CONF.enabled_backends), len(output['stores']))
+        self.assertIn('stores', output)
+        for store in output['stores']:
+            self.assertIn('weight', store)
 
     def test_get_stores_detail_non_admin(self):
         req = unit_test_utils.get_fake_request()

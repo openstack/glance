@@ -36,7 +36,6 @@ from glance.api import common
 from glance.api import policy
 from glance.api.v2 import policy as api_policy
 from glance.common import exception
-from glance.common import location_strategy
 from glance.common import store_utils
 from glance.common import timeutils
 from glance.common import utils
@@ -1610,7 +1609,7 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
                 locations = _get_image_locations(image)
                 if locations:
                     # Choose best location configured strategy
-                    loc = location_strategy.choose_best_location(locations)
+                    loc = utils.sort_image_locations(locations)[0]
                     image_view['direct_url'] = loc['url']
                 else:
                     LOG.debug("The 'locations' list of image %s is empty, "
