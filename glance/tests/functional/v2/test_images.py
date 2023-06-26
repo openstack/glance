@@ -23,6 +23,9 @@ import urllib
 import uuid
 
 import fixtures
+import glance_store
+
+from oslo_config import cfg
 from oslo_limit import exception as ol_exc
 from oslo_limit import limit
 from oslo_serialization import jsonutils
@@ -30,11 +33,14 @@ from oslo_utils.secretutils import md5
 from oslo_utils import units
 import requests
 
+from glance.common import wsgi
 from glance.quota import keystone as ks_quota
 from glance.tests import functional
 from glance.tests.functional import ft_utils as func_utils
 from glance.tests import utils as test_utils
 
+
+CONF = cfg.CONF
 
 TENANT1 = str(uuid.uuid4())
 TENANT2 = str(uuid.uuid4())
@@ -201,7 +207,7 @@ class TestImages(functional.FunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=10,
@@ -342,7 +348,7 @@ class TestImages(functional.FunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=20,
@@ -982,7 +988,7 @@ class TestImages(functional.FunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image['id'])
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=15,
@@ -3692,6 +3698,286 @@ class TestImages(functional.FunctionalTest):
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
 
+    def test_add_location_with_do_secure_hash_true_negative(self):
+        self.start_servers(**self.__dict__.copy())
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+        self.assertIsNone(image['size'])
+
+        # Add Location with non image owner
+        path = self._url('/v2/images/%s/locations' % image_id)
+        headers = self._headers({'X-Tenant-Id': TENANT2})
+        url = 'http://127.0.0.1:%s/foo_image' % self.http_port0
+
+        data = jsonutils.dumps({'url': url})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.NOT_FOUND, response.status_code, response.text)
+
+        # Add location with invalid validation_data
+        # Invalid os_hash_value
+        validation_data = {
+            'os_hash_algo': "sha512",
+            'os_hash_value': "dbc9e0f80d131e64b94913a7b40bb5"
+        }
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        data = jsonutils.dumps({'url': url,
+                                'validation_data': validation_data})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code,
+                         response.text)
+
+        # Add location with invalid validation_data (without os_hash_algo)
+        url = 'http://127.0.0.1:%s/foo_image' % self.http_port0
+        with requests.get(url) as r:
+            expect_h = str(hashlib.sha512(r.content).hexdigest())
+        validation_data = {'os_hash_value': expect_h}
+        data = jsonutils.dumps({'url': url,
+                                'validation_data': validation_data})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
+
+        # Add location with invalid validation_data &
+        # (invalid hash_algo)
+        validation_data = {
+            'os_hash_algo': 'sha123',
+            'os_hash_value': expect_h}
+        data = jsonutils.dumps({'url': url,
+                                'validation_data': validation_data})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
+
+        # Add location with invalid validation_data
+        # (mismatch hash_value with hash algo)
+        with requests.get(url) as r:
+            expect_h = str(hashlib.sha256(r.content).hexdigest())
+
+        validation_data = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': expect_h}
+        data = jsonutils.dumps({'url': url,
+                                'validation_data': validation_data})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
+
+        self.stop_servers()
+
+    def test_add_location_with_do_secure_hash_true(self):
+        self.start_servers(**self.__dict__.copy())
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        # Add location with os_hash_algo other than sha512
+        path = self._url('/v2/images/%s/locations' % image_id)
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        url = 'http://127.0.0.1:%s/foo_image' % self.http_port0
+        with requests.get(url) as r:
+            expect_c = str(md5(r.content, usedforsecurity=False).hexdigest())
+            expect_h = str(hashlib.sha256(r.content).hexdigest())
+        validation_data = {
+            'os_hash_algo': 'sha256',
+            'os_hash_value': expect_h}
+        data = jsonutils.dumps({'url': url,
+                                'validation_data': validation_data})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=10,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1)
+        # Show Image
+        path = self._url('/v2/images/%s' % image_id)
+        resp = requests.get(path, headers=headers)
+        image = jsonutils.loads(resp.text)
+        self.assertEqual(expect_c, image['checksum'])
+        self.assertEqual(expect_h, image['os_hash_value'])
+
+        # Add location with valid validation data
+        # os_hash_algo value sha512
+        # Create an image 2
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        path = self._url('/v2/images/%s/locations' % image_id)
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        url = 'http://127.0.0.1:%s/foo_image' % self.http_port0
+
+        with requests.get(url) as r:
+            expect_c = str(md5(r.content, usedforsecurity=False).hexdigest())
+            expect_h = str(hashlib.sha512(r.content).hexdigest())
+        validation_data = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': expect_h}
+        data = jsonutils.dumps({'url': url,
+                                'validation_data': validation_data})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+
+        # Show Image
+        path = self._url('/v2/images/%s' % image_id)
+        resp = requests.get(path, headers=self._headers())
+        output = jsonutils.loads(resp.text)
+        self.assertEqual('queued', output['status'])
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=self._headers(),
+                                   status='active',
+                                   max_sec=10,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1)
+        # Show Image
+        resp = requests.get(path, headers=self._headers())
+        image = jsonutils.loads(resp.text)
+        self.assertEqual(expect_c, image['checksum'])
+        self.assertEqual(expect_h, image['os_hash_value'])
+
+        # Add Location with valid URL and do_secure_hash = True
+        # without validation_data
+        # Create an image 3
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+        self.assertIsNone(image['size'])
+        self.assertIsNone(image['virtual_size'])
+
+        path = self._url('/v2/images/%s/locations' % image_id)
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        url = 'http://127.0.0.1:%s/foo_image' % self.http_port0
+        with requests.get(url) as r:
+            expect_c = str(md5(r.content, usedforsecurity=False).hexdigest())
+            expect_h = str(hashlib.sha512(r.content).hexdigest())
+        data = jsonutils.dumps({'url': url})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=10,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1)
+        # Show Image
+        path = self._url('/v2/images/%s' % image_id)
+        resp = requests.get(path, headers=headers)
+        image = jsonutils.loads(resp.text)
+        self.assertEqual(expect_c, image['checksum'])
+        self.assertEqual(expect_h, image['os_hash_value'])
+
+        self.stop_servers()
+
+    def test_add_location_with_do_secure_hash_false(self):
+        self.api_server.do_secure_hash = False
+        self.start_servers(**self.__dict__.copy())
+
+        # Add Location with valid URL and do_secure_hash = False
+        # with validation_data
+        # Create an image 1
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        url = 'http://127.0.0.1:%s/foo_image' % self.http_port0
+        with requests.get(url) as r:
+            expect_h = str(hashlib.sha512(r.content).hexdigest())
+
+        validation_data = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': expect_h}
+        path = self._url('/v2/images/%s/locations' % image_id)
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        data = jsonutils.dumps({'url': url,
+                                'validation_data': validation_data})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=2,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1)
+
+        # Add Location with valid URL and do_secure_hash = False
+        # without validation_data
+        # Create an image 2
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'image-1', 'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+        self.assertIsNone(image['size'])
+        self.assertIsNone(image['virtual_size'])
+
+        url = 'http://127.0.0.1:%s/foo_image' % self.http_port0
+        path = self._url('/v2/images/%s/locations' % image_id)
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        data = jsonutils.dumps({'url': url})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+        path = self._url('/v2/images/%s' % image_id)
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=2,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1)
+
+        self.stop_servers()
+
 
 class TestImagesIPv6(functional.FunctionalTest):
     """Verify that API and REG servers running IPv6 can communicate"""
@@ -4640,7 +4926,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=15,
@@ -4805,7 +5091,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=15,
@@ -4967,7 +5253,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=20,
@@ -5130,7 +5416,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=20,
@@ -5292,7 +5578,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=40,
@@ -5456,7 +5742,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=40,
@@ -5680,7 +5966,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=40,
@@ -5938,7 +6224,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=40,
@@ -6790,7 +7076,7 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(request_path=path,
+        func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
                                    max_sec=40,
@@ -7352,3 +7638,317 @@ class TestStoreWeight(functional.SynchronousAPIBase):
         # as store3,store1,store2
         image = self.api_get('/v2/images/%s' % image_id).json
         self.assertEqual("store3,store1,store2", image['stores'])
+
+
+class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
+    def setUp(self):
+        super(TestMultipleBackendsLocationApi, self).setUp()
+        self.start_server()
+        for i in range(3):
+            ret = test_utils.start_http_server("foo_image_id%d" % i,
+                                               "foo_image%d" % i)
+            setattr(self, 'http_server%d' % i, ret[1])
+            setattr(self, 'http_port%d' % i, ret[2])
+
+    def setup_stores(self):
+        pass
+
+    def _headers(self, custom_headers=None):
+        base_headers = {
+            'X-Identity-Status': 'Confirmed',
+            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
+            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
+            'X-Tenant-Id': TENANT1,
+            'X-Roles': 'reader,member',
+        }
+        base_headers.update(custom_headers or {})
+        return base_headers
+
+    def _setup_multiple_stores(self):
+        self.ksa_client = self.useFixture(
+            fixtures.MockPatch('glance.context.get_ksa_client')).mock
+        self.config(enabled_backends={'store1': 'http', 'store2': 'http'})
+        glance_store.register_store_opts(CONF,
+                                         reserved_stores=wsgi.RESERVED_STORES)
+
+        self.config(default_backend='store1',
+                    group='glance_store')
+        self.config(filesystem_store_datadir=self._store_dir('staging'),
+                    group='os_glance_staging_store')
+        self.config(filesystem_store_datadir='/tmp/foo',
+                    group='os_glance_tasks_store')
+
+        glance_store.create_multi_stores(CONF,
+                                         reserved_stores=wsgi.RESERVED_STORES)
+        glance_store.verify_store()
+
+    def test_add_location_with_do_secure_hash_false(self):
+        self.config(do_secure_hash=False)
+        self._setup_multiple_stores()
+
+        # Add Location with valid URL and do_secure_hash = False
+        # with validation_data
+        # Create an image 1
+        path = '/v2/images'
+        headers = self._headers({'content-type': 'application/json'})
+        data = {'name': 'image-1', 'disk_format': 'aki',
+                'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+        self.assertIsNone(image['size'])
+        self.assertIsNone(image['virtual_size'])
+
+        url = 'http://127.0.0.1:%s/store1/foo_image' % self.http_port0
+        with requests.get(url) as r:
+            expect_h = str(hashlib.sha512(r.content).hexdigest())
+
+        validation_data = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': expect_h}
+        path = '/v2/images/%s/locations' % image_id
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        data = {'url': url,
+                'validation_data': validation_data}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+        path = '/v2/images/%s' % image_id
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=5,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1,
+                                   multistore=True)
+
+        # Add Location with valid URL and do_secure_hash = False
+        # without validation_data
+        # Create an image 2
+        path = '/v2/images'
+        headers = self._headers({'content-type': 'application/json'})
+        data = {'name': 'image-1', 'disk_format': 'aki',
+                'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+        self.assertIsNone(image['size'])
+        self.assertIsNone(image['virtual_size'])
+
+        url = 'http://127.0.0.1:%s/store1/foo_image' % self.http_port0
+        path = '/v2/images/%s/locations' % image_id
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        data = {'url': url}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+        path = '/v2/images/%s' % image_id
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=5,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1, multistore=True)
+
+    def test_add_location_with_do_secure_hash_true_negative(self):
+        self._setup_multiple_stores()
+
+        # Create an image
+        path = '/v2/images'
+        headers = self._headers({'content-type': 'application/json'})
+        data = {'name': 'image-1', 'disk_format': 'aki',
+                'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        # Add Location with non image owner
+        path = '/v2/images/%s/locations' % image_id
+        headers = self._headers({'X-Tenant-Id': TENANT2})
+        url = 'http://127.0.0.1:%s/store1/foo_image' % self.http_port0
+
+        data = {'url': url}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.NOT_FOUND, response.status_code, response.text)
+
+        # Add location with invalid validation_data
+        # Invalid os_hash_value
+        validation_data = {
+            'os_hash_algo': "sha512",
+            'os_hash_value': "dbc9e0f80d131e64b94913a7b40bb5"
+        }
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        data = {'url': url, 'validation_data': validation_data}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code,
+                         response.text)
+
+        # Add location with invalid validation_data (without os_hash_algo)
+        url = 'http://127.0.0.1:%s/store1/foo_image' % self.http_port0
+        with requests.get(url) as r:
+            expect_h = str(hashlib.sha512(r.content).hexdigest())
+        validation_data = {'os_hash_value': expect_h}
+        data = {'url': url, 'validation_data': validation_data}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
+
+        # Add location with invalid validation_data &
+        # (invalid hash_algo)
+        validation_data = {
+            'os_hash_algo': 'sha123',
+            'os_hash_value': expect_h}
+        data = {'url': url, 'validation_data': validation_data}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
+
+        # Add location with invalid validation_data
+        # (mismatch hash_value with hash algo)
+        with requests.get(url) as r:
+            expect_h = str(hashlib.sha256(r.content).hexdigest())
+
+        validation_data = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': expect_h}
+        data = {'url': url, 'validation_data': validation_data}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
+
+    def test_add_location_with_do_secure_hash_true(self):
+        self._setup_multiple_stores()
+
+        # Create an image
+        path = '/v2/images'
+        headers = self._headers({'content-type': 'application/json'})
+        data = {'name': 'image-1', 'disk_format': 'aki',
+                'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        # Add location with os_hash_algo other than sha512
+        path = '/v2/images/%s/locations' % image_id
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        url = 'http://127.0.0.1:%s/store1/foo_image' % self.http_port0
+        with requests.get(url) as r:
+            expect_c = str(md5(r.content, usedforsecurity=False).hexdigest())
+            expect_h = str(hashlib.sha256(r.content).hexdigest())
+        validation_data = {
+            'os_hash_algo': 'sha256',
+            'os_hash_value': expect_h}
+        data = {'url': url, 'validation_data': validation_data}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+        path = '/v2/images/%s' % image_id
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=20,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1, multistore=True)
+        # Show Image
+        path = '/v2/images/%s' % image_id
+        resp = self.api_get(path, headers=self._headers())
+        image = jsonutils.loads(resp.text)
+        self.assertEqual(expect_c, image['checksum'])
+        self.assertEqual(expect_h, image['os_hash_value'])
+
+        # Add location with valid validation data
+        # os_hash_algo value sha512
+        # Create an image 3
+        path = '/v2/images'
+        headers = self._headers({'content-type': 'application/json'})
+        data = {'name': 'image-1', 'disk_format': 'aki',
+                'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        path = '/v2/images/%s/locations' % image_id
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        url = 'http://127.0.0.1:%s/store2/foo_image' % self.http_port0
+
+        with requests.get(url) as r:
+            expect_c = str(md5(r.content, usedforsecurity=False).hexdigest())
+            expect_h = str(hashlib.sha512(r.content).hexdigest())
+        validation_data = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': expect_h}
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        data = {'url': url, 'validation_data': validation_data}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+
+        # Show Image
+        path = '/v2/images/%s' % image_id
+        resp = self.api_get(path, headers=self._headers())
+        output = jsonutils.loads(resp.text)
+        self.assertEqual('queued', output['status'])
+        path = '/v2/images/%s' % image_id
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=10,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1, multistore=True)
+        # Show Image
+        path = '/v2/images/%s' % image_id
+        resp = self.api_get(path, headers=self._headers())
+        image = jsonutils.loads(resp.text)
+        self.assertEqual(expect_c, image['checksum'])
+        self.assertEqual(expect_h, image['os_hash_value'])
+
+        # Add Location with valid URL and do_secure_hash = True
+        # without validation_data
+        # Create an image 4
+        path = '/v2/images'
+        headers = self._headers({'content-type': 'application/json'})
+        data = {'name': 'image-1', 'disk_format': 'aki',
+                'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code)
+
+        # Returned image entity should have a generated id and status
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+        self.assertEqual('queued', image['status'])
+
+        path = '/v2/images/%s/locations' % image_id
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        url = 'http://127.0.0.1:%s/store2/foo_image' % self.http_port0
+        with requests.get(url) as r:
+            expect_c = str(md5(r.content, usedforsecurity=False).hexdigest())
+            expect_h = str(hashlib.sha512(r.content).hexdigest())
+        data = {'url': url}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+        path = '/v2/images/%s' % image_id
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=headers,
+                                   status='active',
+                                   max_sec=10,
+                                   delay_sec=0.2,
+                                   start_delay_sec=1, multistore=True)
+        # Show Image
+        path = '/v2/images/%s' % image_id
+        resp = self.api_get(path, headers=self._headers())
+        image = jsonutils.loads(resp.text)
+        self.assertEqual(expect_c, image['checksum'])
+        self.assertEqual(expect_h, image['os_hash_value'])

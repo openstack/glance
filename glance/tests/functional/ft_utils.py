@@ -16,9 +16,12 @@
 import http.client as http
 import time
 
+from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import timeutils
 import requests
+
+LOG = logging.getLogger(__name__)
 
 
 def verify_image_hashes_and_status(
@@ -48,12 +51,15 @@ def verify_image_hashes_and_status(
     test_obj.assertEqual(size, image['size'])
 
 
-def wait_for_status(request_path, request_headers, status='active',
-                    max_sec=10, delay_sec=0.2, start_delay_sec=None):
+def wait_for_status(test_obj, request_path, request_headers,
+                    status=None, max_sec=10, delay_sec=0.2,
+                    start_delay_sec=None, multistore=False):
     """
     Performs a time-bounded wait for the entity at the request_path to
     reach the requested status.
 
+    :param test_obj: The test object; expected to have _url() and
+                     _headers() defined on it
     :param request_path: path to use to make the request
     :param request_headers: headers to use when making the request
     :param status: the status to wait for (default: 'active')
@@ -62,6 +68,7 @@ def wait_for_status(request_path, request_headers, status='active',
                       made (default: 0.2)
     :param start_delay_sec: seconds to wait before making the first
                             request (default: None)
+    :multistore: Optional flag if multiple backends enabled
     :raises Exception: if the entity fails to reach the status within
                        the requested time or if the server returns something
                        other than a 200 response
@@ -71,11 +78,18 @@ def wait_for_status(request_path, request_headers, status='active',
     if start_delay_sec:
         time.sleep(start_delay_sec)
     while time.time() <= done_time:
-        resp = requests.get(request_path, headers=request_headers)
+        if multistore:
+            resp = test_obj.api_get(request_path, headers=request_headers)
+        else:
+            resp = requests.get(request_path, headers=request_headers)
         if resp.status_code != http.OK:
             raise Exception("Received {} response from server".format(
                 resp.status_code))
+        test_obj.assertEqual(http.OK, resp.status_code)
         entity = jsonutils.loads(resp.text)
+        LOG.info('Image status is: %s', entity['status'])
+        if entity['checksum'] and entity['status'] == 'active':
+            return
         if entity['status'] == status:
             return
         time.sleep(delay_sec)
