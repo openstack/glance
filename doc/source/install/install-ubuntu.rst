@@ -166,7 +166,9 @@ create a database, service credentials, and API endpoints.
 
    .. end
 
-.. include:: register-quotas.rst
+#. Register quota limits (optional):
+
+   .. include:: register-quotas.rst
 
 Install and configure components
 --------------------------------

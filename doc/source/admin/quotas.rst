@@ -156,7 +156,9 @@ be able to upload data to any images.
 Configuring Glance for Per-Tenant Quotas
 ----------------------------------------
 
-.. include:: ../install/register-quotas.rst
+#. Register quota limits (optional):
+
+   .. include:: ../install/register-quotas.rst
 
 #. Tell Glance to use Keystone quotas
 
