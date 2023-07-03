@@ -1,0 +1,10 @@
+---
+fixes:
+  - |
+    Bug 1937901_: healthcheck middleware should be deployed as app instead of filter
+  - |
+    Bug 1889664_: Image Import 'web-download' is broken with py37+
+
+    .. _1937901: https://code.launchpad.net/bugs/1937901
+    .. _1889664: https://code.launchpad.net/bugs/1889664
+
