@@ -20,7 +20,6 @@ import glance_store as store_api
 from glance_store import backend
 from oslo_config import cfg
 from oslo_log import log as logging
-import six
 from taskflow import task
 
 from glance.common import exception
@@ -31,8 +30,7 @@ LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseDownload(task.Task):
+class BaseDownload(task.Task, metaclass=abc.ABCMeta):
 
     default_provides = 'file_uri'
 
