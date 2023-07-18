@@ -13,12 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import testtools
 from unittest import mock
+
+from oslo_log.fixture import logging_error as log_fixture
+import testtools
 import webob
 
 import glance.api.common
 from glance.common import exception
+from glance.tests.unit import fixtures as glance_fixtures
 
 
 class SimpleIterator(object):
@@ -39,6 +42,17 @@ class SimpleIterator(object):
 
 
 class TestSizeCheckedIter(testtools.TestCase):
+
+    def setUp(self):
+        super().setUp()
+
+        # Limit the amount of DeprecationWarning messages in the unit test logs
+        self.useFixture(glance_fixtures.WarningsFixture())
+
+        # Make sure logging output is limited but still test debug formatting
+        self.useFixture(log_fixture.get_logging_handle_error_fixture())
+        self.useFixture(glance_fixtures.StandardLogging())
+
     def _get_image_metadata(self):
         return {'id': 'e31cb99c-fe89-49fb-9cc5-f5104fffa636'}
 
@@ -128,6 +142,16 @@ class TestSizeCheckedIter(testtools.TestCase):
 
 
 class TestThreadPool(testtools.TestCase):
+    def setUp(self):
+        super().setUp()
+
+        # Limit the amount of DeprecationWarning messages in the unit test logs
+        self.useFixture(glance_fixtures.WarningsFixture())
+
+        # Make sure logging output is limited but still test debug formatting
+        self.useFixture(log_fixture.get_logging_handle_error_fixture())
+        self.useFixture(glance_fixtures.StandardLogging())
+
     @mock.patch('glance.async_.get_threadpool_model')
     def test_get_thread_pool(self, mock_gtm):
         get_thread_pool = glance.api.common.get_thread_pool
