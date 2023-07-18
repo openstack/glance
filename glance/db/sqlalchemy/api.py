@@ -1494,7 +1494,8 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
     _validate_db_int(max_rows=max_rows)
 
     session = session or get_session()
-    metadata = MetaData(get_engine())
+    metadata = MetaData()
+    engine = get_engine()
     deleted_age = timeutils.utcnow() - datetime.timedelta(days=age_in_days)
 
     tables = []
@@ -1508,8 +1509,8 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
     # are referencing soft deleted tasks/images records (e.g. task_info
     # records). Then purge all soft deleted records in glance tables in the
     # right order to avoid FK constraint violation.
-    t = Table("tasks", metadata, autoload=True)
-    ti = Table("task_info", metadata, autoload=True)
+    t = Table("tasks", metadata, autoload_with=engine)
+    ti = Table("task_info", metadata, autoload_with=engine)
     joined_rec = ti.join(t, t.c.id == ti.c.task_id)
     deleted_task_info = sql.\
         select(ti.c.task_id).where(t.c.deleted_at < deleted_age).\
@@ -1551,7 +1552,7 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
             tables.append(tbl)
 
     for tbl in tables:
-        tab = Table(tbl, metadata, autoload=True)
+        tab = Table(tbl, metadata, autoload_with=engine)
         LOG.info(
             _LI('Purging deleted rows older than %(age_in_days)d day(s) '
                 'from table %(tbl)s'),
@@ -1593,11 +1594,12 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows,
     _validate_db_int(max_rows=max_rows)
 
     session = session or get_session()
-    metadata = MetaData(get_engine())
+    metadata = MetaData()
+    engine = get_engine()
     deleted_age = timeutils.utcnow() - datetime.timedelta(days=age_in_days)
 
     tbl = 'images'
-    tab = Table(tbl, metadata, autoload=True)
+    tab = Table(tbl, metadata, autoload_with=engine)
     LOG.info(
         _LI('Purging deleted rows older than %(age_in_days)d day(s) '
             'from table %(tbl)s'),

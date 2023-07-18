@@ -22,8 +22,6 @@ Create Date: 2016-08-03 17:19:35.306161
 """
 
 from alembic import op
-from sqlalchemy import MetaData, Table, Index
-
 
 # revision identifiers, used by Alembic.
 revision = 'mitaka01'
@@ -31,17 +29,14 @@ down_revision = 'liberty'
 branch_labels = None
 depends_on = None
 
-CREATED_AT_INDEX = 'created_at_image_idx'
-UPDATED_AT_INDEX = 'updated_at_image_idx'
-
 
 def upgrade():
-    migrate_engine = op.get_bind()
-    meta = MetaData(bind=migrate_engine)
-
-    images = Table('images', meta, autoload=True)
-
-    created_index = Index(CREATED_AT_INDEX, images.c.created_at)
-    created_index.create(migrate_engine)
-    updated_index = Index(UPDATED_AT_INDEX, images.c.updated_at)
-    updated_index.create(migrate_engine)
+    with op.batch_alter_table('images') as batch_op:
+        batch_op.create_index(
+            'created_at_image_idx',
+            ['created_at'],
+        )
+        batch_op.create_index(
+            'updated_at_image_idx',
+            ['updated_at'],
+        )

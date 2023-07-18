@@ -19,7 +19,7 @@ Create Date: 2017-01-27 12:58:16.647499
 """
 
 from alembic import op
-from sqlalchemy import Column, Enum, MetaData
+from sqlalchemy import Column, Enum
 
 from glance.cmd import manage
 from glance.db import migration
@@ -120,24 +120,24 @@ END;
 """
 
 
-def _add_visibility_column(meta):
-    enum = Enum('private', 'public', 'shared', 'community', metadata=meta,
+def _add_visibility_column(bind):
+    enum = Enum('private', 'public', 'shared', 'community',
                 name='image_visibility')
-    enum.create()
+    enum.create(bind=bind)
     v_col = Column('visibility', enum, nullable=True, server_default=None)
     op.add_column('images', v_col)
     op.create_index('visibility_image_idx', 'images', ['visibility'])
 
 
-def _add_triggers(engine):
-    if engine.engine.name == 'mysql':
+def _add_triggers(connection):
+    if connection.engine.name == 'mysql':
         op.execute(MYSQL_INSERT_TRIGGER % (ERROR_MESSAGE, ERROR_MESSAGE,
                                            ERROR_MESSAGE))
         op.execute(MYSQL_UPDATE_TRIGGER % (ERROR_MESSAGE, ERROR_MESSAGE,
                                            ERROR_MESSAGE, ERROR_MESSAGE))
 
 
-def _change_nullability_and_default_on_is_public(meta):
+def _change_nullability_and_default_on_is_public():
     # NOTE(hemanthm): we mark is_public as nullable so that when new versions
     # add data only to be visibility column, is_public can be null.
     with op.batch_alter_table('images') as batch_op:
@@ -147,10 +147,9 @@ def _change_nullability_and_default_on_is_public(meta):
 
 
 def upgrade():
-    migrate_engine = op.get_bind()
-    meta = MetaData(bind=migrate_engine)
+    bind = op.get_bind()
 
-    _add_visibility_column(meta)
-    _change_nullability_and_default_on_is_public(meta)
+    _add_visibility_column(bind)
+    _change_nullability_and_default_on_is_public()
     if manage.USE_TRIGGERS:
-        _add_triggers(migrate_engine)
+        _add_triggers(bind)

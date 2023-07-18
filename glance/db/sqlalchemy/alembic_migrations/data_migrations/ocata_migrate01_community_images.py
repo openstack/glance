@@ -28,67 +28,86 @@ def has_migrations(engine):
     Note: This method can return a false positive if data migrations
     are running in the background as it's being called.
     """
-    meta = MetaData(engine)
-    images = Table('images', meta, autoload=True)
+    meta = MetaData()
+    images = Table('images', meta, autoload_with=engine)
 
-    rows_with_null_visibility = (select(images.c.id)
-                                 .where(images.c.visibility == None)
-                                 .limit(1)
-                                 .execute())
+    with engine.connect() as conn:
+        rows_with_null_visibility = conn.execute(
+            select(images.c.id)
+            .where(images.c.visibility == None)
+            .limit(1)
+        )
 
     if rows_with_null_visibility.rowcount == 1:
         return True
 
-    image_members = Table('image_members', meta, autoload=True)
-    rows_with_pending_shared = (select(images.c.id)
-                                .where(and_(
-                                    images.c.visibility == 'private',
-                                    images.c.id.in_(
-                                        select(image_members.c.image_id)
-                                        .distinct()
-                                        .where(not_(image_members.c.deleted))))
-                                       )
-                                .limit(1)
-                                .execute())
+    image_members = Table('image_members', meta, autoload_with=engine)
+
+    with engine.connect() as conn:
+        rows_with_pending_shared = conn.execute(
+            select(images.c.id).where(
+                and_(
+                    images.c.visibility == 'private',
+                    images.c.id.in_(
+                        select(
+                            image_members.c.image_id
+                        ).distinct().where(not_(image_members.c.deleted))
+                    )
+                )
+            ).limit(1)
+        )
     if rows_with_pending_shared.rowcount == 1:
         return True
 
     return False
 
 
-def _mark_all_public_images_with_public_visibility(images):
-    migrated_rows = (images
-                     .update().values(visibility='public')
-                     .where(images.c.is_public)
-                     .execute())
+def _mark_all_public_images_with_public_visibility(engine, images):
+    with engine.connect() as conn:
+        migrated_rows = conn.execute(
+            images.update().values(
+                visibility='public'
+            ).where(images.c.is_public)
+        )
     return migrated_rows.rowcount
 
 
-def _mark_all_non_public_images_with_private_visibility(images):
-    migrated_rows = (images
-                     .update().values(visibility='private')
-                     .where(not_(images.c.is_public))
-                     .execute())
+def _mark_all_non_public_images_with_private_visibility(engine, images):
+    with engine.connect() as conn:
+        migrated_rows = conn.execute(
+            images
+            .update().values(visibility='private')
+            .where(not_(images.c.is_public))
+        )
     return migrated_rows.rowcount
 
 
-def _mark_all_private_images_with_members_as_shared_visibility(images,
-                                                               image_members):
-    migrated_rows = (images
-                     .update().values(visibility='shared')
-                     .where(and_(images.c.visibility == 'private',
-                                 images.c.id.in_(
-                                     select(image_members.c.image_id)
-                                     .distinct()
-                                     .where(not_(image_members.c.deleted)))))
-                     .execute())
+def _mark_all_private_images_with_members_as_shared_visibility(
+    engine, images, image_members,
+):
+    with engine.connect() as conn:
+        migrated_rows = conn.execute(
+            images.update().values(
+                visibility='shared'
+            )
+            .where(
+                and_(
+                    images.c.visibility == 'private',
+                    images.c.id.in_(
+                        select(image_members.c.image_id).distinct().where(
+                            not_(image_members.c.deleted)
+                        )
+                    )
+                )
+            )
+        )
     return migrated_rows.rowcount
 
 
 def _migrate_all(engine):
-    meta = MetaData(engine)
-    images = Table('images', meta, autoload=True)
-    image_members = Table('image_members', meta, autoload=True)
+    meta = MetaData()
+    images = Table('images', meta, autoload_with=engine)
+    image_members = Table('image_members', meta, autoload_with=engine)
 
     num_rows = _mark_all_public_images_with_public_visibility(images)
     num_rows += _mark_all_non_public_images_with_private_visibility(images)
