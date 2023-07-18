@@ -31,7 +31,7 @@ def has_migrations(engine):
     meta = MetaData(engine)
     images = Table('images', meta, autoload=True)
 
-    rows_with_null_visibility = (select([images.c.id])
+    rows_with_null_visibility = (select(images.c.id)
                                  .where(images.c.visibility == None)
                                  .limit(1)
                                  .execute())
@@ -40,11 +40,11 @@ def has_migrations(engine):
         return True
 
     image_members = Table('image_members', meta, autoload=True)
-    rows_with_pending_shared = (select([images.c.id])
+    rows_with_pending_shared = (select(images.c.id)
                                 .where(and_(
                                     images.c.visibility == 'private',
                                     images.c.id.in_(
-                                        select([image_members.c.image_id])
+                                        select(image_members.c.image_id)
                                         .distinct()
                                         .where(not_(image_members.c.deleted))))
                                        )
@@ -78,7 +78,7 @@ def _mark_all_private_images_with_members_as_shared_visibility(images,
                      .update().values(visibility='shared')
                      .where(and_(images.c.visibility == 'private',
                                  images.c.id.in_(
-                                     select([image_members.c.image_id])
+                                     select(image_members.c.image_id)
                                      .distinct()
                                      .where(not_(image_members.c.deleted)))))
                      .execute())

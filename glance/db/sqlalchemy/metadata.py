@@ -93,7 +93,7 @@ def get_metadef_tags_table(meta):
 def _get_resource_type_id(meta, name):
     rt_table = get_metadef_resource_types_table(meta)
     resource_type = (
-        select([rt_table.c.id]).
+        select(rt_table.c.id).
         where(rt_table.c.name == name).
         select_from(rt_table).
         execute().fetchone())
@@ -156,7 +156,7 @@ def _get_tags(meta, namespace_id):
 
 def _get_resource_id(table, namespace_id, resource_name):
     resource = (
-        select([table.c.id]).
+        select(table.c.id).
         where(and_(table.c.namespace_id == namespace_id,
                    table.c.name == resource_name)).
         select_from(table).
@@ -242,7 +242,7 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
         }
 
         db_namespace = select(
-            [namespaces_table.c.id]
+            namespaces_table.c.id
         ).where(
             namespaces_table.c.namespace == values['namespace']
         ).select_from(
@@ -259,7 +259,7 @@ def _populate_metadata(meta, metadata_path=None, merge=False,
             _insert_data_to_db(namespaces_table, values)
 
             db_namespace = select(
-                [namespaces_table.c.id]
+                namespaces_table.c.id
             ).where(
                 namespaces_table.c.namespace == values['namespace']
             ).select_from(

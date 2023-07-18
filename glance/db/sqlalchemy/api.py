@@ -1512,7 +1512,7 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
     ti = Table("task_info", metadata, autoload=True)
     joined_rec = ti.join(t, t.c.id == ti.c.task_id)
     deleted_task_info = sql.\
-        select([ti.c.task_id], t.c.deleted_at < deleted_age).\
+        select(ti.c.task_id).where(t.c.deleted_at < deleted_age).\
         select_from(joined_rec).\
         order_by(t.c.deleted_at)
     if max_rows != -1:
@@ -1560,7 +1560,8 @@ def purge_deleted_rows(context, age_in_days, max_rows, session=None):
         column = tab.c.id
         deleted_at_column = tab.c.deleted_at
 
-        query_delete = sql.select([column], deleted_at_column < deleted_age).\
+        query_delete = sql.select(column).\
+            where(deleted_at_column < deleted_age).\
             order_by(deleted_at_column)
         if max_rows != -1:
             query_delete = query_delete.limit(max_rows)
@@ -1606,7 +1607,8 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows,
     deleted_at_column = tab.c.deleted_at
 
     query_delete = sql.\
-        select([column], deleted_at_column < deleted_age).\
+        select(column).\
+        where(deleted_at_column < deleted_age).\
         order_by(deleted_at_column)
     if max_rows != -1:
         query_delete = query_delete.limit(max_rows)
