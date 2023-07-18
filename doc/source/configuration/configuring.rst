@@ -235,25 +235,29 @@ Configuring Glance Storage Backends
 -----------------------------------
 
 There are a number of configuration options in Glance that control how Glance
-stores disk images. These configuration options are specified in the
-``glance-api.conf`` configuration file in the section ``[glance_store]``.
+stores disk images. Enabled backends must be defined in the ``[DEFAULT]``
+section.
 
-``default_store=STORE``
-  Optional. Default: ``file``
+``enabled_backends=store1_id:store1_type, store2_id:store2_type[,...]``
+  Required.
 
-  Can only be specified in configuration files.
+  A comma-separated list of "store_id:store_type" strings. The store ids can
+  be chosen by the user, whereas valid store types are (``filesystem``,
+  ``http``, ``rbd``, ``swift``, ``cinder``, ``vmware``).
 
-  Sets the storage backend to use by default when storing images in Glance.
-  Available options for this option are (``file``, ``swift``, ``rbd``,
-  ``cinder`` or ``vsphere``). In order to select a default store it must also
-  be listed in the ``stores`` list described below.
+The default backend must then be set in the ``[glance_store]`` section:
 
-``stores=STORES``
-  Optional. Default: ``file, http``
+``default_backend = store1_id``
+  Required.
 
-  A comma separated list of enabled glance stores. Some available options for
-  this option are (``filesystem``, ``http``, ``rbd``, ``swift``, ``cinder``,
-  ``vmware``)
+  This option must be set to one of the store identifiers used in
+  ``enabled_backends``.
+
+Additionally, one section must be created for every key:value pair defined
+in ``enabled_backends``. Each section must be populated with store-specific
+options. See :ref:`configuring-multiple-cinder-storage-backend` for a full
+example.
+
 
 Configuring the Filesystem Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -950,6 +954,8 @@ documentation for more information.
 
   .. end
 
+
+.. _configuring-multiple-cinder-storage-backend:
 
 Configuring multiple Cinder Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
