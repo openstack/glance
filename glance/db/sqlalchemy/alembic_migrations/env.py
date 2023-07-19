@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 from logging import config as log_config
 
 from alembic import context
@@ -26,17 +27,12 @@ from glance.db.sqlalchemy import models_metadef
 config = context.config
 CONF = cfg.CONF
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
-
-# Interpret the config file for Python logging.
+# Interpret the config file for Python logging unless we're told not to.
 # This line sets up loggers basically.
-log_config.fileConfig(config.config_file_name)
+if config.attributes.get('configure_logger', True):
+    log_config.fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
+# this is the MetaData object for the various models in the database
 target_metadata = models.BASE.metadata
 for table in models_metadef.BASE_DICT.metadata.sorted_tables:
     target_metadata._add_table(table.name, table.schema, table)
