@@ -491,9 +491,10 @@ def _make_conditions_from_filters(filters, is_public=None):
     if 'tags' in filters:
         tags = filters.pop('tags')
         for tag in tags:
-            tag_filters = [models.ImageTag.deleted == False]
-            tag_filters.extend([models.ImageTag.value == tag])
-            tag_conditions.append(tag_filters)
+            alias = sa_orm.aliased(models.ImageTag)
+            tag_filters = [alias.deleted == False]
+            tag_filters.extend([alias.value == tag])
+            tag_conditions.append((alias, tag_filters))
 
     filters = {k: v for k, v in filters.items() if v is not None}
 
@@ -555,10 +556,11 @@ def _make_conditions_from_filters(filters, is_public=None):
 
 
 def _make_image_property_condition(key, value):
-    prop_filters = [models.ImageProperty.deleted == False]
-    prop_filters.extend([models.ImageProperty.name == key])
-    prop_filters.extend([models.ImageProperty.value == value])
-    return prop_filters
+    alias = sa_orm.aliased(models.ImageProperty)
+    prop_filters = [alias.deleted == False]
+    prop_filters.extend([alias.name == key])
+    prop_filters.extend([alias.value == value])
+    return alias, prop_filters
 
 
 def _select_images_query(context, image_conditions, admin_as_user,
@@ -673,14 +675,12 @@ def image_get_all(context, filters=None, marker=None, limit=None,
         query = query.filter(sa_sql.or_(*community_filters))
 
     if prop_cond:
-        for prop_condition in prop_cond:
-            query = query.join(models.ImageProperty, aliased=True).filter(
-                sa_sql.and_(*prop_condition))
+        for alias, prop_condition in prop_cond:
+            query = query.join(alias).filter(sa_sql.and_(*prop_condition))
 
     if tag_cond:
-        for tag_condition in tag_cond:
-            query = query.join(models.ImageTag, aliased=True).filter(
-                sa_sql.and_(*tag_condition))
+        for alias, tag_condition in tag_cond:
+            query = query.join(alias).filter(sa_sql.and_(*tag_condition))
 
     marker_image = None
     if marker is not None:

@@ -189,13 +189,6 @@ class WarningsFixture(pyfixtures.Fixture):
             'ignore',
             module='glance',
             category=sqla_exc.SADeprecationWarning,
-            message='The ``aliased`` and ``from_joinpoint`` keyword ',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
             message='Using non-integer/slice indices on Row is deprecated ',
         )
 
