@@ -412,17 +412,17 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
                 model_attr = getattr(model, sort_keys[j])
                 default = _get_default_column_value(
                     model_attr.property.columns[0].type)
-                attr = sa_sql.expression.case([(model_attr != None,
-                                              model_attr), ],
-                                              else_=default)
+                attr = sa_sql.expression.case(
+                    (model_attr != None, model_attr),
+                    else_=default)
                 crit_attrs.append((attr == marker_values[j]))
 
             model_attr = getattr(model, sort_keys[i])
             default = _get_default_column_value(
                 model_attr.property.columns[0].type)
-            attr = sa_sql.expression.case([(model_attr != None,
-                                          model_attr), ],
-                                          else_=default)
+            attr = sa_sql.expression.case(
+                (model_attr != None, model_attr),
+                else_=default)
             if sort_dirs[i] == 'desc':
                 crit_attrs.append((attr < marker_values[i]))
             elif sort_dirs[i] == 'asc':

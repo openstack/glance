@@ -196,13 +196,6 @@ class WarningsFixture(pyfixtures.Fixture):
             'ignore',
             module='glance',
             category=sqla_exc.SADeprecationWarning,
-            message=r'The "whens" argument to case\(\), ',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
             message='Using non-integer/slice indices on Row is deprecated ',
         )
 
