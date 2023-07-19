@@ -182,13 +182,6 @@ class WarningsFixture(pyfixtures.Fixture):
             'ignore',
             module='glance',
             category=sqla_exc.SADeprecationWarning,
-            message=r'Invoking and_\(\) without arguments is deprecated',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
             message='The current statement is being autocommitted ',
         )
 

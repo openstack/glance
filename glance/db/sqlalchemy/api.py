@@ -565,7 +565,7 @@ def _select_images_query(context, image_conditions, admin_as_user,
                          member_status, visibility):
     session = get_session()
 
-    img_conditional_clause = sa_sql.and_(*image_conditions)
+    img_conditional_clause = sa_sql.and_(True, *image_conditions)
 
     regular_user = (not context.is_admin) or admin_as_user
 
