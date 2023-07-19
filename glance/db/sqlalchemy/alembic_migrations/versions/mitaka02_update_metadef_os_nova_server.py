@@ -40,9 +40,7 @@ def upgrade():
         'metadef_resource_types', meta, autoload_with=bind)
 
     op.execute(
-        resource_types_table.update(
-            values={'name': 'OS::Nova::Server'},
-        ).where(
+        resource_types_table.update().where(
             resource_types_table.c.name == 'OS::Nova::Instance'
-        )
+        ).values(name='OS::Nova::Server')
     )
