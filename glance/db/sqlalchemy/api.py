@@ -1470,6 +1470,8 @@ def image_tag_get_all(context, image_id, session=None):
 
 
 class DeleteFromSelect(sa_sql.expression.UpdateBase):
+    inherit_cache = False
+
     def __init__(self, table, select, column):
         self.table = table
         self.select = select

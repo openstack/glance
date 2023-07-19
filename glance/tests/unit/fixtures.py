@@ -185,16 +185,6 @@ class WarningsFixture(pyfixtures.Fixture):
             category=sqla_exc.SAWarning,
         )
 
-        # ...but filter everything out until we get around to fixing them
-        # TODO(stephenfin): Fix all of these
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SAWarning,
-            message='Class DeleteFromSelect will not make use of SQL ',
-        )
-
         self.addCleanup(self._reset_warning_filters)
 
     def _reset_warning_filters(self):
