@@ -25,15 +25,11 @@ LOG = logging.getLogger(__name__)
 
 
 def String(length):
-    return sqlalchemy.types.String(
-        length=length, convert_unicode=False,
-        unicode_error=None, _warn_on_bytestring=False)
+    return sqlalchemy.types.String(length=length)
 
 
 def Text():
-    return sqlalchemy.types.Text(
-        length=None, convert_unicode=False,
-        unicode_error=None, _warn_on_bytestring=False)
+    return sqlalchemy.types.Text(length=None)
 
 
 def Boolean():
