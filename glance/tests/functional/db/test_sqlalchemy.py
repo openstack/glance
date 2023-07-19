@@ -58,7 +58,7 @@ class TestSqlAlchemyDriver(base.TestDriver,
 
     def test_get_image_with_invalid_long_image_id(self):
         image_id = '343f9ba5-0197-41be-9543-16bbb32e12aa-xxxxxx'
-        self.assertRaises(exception.NotFound, self.db_api._image_get,
+        self.assertRaises(exception.NotFound, self.db_api.image_get,
                           self.context, image_id)
 
     def test_image_tag_delete_with_invalid_long_image_id(self):
