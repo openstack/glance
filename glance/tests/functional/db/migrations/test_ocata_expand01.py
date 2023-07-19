@@ -72,13 +72,13 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
 
         self.assertEqual(2, len(rows))
         # private image first
-        self.assertEqual(0, rows[0]['is_public'])
-        self.assertEqual('private_id_before_expand', rows[0]['id'])
-        self.assertIsNone(rows[0]['visibility'])
+        self.assertEqual(0, rows[0].is_public)
+        self.assertEqual('private_id_before_expand', rows[0].id)
+        self.assertIsNone(rows[0].visibility)
         # then public image
-        self.assertEqual(1, rows[1]['is_public'])
-        self.assertEqual('public_id_before_expand', rows[1]['id'])
-        self.assertIsNone(rows[1]['visibility'])
+        self.assertEqual(1, rows[1].is_public)
+        self.assertEqual('public_id_before_expand', rows[1].id)
+        self.assertIsNone(rows[1].visibility)
 
         self._test_trigger_old_to_new(engine, images)
         self._test_trigger_new_to_old(engine, images)
@@ -129,17 +129,17 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
 
         self.assertEqual(3, len(rows))
         # private image first
-        self.assertEqual(0, rows[0]['is_public'])
-        self.assertEqual('private_id_new_to_old', rows[0]['id'])
-        self.assertEqual('private', rows[0]['visibility'])
+        self.assertEqual(0, rows[0].is_public)
+        self.assertEqual('private_id_new_to_old', rows[0].id)
+        self.assertEqual('private', rows[0].visibility)
         # then public image
-        self.assertEqual(1, rows[1]['is_public'])
-        self.assertEqual('public_id_new_to_old', rows[1]['id'])
-        self.assertEqual('public', rows[1]['visibility'])
+        self.assertEqual(1, rows[1].is_public)
+        self.assertEqual('public_id_new_to_old', rows[1].id)
+        self.assertEqual('public', rows[1].visibility)
         # then shared image
-        self.assertEqual(0, rows[2]['is_public'])
-        self.assertEqual('shared_id_new_to_old', rows[2]['id'])
-        self.assertEqual('shared', rows[2]['visibility'])
+        self.assertEqual(0, rows[2].is_public)
+        self.assertEqual('shared_id_new_to_old', rows[2].id)
+        self.assertEqual('shared', rows[2].visibility)
 
     def _test_trigger_old_to_new(self, engine, images):
         now = datetime.datetime.now()
@@ -176,13 +176,13 @@ class TestOcataExpand01Mixin(test_migrations.AlembicMigrationsMixin):
 
         self.assertEqual(2, len(rows))
         # private image first
-        self.assertEqual(0, rows[0]['is_public'])
-        self.assertEqual('private_id_old_to_new', rows[0]['id'])
-        self.assertEqual('shared', rows[0]['visibility'])
+        self.assertEqual(0, rows[0].is_public)
+        self.assertEqual('private_id_old_to_new', rows[0].id)
+        self.assertEqual('shared', rows[0].visibility)
         # then public image
-        self.assertEqual(1, rows[1]['is_public'])
-        self.assertEqual('public_id_old_to_new', rows[1]['id'])
-        self.assertEqual('public', rows[1]['visibility'])
+        self.assertEqual(1, rows[1].is_public)
+        self.assertEqual('public_id_old_to_new', rows[1].id)
+        self.assertEqual('public', rows[1].visibility)
 
 
 class TestOcataExpand01MySQL(

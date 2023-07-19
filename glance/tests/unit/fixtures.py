@@ -185,13 +185,6 @@ class WarningsFixture(pyfixtures.Fixture):
             message='The current statement is being autocommitted ',
         )
 
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
-            message='Using non-integer/slice indices on Row is deprecated ',
-        )
-
         # Enable general SQLAlchemy warnings also to ensure we're not doing
         # silly stuff. It's possible that we'll need to filter things out here
         # with future SQLAlchemy versions, but that's a good thing
