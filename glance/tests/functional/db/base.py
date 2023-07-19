@@ -2136,7 +2136,8 @@ class DBPurgeTests(test_utils.BaseTestCase):
             'protected': 0
         }
         ins_stmt = images.insert().values(**images_row_fixture)
-        connection.execute(ins_stmt)
+        with connection.begin():
+            connection.execute(ins_stmt)
 
         # Add a record in image_tags referencing the above images record
         # but do not set it as deleted
@@ -2147,7 +2148,8 @@ class DBPurgeTests(test_utils.BaseTestCase):
             'deleted': 0
         }
         ins_stmt = image_tags.insert().values(**image_tags_row_fixture)
-        connection.execute(ins_stmt)
+        with connection.begin():
+            connection.execute(ins_stmt)
 
         # Purge all records deleted at least 10 days ago
         self.assertRaises(db_exception.DBReferenceError,
