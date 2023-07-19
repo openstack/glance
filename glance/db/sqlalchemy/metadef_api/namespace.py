@@ -174,8 +174,10 @@ def _get_all_by_resource_types(context, session, filters, marker=None,
         session.query(models.MetadefResourceType)
         .join(models.MetadefResourceType.associations)
         .filter(models.MetadefResourceType.name.in_(resource_type_list))
-        .values(models.MetadefResourceType.name,
-                models.MetadefNamespaceResourceType.namespace_id)
+        .with_entities(
+            models.MetadefResourceType.name,
+            models.MetadefNamespaceResourceType.namespace_id,
+        )
     )
 
     namespace_id_list = []

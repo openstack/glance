@@ -224,13 +224,6 @@ class WarningsFixture(pyfixtures.Fixture):
             'ignore',
             module='glance',
             category=sqla_exc.SADeprecationWarning,
-            message=r'Query.values\(\) is deprecated ',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
             message=r'The Executable.execute\(\) method is considered legacy ',
         )
 
