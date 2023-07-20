@@ -29,6 +29,23 @@
       - name: openstack/stevedore
       - name: openstack/taskflow
 
+# Temporary job until SQLAlchemy 2.0 is no longer blocked by upper-requirements
+# NOTE(stephenfin): We only need functional tests since DB interactions are
+# stubbed out in unit tests
+- job:
+    name: glance-tox-functional-py39-sqlalchemy-tips
+    parent: openstack-tox-functional-py39
+    description: |
+      Glance py39 functional tests vs. sqlalchemy and relatedd project masters
+    # The job only tests the latest and shouldn't be run on the stable branches
+    branches: ^(?!stable)
+    required-projects:
+      - name: openstack/oslo.db
+      - name: github.com/sqlalchemy/sqlalchemy
+        override-checkout: main
+      - name: github.com/sqlalchemy/alembic
+        override-checkout: main
+
 - job:
     name: glance-tox-functional-py39-rbac-defaults
     parent: openstack-tox-functional-py39
@@ -321,6 +338,7 @@
         - openstack-tox-functional-py39
         - openstack-tox-functional-py310
         - glance-tox-functional-py39-rbac-defaults
+        - glance-tox-functional-py39-sqlalchemy-tips
         - glance-ceph-thin-provisioning:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
