@@ -150,7 +150,7 @@ def image_create(context, values, v1_mode=False):
     session = get_session()
     with session.begin():
         image_ref = _image_update(
-            context, session, values, None, purge_props=False)
+            context, session, None, values, purge_props=False)
 
     session.expire_all()
 
@@ -175,7 +175,7 @@ def image_update(context, image_id, values, purge_props=False,
     session = get_session()
     with session.begin():
         image_ref = _image_update(
-            context, session, values, image_id, purge_props,
+            context, session, image_id, values, purge_props,
             from_state=from_state, atomic_props=atomic_props)
 
     session.expire_all()
@@ -977,14 +977,14 @@ def image_delete_property_atomic(image_id, name, value):
 
 
 @utils.no_4byte_params
-def _image_update(context, session, values, image_id, purge_props=False,
+def _image_update(context, session, image_id, values, purge_props=False,
                   from_state=None, atomic_props=None):
     """
     Used internally by image_create and image_update
 
     :param context: Request context
-    :param values: A dict of attributes to set
     :param image_id: If None, create the image, otherwise, find and update it
+    :param values: A dict of attributes to set
     :param from_state: If not None, reequire the image be in this state to do
                        the update
     :param purge_props: If True, delete properties found in the database but
