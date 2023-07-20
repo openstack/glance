@@ -27,7 +27,7 @@ from glance.i18n import _
 LOG = logging.getLogger(__name__)
 
 
-def _get(context, object_id, session):
+def _get(context, session, object_id):
     try:
         query = session.query(models.MetadefObject).filter_by(id=object_id)
         metadef_object = query.one()
@@ -40,8 +40,8 @@ def _get(context, object_id, session):
     return metadef_object
 
 
-def _get_by_name(context, namespace_name, name, session):
-    namespace = namespace_api.get(context, namespace_name, session)
+def _get_by_name(context, session, namespace_name, name):
+    namespace = namespace_api.get(context, session, namespace_name)
     try:
         query = session.query(models.MetadefObject).filter_by(
             name=name, namespace_id=namespace['id'])
@@ -56,8 +56,8 @@ def _get_by_name(context, namespace_name, name, session):
     return metadef_object
 
 
-def get_all(context, namespace_name, session):
-    namespace = namespace_api.get(context, namespace_name, session)
+def get_all(context, session, namespace_name):
+    namespace = namespace_api.get(context, session, namespace_name)
     query = session.query(models.MetadefObject).filter_by(
         namespace_id=namespace['id'])
     md_objects = query.all()
@@ -68,8 +68,8 @@ def get_all(context, namespace_name, session):
     return md_objects_list
 
 
-def create(context, namespace_name, values, session):
-    namespace = namespace_api.get(context, namespace_name, session)
+def create(context, session, namespace_name, values):
+    namespace = namespace_api.get(context, session, namespace_name)
     values.update({'namespace_id': namespace['id']})
 
     md_object = models.MetadefObject()
@@ -88,17 +88,17 @@ def create(context, namespace_name, values, session):
     return md_object.to_dict()
 
 
-def get(context, namespace_name, name, session):
-    md_object = _get_by_name(context, namespace_name, name, session)
+def get(context, session, namespace_name, name):
+    md_object = _get_by_name(context, session, namespace_name, name)
 
     return md_object.to_dict()
 
 
-def update(context, namespace_name, object_id, values, session):
+def update(context, session, namespace_name, object_id, values):
     """Update an object, raise if ns not found/visible or duplicate result"""
-    namespace_api.get(context, namespace_name, session)
+    namespace_api.get(context, session, namespace_name)
 
-    md_object = _get(context, object_id, session)
+    md_object = _get(context, session, object_id)
     metadef_utils.drop_protected_attrs(models.MetadefObject, values)
     # values['updated_at'] = timeutils.utcnow() - done by TS mixin
     try:
@@ -118,9 +118,9 @@ def update(context, namespace_name, object_id, values, session):
     return md_object.to_dict()
 
 
-def delete(context, namespace_name, object_name, session):
-    namespace_api.get(context, namespace_name, session)
-    md_object = _get_by_name(context, namespace_name, object_name, session)
+def delete(context, session, namespace_name, object_name):
+    namespace_api.get(context, session, namespace_name)
+    md_object = _get_by_name(context, session, namespace_name, object_name)
 
     session.delete(md_object)
     session.flush()
@@ -128,7 +128,7 @@ def delete(context, namespace_name, object_name, session):
     return md_object.to_dict()
 
 
-def delete_namespace_content(context, namespace_id, session):
+def delete_namespace_content(context, session, namespace_id):
     """Use this def only if the ns for the id has been verified as visible"""
 
     count = 0
@@ -138,14 +138,14 @@ def delete_namespace_content(context, namespace_id, session):
     return count
 
 
-def delete_by_namespace_name(context, namespace_name, session):
-    namespace = namespace_api.get(context, namespace_name, session)
-    return delete_namespace_content(context, namespace['id'], session)
+def delete_by_namespace_name(context, session, namespace_name):
+    namespace = namespace_api.get(context, session, namespace_name)
+    return delete_namespace_content(context, session, namespace['id'])
 
 
-def count(context, namespace_name, session):
+def count(context, session, namespace_name):
     """Get the count of objects for a namespace, raise if ns not found"""
-    namespace = namespace_api.get(context, namespace_name, session)
+    namespace = namespace_api.get(context, session, namespace_name)
 
     query = session.query(func.count(models.MetadefObject.id)).filter_by(
         namespace_id=namespace['id'])

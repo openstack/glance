@@ -56,8 +56,8 @@ def _set_model_dict(resource_type_name, properties_target, prefix,
     return model_dict
 
 
-def _get(context, namespace_name, resource_type_name,
-         namespace_id, resource_type_id, session):
+def _get(context, session, namespace_name, resource_type_name,
+         namespace_id, resource_type_id):
     """Get a namespace resource_type association"""
 
     # visibility check assumed done in calling routine via namespace_get
@@ -79,7 +79,8 @@ def _get(context, namespace_name, resource_type_name,
 
 
 def _create_association(
-        context, namespace_name, resource_type_name, values, session):
+    context, session, namespace_name, resource_type_name, values,
+):
     """Create an association, raise if it already exists."""
 
     namespace_resource_type_rec = models.MetadefNamespaceResourceType()
@@ -102,38 +103,40 @@ def _create_association(
     return namespace_resource_type_rec.to_dict()
 
 
-def _delete(context, namespace_name, resource_type_name,
-            namespace_id, resource_type_id, session):
+def _delete(context, session, namespace_name, resource_type_name,
+            namespace_id, resource_type_id):
     """Delete a resource type association or raise if not found."""
 
-    db_rec = _get(context, namespace_name, resource_type_name,
-                  namespace_id, resource_type_id, session)
+    db_rec = _get(
+        context, session, namespace_name, resource_type_name,
+        namespace_id, resource_type_id)
     session.delete(db_rec)
     session.flush()
 
     return db_rec.to_dict()
 
 
-def get(context, namespace_name, resource_type_name, session):
+def get(context, session, namespace_name, resource_type_name):
     """Get a resource_type associations; raise if not found"""
     namespace = namespace_api.get(
-        context, namespace_name, session)
+        context, session, namespace_name)
 
     resource_type = resource_type_api.get(
-        context, resource_type_name, session)
+        context, session, resource_type_name)
 
-    found = _get(context, namespace_name, resource_type_name,
-                 namespace['id'], resource_type['id'], session)
+    found = _get(
+        context, session, namespace_name, resource_type_name,
+        namespace['id'], resource_type['id'])
 
     return _to_model_dict(resource_type_name, found)
 
 
-def get_all_by_namespace(context, namespace_name, session):
+def get_all_by_namespace(context, session, namespace_name):
     """List resource_type associations by namespace, raise if not found"""
 
     # namespace get raises an exception if not visible
     namespace = namespace_api.get(
-        context, namespace_name, session)
+        context, session, namespace_name)
 
     db_recs = (
         session.query(models.MetadefResourceType)
@@ -158,11 +161,11 @@ def get_all_by_namespace(context, namespace_name, session):
     return model_dict_list
 
 
-def create(context, namespace_name, values, session):
+def create(context, session, namespace_name, values):
     """Create an association, raise if already exists or ns not found."""
 
     namespace = namespace_api.get(
-        context, namespace_name, session)
+        context, session, namespace_name)
 
     # if the resource_type does not exist, create it
     resource_type_name = values['name']
@@ -170,7 +173,7 @@ def create(context, namespace_name, values, session):
         models.MetadefNamespaceResourceType, values)
     try:
         resource_type = resource_type_api.get(
-            context, resource_type_name, session)
+            context, session, resource_type_name)
     except exc.NotFound:
         resource_type = None
         LOG.debug("Creating resource-type %s", resource_type_name)
@@ -178,33 +181,35 @@ def create(context, namespace_name, values, session):
     if resource_type is None:
         resource_type_dict = {'name': resource_type_name, 'protected': False}
         resource_type = resource_type_api.create(
-            context, resource_type_dict, session)
+            context, session, resource_type_dict)
 
     # Create the association record, set the field values
     ns_resource_type_dict = _to_db_dict(
         namespace['id'], resource_type['id'], values)
-    new_rec = _create_association(context, namespace_name, resource_type_name,
-                                  ns_resource_type_dict, session)
+    new_rec = _create_association(
+        context, session, namespace_name, resource_type_name,
+        ns_resource_type_dict)
 
     return _to_model_dict(resource_type_name, new_rec)
 
 
-def delete(context, namespace_name, resource_type_name, session):
+def delete(context, session, namespace_name, resource_type_name):
     """Delete an association or raise if not found"""
 
     namespace = namespace_api.get(
-        context, namespace_name, session)
+        context, session, namespace_name)
 
     resource_type = resource_type_api.get(
-        context, resource_type_name, session)
+        context, session, resource_type_name)
 
-    deleted = _delete(context, namespace_name, resource_type_name,
-                      namespace['id'], resource_type['id'], session)
+    deleted = _delete(
+        context, session, namespace_name, resource_type_name,
+        namespace['id'], resource_type['id'])
 
     return _to_model_dict(resource_type_name, deleted)
 
 
-def delete_namespace_content(context, namespace_id, session):
+def delete_namespace_content(context, session, namespace_id):
     """Use this def only if the ns for the id has been verified as visible"""
 
     count = 0

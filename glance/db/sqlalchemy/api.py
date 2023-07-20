@@ -2092,7 +2092,7 @@ def metadef_namespace_get(context, namespace_name):
     session = get_session()
     with session.begin():
         return metadef_namespace_api.get(
-            context, namespace_name, session)
+            context, session, namespace_name)
 
 
 @utils.no_4byte_params
@@ -2100,7 +2100,7 @@ def metadef_namespace_create(context, values):
     """Create a namespace or raise if it already exists."""
     session = get_session()
     with session.begin():
-        return metadef_namespace_api.create(context, values, session)
+        return metadef_namespace_api.create(context, session, values)
 
 
 @utils.no_4byte_params
@@ -2109,7 +2109,7 @@ def metadef_namespace_update(context, namespace_id, namespace_dict):
     session = get_session()
     with session.begin():
         return metadef_namespace_api.update(
-            context, namespace_id, namespace_dict, session)
+            context, session, namespace_id, namespace_dict)
 
 
 def metadef_namespace_delete(context, namespace_name):
@@ -2117,7 +2117,7 @@ def metadef_namespace_delete(context, namespace_name):
     session = get_session()
     with session.begin():
         return metadef_namespace_api.delete_cascade(
-            context, namespace_name, session)
+            context, session, namespace_name)
 
 
 def metadef_object_get_all(context, namespace_name):
@@ -2125,7 +2125,7 @@ def metadef_object_get_all(context, namespace_name):
     session = get_session()
     with session.begin():
         return metadef_object_api.get_all(
-            context, namespace_name, session)
+            context, session, namespace_name)
 
 
 def metadef_object_get(context, namespace_name, object_name):
@@ -2133,7 +2133,7 @@ def metadef_object_get(context, namespace_name, object_name):
     session = get_session()
     with session.begin():
         return metadef_object_api.get(
-            context, namespace_name, object_name, session)
+            context, session, namespace_name, object_name)
 
 
 @utils.no_4byte_params
@@ -2142,7 +2142,7 @@ def metadef_object_create(context, namespace_name, object_dict):
     session = get_session()
     with session.begin():
         return metadef_object_api.create(
-            context, namespace_name, object_dict, session)
+            context, session, namespace_name, object_dict)
 
 
 @utils.no_4byte_params
@@ -2151,7 +2151,7 @@ def metadef_object_update(context, namespace_name, object_id, object_dict):
     session = get_session()
     with session.begin():
         return metadef_object_api.update(
-            context, namespace_name, object_id, object_dict, session)
+            context, session, namespace_name, object_id, object_dict)
 
 
 def metadef_object_delete(context, namespace_name, object_name):
@@ -2159,7 +2159,7 @@ def metadef_object_delete(context, namespace_name, object_name):
     session = get_session()
     with session.begin():
         return metadef_object_api.delete(
-            context, namespace_name, object_name, session)
+            context, session, namespace_name, object_name)
 
 
 def metadef_object_delete_namespace_content(context, namespace_name):
@@ -2167,21 +2167,21 @@ def metadef_object_delete_namespace_content(context, namespace_name):
     session = get_session()
     with session.begin():
         return metadef_object_api.delete_by_namespace_name(
-            context, namespace_name, session)
+            context, session, namespace_name)
 
 
 def metadef_object_count(context, namespace_name):
     """Get count of properties for a namespace, raise if ns doesn't exist."""
     session = get_session()
     with session.begin():
-        return metadef_object_api.count(context, namespace_name, session)
+        return metadef_object_api.count(context, session, namespace_name)
 
 
 def metadef_property_get_all(context, namespace_name):
     """Get a metadef property or raise if it does not exist."""
     session = get_session()
     with session.begin():
-        return metadef_property_api.get_all(context, namespace_name, session)
+        return metadef_property_api.get_all(context, session, namespace_name)
 
 
 def metadef_property_get(context, namespace_name, property_name):
@@ -2189,7 +2189,7 @@ def metadef_property_get(context, namespace_name, property_name):
     session = get_session()
     with session.begin():
         return metadef_property_api.get(
-            context, namespace_name, property_name, session)
+            context, session, namespace_name, property_name)
 
 
 @utils.no_4byte_params
@@ -2198,7 +2198,7 @@ def metadef_property_create(context, namespace_name, property_dict):
     session = get_session()
     with session.begin():
         return metadef_property_api.create(
-            context, namespace_name, property_dict, session)
+            context, session, namespace_name, property_dict)
 
 
 @utils.no_4byte_params
@@ -2208,7 +2208,7 @@ def metadef_property_update(context, namespace_name, property_id,
     session = get_session()
     with session.begin():
         return metadef_property_api.update(
-            context, namespace_name, property_id, property_dict, session)
+            context, session, namespace_name, property_id, property_dict)
 
 
 def metadef_property_delete(context, namespace_name, property_name):
@@ -2216,7 +2216,7 @@ def metadef_property_delete(context, namespace_name, property_name):
     session = get_session()
     with session.begin():
         return metadef_property_api.delete(
-            context, namespace_name, property_name, session)
+            context, session, namespace_name, property_name)
 
 
 def metadef_property_delete_namespace_content(context, namespace_name):
@@ -2224,14 +2224,14 @@ def metadef_property_delete_namespace_content(context, namespace_name):
     session = get_session()
     with session.begin():
         return metadef_property_api.delete_by_namespace_name(
-            context, namespace_name, session)
+            context, session, namespace_name)
 
 
 def metadef_property_count(context, namespace_name):
     """Get count of properties for a namespace, raise if ns doesn't exist."""
     session = get_session()
     with session.begin():
-        return metadef_property_api.count(context, namespace_name, session)
+        return metadef_property_api.count(context, session, namespace_name)
 
 
 def metadef_resource_type_create(context, values):
@@ -2239,7 +2239,7 @@ def metadef_resource_type_create(context, values):
     session = get_session()
     with session.begin():
         return metadef_resource_type_api.create(
-            context, values, session)
+            context, session, values)
 
 
 def metadef_resource_type_get(context, resource_type_name):
@@ -2247,7 +2247,7 @@ def metadef_resource_type_get(context, resource_type_name):
     session = get_session()
     with session.begin():
         return metadef_resource_type_api.get(
-            context, resource_type_name, session)
+            context, session, resource_type_name)
 
 
 def metadef_resource_type_get_all(context):
@@ -2262,7 +2262,7 @@ def metadef_resource_type_delete(context, resource_type_name):
     session = get_session()
     with session.begin():
         return metadef_resource_type_api.delete(
-            context, resource_type_name, session)
+            context, session, resource_type_name)
 
 
 def metadef_resource_type_association_get(
@@ -2271,7 +2271,7 @@ def metadef_resource_type_association_get(
     session = get_session()
     with session.begin():
         return metadef_association_api.get(
-            context, namespace_name, resource_type_name, session)
+            context, session, namespace_name, resource_type_name)
 
 
 def metadef_resource_type_association_create(
@@ -2280,7 +2280,7 @@ def metadef_resource_type_association_create(
     session = get_session()
     with session.begin():
         return metadef_association_api.create(
-            context, namespace_name, values, session)
+            context, session, namespace_name, values)
 
 
 def metadef_resource_type_association_delete(
@@ -2289,7 +2289,7 @@ def metadef_resource_type_association_delete(
     session = get_session()
     with session.begin():
         return metadef_association_api.delete(
-            context, namespace_name, resource_type_name, session)
+            context, session, namespace_name, resource_type_name)
 
 
 def metadef_resource_type_association_get_all_by_namespace(
@@ -2298,7 +2298,7 @@ def metadef_resource_type_association_get_all_by_namespace(
     session = get_session()
     with session.begin():
         return metadef_association_api.get_all_by_namespace(
-            context, namespace_name, session)
+            context, session, namespace_name)
 
 
 def metadef_tag_get_all(
@@ -2309,7 +2309,7 @@ def metadef_tag_get_all(
     session = get_session()
     with session.begin():
         return metadef_tag_api.get_all(
-            context, namespace_name, session,
+            context, session, namespace_name,
             filters, marker, limit, sort_key, sort_dir)
 
 
@@ -2318,7 +2318,7 @@ def metadef_tag_get(context, namespace_name, name):
     session = get_session()
     with session.begin():
         return metadef_tag_api.get(
-            context, namespace_name, name, session)
+            context, session, namespace_name, name)
 
 
 @utils.no_4byte_params
@@ -2327,7 +2327,7 @@ def metadef_tag_create(context, namespace_name, tag_dict):
     session = get_session()
     with session.begin():
         return metadef_tag_api.create(
-            context, namespace_name, tag_dict, session)
+            context, session, namespace_name, tag_dict)
 
 
 def metadef_tag_create_tags(context, namespace_name, tag_list,
@@ -2336,7 +2336,7 @@ def metadef_tag_create_tags(context, namespace_name, tag_list,
     session = get_session()
     with session.begin():
         return metadef_tag_api.create_tags(
-            context, namespace_name, tag_list, can_append, session)
+            context, session, namespace_name, tag_list, can_append)
 
 
 @utils.no_4byte_params
@@ -2345,7 +2345,7 @@ def metadef_tag_update(context, namespace_name, id, tag_dict):
     session = get_session()
     with session.begin():
         return metadef_tag_api.update(
-            context, namespace_name, id, tag_dict, session)
+            context, session, namespace_name, id, tag_dict)
 
 
 def metadef_tag_delete(context, namespace_name, name):
@@ -2353,7 +2353,7 @@ def metadef_tag_delete(context, namespace_name, name):
     session = get_session()
     with session.begin():
         return metadef_tag_api.delete(
-            context, namespace_name, name, session)
+            context, session, namespace_name, name)
 
 
 def metadef_tag_delete_namespace_content(context, namespace_name):
@@ -2361,11 +2361,11 @@ def metadef_tag_delete_namespace_content(context, namespace_name):
     session = get_session()
     with session.begin():
         return metadef_tag_api.delete_by_namespace_name(
-            context, namespace_name, session)
+            context, session, namespace_name)
 
 
 def metadef_tag_count(context, namespace_name):
     """Get count of tags for a namespace, raise if ns doesn't exist."""
     session = get_session()
     with session.begin():
-        return metadef_tag_api.count(context, namespace_name, session)
+        return metadef_tag_api.count(context, session, namespace_name)

@@ -27,7 +27,7 @@ from glance.i18n import _
 LOG = logging.getLogger(__name__)
 
 
-def _get(context, property_id, session):
+def _get(context, session, property_id):
 
     try:
         query = session.query(models.MetadefProperty).filter_by(id=property_id)
@@ -42,10 +42,10 @@ def _get(context, property_id, session):
     return property_rec
 
 
-def _get_by_name(context, namespace_name, name, session):
+def _get_by_name(context, session, namespace_name, name):
     """get a property; raise if ns not found/visible or property not found"""
 
-    namespace = namespace_api.get(context, namespace_name, session)
+    namespace = namespace_api.get(context, session, namespace_name)
     try:
         query = session.query(models.MetadefProperty).filter_by(
             name=name, namespace_id=namespace['id'])
@@ -61,15 +61,15 @@ def _get_by_name(context, namespace_name, name, session):
     return property_rec
 
 
-def get(context, namespace_name, name, session):
+def get(context, session, namespace_name, name):
     """get a property; raise if ns not found/visible or property not found"""
 
-    property_rec = _get_by_name(context, namespace_name, name, session)
+    property_rec = _get_by_name(context, session, namespace_name, name)
     return property_rec.to_dict()
 
 
-def get_all(context, namespace_name, session):
-    namespace = namespace_api.get(context, namespace_name, session)
+def get_all(context, session, namespace_name):
+    namespace = namespace_api.get(context, session, namespace_name)
     query = session.query(models.MetadefProperty).filter_by(
         namespace_id=namespace['id'])
     properties = query.all()
@@ -80,8 +80,8 @@ def get_all(context, namespace_name, session):
     return properties_list
 
 
-def create(context, namespace_name, values, session):
-    namespace = namespace_api.get(context, namespace_name, session)
+def create(context, session, namespace_name, values):
+    namespace = namespace_api.get(context, session, namespace_name)
     values.update({'namespace_id': namespace['id']})
 
     property_rec = models.MetadefProperty()
@@ -103,11 +103,11 @@ def create(context, namespace_name, values, session):
     return property_rec.to_dict()
 
 
-def update(context, namespace_name, property_id, values, session):
+def update(context, session, namespace_name, property_id, values):
     """Update a property, raise if ns not found/visible or duplicate result"""
 
-    namespace_api.get(context, namespace_name, session)
-    property_rec = _get(context, property_id, session)
+    namespace_api.get(context, session, namespace_name)
+    property_rec = _get(context, session, property_id)
     metadef_utils.drop_protected_attrs(models.MetadefProperty, values)
     # values['updated_at'] = timeutils.utcnow() - done by TS mixin
     try:
@@ -129,9 +129,9 @@ def update(context, namespace_name, property_id, values, session):
     return property_rec.to_dict()
 
 
-def delete(context, namespace_name, property_name, session):
+def delete(context, session, namespace_name, property_name):
     property_rec = _get_by_name(
-        context, namespace_name, property_name, session)
+        context, session, namespace_name, property_name)
     if property_rec:
         session.delete(property_rec)
         session.flush()
@@ -139,7 +139,7 @@ def delete(context, namespace_name, property_name, session):
     return property_rec.to_dict()
 
 
-def delete_namespace_content(context, namespace_id, session):
+def delete_namespace_content(context, session, namespace_id):
     """Use this def only if the ns for the id has been verified as visible"""
 
     count = 0
@@ -149,15 +149,15 @@ def delete_namespace_content(context, namespace_id, session):
     return count
 
 
-def delete_by_namespace_name(context, namespace_name, session):
-    namespace = namespace_api.get(context, namespace_name, session)
-    return delete_namespace_content(context, namespace['id'], session)
+def delete_by_namespace_name(context, session, namespace_name):
+    namespace = namespace_api.get(context, session, namespace_name)
+    return delete_namespace_content(context, session, namespace['id'])
 
 
-def count(context, namespace_name, session):
+def count(context, session, namespace_name):
     """Get the count of properties for a namespace, raise if ns not found"""
 
-    namespace = namespace_api.get(context, namespace_name, session)
+    namespace = namespace_api.get(context, session, namespace_name)
 
     query = session.query(func.count(models.MetadefProperty.id)).filter_by(
         namespace_id=namespace['id'])

@@ -77,7 +77,7 @@ def _select_namespaces_query(context, session):
         return query
 
 
-def _get(context, namespace_id, session):
+def _get(context, session, namespace_id):
     """Get a namespace by id, raise if not found"""
 
     try:
@@ -101,7 +101,7 @@ def _get(context, namespace_id, session):
     return namespace_rec
 
 
-def _get_by_name(context, name, session):
+def _get_by_name(context, session, name):
     """Get a namespace by name, raise if not found"""
 
     try:
@@ -150,7 +150,7 @@ def _get_all(context, session, filters=None, marker=None,
 
     marker_namespace = None
     if marker is not None:
-        marker_namespace = _get(context, marker, session)
+        marker_namespace = _get(context, session, marker)
 
     sort_keys = ['created_at', 'id']
     sort_keys.insert(0, sort_key) if sort_key not in sort_keys else sort_keys
@@ -211,13 +211,13 @@ def get_all(context, session, marker=None, limit=None,
     return [ns.to_dict() for ns in namespaces]
 
 
-def get(context, name, session):
+def get(context, session, name):
     """Get a namespace by name, raise if not found"""
-    namespace_rec = _get_by_name(context, name, session)
+    namespace_rec = _get_by_name(context, session, name)
     return namespace_rec.to_dict()
 
 
-def create(context, values, session):
+def create(context, session, values):
     """Create a namespace, raise if namespace already exists."""
 
     namespace_name = values['namespace']
@@ -235,10 +235,10 @@ def create(context, values, session):
     return namespace.to_dict()
 
 
-def update(context, namespace_id, values, session):
+def update(context, session, namespace_id, values):
     """Update a namespace, raise if not found/visible or duplicate result"""
 
-    namespace_rec = _get(context, namespace_id, session)
+    namespace_rec = _get(context, session, namespace_id)
     metadef_api.utils.drop_protected_attrs(models.MetadefNamespace, values)
 
     try:
@@ -256,10 +256,10 @@ def update(context, namespace_id, values, session):
     return namespace_rec.to_dict()
 
 
-def delete(context, name, session):
+def delete(context, session, name):
     """Raise if not found, has references or not visible"""
 
-    namespace_rec = _get_by_name(context, name, session)
+    namespace_rec = _get_by_name(context, session, name)
     try:
         session.delete(namespace_rec)
         session.flush()
@@ -275,19 +275,19 @@ def delete(context, name, session):
     return namespace_rec.to_dict()
 
 
-def delete_cascade(context, name, session):
+def delete_cascade(context, session, name):
     """Raise if not found, has references or not visible"""
 
-    namespace_rec = _get_by_name(context, name, session)
+    namespace_rec = _get_by_name(context, session, name)
     try:
         metadef_api.tag.delete_namespace_content(
-            context, namespace_rec.id, session)
+            context, session, namespace_rec.id)
         metadef_api.object.delete_namespace_content(
-            context, namespace_rec.id, session)
+            context, session, namespace_rec.id)
         metadef_api.property.delete_namespace_content(
-            context, namespace_rec.id, session)
+            context, session, namespace_rec.id)
         metadef_api.resource_type_association.delete_namespace_content(
-            context, namespace_rec.id, session)
+            context, session, namespace_rec.id)
         session.delete(namespace_rec)
         session.flush()
     except db_exc.DBError as e:
