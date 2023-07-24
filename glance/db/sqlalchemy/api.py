@@ -1958,8 +1958,10 @@ def _task_format(task_ref, task_info_ref=None):
     return task_dict
 
 
-def metadef_namespace_get_all(context, marker=None, limit=None, sort_key=None,
-                              sort_dir=None, filters=None, session=None):
+def metadef_namespace_get_all(
+    context, marker=None, limit=None, sort_key='created_at',
+    sort_dir='desc', filters=None, session=None,
+):
     """List all available namespaces."""
     session = session or get_session()
     namespaces = metadef_namespace_api.get_all(
@@ -2161,8 +2163,9 @@ def metadef_resource_type_association_get_all_by_namespace(
 
 
 def metadef_tag_get_all(
-        context, namespace_name, filters=None, marker=None, limit=None,
-        sort_key=None, sort_dir=None, session=None):
+    context, namespace_name, filters=None, marker=None, limit=None,
+    sort_key='created_at', sort_dir='desc', session=None,
+):
     """Get metadata-schema tags or raise if none exist."""
     session = session or get_session()
     return metadef_tag_api.get_all(
