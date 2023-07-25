@@ -23,12 +23,13 @@ import uuid
 
 from oslo_db import exception as db_exception
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
-from sqlalchemy.dialects import sqlite
+from sqlalchemy import sql
 
 from glance.common import exception
 from glance.common import timeutils
 from glance import context
 from glance.db.sqlalchemy import api as db_api
+from glance.db.sqlalchemy import models
 from glance.tests import functional
 import glance.tests.functional.db as db_tests
 from glance.tests import utils as test_utils
@@ -2081,13 +2082,27 @@ class DBPurgeTests(test_utils.BaseTestCase):
         self.assertEqual(len(tasks), 2)
 
     def test_db_purge_images_table(self):
+        images = self.db_api.image_get_all(self.adm_context)
+        self.assertEqual(len(images), 3)
+        tasks = self.db_api.task_get_all(self.adm_context)
+        self.assertEqual(len(tasks), 3)
+
+        # purge records from locations table
+        for image in images:
+            session = self.db_api.get_session()
+            with session.begin():
+                session.execute(
+                    sql.delete(models.ImageLocation)
+                    .where(models.ImageLocation.image_id == image['id'])
+                )
+
         # purge records from images_tags table
         self.db_api.purge_deleted_rows(self.adm_context, 1, 5)
 
         # purge records from images table
         self.db_api.purge_deleted_rows_from_images(self.adm_context, 1, 5)
-        images = self.db_api.image_get_all(self.adm_context)
 
+        images = self.db_api.image_get_all(self.adm_context)
         self.assertEqual(len(images), 2)
         tasks = self.db_api.task_get_all(self.adm_context)
         self.assertEqual(len(tasks), 2)
@@ -2102,14 +2117,8 @@ class DBPurgeTests(test_utils.BaseTestCase):
         engine = db_api.get_engine()
         connection = engine.connect()
 
-        dialect = engine.url.get_dialect()
-        if dialect == sqlite.dialect:
-            connection.exec_driver_sql("PRAGMA foreign_keys = ON")
-
-        images = sqlalchemyutils.get_table(
-            engine, "images")
-        image_tags = sqlalchemyutils.get_table(
-            engine, "image_tags")
+        images = sqlalchemyutils.get_table(engine, "images")
+        image_tags = sqlalchemyutils.get_table(engine, "image_tags")
 
         # Add a 4th row in images table and set it deleted 15 days ago
         uuidstr = uuid.uuid4().hex
