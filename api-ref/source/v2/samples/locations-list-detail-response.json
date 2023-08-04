@@ -1,0 +1,8 @@
+[
+    {
+        "url": "cinder://lvmdriver-1/39e6ffab-7502-4199-9609-416601615ca3",
+        "metadata": {
+            "store": "lvmdriver-1"
+        }
+    }
+]

@@ -26,3 +26,4 @@ Glance Administration Guide
    requirements
    quotas
    os_hash_algo
+   new-location-apis

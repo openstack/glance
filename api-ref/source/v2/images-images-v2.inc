@@ -776,3 +776,83 @@ Request
 .. rest_parameters:: images-parameters.yaml
 
    - image_id: image_id-in-path
+
+
+Add Location
+~~~~~~~~~~~~
+
+.. rest_method::  POST /v2/images/{image_id}/locations
+
+Add location to an image which is in ``queued`` state. Accepts
+location url, validation_data in JSON body.
+
+Adding a location to an image is only allowed for the owner or
+a user with the service role. If these conditions are not met,
+a 403 (Forbidden) will be returned.
+
+Attempting to add a location path to an image that is not in ``queued``
+state will result in a 409 (Conflict) response code
+
+Attempting to provide incorrect hash value in validation data(in the case
+of http store) to the image will result in a 400 (Bad Request) response code.
+
+
+Normal response codes: 200
+
+Error response codes: 400, 403, 404, 409
+
+
+Request
+-------
+
+.. rest_parameters:: images-parameters.yaml
+
+   - image_id: image_id-in-path
+   - url: locations-url
+   - validation_data: validation-data
+
+Request Example
+---------------
+
+.. literalinclude:: samples/add-location-request.json
+   :language: json
+
+
+Get Location
+~~~~~~~~~~~~
+
+.. rest_method::  GET /v2/images/{image_id}/locations
+
+Lists all locations associated to an image with location url and
+store-id, accesssible to only service user, for non service users
+API will return forbidden.
+
+Normal response codes: 200
+
+Error response codes: 403, 404
+
+
+Request
+-------
+
+.. rest_parameters:: images-parameters.yaml
+
+   - image_id: image_id-in-path
+
+This call does not allow a request body.
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: images-parameters.yaml
+
+   - locations: locations
+
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/locations-list-detail-response.json
+   :language: json

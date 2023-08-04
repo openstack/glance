@@ -473,6 +473,12 @@ locations:
   in: body
   required: false
   type: array
+locations-url:
+  description: |
+    The URL of the new location to be added in the image.
+  in: body
+  required: true
+  type: string
 member_id:
   description: |
     The ID of the image member. An image member is usually a project (also
@@ -700,6 +706,16 @@ url:
   in: body
   required: true
   type: string
+validation-data:
+  description: |
+    An image metadata in key:value pairs containing values of
+    ``os_hash_value`` and ``os_hash_algo`` to be added to the image.
+    If ``do_secure_hash`` is not passed then it is the responsiblity of
+    the consumer of location add API to provide the correct values in
+    ``validation_data``'
+  in: body
+  required: false
+  type: object
 value:
   description: |
     Value of image property used in add or replace

@@ -1,0 +1,7 @@
+{
+    "url": "cinder://lvmdriver-1/39e6ffab-7502-4199-9609-416601615ca3",
+    "validation_data": {
+        "os_hash_algo": "sha512",
+        "os_hash_value": "c5041ae163cf0f65600acfe7f6a63f212101687d41a57a4e18ffd2a07a452cd8175b8f5a4868dd2330bfe5ae123f18216bdbc9e0f80d131e64b94913a7b40bb5"
+    }
+}
