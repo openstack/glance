@@ -79,13 +79,13 @@ class Controller(object):
         version_objs = []
         if CONF.image_cache_dir:
             version_objs.extend([
-                build_version_object('2.16', 'v2', 'CURRENT'),
+                build_version_object('2.16', 'v2', 'SUPPORTED'),
                 build_version_object('2.15', 'v2', 'SUPPORTED'),
                 build_version_object('2.14', 'v2', 'SUPPORTED'),
             ])
         else:
             version_objs.extend([
-                build_version_object('2.15', 'v2', 'CURRENT'),
+                build_version_object('2.15', 'v2', 'SUPPORTED'),
             ])
         if CONF.enabled_backends:
             version_objs.extend([
@@ -101,6 +101,7 @@ class Controller(object):
                 build_version_object('2.9', 'v2', 'SUPPORTED'),
             ])
         version_objs.extend([
+            build_version_object('2.17', 'v2', 'CURRENT'),
             build_version_object('2.7', 'v2', 'SUPPORTED'),
             build_version_object('2.6', 'v2', 'SUPPORTED'),
             build_version_object('2.5', 'v2', 'SUPPORTED'),
