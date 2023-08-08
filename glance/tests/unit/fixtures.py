@@ -120,6 +120,9 @@ class WarningsFixture(pyfixtures.Fixture):
 
     def setUp(self):
         super(WarningsFixture, self).setUp()
+
+        self._original_warning_filters = warnings.filters[:]
+
         # NOTE(sdague): Make deprecation warnings only happen once. Otherwise
         # this gets kind of crazy given the way that upstream python libs use
         # this.
@@ -138,7 +141,10 @@ class WarningsFixture(pyfixtures.Fixture):
         warnings.filterwarnings(
             'error', message="Property '.*' has moved to '.*'")
 
-        self.addCleanup(warnings.resetwarnings)
+        self.addCleanup(self._reset_warning_filters)
+
+    def _reset_warning_filters(self):
+        warnings.filters[:] = self._original_warning_filters
 
 
 class KeystoneQuotaFixture(pyfixtures.Fixture):
