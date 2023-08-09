@@ -16,6 +16,7 @@
 import http.client as http
 from unittest.mock import patch
 
+from oslo_log.fixture import logging_error as log_fixture
 from oslo_policy import policy
 from oslo_utils.fixture import uuidsentinel as uuids
 import testtools
@@ -26,6 +27,7 @@ import glance.api.policy
 from glance.common import exception
 from glance import context
 from glance.tests.unit import base
+from glance.tests.unit import fixtures as glance_fixtures
 from glance.tests.unit import test_policy
 from glance.tests.unit import utils as unit_test_utils
 
@@ -59,6 +61,16 @@ class ImageStub(object):
 
 
 class TestCacheMiddlewareURLMatching(testtools.TestCase):
+    def setUp(self):
+        super().setUp()
+
+        # Limit the amount of DeprecationWarning messages in the unit test logs
+        self.useFixture(glance_fixtures.WarningsFixture())
+
+        # Make sure logging output is limited but still test debug formatting
+        self.useFixture(log_fixture.get_logging_handle_error_fixture())
+        self.useFixture(glance_fixtures.StandardLogging())
+
     def test_v2_match_id(self):
         req = webob.Request.blank('/v2/images/asdf/file')
         out = glance.api.middleware.cache.CacheFilter._match_request(req)
@@ -80,6 +92,13 @@ class TestCacheMiddlewareRequestStashCacheInfo(testtools.TestCase):
         super(TestCacheMiddlewareRequestStashCacheInfo, self).setUp()
         self.request = webob.Request.blank('')
         self.middleware = glance.api.middleware.cache.CacheFilter
+
+        # Limit the amount of DeprecationWarning messages in the unit test logs
+        self.useFixture(glance_fixtures.WarningsFixture())
+
+        # Make sure logging output is limited but still test debug formatting
+        self.useFixture(log_fixture.get_logging_handle_error_fixture())
+        self.useFixture(glance_fixtures.StandardLogging())
 
     def test_stash_cache_request_info(self):
         self.middleware._stash_request_info(self.request, 'asdf', 'GET', 'v2')

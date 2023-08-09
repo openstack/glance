@@ -16,10 +16,12 @@
 import http.client
 from unittest import mock
 
+from oslo_log.fixture import logging_error as log_fixture
 import testtools
 
 from glance.common import auth
 from glance.common import client
+from glance.tests.unit import fixtures as glance_fixtures
 from glance.tests import utils
 
 
@@ -31,8 +33,12 @@ class TestClient(testtools.TestCase):
         self.client = client.BaseClient(self.endpoint, port=9191,
                                         auth_token='abc123')
 
-    def tearDown(self):
-        super(TestClient, self).tearDown()
+        # Limit the amount of DeprecationWarning messages in the unit test logs
+        self.useFixture(glance_fixtures.WarningsFixture())
+
+        # Make sure logging output is limited but still test debug formatting
+        self.useFixture(log_fixture.get_logging_handle_error_fixture())
+        self.useFixture(glance_fixtures.StandardLogging())
 
     def test_make_auth_plugin(self):
         creds = {'strategy': 'keystone'}
