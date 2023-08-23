@@ -206,6 +206,7 @@
       The regular tempest-integrated-storage job but with glance metadata injection
     post-run: playbooks/post-check-metadata-injection.yaml
     vars:
+      configure_swap_size: 8192
       zuul_copy_output:
         /etc/glance-remote: logs
       devstack_localrc:
@@ -219,7 +220,7 @@
             DEFAULT:
               enabled_import_methods: "[\"copy-image\", \"glance-direct\"]"
             wsgi:
-              python_interpreter: /usr/bin/python3
+              python_interpreter: /opt/stack/data/venv/bin/python
           $GLANCE_IMAGE_IMPORT_CONF:
             image_import_opts:
               image_import_plugins: "['inject_image_metadata', 'image_conversion']"
