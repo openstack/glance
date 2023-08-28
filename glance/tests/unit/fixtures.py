@@ -21,7 +21,9 @@ import warnings
 import fixtures as pyfixtures
 from openstack.identity.v3 import endpoint
 from openstack.identity.v3 import limit as klimit
+from oslo_db import warning as oslo_db_warning
 from oslo_limit import limit
+from sqlalchemy import exc as sqla_exc
 
 _TRUE_VALUES = ('True', 'true', '1', 'yes')
 
@@ -140,6 +142,159 @@ class WarningsFixture(pyfixtures.Fixture):
         # let anything new use it
         warnings.filterwarnings(
             'error', message="Property '.*' has moved to '.*'")
+
+        # Don't warn for our own deprecation warnings
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=DeprecationWarning,
+        )
+
+        # Disable deprecation warning for oslo.db's EngineFacade. We *really*
+        # need to get off this but it's not happening while sqlalchemy 2.0
+        # stuff is ongoing
+
+        warnings.filterwarnings(
+            'ignore',
+            category=oslo_db_warning.OsloDBDeprecationWarning,
+            message='EngineFacade is deprecated',
+        )
+
+        # Enable deprecation warnings for glance itself to capture upcoming
+        # SQLAlchemy changes
+
+        warnings.filterwarnings(
+            'ignore',
+            category=sqla_exc.SADeprecationWarning,
+        )
+
+        warnings.filterwarnings(
+            'error',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+        )
+
+        # ...but filter everything out until we get around to fixing them
+        # TODO(stephenfin): Fix all of these
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message=r'Invoking and_\(\) without arguments is deprecated',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message='The current statement is being autocommitted ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message='The ``aliased`` and ``from_joinpoint`` keyword ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message=r'The "whens" argument to case\(\), ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message='Using non-integer/slice indices on Row is deprecated ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message='The MetaData.bind argument is deprecated ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message=r'Passing a string to Connection.execute\(\) ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message=r'The Engine.execute\(\) method is considered legacy ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message=r'The autoload parameter is deprecated ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message=r'Query.values\(\) is deprecated ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message='The insert.values parameter will be removed ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message=r'The ``bind`` argument for schema methods ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message=r'The legacy calling style of select\(\) ',
+        )
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SADeprecationWarning,
+            message=r'The Executable.execute\(\) method is considered legacy ',
+        )
+
+        # Enable general SQLAlchemy warnings also to ensure we're not doing
+        # silly stuff. It's possible that we'll need to filter things out here
+        # with future SQLAlchemy versions, but that's a good thing
+
+        warnings.filterwarnings(
+            'error',
+            module='glance',
+            category=sqla_exc.SAWarning,
+        )
+
+        # ...but filter everything out until we get around to fixing them
+        # TODO(stephenfin): Fix all of these
+
+        warnings.filterwarnings(
+            'ignore',
+            module='glance',
+            category=sqla_exc.SAWarning,
+            message='Class DeleteFromSelect will not make use of SQL ',
+        )
 
         self.addCleanup(self._reset_warning_filters)
 
