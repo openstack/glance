@@ -27,7 +27,7 @@ import threading
 
 from oslo_config import cfg
 from oslo_db import exception as db_exception
-from oslo_db.sqlalchemy import session
+from oslo_db.sqlalchemy import session as oslo_db_session
 from oslo_log import log as logging
 from oslo_utils import excutils
 import osprofiler.sqlalchemy
@@ -82,7 +82,7 @@ def _create_facade_lazily():
     if _FACADE is None:
         with _LOCK:
             if _FACADE is None:
-                _FACADE = session.EngineFacade.from_config(CONF)
+                _FACADE = oslo_db_session.EngineFacade.from_config(CONF)
 
                 if CONF.profiler.enabled and CONF.profiler.trace_sqlalchemy:
                     osprofiler.sqlalchemy.add_tracing(sqlalchemy,
