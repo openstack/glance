@@ -19,7 +19,7 @@ Create Date: 2017-01-27 12:58:16.647499
 """
 
 from alembic import op
-from sqlalchemy import MetaData, Enum
+from sqlalchemy import Enum
 
 from glance.cmd import manage
 from glance.db import migration
@@ -46,19 +46,18 @@ def _drop_column():
         batch_op.drop_column('is_public')
 
 
-def _drop_triggers(engine):
-    engine_name = engine.engine.name
+def _drop_triggers(connection):
+    engine_name = connection.engine.name
     if engine_name == "mysql":
         op.execute(MYSQL_DROP_INSERT_TRIGGER)
         op.execute(MYSQL_DROP_UPDATE_TRIGGER)
 
 
-def _set_nullability_and_default_on_visibility(meta):
+def _set_nullability_and_default_on_visibility():
     # NOTE(hemanthm): setting the default on 'visibility' column
     # to 'shared'. Also, marking it as non-nullable.
-    # images = Table('images', meta, autoload=True)
     existing_type = Enum('private', 'public', 'shared', 'community',
-                         metadata=meta, name='image_visibility')
+                         name='image_visibility')
     with op.batch_alter_table('images') as batch_op:
         batch_op.alter_column('visibility',
                               nullable=False,
@@ -67,10 +66,9 @@ def _set_nullability_and_default_on_visibility(meta):
 
 
 def upgrade():
-    migrate_engine = op.get_bind()
-    meta = MetaData(bind=migrate_engine)
+    bind = op.get_bind()
 
     _drop_column()
     if manage.USE_TRIGGERS:
-        _drop_triggers(migrate_engine)
-    _set_nullability_and_default_on_visibility(meta)
+        _drop_triggers(bind)
+    _set_nullability_and_default_on_visibility()

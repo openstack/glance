@@ -33,10 +33,16 @@ depends_on = None
 
 
 def upgrade():
-    migrate_engine = op.get_bind()
-    meta = MetaData(bind=migrate_engine)
+    bind = op.get_bind()
+    meta = MetaData()
 
-    resource_types_table = Table('metadef_resource_types', meta, autoload=True)
+    resource_types_table = Table(
+        'metadef_resource_types', meta, autoload_with=bind)
 
-    resource_types_table.update(values={'name': 'OS::Nova::Server'}).where(
-        resource_types_table.c.name == 'OS::Nova::Instance').execute()
+    op.execute(
+        resource_types_table.update(
+            values={'name': 'OS::Nova::Server'},
+        ).where(
+            resource_types_table.c.name == 'OS::Nova::Instance'
+        )
+    )

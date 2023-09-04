@@ -54,8 +54,9 @@ def get_current_alembic_heads():
             :param:old: Actual alembic head
             :param:new: Expected alembic head to be updated
             """
-            meta = MetaData(engine)
-            alembic_version = Table('alembic_version', meta, autoload=True)
+            meta = MetaData()
+            alembic_version = Table(
+                'alembic_version', meta, autoload_with=engine)
             alembic_version.update().values(
                 version_num=new).where(
                 alembic_version.c.version_num == old).execute()

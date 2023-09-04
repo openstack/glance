@@ -217,13 +217,6 @@ class WarningsFixture(pyfixtures.Fixture):
             'ignore',
             module='glance',
             category=sqla_exc.SADeprecationWarning,
-            message='The MetaData.bind argument is deprecated ',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
             message=r'Passing a string to Connection.execute\(\) ',
         )
 
@@ -238,28 +231,7 @@ class WarningsFixture(pyfixtures.Fixture):
             'ignore',
             module='glance',
             category=sqla_exc.SADeprecationWarning,
-            message=r'The autoload parameter is deprecated ',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
             message=r'Query.values\(\) is deprecated ',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
-            message='The insert.values parameter will be removed ',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
-            message=r'The ``bind`` argument for schema methods ',
         )
 
         warnings.filterwarnings(
