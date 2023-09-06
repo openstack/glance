@@ -48,11 +48,14 @@ def run_migrations_offline():
 
     Calls to context.execute() here emit the given string to the
     script output.
-
     """
     url = CONF.database.connection
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True)
+        url=url,
+        render_as_batch=True,
+        target_metadata=target_metadata,
+        literal_binds=True,
+    )
 
     with context.begin_transaction():
         context.run_migrations()
@@ -70,7 +73,8 @@ def run_migrations_online():
     with engine.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=target_metadata
+            target_metadata=target_metadata,
+            render_as_batch=True,
         )
 
         with context.begin_transaction():
