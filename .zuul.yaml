@@ -207,6 +207,7 @@
     post-run: playbooks/post-check-metadata-injection.yaml
     vars:
       configure_swap_size: 8192
+      tempest_concurrency: 3
       zuul_copy_output:
         /etc/glance-remote: logs
       devstack_localrc:
@@ -287,6 +288,7 @@
     required-projects:
       - name: openstack/glance_store
     vars:
+      tempest_concurrency: 3
       devstack_local_conf:
         post-config:
           $GLANCE_API_CONF:
@@ -302,6 +304,7 @@
       This job runs the Tempest tests with scope and new defaults enabled
       Glance services.
     vars:
+      tempest_concurrency: 3
       devstack_localrc:
         # Nova and glance scope and new defaults are enabled by default in
         # Devstack so we do not need to explicitly set that to True.
