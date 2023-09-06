@@ -27,6 +27,10 @@ def get_alembic_config(engine=None):
     """Return a valid alembic config object"""
     ini_path = os.path.join(os.path.dirname(__file__), 'alembic.ini')
     config = alembic_config.Config(os.path.abspath(ini_path))
+    # we don't want to use the logger configuration from the file, which is
+    # only really intended for the CLI
+    # https://stackoverflow.com/a/42691781/613428
+    config.attributes['configure_logger'] = False
     if engine is None:
         engine = db_api.get_engine()
     # str(sqlalchemy.engine.url.URL) returns a RFC-1738 quoted URL.
@@ -61,9 +65,9 @@ def get_current_alembic_heads():
                 version_num=new).where(
                 alembic_version.c.version_num == old).execute()
 
-        if ("pike01" in heads):
+        if "pike01" in heads:
             update_alembic_version("pike01", "pike_contract01")
-        elif ("ocata01" in heads):
+        elif "ocata01" in heads:
             update_alembic_version("ocata01", "ocata_contract01")
 
         heads = context.get_current_heads()
