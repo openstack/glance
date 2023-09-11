@@ -139,11 +139,14 @@ def get_all_by_namespace(context, namespace_name, session):
         session.query(models.MetadefResourceType)
         .join(models.MetadefResourceType.associations)
         .filter_by(namespace_id=namespace['id'])
-        .values(models.MetadefResourceType.name,
-                models.MetadefNamespaceResourceType.properties_target,
-                models.MetadefNamespaceResourceType.prefix,
-                models.MetadefNamespaceResourceType.created_at,
-                models.MetadefNamespaceResourceType.updated_at))
+        .with_entities(
+            models.MetadefResourceType.name,
+            models.MetadefNamespaceResourceType.properties_target,
+            models.MetadefNamespaceResourceType.prefix,
+            models.MetadefNamespaceResourceType.created_at,
+            models.MetadefNamespaceResourceType.updated_at,
+        )
+    )
 
     model_dict_list = []
     for name, properties_target, prefix, created_at, updated_at in db_recs:
