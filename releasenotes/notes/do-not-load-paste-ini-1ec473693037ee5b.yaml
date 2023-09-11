@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    The glance-api service no longer attempts to load ``api-paste.ini`` file as
+    its service config file. All config options should be written in service
+    config files such as ``glance-api.conf``.

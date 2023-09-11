@@ -41,8 +41,7 @@ except ImportError:
     LOG.debug('Detected not running under uwsgi')
     uwsgi = None
 
-CONFIG_FILES = ['glance-api-paste.ini',
-                'glance-image-import.conf',
+CONFIG_FILES = ['glance-image-import.conf',
                 'glance-api.conf']
 
 # Reserved file stores for staging and tasks operations
