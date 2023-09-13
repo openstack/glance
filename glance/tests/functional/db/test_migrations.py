@@ -23,6 +23,7 @@ from alembic import script as alembic_script
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import test_fixtures
 from oslo_db.sqlalchemy import test_migrations
+from sqlalchemy import sql
 import sqlalchemy.types as types
 
 from glance.db.sqlalchemy import alembic_migrations
@@ -154,21 +155,29 @@ class TestMysqlMigrations(test_fixtures.OpportunisticDBTestMixin,
     def test_mysql_innodb_tables(self):
         test_utils.db_sync(engine=self.engine)
 
-        total = self.engine.execute(
-            "SELECT COUNT(*) "
-            "FROM information_schema.TABLES "
-            "WHERE TABLE_SCHEMA='%s'"
-            % self.engine.url.database)
+        with self.engine.connect() as conn:
+            total = conn.execute(
+                sql.text(
+                    "SELECT COUNT(*) "
+                    "FROM information_schema.TABLES "
+                    "WHERE TABLE_SCHEMA=:database"
+                ),
+                {'database': self.engine.url.database},
+            )
         self.assertGreater(total.scalar(), 0, "No tables found. Wrong schema?")
 
-        noninnodb = self.engine.execute(
-            "SELECT count(*) "
-            "FROM information_schema.TABLES "
-            "WHERE TABLE_SCHEMA='%s' "
-            "AND ENGINE!='InnoDB' "
-            "AND TABLE_NAME!='migrate_version'"
-            % self.engine.url.database)
-        count = noninnodb.scalar()
+        with self.engine.connect() as conn:
+            noninnodb = conn.execute(
+                sql.text(
+                    "SELECT count(*) "
+                    "FROM information_schema.TABLES "
+                    "WHERE TABLE_SCHEMA=:database "
+                    "AND ENGINE!='InnoDB' "
+                    "AND TABLE_NAME!='migrate_version'"
+                ),
+                {'database': self.engine.url.database},
+            )
+            count = noninnodb.scalar()
         self.assertEqual(0, count, "%d non InnoDB tables created" % count)
 
 

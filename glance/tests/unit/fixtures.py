@@ -192,27 +192,6 @@ class WarningsFixture(pyfixtures.Fixture):
             message='Using non-integer/slice indices on Row is deprecated ',
         )
 
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
-            message=r'Passing a string to Connection.execute\(\) ',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
-            message=r'The Engine.execute\(\) method is considered legacy ',
-        )
-
-        warnings.filterwarnings(
-            'ignore',
-            module='glance',
-            category=sqla_exc.SADeprecationWarning,
-            message=r'The Executable.execute\(\) method is considered legacy ',
-        )
-
         # Enable general SQLAlchemy warnings also to ensure we're not doing
         # silly stuff. It's possible that we'll need to filter things out here
         # with future SQLAlchemy versions, but that's a good thing

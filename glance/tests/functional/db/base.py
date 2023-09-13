@@ -2104,7 +2104,7 @@ class DBPurgeTests(test_utils.BaseTestCase):
 
         dialect = engine.url.get_dialect()
         if dialect == sqlite.dialect:
-            connection.execute("PRAGMA foreign_keys = ON")
+            connection.exec_driver_sql("PRAGMA foreign_keys = ON")
 
         images = sqlalchemyutils.get_table(
             engine, "images")
