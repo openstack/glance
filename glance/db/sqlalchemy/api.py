@@ -82,7 +82,10 @@ def _create_facade_lazily():
     if _FACADE is None:
         with _LOCK:
             if _FACADE is None:
-                _FACADE = oslo_db_session.EngineFacade.from_config(CONF)
+                _FACADE = oslo_db_session.EngineFacade.from_config(
+                    CONF,
+                    sqlite_fk=True,
+                )
 
                 if CONF.profiler.enabled and CONF.profiler.trace_sqlalchemy:
                     osprofiler.sqlalchemy.add_tracing(sqlalchemy,
