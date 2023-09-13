@@ -127,7 +127,7 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
 
         self.assertEqual(4, len(rows))
         for row in rows:
-            self.assertIsNone(row['visibility'])
+            self.assertIsNone(row.visibility)
 
         # run data migrations
         data_migrations.migrate(engine)
@@ -139,21 +139,21 @@ class TestOcataMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
             ).fetchall()
         self.assertEqual(4, len(rows))
         # private_id_1 has private visibility
-        self.assertEqual('private_id_1', rows[0]['id'])
+        self.assertEqual('private_id_1', rows[0].id)
         # TODO(rosmaita): bug #1745003
-        #   self.assertEqual('private', rows[0]['visibility'])
+        #   self.assertEqual('private', rows[0].visibility)
         # private_id_2 has private visibility
-        self.assertEqual('private_id_2', rows[1]['id'])
+        self.assertEqual('private_id_2', rows[1].id)
         # TODO(rosmaita): bug #1745003
-        #   self.assertEqual('private', rows[1]['visibility'])
+        #   self.assertEqual('private', rows[1].visibility)
         # public_id has public visibility
-        self.assertEqual('public_id', rows[2]['id'])
+        self.assertEqual('public_id', rows[2].id)
         # TODO(rosmaita): bug #1745003
-        #   self.assertEqual('public', rows[2]['visibility'])
+        #   self.assertEqual('public', rows[2].visibility)
         # shared_id has shared visibility
-        self.assertEqual('shared_id', rows[3]['id'])
+        self.assertEqual('shared_id', rows[3].id)
         # TODO(rosmaita): bug #1745003
-        #  self.assertEqual('shared', rows[3]['visibility'])
+        #  self.assertEqual('shared', rows[3].visibility)
 
 
 class TestOcataMigrate01MySQL(

@@ -84,7 +84,7 @@ class TestTrainMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
 
         self.assertEqual(2, len(rows))
         for row in rows:
-            self.assertIn('"backend":', row['meta_data'])
+            self.assertIn('"backend":', row.meta_data)
 
         # run data migrations
         data_migrations.migrate(engine, release='train')
@@ -97,8 +97,8 @@ class TestTrainMigrate01Mixin(test_migrations.AlembicMigrationsMixin):
 
         self.assertEqual(2, len(rows))
         for row in rows:
-            self.assertNotIn('"backend":', row['meta_data'])
-            self.assertIn('"store":', row['meta_data'])
+            self.assertNotIn('"backend":', row.meta_data)
+            self.assertIn('"store":', row.meta_data)
 
 
 class TestTrainMigrate01MySQL(
