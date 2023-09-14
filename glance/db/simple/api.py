@@ -1496,8 +1496,7 @@ def metadef_object_delete(context, namespace_name, object_name):
     return object
 
 
-def metadef_object_delete_namespace_content(context, namespace_name,
-                                            session=None):
+def metadef_object_delete_namespace_content(context, namespace_name):
     """Delete an object or raise if namespace or object doesn't exist."""
     return _metadef_delete_namespace_content(
         metadef_object_get_all, 'metadef_objects', context, namespace_name)
@@ -1678,8 +1677,7 @@ def metadef_property_delete(context, namespace_name, property_name):
     return property
 
 
-def metadef_property_delete_namespace_content(context, namespace_name,
-                                              session=None):
+def metadef_property_delete_namespace_content(context, namespace_name):
     """Delete a property or raise if it or namespace doesn't exist."""
     return _metadef_delete_namespace_content(
         metadef_property_get_all, 'metadef_properties', context,
@@ -2002,8 +2000,7 @@ def metadef_tag_delete(context, namespace_name, name):
     return tags
 
 
-def metadef_tag_delete_namespace_content(context, namespace_name,
-                                         session=None):
+def metadef_tag_delete_namespace_content(context, namespace_name):
     """Delete an tag or raise if namespace or tag doesn't exist."""
     return _metadef_delete_namespace_content(
         metadef_tag_get_all, 'metadef_tags', context, namespace_name)

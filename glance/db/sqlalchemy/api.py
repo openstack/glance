@@ -2046,12 +2046,12 @@ def metadef_object_delete(context, namespace_name, object_name,
         context, namespace_name, object_name, session)
 
 
-def metadef_object_delete_namespace_content(
-        context, namespace_name, session=None):
+def metadef_object_delete_namespace_content(context, namespace_name):
     """Delete an object or raise if namespace or object doesn't exist."""
-    session = session or get_session()
-    return metadef_object_api.delete_by_namespace_name(
-        context, namespace_name, session)
+    session = get_session()
+    with session.begin():
+        return metadef_object_api.delete_by_namespace_name(
+            context, namespace_name, session)
 
 
 def metadef_object_count(context, namespace_name, session=None):
@@ -2100,12 +2100,12 @@ def metadef_property_delete(context, namespace_name, property_name,
         context, namespace_name, property_name, session)
 
 
-def metadef_property_delete_namespace_content(
-        context, namespace_name, session=None):
+def metadef_property_delete_namespace_content(context, namespace_name):
     """Delete a property or raise if it or namespace doesn't exist."""
-    session = session or get_session()
-    return metadef_property_api.delete_by_namespace_name(
-        context, namespace_name, session)
+    session = get_session()
+    with session.begin():
+        return metadef_property_api.delete_by_namespace_name(
+            context, namespace_name, session)
 
 
 def metadef_property_count(context, namespace_name, session=None):
@@ -2221,12 +2221,12 @@ def metadef_tag_delete(context, namespace_name, name,
         context, namespace_name, name, session)
 
 
-def metadef_tag_delete_namespace_content(
-        context, namespace_name, session=None):
+def metadef_tag_delete_namespace_content(context, namespace_name):
     """Delete an tag or raise if namespace or tag doesn't exist."""
-    session = session or get_session()
-    return metadef_tag_api.delete_by_namespace_name(
-        context, namespace_name, session)
+    session = get_session()
+    with session.begin():
+        return metadef_tag_api.delete_by_namespace_name(
+            context, namespace_name, session)
 
 
 def metadef_tag_count(context, namespace_name, session=None):

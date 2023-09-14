@@ -93,7 +93,7 @@ def get_metadef_tags_table(meta, engine):
 
 def _get_resource_type_id(meta, engine, name):
     rt_table = get_metadef_resource_types_table(meta, engine)
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         resource_type = conn.execute(
             select(rt_table.c.id).where(
                 rt_table.c.name == name
@@ -106,7 +106,7 @@ def _get_resource_type_id(meta, engine, name):
 
 def _get_resource_type(meta, engine, resource_type_id):
     rt_table = get_metadef_resource_types_table(meta, engine)
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         return conn.execute(
             rt_table.select().where(
                 rt_table.c.id == resource_type_id
@@ -117,7 +117,7 @@ def _get_resource_type(meta, engine, resource_type_id):
 def _get_namespace_resource_types(meta, engine, namespace_id):
     namespace_resource_types_table = (
         get_metadef_namespace_resource_types_table(meta, engine))
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         return conn.execute(
             namespace_resource_types_table.select().where(
                 namespace_resource_types_table.c.namespace_id == namespace_id
@@ -128,7 +128,7 @@ def _get_namespace_resource_types(meta, engine, namespace_id):
 def _get_namespace_resource_type_by_ids(meta, engine, namespace_id, rt_id):
     namespace_resource_types_table = (
         get_metadef_namespace_resource_types_table(meta, engine))
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         return conn.execute(
             namespace_resource_types_table.select().where(and_(
                 namespace_resource_types_table.c.namespace_id == namespace_id,
@@ -139,7 +139,7 @@ def _get_namespace_resource_type_by_ids(meta, engine, namespace_id, rt_id):
 
 def _get_properties(meta, engine, namespace_id):
     properties_table = get_metadef_properties_table(meta, engine)
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         return conn.execute(
             properties_table.select().where(
                 properties_table.c.namespace_id == namespace_id
@@ -149,7 +149,7 @@ def _get_properties(meta, engine, namespace_id):
 
 def _get_objects(meta, engine, namespace_id):
     objects_table = get_metadef_objects_table(meta, engine)
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         return conn.execute(
             objects_table.select().where(
                 objects_table.c.namespace_id == namespace_id)
@@ -158,7 +158,7 @@ def _get_objects(meta, engine, namespace_id):
 
 def _get_tags(meta, engine, namespace_id):
     tags_table = get_metadef_tags_table(meta, engine)
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         return conn.execute(
             tags_table.select().where(
                 tags_table.c.namespace_id == namespace_id
@@ -167,7 +167,7 @@ def _get_tags(meta, engine, namespace_id):
 
 
 def _get_resource_id(table, engine, namespace_id, resource_name):
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         resource = conn.execute(
             select(table.c.id).where(
                 and_(
@@ -189,7 +189,7 @@ def _clear_metadata(meta, engine):
                       get_metadef_namespaces_table(meta, engine),
                       get_metadef_resource_types_table(meta, engine)]
 
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         for table in metadef_tables:
             conn.execute(table.delete())
             LOG.info(_LI("Table %s has been cleared"), table)
@@ -202,7 +202,7 @@ def _clear_namespace_metadata(meta, engine, namespace_id):
                       get_metadef_namespace_resource_types_table(meta, engine)]
     namespaces_table = get_metadef_namespaces_table(meta, engine)
 
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         for table in metadef_tables:
             conn.execute(
                 table.delete().where(table.c.namespace_id == namespace_id))
@@ -262,7 +262,7 @@ def _populate_metadata(meta, engine, metadata_path=None, merge=False,
             'owner': metadata.get('owner', 'admin')
         }
 
-        with engine.connect() as conn:
+        with engine.connect() as conn, conn.begin():
             db_namespace = conn.execute(
                 select(
                     namespaces_table.c.id
@@ -282,7 +282,7 @@ def _populate_metadata(meta, engine, metadata_path=None, merge=False,
             values.update({'created_at': timeutils.utcnow()})
             _insert_data_to_db(engine, namespaces_table, values)
 
-            with engine.connect() as conn:
+            with engine.connect() as conn, conn.begin():
                 db_namespace = conn.execute(
                     select(
                         namespaces_table.c.id
@@ -393,7 +393,7 @@ def _populate_metadata(meta, engine, metadata_path=None, merge=False,
 
 def _insert_data_to_db(engine, table, values, log_exception=True):
     try:
-        with engine.connect() as conn:
+        with engine.connect() as conn, conn.begin():
             conn.execute(table.insert().values(values))
     except sqlalchemy.exc.IntegrityError:
         if log_exception:
@@ -402,7 +402,7 @@ def _insert_data_to_db(engine, table, values, log_exception=True):
 
 def _update_data_in_db(engine, table, values, column, value):
     try:
-        with engine.connect() as conn:
+        with engine.connect() as conn, conn.begin():
             conn.execute(
                 table.update().values(values).where(column == value)
             )
@@ -412,7 +412,7 @@ def _update_data_in_db(engine, table, values, column, value):
 
 def _update_rt_association(engine, table, values, rt_id, namespace_id):
     try:
-        with engine.connect() as conn:
+        with engine.connect() as conn, conn.begin():
             conn.execute(
                 table.update().values(values).where(
                     and_(
@@ -430,7 +430,7 @@ def _export_data_to_file(meta, engine, path):
         path = CONF.metadata_source_path
 
     namespace_table = get_metadef_namespaces_table(meta)
-    with engine.connect() as conn:
+    with engine.connect() as conn, conn.begin():
         namespaces = conn.execute(namespace_table.select()).fetchall()
 
     pattern = re.compile(r'[\W_]+', re.UNICODE)
