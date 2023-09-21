@@ -262,6 +262,11 @@
     vars:
       configure_swap_size: 4096
       nslookup_target: 'opendev.org'
+      devstack_local_conf:
+        post-config:
+          $GLANCE_API_CONF:
+            wsgi:
+              python_interpreter: $PYTHON
       devstack_localrc:
         USE_CINDER_FOR_GLANCE: True
         GLANCE_ENABLE_MULTIPLE_STORES: True
