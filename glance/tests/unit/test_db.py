@@ -956,7 +956,7 @@ class RetryOnDeadlockTestCase(test_utils.BaseTestCase):
             sess.side_effect = _mock_get_session()
 
             try:
-                api._image_update(None, {}, 'fake-id')
+                api.image_update(None, 'fake-id', {})
             except TestException:
                 self.assertEqual(3, sess.call_count)
 
@@ -973,17 +973,19 @@ class RetryOnDeadlockTestCase(test_utils.BaseTestCase):
 
 class TestImageDeleteRace(test_utils.BaseTestCase):
 
+    @mock.patch.object(api, 'get_session')
     @mock.patch.object(api, 'LOG')
-    def test_image_property_delete_stale_data(self, mock_LOG):
+    def test_image_property_delete_stale_data(
+        self, mock_LOG, mock_get_session,
+    ):
         mock_context = mock.MagicMock()
-        mock_session = mock.MagicMock()
+        mock_session = mock_get_session.return_value
         mock_result = (mock_session.query.return_value.
                        filter_by.return_value.
                        one.return_value)
         mock_result.delete.side_effect = sa_orm.exc.StaleDataError('myerror')
         # StaleDataError should not be raised
-        r = api.image_property_delete(mock_context, 'myprop', 'myimage',
-                                      session=mock_session)
+        r = api.image_property_delete(mock_context, 'myprop', 'myimage')
         # We should not get the property back
         self.assertIsNone(r)
         # Make sure we logged it
@@ -993,9 +995,10 @@ class TestImageDeleteRace(test_utils.BaseTestCase):
             '%(err)s', {'prop': 'myprop', 'image': 'myimage',
                         'err': 'myerror'})
 
-    def test_image_property_delete_exception(self):
+    @mock.patch.object(api, 'get_session')
+    def test_image_property_delete_exception(self, mock_get_session):
         mock_context = mock.MagicMock()
-        mock_session = mock.MagicMock()
+        mock_session = mock_get_session.return_value
         mock_result = (mock_session.query.return_value.
                        filter_by.return_value.
                        one.return_value)
@@ -1003,5 +1006,4 @@ class TestImageDeleteRace(test_utils.BaseTestCase):
         # Any other exception should be raised
         self.assertRaises(RuntimeError,
                           api.image_property_delete,
-                          mock_context, 'myprop', 'myimage',
-                          session=mock_session)
+                          mock_context, 'myprop', 'myimage')

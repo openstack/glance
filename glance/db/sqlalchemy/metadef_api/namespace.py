@@ -279,25 +279,24 @@ def delete_cascade(context, name, session):
     """Raise if not found, has references or not visible"""
 
     namespace_rec = _get_by_name(context, name, session)
-    with session.begin():
-        try:
-            metadef_api.tag.delete_namespace_content(
-                context, namespace_rec.id, session)
-            metadef_api.object.delete_namespace_content(
-                context, namespace_rec.id, session)
-            metadef_api.property.delete_namespace_content(
-                context, namespace_rec.id, session)
-            metadef_api.resource_type_association.delete_namespace_content(
-                context, namespace_rec.id, session)
-            session.delete(namespace_rec)
-            session.flush()
-        except db_exc.DBError as e:
-            if isinstance(e.inner_exception, sa_exc.IntegrityError):
-                LOG.debug("Metadata definition namespace=%s not deleted. "
-                          "Other records still refer to it.", name)
-                raise exc.MetadefIntegrityError(
-                    record_type='namespace', record_name=name)
-            else:
-                raise
+    try:
+        metadef_api.tag.delete_namespace_content(
+            context, namespace_rec.id, session)
+        metadef_api.object.delete_namespace_content(
+            context, namespace_rec.id, session)
+        metadef_api.property.delete_namespace_content(
+            context, namespace_rec.id, session)
+        metadef_api.resource_type_association.delete_namespace_content(
+            context, namespace_rec.id, session)
+        session.delete(namespace_rec)
+        session.flush()
+    except db_exc.DBError as e:
+        if isinstance(e.inner_exception, sa_exc.IntegrityError):
+            LOG.debug("Metadata definition namespace=%s not deleted. "
+                      "Other records still refer to it.", name)
+            raise exc.MetadefIntegrityError(
+                record_type='namespace', record_name=name)
+        else:
+            raise
 
     return namespace_rec.to_dict()

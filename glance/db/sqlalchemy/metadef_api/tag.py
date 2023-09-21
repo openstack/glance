@@ -118,19 +118,18 @@ def create_tags(context, namespace_name, tag_list, can_append, session):
         namespace = namespace_api.get(context, namespace_name, session)
 
         try:
-            with session.begin():
-                if not can_append:
-                    query = (session.query(models.MetadefTag).filter_by(
-                             namespace_id=namespace['id']))
-                    query.delete(synchronize_session='fetch')
-                for value in tag_list:
-                    value.update({'namespace_id': namespace['id']})
-                    metadef_utils.drop_protected_attrs(
-                        models.MetadefTag, value)
-                    metadef_tag = models.MetadefTag()
-                    metadef_tag.update(value.copy())
-                    metadef_tag.save(session=session)
-                    metadef_tags_list.append(metadef_tag.to_dict())
+            if not can_append:
+                query = (session.query(models.MetadefTag).filter_by(
+                         namespace_id=namespace['id']))
+                query.delete(synchronize_session='fetch')
+            for value in tag_list:
+                value.update({'namespace_id': namespace['id']})
+                metadef_utils.drop_protected_attrs(
+                    models.MetadefTag, value)
+                metadef_tag = models.MetadefTag()
+                metadef_tag.update(value.copy())
+                metadef_tag.save(session=session)
+                metadef_tags_list.append(metadef_tag.to_dict())
         except db_exc.DBDuplicateEntry:
             LOG.debug("A metadata tag name=%(name)s"
                       " in namespace=%(namespace_name)s already exists.",
