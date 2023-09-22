@@ -38,7 +38,7 @@
     description: |
       Glance py39 functional tests vs. sqlalchemy and relatedd project masters
     # The job only tests the latest and shouldn't be run on the stable branches
-    branches: ^(?!stable)
+    branches: master
     required-projects:
       - name: openstack/oslo.db
       - name: github.com/sqlalchemy/sqlalchemy
