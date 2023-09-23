@@ -28,7 +28,7 @@ from glance.i18n import _LW
 LOG = logging.getLogger(__name__)
 
 
-def _get(context, id, session):
+def _get(context, session, id):
     try:
         query = (session.query(models.MetadefTag).filter_by(id=id))
         metadef_tag = query.one()
@@ -39,8 +39,8 @@ def _get(context, id, session):
     return metadef_tag
 
 
-def _get_by_name(context, namespace_name, name, session):
-    namespace = namespace_api.get(context, namespace_name, session)
+def _get_by_name(context, session, namespace_name, name):
+    namespace = namespace_api.get(context, session, namespace_name)
     try:
         query = (session.query(models.MetadefTag).filter_by(
             name=name, namespace_id=namespace['id']))
@@ -54,7 +54,7 @@ def _get_by_name(context, namespace_name, name, session):
     return metadef_tag
 
 
-def get_all(context, namespace_name, session, filters=None, marker=None,
+def get_all(context, session, namespace_name, filters=None, marker=None,
             limit=None, sort_key='created_at', sort_dir='desc'):
     """Get all tags that match zero or more filters.
 
@@ -65,13 +65,13 @@ def get_all(context, namespace_name, session, filters=None, marker=None,
     :param sort_dir: direction in which results should be sorted (asc, desc)
     """
 
-    namespace = namespace_api.get(context, namespace_name, session)
+    namespace = namespace_api.get(context, session, namespace_name)
     query = (session.query(models.MetadefTag).filter_by(
         namespace_id=namespace['id']))
 
     marker_tag = None
     if marker is not None:
-        marker_tag = _get(context, marker, session)
+        marker_tag = _get(context, session, marker)
 
     sort_keys = ['created_at', 'id']
     sort_keys.insert(0, sort_key) if sort_key not in sort_keys else sort_keys
@@ -89,8 +89,8 @@ def get_all(context, namespace_name, session, filters=None, marker=None,
     return metadef_tag_list
 
 
-def create(context, namespace_name, values, session):
-    namespace = namespace_api.get(context, namespace_name, session)
+def create(context, session, namespace_name, values):
+    namespace = namespace_api.get(context, session, namespace_name)
     values.update({'namespace_id': namespace['id']})
 
     metadef_tag = models.MetadefTag()
@@ -111,11 +111,11 @@ def create(context, namespace_name, values, session):
     return metadef_tag.to_dict()
 
 
-def create_tags(context, namespace_name, tag_list, can_append, session):
+def create_tags(context, session, namespace_name, tag_list, can_append):
 
     metadef_tags_list = []
     if tag_list:
-        namespace = namespace_api.get(context, namespace_name, session)
+        namespace = namespace_api.get(context, session, namespace_name)
 
         try:
             if not can_append:
@@ -141,16 +141,16 @@ def create_tags(context, namespace_name, tag_list, can_append, session):
     return metadef_tags_list
 
 
-def get(context, namespace_name, name, session):
-    metadef_tag = _get_by_name(context, namespace_name, name, session)
+def get(context, session, namespace_name, name):
+    metadef_tag = _get_by_name(context, session, namespace_name, name)
     return metadef_tag.to_dict()
 
 
-def update(context, namespace_name, id, values, session):
+def update(context, session, namespace_name, id, values):
     """Update an tag, raise if ns not found/visible or duplicate result"""
-    namespace_api.get(context, namespace_name, session)
+    namespace_api.get(context, session, namespace_name)
 
-    metadata_tag = _get(context, id, session)
+    metadata_tag = _get(context, session, id)
     metadef_utils.drop_protected_attrs(models.MetadefTag, values)
     # values['updated_at'] = timeutils.utcnow() - done by TS mixin
     try:
@@ -168,9 +168,9 @@ def update(context, namespace_name, id, values, session):
     return metadata_tag.to_dict()
 
 
-def delete(context, namespace_name, name, session):
-    namespace_api.get(context, namespace_name, session)
-    md_tag = _get_by_name(context, namespace_name, name, session)
+def delete(context, session, namespace_name, name):
+    namespace_api.get(context, session, namespace_name)
+    md_tag = _get_by_name(context, session, namespace_name, name)
 
     session.delete(md_tag)
     session.flush()
@@ -178,7 +178,7 @@ def delete(context, namespace_name, name, session):
     return md_tag.to_dict()
 
 
-def delete_namespace_content(context, namespace_id, session):
+def delete_namespace_content(context, session, namespace_id):
     """Use this def only if the ns for the id has been verified as visible"""
     count = 0
     query = (session.query(models.MetadefTag).filter_by(
@@ -187,14 +187,14 @@ def delete_namespace_content(context, namespace_id, session):
     return count
 
 
-def delete_by_namespace_name(context, namespace_name, session):
-    namespace = namespace_api.get(context, namespace_name, session)
-    return delete_namespace_content(context, namespace['id'], session)
+def delete_by_namespace_name(context, session, namespace_name):
+    namespace = namespace_api.get(context, session, namespace_name)
+    return delete_namespace_content(context, session, namespace['id'])
 
 
-def count(context, namespace_name, session):
+def count(context, session, namespace_name):
     """Get the count of objects for a namespace, raise if ns not found"""
-    namespace = namespace_api.get(context, namespace_name, session)
+    namespace = namespace_api.get(context, session, namespace_name)
     query = (session.query(func.count(models.MetadefTag.id)).filter_by(
         namespace_id=namespace['id']))
     return query.scalar()

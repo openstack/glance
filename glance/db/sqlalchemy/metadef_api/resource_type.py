@@ -25,7 +25,7 @@ from glance.db.sqlalchemy import models_metadef as models
 LOG = logging.getLogger(__name__)
 
 
-def get(context, name, session):
+def get(context, session, name):
     """Get a resource type, raise if not found"""
 
     try:
@@ -52,7 +52,7 @@ def get_all(context, session):
     return resource_types_list
 
 
-def create(context, values, session):
+def create(context, session, values):
     """Create a resource_type, raise if it already exists."""
 
     resource_type = models.MetadefResourceType()
@@ -70,22 +70,22 @@ def create(context, values, session):
     return resource_type.to_dict()
 
 
-def update(context, values, session):
+def update(context, session, values):
     """Update a resource type, raise if not found"""
 
     name = values['name']
     metadef_utils.drop_protected_attrs(models.MetadefResourceType, values)
-    db_rec = get(context, name, session)
+    db_rec = get(context, session, name)
     db_rec.update(values.copy())
     db_rec.save(session=session)
 
     return db_rec.to_dict()
 
 
-def delete(context, name, session):
+def delete(context, session, name):
     """Delete a resource type or raise if not found or is protected"""
 
-    db_rec = get(context, name, session)
+    db_rec = get(context, session, name)
     if db_rec.protected is True:
         LOG.debug("Delete forbidden. Metadata definition resource-type %s is a"
                   " seeded-system type and can not be deleted.", name)
