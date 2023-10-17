@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2012 Michael Still and Canonical Inc
 # Copyright 2014 SoftLayer Technologies, Inc.
