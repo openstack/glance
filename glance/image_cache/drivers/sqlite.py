@@ -36,8 +36,17 @@ from glance.image_cache.drivers import base
 
 LOG = logging.getLogger(__name__)
 
+DEPRECATION_REASON = """
+As centralized database will now be used for image cache management, the use
+of `sqlite` database and driver will be dropped from 'E' (2025.1)
+development cycle.
+"""
+
 sqlite_opts = [
     cfg.StrOpt('image_cache_sqlite_db', default='cache.db',
+               deprecated_for_removal=True,
+               deprecated_reason=DEPRECATION_REASON,
+               deprecated_since='Caracal (2024.1)',
                help=_("""
 The relative path to sqlite file database that will be used for image cache
 management.
@@ -111,6 +120,7 @@ class Driver(base.Driver):
         this method. If the store was not able to successfully configure
         itself, it should raise `exception.BadDriverConfiguration`
         """
+        LOG.warning(_(DEPRECATION_REASON))
         super(Driver, self).configure()
 
         # Create the SQLite database that will hold our cache attributes

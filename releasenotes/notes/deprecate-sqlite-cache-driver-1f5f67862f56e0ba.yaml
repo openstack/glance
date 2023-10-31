@@ -1,0 +1,11 @@
+---
+deprecations:
+  - |
+    The Glance cache driver ``sqlite`` is deprecated in this release and
+    is subject to removal at the beginning of the `E`  (2025.1)
+    development cycle, following the `OpenStack standard deprecation policy
+    <https://governance.openstack.org/reference/tags/assert_follows-standard-deprecation.html>`_.
+
+    The configuration option ``image_cache_sqlite_db`` related to ``sqlite``
+    cache driver is also deprecated and is subject to removal at the
+    beginning of `E` (2025.1) development cycle.
