@@ -15,6 +15,7 @@
 
 from contextlib import contextmanager
 import datetime
+import errno
 import io
 import os
 import tempfile
@@ -24,6 +25,7 @@ from unittest import mock
 import fixtures
 import glance_store as store
 from oslo_config import cfg
+from oslo_utils import fileutils
 from oslo_utils import secretutils
 from oslo_utils import units
 
@@ -129,6 +131,32 @@ class ImageCacheTestCase(object):
         for image_id in (1, 2):
             self.assertFalse(self.cache.is_cached(image_id))
 
+    def _test_clean_invalid_path(self, failure=False):
+        invalid_file_path = os.path.join(self.cache_dir, 'invalid', '1')
+        invalid_file = open(invalid_file_path, 'wb')
+        invalid_file.write(FIXTURE_DATA)
+        invalid_file.close()
+
+        self.assertTrue(os.path.exists(invalid_file_path))
+
+        self.delay_inaccurate_clock()
+        if failure:
+            with mock.patch.object(
+                    fileutils, 'delete_if_exists') as mock_delete:
+                mock_delete.side_effect = OSError(errno.ENOENT, '')
+                try:
+                    self.cache.clean()
+                except OSError:
+                    self.assertTrue(os.path.exists(invalid_file_path))
+        else:
+            self.cache.clean()
+            self.assertFalse(os.path.exists(invalid_file_path))
+
+    @skip_if_disabled
+    def test_clean_invalid_path(self):
+        """Test the clean method removes expected image from invalid path."""
+        self._test_clean_invalid_path()
+
     @skip_if_disabled
     def test_clean_stalled(self):
         """Test the clean method removes expected images."""
@@ -144,8 +172,8 @@ class ImageCacheTestCase(object):
 
         self.assertFalse(os.path.exists(incomplete_file_path))
 
-    @skip_if_disabled
-    def test_clean_stalled_nonzero_stall_time(self):
+    def _test_clean_stall_time(self, stall_time=None, days=2,
+                               stall_failed=False):
         """
         Test the clean method removes the stalled images as expected
         """
@@ -160,7 +188,7 @@ class ImageCacheTestCase(object):
 
         mtime = os.path.getmtime(incomplete_file_path_1)
         pastday = (datetime.datetime.fromtimestamp(mtime) -
-                   datetime.timedelta(days=1))
+                   datetime.timedelta(days=days))
         atime = int(time.mktime(pastday.timetuple()))
         mtime = atime
         os.utime(incomplete_file_path_1, (atime, mtime))
@@ -168,10 +196,28 @@ class ImageCacheTestCase(object):
         self.assertTrue(os.path.exists(incomplete_file_path_1))
         self.assertTrue(os.path.exists(incomplete_file_path_2))
 
-        self.cache.clean(stall_time=3600)
+        # If stall_time is None then it will wait for default time
+        # of `image_cache_stall_time` which is 24 hours
+        if stall_failed:
+            with mock.patch.object(
+                    fileutils, 'delete_if_exists') as mock_delete:
+                mock_delete.side_effect = OSError(errno.ENOENT, '')
+                self.cache.clean(stall_time=stall_time)
+                self.assertTrue(os.path.exists(incomplete_file_path_1))
+        else:
+            self.cache.clean(stall_time=stall_time)
+            self.assertFalse(os.path.exists(incomplete_file_path_1))
 
-        self.assertFalse(os.path.exists(incomplete_file_path_1))
         self.assertTrue(os.path.exists(incomplete_file_path_2))
+
+    @skip_if_disabled
+    def test_clean_stalled_none_stall_time(self):
+        self._test_clean_stall_time()
+
+    @skip_if_disabled
+    def test_clean_stalled_nonzero_stall_time(self):
+        """Test the clean method removes expected images."""
+        self._test_clean_stall_time(stall_time=3600, days=1)
 
     @skip_if_disabled
     def test_prune(self):
@@ -279,6 +325,19 @@ class ImageCacheTestCase(object):
         self.assertFalse(self.cache.queue_image(1))
 
         self.cache.delete_cached_image(1)
+
+        # Test that we return false if image is being cached
+        incomplete_file_path = os.path.join(self.cache_dir, 'incomplete', '1')
+        incomplete_file = open(incomplete_file_path, 'wb')
+        incomplete_file.write(FIXTURE_DATA)
+        incomplete_file.close()
+
+        self.assertFalse(self.cache.is_queued(1))
+        self.assertFalse(self.cache.is_cached(1))
+        self.assertTrue(self.cache.driver.is_being_cached(1))
+
+        self.assertFalse(self.cache.queue_image(1))
+        self.cache.clean(stall_time=0)
 
         for x in range(3):
             self.assertTrue(self.cache.queue_image(x))
@@ -421,7 +480,11 @@ class ImageCacheTestCase(object):
         md5.update(image)
         checksum = md5.hexdigest()
 
-        cache = image_cache.ImageCache()
+        with mock.patch('glance.db.get_api') as mock_get_db:
+            db = unit_test_utils.FakeDB(initialize=False)
+            mock_get_db.return_value = db
+            cache = image_cache.ImageCache()
+
         img_iter = cache.get_caching_iter(image_id, checksum, [image])
         for chunk in img_iter:
             pass
@@ -434,7 +497,11 @@ class ImageCacheTestCase(object):
         image_id = 123
         checksum = "foobar"  # bad.
 
-        cache = image_cache.ImageCache()
+        with mock.patch('glance.db.get_api') as mock_get_db:
+            db = unit_test_utils.FakeDB(initialize=False)
+            mock_get_db.return_value = db
+            cache = image_cache.ImageCache()
+
         img_iter = cache.get_caching_iter(image_id, checksum, [image])
 
         def reader():
@@ -484,6 +551,68 @@ class TestImageCacheXattr(test_utils.BaseTestCase,
             self.disabled = True
             self.disabled_message = ("filesystem does not support xattr")
             return
+
+
+class TestImageCacheCentralizedDb(test_utils.BaseTestCase,
+                                  ImageCacheTestCase):
+
+    """Tests image caching when Centralized DB is used in cache"""
+
+    def setUp(self):
+        super(TestImageCacheCentralizedDb, self).setUp()
+
+        self.inited = True
+        self.disabled = False
+        self.cache_dir = self.useFixture(fixtures.TempDir()).path
+        self.config(image_cache_dir=self.cache_dir,
+                    image_cache_driver='centralized_db',
+                    image_cache_max_size=5 * units.Ki,
+                    worker_self_reference_url='http://workerx')
+
+        with mock.patch('glance.db.get_api') as mock_get_db:
+            self.db = unit_test_utils.FakeDB(initialize=False)
+            mock_get_db.return_value = self.db
+            self.cache = image_cache.ImageCache()
+
+    def test_node_reference_create_duplicate(self):
+        with mock.patch('glance.db.get_api') as mock_get_db:
+            self.db = unit_test_utils.FakeDB(initialize=False)
+            mock_get_db.return_value = self.db
+            with mock.patch.object(
+                    self.db, 'node_reference_create') as mock_node_create:
+                mock_node_create.side_effect = exception.Duplicate
+                with mock.patch.object(
+                        image_cache.drivers.centralized_db, 'LOG') as mock_log:
+                    image_cache.ImageCache()
+                    expected_calls = [
+                        mock.call('Node reference is already recorded, '
+                                  'ignoring it')
+                    ]
+                    mock_log.debug.assert_has_calls(expected_calls)
+
+    def test_get_least_recently_accessed_os_error(self):
+        self.assertEqual(0, self.cache.get_cache_size())
+        for x in range(10):
+            FIXTURE_FILE = io.BytesIO(FIXTURE_DATA)
+            self.assertTrue(self.cache.cache_image_file(x, FIXTURE_FILE))
+
+        self.assertEqual(10 * units.Ki, self.cache.get_cache_size())
+
+        with mock.patch.object(os, 'stat') as mock_stat:
+            mock_stat.side_effect = OSError
+            image_id, size = self.cache.driver.get_least_recently_accessed()
+            self.assertEqual(0, size)
+
+    @skip_if_disabled
+    def test_clean_stalled_fails(self):
+        """Test the clean method fails to delete file, ignores the failure"""
+        self._test_clean_stall_time(stall_time=3600, days=1,
+                                    stall_failed=True)
+
+    @skip_if_disabled
+    def test_clean_invalid_path_fails(self):
+        """Test the clean method fails to remove image from invalid path."""
+        self._test_clean_invalid_path(failure=True)
 
 
 class TestImageCacheSqlite(test_utils.BaseTestCase,
