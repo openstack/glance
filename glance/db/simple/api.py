@@ -31,6 +31,7 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 DATA = {
+    'cached_images': {},
     'images': {},
     'members': [],
     'metadef_namespace_resource_types': [],
@@ -39,6 +40,7 @@ DATA = {
     'metadef_properties': [],
     'metadef_resource_types': [],
     'metadef_tags': [],
+    'node_reference': {},
     'tags': {},
     'locations': [],
     'tasks': {},
@@ -76,6 +78,7 @@ def configure():
 def reset():
     global DATA
     DATA = {
+        'cached_images': {},
         'images': {},
         'members': [],
         'metadef_namespace_resource_types': [],
@@ -84,6 +87,7 @@ def reset():
         'metadef_properties': [],
         'metadef_resource_types': [],
         'metadef_tags': [],
+        'node_reference': {},
         'tags': {},
         'locations': [],
         'tasks': {},
@@ -2136,3 +2140,162 @@ def _get_metadef_id():
     global INDEX
     INDEX += 1
     return INDEX
+
+
+def _cached_image_format(cached_image):
+    """Format a cached image for consumption outside of this module"""
+    image_dict = {
+        'id': cached_image['id'],
+        'image_id': cached_image['image_id'],
+        'last_accessed': cached_image['last_accessed'].timestamp(),
+        'last_modified': cached_image['last_modified'].timestamp(),
+        'size': cached_image['size'],
+        'hits': cached_image['hits'],
+        'checksum': cached_image['checksum']
+    }
+
+    return image_dict
+
+
+@log_call
+def node_reference_get_by_url(context, node_reference_url):
+    global DATA
+    db_data = DATA['node_reference']
+    for node_reference in db_data:
+        if db_data[node_reference]['node_reference_url'] == node_reference_url:
+            return db_data[node_reference]
+    else:
+        raise exception.NotFound()
+
+
+@log_call
+def node_reference_create(context, node_reference_url, **values):
+    global DATA
+    node_reference_id = values.get('node_reference_id', 1)
+
+    if node_reference_id in DATA['node_reference']:
+        raise exception.Duplicate()
+
+    node_reference = {
+        'node_reference_id': node_reference_id,
+        'node_reference_url': node_reference_url
+    }
+
+    DATA['node_reference'][node_reference_id] = node_reference
+    return node_reference
+
+
+@log_call
+def get_hit_count(context, image_id, node_reference_url):
+    global DATA
+    if image_id not in DATA['cached_images']:
+        return 0
+
+    cached_image = _cached_image_format(DATA['cached_images'][image_id])
+    return cached_image['hits']
+
+
+@log_call
+def get_cached_images(context, node_reference_url):
+    global DATA
+    node_reference = node_reference_get_by_url(context, node_reference_url)
+    all_images = DATA['cached_images']
+    cached_images = []
+    for image_id in all_images:
+        if all_images[image_id]['node_reference_id'] == \
+                node_reference['node_reference_id']:
+            cached_images.append(_cached_image_format(all_images[image_id]))
+
+    return cached_images
+
+
+@log_call
+def delete_all_cached_images(context, node_reference_url):
+    global DATA
+    node_reference = node_reference_get_by_url(context, node_reference_url)
+    all_images = all_images = tuple(DATA['cached_images'].keys())
+    for image_id in all_images:
+        if DATA['cached_images'][image_id]['node_reference_id'] == \
+                node_reference['node_reference_id']:
+            del DATA['cached_images'][image_id]
+
+
+@log_call
+def delete_cached_image(context, image_id, node_reference_url):
+    global DATA
+    node_reference = node_reference_get_by_url(context, node_reference_url)
+    all_images = tuple(DATA['cached_images'].keys())
+    for image in all_images:
+        if DATA['cached_images'][image]['node_reference_id'] == \
+                node_reference['node_reference_id'] and image_id == \
+                DATA['cached_images'][image]['image_id']:
+            del DATA['cached_images'][image]
+            break
+
+
+@log_call
+def get_least_recently_accessed(context, node_reference_url):
+    global DATA
+    all_images = get_cached_images(context, node_reference_url)
+    if all_images:
+        return all_images[0]['image_id']
+    return None
+
+
+@log_call
+def is_image_cached_for_node(context, node_reference_url, image_id):
+    global DATA
+    node_reference = node_reference_get_by_url(context, node_reference_url)
+    all_images = DATA['cached_images']
+    for image_id in all_images:
+        if all_images[image_id]['node_reference_id'] == \
+                node_reference['node_reference_id'] and image_id == \
+                all_images[image_id]['image_id']:
+            return True
+    return False
+
+
+@log_call
+def insert_cache_details(context, node_reference_url, image_id,
+                         size, checksum=None, last_accessed=None,
+                         last_modified=None, hits=None):
+    global DATA
+    node_reference = node_reference_get_by_url(context, node_reference_url)
+    accessed = last_accessed or timeutils.utcnow()
+    modified = last_modified or timeutils.utcnow()
+
+    values = {
+        'last_accessed': accessed,
+        'last_modified': modified,
+        'node_reference_id': node_reference['node_reference_id'],
+        'checksum': checksum,
+        'image_id': image_id,
+        'size': size,
+        'hits': hits or 0,
+        'id': str(uuid.uuid4()),
+    }
+
+    if image_id in DATA['cached_images']:
+        raise exception.Duplicate()
+
+    DATA['cached_images'][image_id] = values
+
+
+@log_call
+def update_hit_count(context, image_id, node_reference_url):
+    global DATA
+    last_hit_count = get_hit_count(context, image_id, node_reference_url)
+    node_reference = node_reference_get_by_url(context, node_reference_url)
+    all_images = DATA['cached_images']
+    last_accessed = timeutils.utcnow()
+    values = {
+        'hits': last_hit_count + 1,
+        'last_accessed': last_accessed
+    }
+
+    for image_id in all_images:
+        if all_images[image_id]['node_reference_id'] == \
+                node_reference['node_reference_id'] and image_id == \
+                all_images[image_id]['image_id']:
+            all_images[image_id].update(values)
+            break

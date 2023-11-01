@@ -2369,3 +2369,214 @@ def metadef_tag_count(context, namespace_name):
     session = get_session()
     with session.begin():
         return metadef_tag_api.count(context, session, namespace_name)
+
+
+def _cached_image_format(cached_image):
+    """Format a cached image for consumption outside of this module"""
+    image_dict = {
+        'id': cached_image['id'],
+        'image_id': cached_image['image_id'],
+        'last_accessed': cached_image['last_accessed'].timestamp(),
+        'last_modified': cached_image['last_modified'].timestamp(),
+        'size': cached_image['size'],
+        'hits': cached_image['hits'],
+        'checksum': cached_image['checksum']
+    }
+
+    return image_dict
+
+
+def node_reference_get_by_url(context, node_reference_url):
+    """Get a node reference by node reference url"""
+    session = get_session()
+    with session.begin():
+        try:
+            query = session.query(models.NodeReference)
+            query = query.filter_by(node_reference_url=node_reference_url)
+            return query.one()
+        except sa_orm.exc.NoResultFound:
+            msg = _("The node reference %s"
+                    " was not found." % node_reference_url)
+            LOG.debug(msg)
+            raise exception.NotFound(msg)
+
+
+@utils.no_4byte_params
+def node_reference_create(context, node_reference_url):
+    """Create a node_reference  or raise if it already exists."""
+    session = get_session()
+    values = {'node_reference_url': node_reference_url}
+
+    with session.begin():
+        node_reference = models.NodeReference()
+        node_reference.update(values.copy())
+        try:
+            node_reference.save(session=session)
+        except db_exception.DBDuplicateEntry:
+            raise exception.Duplicate()
+
+    return node_reference
+
+
+def get_hit_count(context, image_id, node_reference_url):
+    session = get_session()
+    node_id = models.NodeReference.node_reference_id
+    filters = [
+        models.CachedImages.image_id == image_id,
+        models.NodeReference.node_reference_url == node_reference_url,
+    ]
+    with session.begin():
+        try:
+            query = session.query(
+                models.CachedImages.hits).join(
+                models.NodeReference,
+                node_id == models.CachedImages.node_reference_id,
+                isouter=True).filter(sa_sql.and_(*filters))
+            return query.one()[0]
+        except sa_orm.exc.NoResultFound:
+            msg = _("Referenced %s is not cached on"
+                    " %s." % (image_id, node_reference_url))
+            LOG.debug(msg)
+            # NOTE(abhishekk): Since image is not cached yet, assuming
+            # hit count as 0
+            return 0
+
+
+def get_cached_images(context, node_reference_url):
+    node_id = models.NodeReference.node_reference_id
+    session = get_session()
+    with session.begin():
+        query = session.query(
+            models.CachedImages).join(
+            models.NodeReference,
+            node_id == models.CachedImages.node_reference_id,
+            isouter=True).filter(
+            models.NodeReference.node_reference_url == node_reference_url)
+
+        cached_images = []
+        for image in query.all():
+            cached_images.append(_cached_image_format(image))
+        return cached_images
+
+
+@utils.no_4byte_params
+def delete_all_cached_images(context, node_reference_url):
+    session = get_session()
+    with session.begin():
+        node_id = session.query(models.NodeReference.node_reference_id).filter(
+            models.NodeReference.node_reference_url == node_reference_url
+        ).scalar_subquery()
+
+        query = session.query(models.CachedImages)
+        query = query.filter_by(node_reference_id=node_id)
+
+        query.delete(synchronize_session=False)
+
+
+def delete_cached_image(context, image_id, node_reference_url):
+    session = get_session()
+    with session.begin():
+        node_id = session.query(models.NodeReference.node_reference_id).filter(
+            models.NodeReference.node_reference_url == node_reference_url
+        ).scalar_subquery()
+
+        query = session.query(models.CachedImages)
+        query = query.filter(
+            models.CachedImages.image_id == image_id)
+        query = query.filter_by(node_reference_id=node_id)
+
+        query.delete(synchronize_session=False)
+
+
+def get_least_recently_accessed(context, node_reference_url):
+    node_id = models.NodeReference.node_reference_id
+    session = get_session()
+    with session.begin():
+        query = session.query(
+            models.CachedImages.image_id).join(
+            models.NodeReference,
+            node_id == models.CachedImages.node_reference_id,
+            isouter=True).filter(
+            models.NodeReference.node_reference_url == node_reference_url)
+        query = query.order_by(models.CachedImages.last_accessed)
+        try:
+            image_id = query.first()[0]
+        except TypeError:
+            # There are no more cached images
+            return None
+
+    return image_id
+
+
+def is_image_cached_for_node(context, node_reference_url, image_id):
+    node_id = models.NodeReference.node_reference_id
+    filters = [
+        models.CachedImages.image_id == image_id,
+        models.NodeReference.node_reference_url == node_reference_url,
+    ]
+    session = get_session()
+    with session.begin():
+        try:
+            query = session.query(
+                models.CachedImages.id).join(
+                models.NodeReference,
+                node_id == models.CachedImages.node_reference_id,
+                isouter=True).filter(sa_sql.and_(*filters))
+            if query.one()[0]:
+                return True
+        except sa_orm.exc.NoResultFound:
+            msg = _("Referenced %s is not cached on"
+                    " %s." % (image_id, node_reference_url))
+            LOG.debug(msg)
+            return False
+
+
+@utils.no_4byte_params
+def insert_cache_details(context, node_reference_url, image_id,
+                         filesize, checksum=None, last_accessed=None,
+                         last_modified=None, hits=None):
+    node_reference = node_reference_get_by_url(context, node_reference_url)
+    session = get_session()
+    accessed = last_accessed or timeutils.utcnow()
+    modified = last_modified or timeutils.utcnow()
+
+    values = {
+        'image_id': image_id,
+        'size': filesize,
+        'last_accessed': accessed,
+        'last_modified': modified,
+        'hits': hits or 0,
+        'checksum': checksum,
+        'node_reference_id': node_reference['node_reference_id']
+    }
+
+    with session.begin():
+        cached_image = models.CachedImages()
+        cached_image.update(values.copy())
+        try:
+            cached_image.save(session=session)
+        except db_exception.DBDuplicateEntry:
+            msg = _("Cache entry for %s for %s"
+                    " already exists." % (image_id, node_reference_url))
+            LOG.debug(msg)
+
+
+@utils.no_4byte_params
+def update_hit_count(context, image_id, node_reference_url):
+    session = get_session()
+    last_accessed = timeutils.utcnow()
+
+    with session.begin():
+        node_id = session.query(models.NodeReference.node_reference_id).filter(
+            models.NodeReference.node_reference_url == node_reference_url
+        ).scalar_subquery()
+
+        query = session.query(models.CachedImages)
+        query = query.filter(
+            models.CachedImages.image_id == image_id)
+        query = query.filter_by(node_reference_id=node_id)
+
+        query.update({
+            'hits': models.CachedImages.hits + 1,
+            'last_accessed': last_accessed
+        }, synchronize_session='fetch')
