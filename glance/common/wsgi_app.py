@@ -26,6 +26,7 @@ from glance.common import store_utils
 from glance import housekeeping
 from glance.i18n import _, _LW
 from glance import notifier
+from glance import sqlite_migration
 
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
@@ -140,6 +141,10 @@ def init_app():
         glance_store.register_opts(CONF)
         glance_store.create_stores(CONF)
         glance_store.verify_default_store()
+
+    # NOTE(abhishekk): This will raise RuntimeError if
+    # worker_self_reference_url is not set in glance-api.conf
+    sqlite_migration.migrate_if_required()
 
     # NOTE(danms): This may raise GlanceException if the staging store is
     # not configured properly, which will bubble up to the WSGI server,
