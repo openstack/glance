@@ -348,8 +348,7 @@
         - openstack-tox-functional-py39
         - openstack-tox-functional-py310
         - glance-tox-functional-py39-rbac-defaults
-        - glance-tox-functional-py39-sqlalchemy-tips:
-            voting: false
+        - glance-tox-functional-py39-sqlalchemy-tips
         - glance-ceph-thin-provisioning:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
