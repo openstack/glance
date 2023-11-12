@@ -31,7 +31,7 @@ image_policies = [
              'method': 'POST'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="add_image", check_str="rule:default",
+            name="add_image", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY)
     ),
@@ -45,7 +45,7 @@ image_policies = [
              'method': 'DELETE'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="delete_image", check_str="rule:default",
+            name="delete_image", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -59,7 +59,7 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_image", check_str="rule:default",
+            name="get_image", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -73,7 +73,7 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_images", check_str="rule:default",
+            name="get_images", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -87,13 +87,13 @@ image_policies = [
              'method': 'PATCH'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="modify_image", check_str="rule:default",
+            name="modify_image", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
         name="publicize_image",
-        check_str='rule:context_is_admin',
+        check_str=base.ADMIN,
         scope_types=['project'],
         description='Publicize given image',
         operations=[
@@ -111,7 +111,7 @@ image_policies = [
              'method': 'PATCH'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="communitize_image", check_str="rule:default",
+            name="communitize_image", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -126,7 +126,7 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="download_image", check_str="rule:default",
+            name="download_image", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -140,14 +140,14 @@ image_policies = [
              'method': 'PUT'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="upload_image", check_str="rule:default",
+            name="upload_image", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
 
     policy.DocumentedRuleDefault(
         name="delete_image_location",
-        check_str="rule:context_is_admin",
+        check_str=base.ADMIN,
         scope_types=['project'],
         description='Deletes the location of given image',
         operations=[
@@ -155,7 +155,7 @@ image_policies = [
              'method': 'PATCH'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="delete_image_location", check_str="rule:default",
+            name="delete_image_location", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -169,7 +169,7 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_image_location", check_str="rule:default",
+            name="get_image_location", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -183,7 +183,7 @@ image_policies = [
              'method': 'PATCH'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="set_image_location", check_str="rule:default",
+            name="set_image_location", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -198,7 +198,7 @@ image_policies = [
              'method': 'POST'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="add_member", check_str="rule:default",
+            name="add_member", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -212,7 +212,7 @@ image_policies = [
              'method': 'DELETE'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="delete_member", check_str="rule:default",
+            name="delete_member", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -226,7 +226,7 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_member", check_str="rule:default",
+            name="get_member", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -240,7 +240,7 @@ image_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_members", check_str="rule:default",
+            name="get_members", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -254,14 +254,14 @@ image_policies = [
              'method': 'PUT'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="modify_member", check_str="rule:default",
+            name="modify_member", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
 
     policy.RuleDefault(
         name="manage_image_cache",
-        check_str='rule:context_is_admin',
+        check_str=base.ADMIN,
         scope_types=['project'],
         description='Manage image cache'
     ),
@@ -276,7 +276,7 @@ image_policies = [
              'method': 'POST'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="deactivate", check_str="rule:default",
+            name="deactivate", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
@@ -290,14 +290,14 @@ image_policies = [
              'method': 'POST'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="reactivate", check_str="rule:default",
+            name="reactivate", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
 
     policy.DocumentedRuleDefault(
         name="copy_image",
-        check_str='rule:context_is_admin',
+        check_str=base.ADMIN,
         # For now this is restricted to project-admins.
         # That might change in the future if we decide to push
         # this functionality down to project-members.

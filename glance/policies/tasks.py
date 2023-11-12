@@ -13,6 +13,8 @@
 from oslo_log import versionutils
 from oslo_policy import policy
 
+from glance.policies import base
+
 
 TASK_DESCRIPTION = """
 This granular policy controls access to tasks, both from the tasks API as well
@@ -46,7 +48,7 @@ task_policies = [
         name="get_task",
         # All policies except tasks_api_access are internal policies that are
         # only called by glance as a result of some other operation.
-        check_str='rule:default',
+        check_str=base.DEFAULT,
         scope_types=['project'],
         description='Get an image task.\n' + TASK_DESCRIPTION,
         operations=[
@@ -54,13 +56,13 @@ task_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_task", check_str="rule:default",
+            name="get_task", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATION_REASON,
             deprecated_since=versionutils.deprecated.XENA)
     ),
     policy.DocumentedRuleDefault(
         name="get_tasks",
-        check_str='rule:default',
+        check_str=base.DEFAULT,
         scope_types=['project'],
         description='List tasks for all images.\n' + TASK_DESCRIPTION,
         operations=[
@@ -68,13 +70,13 @@ task_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_tasks", check_str="rule:default",
+            name="get_tasks", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATION_REASON,
             deprecated_since=versionutils.deprecated.XENA)
     ),
     policy.DocumentedRuleDefault(
         name="add_task",
-        check_str='rule:default',
+        check_str=base.DEFAULT,
         scope_types=['project'],
         description='List tasks for all images.\n' + TASK_DESCRIPTION,
         operations=[
@@ -82,13 +84,13 @@ task_policies = [
              'method': 'POST'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="add_task", check_str="rule:default",
+            name="add_task", check_str=base.DEFAULT,
             deprecated_reason=DEPRECATION_REASON,
             deprecated_since=versionutils.deprecated.XENA)
     ),
     policy.DocumentedRuleDefault(
         name="modify_task",
-        check_str='rule:default',
+        check_str=base.DEFAULT,
         scope_types=['project'],
         description="This policy is not used.",
         operations=[
@@ -101,7 +103,7 @@ task_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="tasks_api_access",
-        check_str="rule:context_is_admin",
+        check_str=base.ADMIN,
         scope_types=['project'],
         description=TASK_ACCESS_DESCRIPTION,
         operations=[
