@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    Support for running Glance in Windows operating systems has been deprecated
+    because of retirement of the Winstackers project.
