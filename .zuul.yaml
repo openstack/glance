@@ -258,6 +258,7 @@
     parent: tempest-integrated-storage-import
     description: |
       The regular import workflow job to test with multiple cinder stores
+    timeout: 10800
     vars:
       devstack_localrc:
         USE_CINDER_FOR_GLANCE: True
