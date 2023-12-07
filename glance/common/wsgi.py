@@ -774,6 +774,8 @@ class Win32Server(BaseServer):
     _sock = None
 
     def __init__(self, *args, **kwargs):
+        LOG.warning("Support for Glance on Windows operating systems is"
+                    "deprecated.")
         super(Win32Server, self).__init__(*args, **kwargs)
         self._launcher = Win32ProcessLauncher()
         self._ioutils = os_win_utilsfactory.get_ioutils()
