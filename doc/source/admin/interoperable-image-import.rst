@@ -557,7 +557,7 @@ required.
 
        [inject_metadata_properties]
        ignore_user_roles = admin,...
-       inject = "property1":"value1","property2":"value2",...
+       inject = property1:value1,property2:value2,...
 
    The first section, ``image_import_opts``, is used to enable the plugin by
    specifying the plugin name as one of the elements of the list that is the
@@ -576,8 +576,7 @@ required.
 
    * ``inject`` is a comma-separated list of properties and values that will be
      injected into the image record for the imported image.  Each property and
-     value should be quoted and separated by a colon (':') as shown in the
-     example above.
+     value should be separated by a colon (':') as shown in the example above.
 
 2. If your use case is such that you don't want to allow end-users to create,
    modify, or delete metadata properties that you are injecting during the
