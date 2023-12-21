@@ -33,6 +33,13 @@
             "type": "string",
             "enum": ["true", "false"]
         }
+        ,
+        "virtio_packed_ring": {
+            "title": "Virtio Packed Ring",
+            "description": "Enables Packed VIRT-IO Queue feature. When set to true, instance will bescheduled to hosts that support negotiating the packed virt queue format. This feature may or may not be enabled depending on the guest driver. When used it will improve the small packet performance of network io.",
+            "type": "string",
+            "enum": ["true", "false"]
+        }
     },
     "objects": []
 }
