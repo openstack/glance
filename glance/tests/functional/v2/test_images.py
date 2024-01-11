@@ -7050,6 +7050,7 @@ def get_enforcer_class(limits):
 class TestKeystoneQuotas(functional.SynchronousAPIBase):
     def setUp(self):
         super(TestKeystoneQuotas, self).setUp()
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         self.config(filesystem_store_datadir='/tmp/foo',
                     group='os_glance_tasks_store')

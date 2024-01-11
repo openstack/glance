@@ -27,6 +27,7 @@ from glance.tests import utils as test_utils
 class TestDiscovery(functional.SynchronousAPIBase):
     def setUp(self):
         super(TestDiscovery, self).setUp()
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
 
         self.enforcer_mock = self.useFixture(

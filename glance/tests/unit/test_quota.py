@@ -202,6 +202,7 @@ class TestImageQuota(test_utils.BaseTestCase):
 
         # If we turn on keystone quotas, the global limit gets ignored
         # so the same image no longer fails.
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         image.set_data(data, size=len(data))
 
@@ -794,6 +795,7 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
     def test_enforce_overquota(self):
         # Check that a single large image with multiple locations will
         # trip the quota check.
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         context = FakeContext()
         self._create_fake_image(context, 300)
@@ -804,6 +806,7 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
 
     def test_enforce_overquota_with_delta(self):
         # Check that delta is honored, if used.
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         context = FakeContext()
         self._create_fake_image(context, 200)
@@ -817,6 +820,7 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
     def test_enforce_overquota_disabled(self):
         # Just like the overquota case above, but without being enabled,
         # so no failure
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=False)
         context = FakeContext()
         self._create_fake_image(context, 300)
@@ -826,6 +830,7 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
     def test_enforce_overquota_multiple(self):
         # Check that multiple images with a combined amount
         # (2*2*150=600) over the quota will trip the quota check.
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         context = FakeContext()
         self._create_fake_image(context, 150)
@@ -836,6 +841,7 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
         self.assertIn('image_size_total is over limit of 500', str(exc))
 
     def test_enforce_underquota(self):
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         context = FakeContext()
         self._create_fake_image(context, 100)
@@ -843,6 +849,7 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
         ks_quota.enforce_image_size_total(context, context.owner)
 
     def test_enforce_underquota_with_others_over_quota(self):
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         # Put the first tenant over quota
         context = FakeContext()
@@ -858,6 +865,7 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
         ks_quota.enforce_image_size_total(other_context, other_context.owner)
 
     def test_enforce_multiple_limits_under_quota(self):
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         context = FakeContext()
         # Make sure that we can call the multi-limit handler and pass when
@@ -868,6 +876,7 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
                                {'another_limit': 1})
 
     def test_enforce_multiple_limits_over_quota(self):
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         context = FakeContext()
         # Make sure that even if one of a multi-limit call is over
@@ -882,6 +891,7 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
     @mock.patch('oslo_limit.limit.Enforcer')
     @mock.patch.object(ks_quota, 'LOG')
     def test_oslo_limit_config_fail(self, mock_LOG, mock_enforcer):
+        self.config(endpoint_id='ENDPOINT_ID', group='oslo_limit')
         self.config(use_keystone_limits=True)
         mock_enforcer.return_value.enforce.side_effect = (
             ol_exc.SessionInitError('test'))
