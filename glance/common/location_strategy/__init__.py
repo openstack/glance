@@ -23,6 +23,13 @@ from glance.i18n import _, _LE
 
 location_strategy_opts = [
     cfg.StrOpt('location_strategy',
+               deprecated_for_removal=True,
+               deprecated_since="Caracal",
+               deprecated_reason=_("""
+In Bobcat, a new weighing mechanism has been introduced, which makes the
+location strategy obsolete.  This option is scheduled to be removed during the
+Dalmatian development cycle.
+"""),
                default='location_order',
                choices=('location_order', 'store_type'),
                help=_("""
