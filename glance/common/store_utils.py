@@ -235,8 +235,12 @@ def _update_cinder_location_and_store_id(context, loc):
             return
 
 
-def get_updated_store_location(locations):
+def get_updated_store_location(locations, context=None):
     for loc in locations:
+        if loc['url'].startswith("cinder://") and context:
+            _update_cinder_location_and_store_id(context, loc)
+            continue
+
         store_id = _get_store_id_from_uri(loc['url'])
         if store_id:
             loc['metadata']['store'] = store_id
