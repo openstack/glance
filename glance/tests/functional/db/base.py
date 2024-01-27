@@ -2256,7 +2256,7 @@ class VisibilityTests(object):
                                            is_public=False)
         self.assertEqual(8, len(images))
         for i in images:
-            self.assertTrue(i['visibility'] in ['shared', 'private'])
+            self.assertIn(i['visibility'], ['shared', 'private'])
 
     def test_unknown_admin_is_public_none(self):
         images = self.db_api.image_get_all(self.admin_none_context)
@@ -2310,8 +2310,7 @@ class VisibilityTests(object):
                                            is_public=False)
         self.assertEqual(9, len(images))
         for i in images:
-            self.assertTrue(i['visibility']
-                            in ['shared', 'private', 'community'])
+            self.assertIn(i['visibility'], ['shared', 'private', 'community'])
 
     def test_known_admin_is_public_none(self):
         images = self.db_api.image_get_all(self.admin_context)
@@ -2429,8 +2428,7 @@ class VisibilityTests(object):
         self.assertEqual(3, len(images))
         for i in images:
             self.assertEqual(i['owner'], self.tenant1)
-            self.assertTrue(i['visibility']
-                            in ['private', 'shared', 'community'])
+            self.assertIn(i['visibility'], ['private', 'shared', 'community'])
 
     def test_tenant1_is_public_none(self):
         images = self.db_api.image_get_all(self.tenant1_context)

@@ -167,8 +167,8 @@ def format_image_notification(image):
 
 
 def format_image_member_notification(image_member):
-    """Given a glance.domain.ImageMember object, return a dictionary of relevant
-    notification information.
+    """Given a glance.domain.ImageMember object, return a dictionary of
+    relevant notification information.
     """
     return {
         'image_id': image_member.image_id,

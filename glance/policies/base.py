@@ -83,7 +83,7 @@ ADMIN_OR_PROJECT_READER_OR_SHARED_MEMBER = (
     f'role:reader and (project_id:%(project_id)s or {IMAGE_MEMBER_CHECK})'
 )
 
-ADMIN = f'rule:context_is_admin'
+ADMIN = 'rule:context_is_admin'
 
 rules = [
     policy.RuleDefault(name='default', check_str='',

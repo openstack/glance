@@ -86,7 +86,7 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
             'name'
         ])
         for key, value in expected_metadata_tag.items():
-            if(key in checked_values):
+            if key in checked_values:
                 self.assertEqual(metadata_tag[key], value, key)
 
         # Try to create a duplicate metadata tag

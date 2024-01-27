@@ -508,8 +508,10 @@ def replication_load(options, args):
                         _check_upload_response_headers(headers, body)
                         updated.append(meta['id'])
                     except exc.HTTPConflict:
-                        LOG.error(_LE(IMAGE_ALREADY_PRESENT_MESSAGE)
-                                  % image_uuid)  # noqa
+                        # NOTE(tkajinam): noqa does not work with multi-line,
+                        # so split this interpolation to a separate line
+                        msg = _LE(IMAGE_ALREADY_PRESENT_MESSAGE) % image_uuid
+                        LOG.error(msg)
 
     return updated
 

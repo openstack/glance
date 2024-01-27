@@ -112,7 +112,7 @@ class TestTaskExecutor(test_utils.BaseTestCase):
 
     def test_task_fail_upload(self):
         with mock.patch.object(image_import, 'set_image_data') as import_mock:
-            import_mock.side_effect = IOError
+            import_mock.side_effect = IOError  # noqa
 
             self.task_repo.get.return_value = self.task
             self.executor.begin_processing(self.task.task_id)

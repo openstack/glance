@@ -1028,8 +1028,8 @@ def _task_soft_delete(context):
     tasks = DATA['tasks'].values()
 
     for task in tasks:
-        if(task['owner'] == context.owner and task['deleted'] == False
-           and task['expires_at'] <= now):
+        if (task['owner'] == context.owner and task['deleted'] == False
+                and task['expires_at'] <= now):
 
             task['deleted'] = True
             task['deleted_at'] = timeutils.utcnow()

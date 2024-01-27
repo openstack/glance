@@ -95,7 +95,7 @@ def no_translate_debug_logs(logical_line, filename):
 
     if max([name in filename for name in dirs]):
         if logical_line.startswith("LOG.debug(_("):
-            yield(0, "G319: Don't translate debug level logs")
+            yield (0, "G319: Don't translate debug level logs")
 
 
 @core.flake8ext
@@ -105,7 +105,7 @@ def check_no_contextlib_nested(logical_line):
            "nested for more information.")
     if ("with contextlib.nested(" in logical_line or
             "with nested(" in logical_line):
-        yield(0, msg)
+        yield (0, msg)
 
 
 @core.flake8ext

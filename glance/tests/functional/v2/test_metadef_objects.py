@@ -155,7 +155,7 @@ class TestMetadefObjects(metadef_base.MetadefFunctionalTestBase):
             'description',
         ])
         for key, value in expected_metadata_object.items():
-            if(key in checked_values):
+            if key in checked_values:
                 self.assertEqual(metadata_object[key], value, key)
         # Complex key values - properties
         for key, value in (

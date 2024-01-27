@@ -112,7 +112,7 @@ class TestMetadefResourceTypes(metadef_base.MetadefFunctionalTestBase):
             u'properties_target',
         ])
         for key, value in expected_metadef_resource_types.items():
-            if(key in checked_values):
+            if key in checked_values:
                 self.assertEqual(
                     resource_type['resource_type_associations'][0][key],
                     value, key)

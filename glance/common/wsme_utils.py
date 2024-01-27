@@ -41,7 +41,7 @@ class WSMEModelTransformer(object):
         for name in names:
             value = getattr(db_entity, name, None)
             if value is not None:
-                if type(value) == datetime:
+                if isinstance(value, datetime):
                     iso_datetime_value = timeutils.isotime(value)
                     values.update({name: iso_datetime_value})
                 else:

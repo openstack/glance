@@ -702,9 +702,9 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.fail('Notification contained location field.')
         # Verify newly added fields 'image_id', 'user_id' and
         # 'request_id' are not part of notification yet
-        self.assertTrue('image_id' not in output_log['payload'])
-        self.assertTrue('user_id' not in output_log['payload'])
-        self.assertTrue('request_id' not in output_log['payload'])
+        self.assertNotIn('image_id', output_log['payload'])
+        self.assertNotIn('user_id', output_log['payload'])
+        self.assertNotIn('request_id', output_log['payload'])
 
     def test_task_create_notification_disabled(self):
         self.config(disabled_notifications=['task.create'])
@@ -737,9 +737,9 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.fail('Notification contained location field.')
         # Verify newly added fields 'image_id', 'user_id' and
         # 'request_id' are not part of notification yet
-        self.assertTrue('image_id' not in output_log['payload'])
-        self.assertTrue('user_id' not in output_log['payload'])
-        self.assertTrue('request_id' not in output_log['payload'])
+        self.assertNotIn('image_id', output_log['payload'])
+        self.assertNotIn('user_id', output_log['payload'])
+        self.assertNotIn('request_id', output_log['payload'])
 
     def test_task_delete_notification_disabled(self):
         self.config(disabled_notifications=['task.delete'])
@@ -758,15 +758,9 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.assertEqual('INFO', output_log['notification_type'])
         self.assertEqual('task.run', output_log['event_type'])
         self.assertEqual(self.task.task_id, output_log['payload']['id'])
-        self.assertFalse(
-            self.task.image_id in output_log['payload']
-        )
-        self.assertFalse(
-            self.task.user_id in output_log['payload']
-        )
-        self.assertFalse(
-            self.task.request_id in output_log['payload']
-        )
+        self.assertNotIn(self.task.image_id, output_log['payload'])
+        self.assertNotIn(self.task.user_id, output_log['payload'])
+        self.assertNotIn(self.task.request_id, output_log['payload'])
 
     def test_task_run_notification_disabled(self):
         self.config(disabled_notifications=['task.run'])
@@ -787,9 +781,9 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.assertEqual(self.task.task_id, output_log['payload']['id'])
         # Verify newly added fields 'image_id', 'user_id' and
         # 'request_id' are not part of notification yet
-        self.assertTrue('image_id' not in output_log['payload'])
-        self.assertTrue('user_id' not in output_log['payload'])
-        self.assertTrue('request_id' not in output_log['payload'])
+        self.assertNotIn('image_id', output_log['payload'])
+        self.assertNotIn('user_id', output_log['payload'])
+        self.assertNotIn('request_id', output_log['payload'])
 
     def test_task_processing_notification_disabled(self):
         self.config(disabled_notifications=['task.processing'])
@@ -808,9 +802,9 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.assertEqual(self.task.task_id, output_log['payload']['id'])
         # Verify newly added fields 'image_id', 'user_id' and
         # 'request_id' are not part of notification yet
-        self.assertTrue('image_id' not in output_log['payload'])
-        self.assertTrue('user_id' not in output_log['payload'])
-        self.assertTrue('request_id' not in output_log['payload'])
+        self.assertNotIn('image_id', output_log['payload'])
+        self.assertNotIn('user_id', output_log['payload'])
+        self.assertNotIn('request_id', output_log['payload'])
 
     def test_task_success_notification_disabled(self):
         self.config(disabled_notifications=['task.processing', 'task.success'])
@@ -829,9 +823,9 @@ class TestTaskNotifications(utils.BaseTestCase):
         self.assertEqual(self.task.task_id, output_log['payload']['id'])
         # Verify newly added fields 'image_id', 'user_id' and
         # 'request_id' are not part of notification yet
-        self.assertTrue('image_id' not in output_log['payload'])
-        self.assertTrue('user_id' not in output_log['payload'])
-        self.assertTrue('request_id' not in output_log['payload'])
+        self.assertNotIn('image_id', output_log['payload'])
+        self.assertNotIn('user_id', output_log['payload'])
+        self.assertNotIn('request_id', output_log['payload'])
 
     def test_task_failure_notification_disabled(self):
         self.config(disabled_notifications=['task.failure'])
