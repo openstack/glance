@@ -34,7 +34,6 @@ class TestCORSMiddleware(functional.FunctionalTest):
         super(TestCORSMiddleware, self).setUp()
         # Cleanup is handled in teardown of the parent class.
         self.api_server.deployment_flavor = "caching"
-        self.api_server.send_identity_credentials = True
         self.start_servers(**self.__dict__.copy())
         self.http = httplib2.Http()
         self.api_path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)

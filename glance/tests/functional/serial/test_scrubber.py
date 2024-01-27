@@ -38,7 +38,6 @@ class TestScrubber(functional.FunctionalTest):
     def setUp(self):
         super(TestScrubber, self).setUp()
         self.api_server.deployment_flavor = 'noauth'
-        self.api_server.send_identity_credentials = True
         self.admin_context = context.get_admin_context(show_deleted=True)
         CONF.set_override('connection', self.api_server.sql_connection,
                           group='database')
