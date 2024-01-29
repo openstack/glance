@@ -34,6 +34,9 @@ class TestImageCache(functional.SynchronousAPIBase):
             overwrite=True)
 
     def start_server(self, enable_cache=True):
+        # NOTE(abhishekk): Once sqlite driver is removed, fix these tests
+        # to work with centralized_db driver
+        self.config(image_cache_driver='sqlite')
         with mock.patch.object(policy, 'Enforcer') as mock_enf:
             mock_enf.return_value = self.policy
             super(TestImageCache, self).start_server(enable_cache=enable_cache)

@@ -32,7 +32,7 @@ from glance.i18n import _, _LE, _LI, _LW
 LOG = logging.getLogger(__name__)
 
 image_cache_opts = [
-    cfg.StrOpt('image_cache_driver', default='sqlite',
+    cfg.StrOpt('image_cache_driver', default='centralized_db',
                choices=('centralized_db', 'sqlite', 'xattr'), ignore_case=True,
                help=_("""
 The driver to use for image cache management.
@@ -50,13 +50,13 @@ and prospective) must implement this interface. Currently available drivers
 are ``sqlite`` and ``xattr``. These drivers primarily differ in the way they
 store the information about cached images:
 
-* The ``sqlite`` driver uses a sqlite database (which sits on every glance
-  node locally) to track the usage of cached images.
+* The ``centralized_db`` driver uses a central database (which will be common
+  for all glance nodes) to track the usage of cached images.
+* The ``sqlite`` (deprecated) driver uses a sqlite database (which sits on
+  every glance node locally) to track the usage of cached images.
 * The ``xattr`` driver uses the extended attributes of files to store this
   information. It also requires a filesystem that sets ``atime`` on the files
   when accessed.
-* The ``centralized_db`` driver uses a central database (which will be common
-  for all glance nodes) to track the usage of cached images.
 
 Deprecation warning:
     * As centralized database will now be used for image cache management, the

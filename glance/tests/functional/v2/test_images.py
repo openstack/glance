@@ -6933,7 +6933,7 @@ class TestImportProxy(functional.SynchronousAPIBase):
 
         # Stage it on worker1
         self.config(worker_self_reference_url='http://worker1')
-        self.start_server()
+        self.start_server(set_worker_url=False)
         image_id = self._create_and_stage()
 
         # Make sure we can't see the stage host key
@@ -6943,7 +6943,7 @@ class TestImportProxy(functional.SynchronousAPIBase):
 
         # Import call goes to worker2
         self.config(worker_self_reference_url='http://worker2')
-        self.start_server()
+        self.start_server(set_worker_url=False)
         r = self._import_direct(image_id, ['store1'])
 
         # Assert that it was proxied back to worker1
@@ -6966,12 +6966,12 @@ class TestImportProxy(functional.SynchronousAPIBase):
 
         # Stage it on worker1
         self.config(worker_self_reference_url='http://worker1')
-        self.start_server()
+        self.start_server(set_worker_url=False)
         image_id = self._create_and_stage()
 
         # Import call goes to worker2
         self.config(worker_self_reference_url='http://worker2')
-        self.start_server()
+        self.start_server(set_worker_url=False)
         r = self._import_direct(image_id, ['store1'])
 
         # Make sure we see the relevant details from worker1
@@ -6989,12 +6989,12 @@ class TestImportProxy(functional.SynchronousAPIBase):
 
         # Stage it on worker1
         self.config(worker_self_reference_url='http://worker1')
-        self.start_server()
+        self.start_server(set_worker_url=False)
         image_id = self._create_and_stage()
 
         # Import call goes to worker2
         self.config(worker_self_reference_url='http://worker2')
-        self.start_server()
+        self.start_server(set_worker_url=False)
         r = self._import_direct(image_id, ['store1'])
         self.assertEqual(status, r.status)
         self.assertIn(b'Stage host is unavailable', r.body)

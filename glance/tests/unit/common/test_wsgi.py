@@ -577,7 +577,10 @@ class ServerTest(test_utils.BaseTestCase):
 
     @mock.patch.object(prefetcher, 'Prefetcher')
     @mock.patch.object(wsgi.Server, 'configure_socket')
-    def test_http_keepalive(self, mock_configure_socket, mock_prefetcher):
+    @mock.patch('glance.sqlite_migration.can_migrate_to_central_db')
+    def test_http_keepalive(self, mock_migrate_db, mock_configure_socket,
+                            mock_prefetcher):
+        mock_migrate_db.return_value = False
         self.config(http_keepalive=False)
         self.config(workers=0)
 
@@ -599,8 +602,10 @@ class ServerTest(test_utils.BaseTestCase):
                                                 socket_timeout=900)
 
     @mock.patch.object(prefetcher, 'Prefetcher')
-    def test_number_of_workers_posix(self, mock_prefetcher):
+    @mock.patch('glance.sqlite_migration.can_migrate_to_central_db')
+    def test_number_of_workers_posix(self, mock_migrate_db, mock_prefetcher):
         """Ensure the number of workers matches num cpus limited to 8."""
+        mock_migrate_db.return_value = False
         if os.name == 'nt':
             raise self.skipException("Unsupported platform.")
 
@@ -637,7 +642,9 @@ class ServerTest(test_utils.BaseTestCase):
             self.assertEqual(expected_workers,
                              len(server.children))
 
-    def test_invalid_staging_uri(self):
+    @mock.patch('glance.sqlite_migration.can_migrate_to_central_db')
+    def test_invalid_staging_uri(self, mock_migrate_db):
+        mock_migrate_db.return_value = False
         self.config(node_staging_uri='http://good.luck')
         server = wsgi.Server()
         with mock.patch.object(server, 'start_wsgi'):
@@ -646,7 +653,9 @@ class ServerTest(test_utils.BaseTestCase):
                               server.start, 'fake-application', 34567)
 
     @mock.patch('os.path.exists')
-    def test_missing_staging_dir(self, mock_exists):
+    @mock.patch('glance.sqlite_migration.can_migrate_to_central_db')
+    def test_missing_staging_dir(self, mock_migrate_db, mock_exists):
+        mock_migrate_db.return_value = False
         mock_exists.return_value = False
         server = wsgi.Server()
         with mock.patch.object(server, 'start_wsgi'):

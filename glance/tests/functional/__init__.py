@@ -830,7 +830,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         # The clients will try to connect to this address. Let's make sure
         # we're not using the default '0.0.0.0'
         self.config(bind_host='127.0.0.1')
-
+        self.config(image_cache_dir=self.test_dir)
         self.tracecmd = tracecmd_osmap.get(platform.system())
 
         conf_dir = os.path.join(self.test_dir, 'etc')
@@ -1630,7 +1630,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.setup_simple_paste()
         self.setup_stores()
 
-    def start_server(self, enable_cache=True):
+    def start_server(self, enable_cache=True, set_worker_url=True):
         """Builds and "starts" the API server.
 
         Note that this doesn't actually "start" anything like
@@ -1642,6 +1642,9 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         if enable_cache:
             root_app = 'glance-api-cachemanagement'
             self.config(image_cache_dir=self._store_dir('cache'))
+
+        if set_worker_url:
+            self.config(worker_self_reference_url='http://workerx')
 
         self.api = config.load_paste_app(root_app,
                                          conf_file=self.paste_config)
