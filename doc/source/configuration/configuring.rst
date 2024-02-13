@@ -1489,14 +1489,28 @@ One main configuration file option affects the image cache.
   ``glance-api`` server
 
 ``image_cache_driver=DRIVER``
-  Optional. Choice of ``sqlite`` or ``xattr``
+  Optional. Choice of ``sqlite``, ``xattr`` or ``centralized_db``
 
-  Default: ``sqlite``
+  Default: ``centralized_db``
 
-  The default ``sqlite`` cache driver has no special dependencies, other
+  The default ``centralized_db`` cache driver has no special
+  dependencies, other than ``worker_self_reference_url`` which needs
+  to be configured to store the reference of node in the database.
+  Earlier cache database used to be independent for each glance api
+  service, now with ``centralized_db`` cache driver it stores
+  information about the cached files at one place which is in
+  a central database. Old records from SQLite database will
+  be :ref:`migrated <sqlite-to-centralized_db-migration>` to
+  central database on service restart during upgrade process.
+
+  The ``sqlite`` cache driver has no special dependencies, other
   than the ``python-sqlite3`` library, which is installed on virtually
   all operating systems with modern versions of Python. It stores
   information about the cached files in a SQLite database.
+
+  **NOTE**
+  In Caracal release ``sqlite`` cache driver has been deprecated and will
+  be removed in ``F`` development cycle.
 
   The ``xattr`` cache driver required the ``python-xattr>=0.6.0`` library
   and requires that the filesystem containing ``image_cache_dir`` have
@@ -1514,6 +1528,10 @@ One main configuration file option affects the image cache.
   that will be used to store the cached images information. The database
   is always contained in the ``image_cache_dir``.
 
+  **NOTE**
+  In Caracal release ``image_cache_sqlite_db`` option has been deprecated
+  and will be removed in ``F`` development cycle.
+
 ``image_cache_max_size=SIZE``
   Optional.
 
@@ -1526,6 +1544,26 @@ One main configuration file option affects the image cache.
   to or less than this value. The ``glance-cache-pruner`` executable is
   designed to be run via cron on a regular basis. See more about this
   executable in :ref:`Controlling the Growth of the Image Cache <image-cache>`
+
+
+.. _sqlite-to-centralized_db-migration:
+
+Migrating records from SQLite to Central database
+-------------------------------------------------
+
+In case of upgrades/updates we need to deal with migrating existing records
+from SQLite database to central database. This operation will be performed
+one time during service startup. If SQLite database file, configured using
+``image_cache_sqlite_db`` configuration option (default ``cache.db``) is
+present at service start and ``image_cache_driver`` is not set to
+``centralized_db`` then we will read records from SQLite database and
+insert those in newly created ``cached_images`` table in central database.
+Once all records are migrated we will clear the SQLite database table
+and keep the SQLite database file as it is (to be deleted by
+administrator/operator later if required). Important point here is once
+deployer chooses to use ``centralized_db`` and we migrate their records out
+of SQLite database to central database, then we will not migrate them back
+if deployer wants to revert back to ``sqlite`` driver.
 
 Configuring Notifications
 -------------------------
