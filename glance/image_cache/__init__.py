@@ -56,6 +56,11 @@ store the information about cached images:
   information. It also requires a filesystem that sets ``atime`` on the files
   when accessed.
 
+Deprecation warning:
+    * As centralized database will now be used for image cache management, the
+      use of `sqlite` database and driver will be dropped from 'E' (2025.1)
+      development cycle.
+
 Possible values:
     * sqlite
     * xattr
