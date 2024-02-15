@@ -67,7 +67,6 @@ class TestWSGIServer(functional.FunctionalTest):
 class StagingCleanupBase:
     def _configure_api_server(self):
         self.my_api_server.deployment_flavor = 'noauth'
-        self.my_api_server.send_identity_credentials = True
 
     def _url(self, path):
         return 'http://127.0.0.1:%d%s' % (self.api_port, path)

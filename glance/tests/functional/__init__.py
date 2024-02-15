@@ -107,7 +107,6 @@ class BaseServer(metaclass=abc.ABCMeta):
         self.process_pid = None
         self.server_module = None
         self.stop_kill = False
-        self.send_identity_credentials = False
 
     def write_conf(self, **kwargs):
         """
@@ -420,8 +419,6 @@ class ApiServer(Server):
         self.location_strategy = 'location_order'
         self.store_type_location_strategy_preference = ""
 
-        self.send_identity_headers = False
-
         self.node_staging_uri = 'file://%s' % os.path.join(
             self.test_dir, 'staging')
 
@@ -431,13 +428,11 @@ default_log_levels = eventlet.wsgi.server=DEBUG,stevedore.extension=INFO
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
-send_identity_credentials = %(send_identity_credentials)s
 log_file = %(log_file)s
 image_size_cap = %(image_size_cap)d
 delayed_delete = %(delayed_delete)s
 workers = %(workers)s
 scrub_time = %(scrub_time)s
-send_identity_headers = %(send_identity_headers)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
 show_image_direct_url = %(show_image_direct_url)s
@@ -614,21 +609,17 @@ class ApiServerForMultipleBackend(Server):
         self.location_strategy = 'location_order'
         self.store_type_location_strategy_preference = ""
 
-        self.send_identity_headers = False
-
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG,stevedore.extension=INFO
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
-send_identity_credentials = %(send_identity_credentials)s
 log_file = %(log_file)s
 image_size_cap = %(image_size_cap)d
 delayed_delete = %(delayed_delete)s
 workers = %(workers)s
 scrub_time = %(scrub_time)s
-send_identity_headers = %(send_identity_headers)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
 show_image_direct_url = %(show_image_direct_url)s
@@ -786,8 +777,6 @@ class ScrubberDaemon(Server):
                                              default_sql_connection)
         self.policy_file = policy_file
         self.policy_default_rule = 'default'
-
-        self.send_identity_headers = False
 
         self.conf_base = """[DEFAULT]
 debug = %(debug)s

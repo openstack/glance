@@ -398,7 +398,6 @@ class TestImageCacheSqlite(functional.FunctionalTest,
         super(TestImageCacheSqlite, self).setUp()
 
         self.api_server.deployment_flavor = "caching"
-        self.api_server.send_identity_credentials = True
 
     def tearDown(self):
         super(TestImageCacheSqlite, self).tearDown()
