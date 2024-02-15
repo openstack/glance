@@ -1,0 +1,11 @@
+---
+deprecations:
+  - |
+    The Glance API configuration options ``location_strategy`` and
+    ``store_type_preference`` are deprecated in this release and are subject to
+    removal at the beginning of the Dalmatian development cycle, following the
+    `OpenStack standard deprecation policy
+    <https://governance.openstack.org/reference/tags/assert_follows-standard-deprecation.html>`_.
+
+    The weighing mechanism introduced in the Bobcat development cycle can be
+    used by operators who would like to prioritize certain stores over others.

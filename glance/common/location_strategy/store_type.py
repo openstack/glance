@@ -24,6 +24,13 @@ from glance.i18n import _
 store_type_opts = [
     cfg.ListOpt('store_type_preference',
                 default=[],
+                deprecated_for_removal=True,
+                deprecated_since="Caracal",
+                deprecated_reason=_("""
+In Bobcat, a new weighing mechanism has been introduced, which makes the
+location strategy obsolete.  This option is scheduled to be removed during the
+Dalmatian development cycle.
+"""),
                 help=_("""
 Preference order of storage backends.
 
