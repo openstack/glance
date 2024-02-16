@@ -512,7 +512,7 @@ class VHDXInspector(FileInspector):
 #
 # https://www.vmware.com/app/vmdk/?src=vmdk
 class VMDKInspector(FileInspector):
-    """vmware VMDK format (monolithicSparse variant only)
+    """vmware VMDK format (monolithicSparse and streamOptimized variants only)
 
     This needs to store the 512 byte header and the descriptor region
     which should be just after that. The descriptor region is some
@@ -582,7 +582,7 @@ class VMDKInspector(FileInspector):
             vmdktype = descriptor[type_idx:type_end]
         else:
             vmdktype = b'formatnotfound'
-        if vmdktype != b'monolithicSparse':
+        if vmdktype not in (b'monolithicSparse', b'streamOptimized'):
             LOG.warning('Unsupported VMDK format %s', vmdktype)
             return 0
 
