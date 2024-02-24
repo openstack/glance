@@ -1,0 +1,17 @@
+---
+deprecations:
+  - |
+    The Glance scrubber, which is invoked by the ``glance-scrubber``
+    command, is deprecated in this release and is subject to removal at the
+    beginning of the 2024.2 (Dalmatian) development cycle, following the
+    `OpenStack standard deprecation policy
+    <https://governance.openstack.org/reference/tags/assert_follows-standard-deprecation.html>`_.
+
+    This deprecation notice also applies to the following configuration
+    options:
+
+    * ``delayed_delete``
+    * ``scrub_time``
+    * ``scrub_pool_size``
+    * ``wakeup_time``
+
