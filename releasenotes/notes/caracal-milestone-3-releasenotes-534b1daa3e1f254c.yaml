@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    Bug 2049064_: Unit/functional test failures with oslo.limit 2.3.0
+  - |
+    Bug 2028895_: Interoperable Image Import in glance documented format for inject not working as expected
+
+    .. _2049064: https://code.launchpad.net/bugs/2049064
+    .. _2028895: https://code.launchpad.net/bugs/2028895
