@@ -33,7 +33,7 @@ LOG = logging.getLogger(__name__)
 
 image_cache_opts = [
     cfg.StrOpt('image_cache_driver', default='sqlite',
-               choices=('sqlite', 'xattr'), ignore_case=True,
+               choices=('centralized_db', 'sqlite', 'xattr'), ignore_case=True,
                help=_("""
 The driver to use for image cache management.
 
@@ -55,6 +55,8 @@ store the information about cached images:
 * The ``xattr`` driver uses the extended attributes of files to store this
   information. It also requires a filesystem that sets ``atime`` on the files
   when accessed.
+* The ``centralized_db`` driver uses a central database (which will be common
+  for all glance nodes) to track the usage of cached images.
 
 Deprecation warning:
     * As centralized database will now be used for image cache management, the
@@ -62,6 +64,7 @@ Deprecation warning:
       development cycle.
 
 Possible values:
+    * centralized_db
     * sqlite
     * xattr
 
