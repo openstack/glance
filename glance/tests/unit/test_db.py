@@ -61,6 +61,9 @@ TASK_ID_1 = 'b3006bd0-461e-4228-88ea-431c14e918b4'
 TASK_ID_2 = '07b6b562-6770-4c8b-a649-37a515144ce9'
 TASK_ID_3 = '72d16bb6-4d70-48a5-83fe-14bb842dc737'
 
+NODE_REFERENCE_ID_1 = 1
+NODE_REFERENCE_ID_2 = 2
+
 
 def _db_fixture(id, **kwargs):
     obj = {
@@ -119,6 +122,26 @@ def _db_task_fixture(task_id, **kwargs):
     return obj
 
 
+def _db_node_reference_fixture(node_id, node_url, **kwargs):
+    obj = {
+        'node_reference_id': node_id,
+        'node_reference_url': node_url,
+    }
+    obj.update(kwargs)
+    return obj
+
+
+def _db_cached_images_fixture(id, **kwargs):
+    obj = {
+        'id': id,
+        'image_id': kwargs.get('image_id'),
+        'size': kwargs.get('size'),
+        'hits': kwargs.get('hits')
+    }
+    obj.update(kwargs)
+    return obj
+
+
 class TestImageRepo(test_utils.BaseTestCase):
 
     def setUp(self):
@@ -130,6 +153,29 @@ class TestImageRepo(test_utils.BaseTestCase):
         self.image_factory = glance.domain.ImageFactory()
         self._create_images()
         self._create_image_members()
+        # Centralized cache
+        self._create_node_references()
+        self._create_cached_images()
+
+    def _create_node_references(self):
+        self.node_references = [
+            _db_node_reference_fixture(NODE_REFERENCE_ID_1, 'node_url_1'),
+            _db_node_reference_fixture(NODE_REFERENCE_ID_2, 'node_url_2'),
+        ]
+        [self.db.node_reference_create(
+            None, node_reference['node_reference_url'],
+            node_reference_id=node_reference['node_reference_id']
+        ) for node_reference in self.node_references]
+
+    def _create_cached_images(self):
+        self.cached_images = [
+            _db_cached_images_fixture(1, image_id=UUID1, size=256, hits=3),
+            _db_cached_images_fixture(1, image_id=UUID3, size=1024, hits=0)
+        ]
+        [self.db.insert_cache_details(
+            None, 'node_url_1', cached_image['image_id'],
+            cached_image['size'], hits=cached_image['hits']
+        ) for cached_image in self.cached_images]
 
     def _create_images(self):
         self.images = [
@@ -206,6 +252,93 @@ class TestImageRepo(test_utils.BaseTestCase):
         ]
         [self.db.image_member_create(None, image_member)
             for image_member in self.image_members]
+
+    def test_node_reference_get_by_url(self):
+        node_reference = self.db.node_reference_get_by_url(self.context,
+                                                           'node_url_1')
+        self.assertEqual(NODE_REFERENCE_ID_1,
+                         node_reference['node_reference_id'])
+
+    def test_node_reference_get_by_url_not_found(self):
+        self.assertRaises(exception.NotFound,
+                          self.db.node_reference_get_by_url,
+                          self.context,
+                          'garbage_url')
+
+    def test_get_cached_images(self):
+        # Two images are cached on node 'node_url_1'
+        cached_images = self.db.get_cached_images(self.context,
+                                                  'node_url_1')
+        self.assertEqual(2, len(cached_images))
+
+        # Nothing is cached on node 'node_url_2'
+        cached_images = self.db.get_cached_images(self.context,
+                                                  'node_url_2')
+        self.assertEqual(0, len(cached_images))
+
+    def test_get_hit_count(self):
+        # Hit count will be 3 for image UUID1
+        self.assertEqual(3, self.db.get_hit_count(self.context,
+                                                  UUID1, 'node_url_1'))
+
+        # Hit count will be 0 for uncached image
+        self.assertEqual(0, self.db.get_hit_count(self.context,
+                                                  UUID2, 'node_url_1'))
+
+    def test_delete_all_cached_images(self):
+        # Verify that we have image cached
+        cached_images = self.db.get_cached_images(self.context,
+                                                  'node_url_1')
+        self.assertEqual(2, len(cached_images))
+
+        # Delete cached images from node_url_1
+        self.db.delete_all_cached_images(self.context, 'node_url_1')
+
+        # Verify that all cached images from node_url_1 are deleted
+        cached_images = self.db.get_cached_images(self.context,
+                                                  'node_url_1')
+        self.assertEqual(0, len(cached_images))
+
+    def test_delete_cached_image(self):
+        # Verify that we have image cached
+        cached_images = self.db.get_cached_images(self.context,
+                                                  'node_url_1')
+        self.assertEqual(2, len(cached_images))
+
+        # Delete cached image from node_url_1
+        self.db.delete_cached_image(self.context, UUID1, 'node_url_1')
+
+        # Verify that given image from node_url_1 is deleted
+        cached_images = self.db.get_cached_images(self.context,
+                                                  'node_url_1')
+        self.assertEqual(1, len(cached_images))
+
+    def test_get_least_recently_accessed(self):
+        recently_accessed = self.db.get_least_recently_accessed(
+            self.context, 'node_url_1')
+        # Verify we will only get one image in response
+        self.assertEqual(UUID1, recently_accessed)
+
+    def test_is_image_cached_for_node(self):
+        # Verify UUID1 is cached for node_url_1
+        self.assertTrue(self.db.is_image_cached_for_node(
+            self.context, 'node_url_1', UUID1))
+
+        # Verify UUID3 is not cached for node_url_2
+        self.assertFalse(self.db.is_image_cached_for_node(
+            self.context, 'node_url_2', UUID3))
+
+    def test_update_hit_count(self):
+        # Verify UUID1 on node_url_1 has 3 as hit count
+        self.assertEqual(3, self.db.get_hit_count(self.context,
+                                                  UUID1, 'node_url_1'))
+
+        # Update the hit count of UUID1
+        self.db.update_hit_count(self.context, UUID1, 'node_url_1')
+
+        # Verify hit count is now 4
+        self.assertEqual(4, self.db.get_hit_count(self.context,
+                                                  UUID1, 'node_url_1'))
 
     def test_get(self):
         image = self.image_repo.get(UUID1)

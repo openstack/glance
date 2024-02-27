@@ -174,6 +174,128 @@ class TestMetadefSqlAlchemyDriver(base_metadef.TestMetadefDriver,
         self.addCleanup(db_tests.reset)
 
 
+class TestImageCacheOperations(base.TestDriver,
+                               base.FunctionalInitWrapper):
+
+    def setUp(self):
+        db_tests.load(get_db, reset_db)
+        super(TestImageCacheOperations, self).setUp()
+
+        self.addCleanup(db_tests.reset)
+
+        # Create two images
+        self.images = []
+        for num in range(0, 2):
+            size = 100
+            image = self.db_api.image_create(
+                self.adm_context,
+                {'status': 'active',
+                 'owner': self.adm_context.owner,
+                 'size': size,
+                 'name': 'test-%s-%i' % ('active', num)})
+            self.images.append(image)
+
+        # Create two node_references
+        self.node_references = [
+            self.db_api.node_reference_create(
+                self.adm_context, 'node_url_1'),
+            self.db_api.node_reference_create(
+                self.adm_context, 'node_url_2'),
+        ]
+
+        # Cache two images on node_url_1
+        for node in self.node_references:
+            if node['node_reference_url'] == 'node_url_2':
+                continue
+
+            for image in self.images:
+                self.db_api.insert_cache_details(
+                    self.adm_context, 'node_url_1',
+                    image['id'], image['size'], hits=3)
+
+    def test_node_reference_get_by_url(self):
+        node_reference = self.db_api.node_reference_get_by_url(
+            self.adm_context, 'node_url_1')
+        self.assertEqual('node_url_1',
+                         node_reference['node_reference_url'])
+
+    def test_node_reference_get_by_url_not_found(self):
+        self.assertRaises(exception.NotFound,
+                          self.db_api.node_reference_get_by_url,
+                          self.adm_context,
+                          'garbage_url')
+
+    def test_get_cached_images(self):
+        # Two images are cached on node 'node_url_1'
+        cached_images = self.db_api.get_cached_images(
+            self.adm_context, 'node_url_1')
+        self.assertEqual(2, len(cached_images))
+
+        # Nothing is cached on node 'node_url_2'
+        cached_images = self.db_api.get_cached_images(
+            self.adm_context, 'node_url_2')
+        self.assertEqual(0, len(cached_images))
+
+    def test_get_hit_count(self):
+        # Hit count will be 3 for image on node_url_1
+        hit_count = self.db_api.get_hit_count(
+            self.adm_context, self.images[0]['id'], 'node_url_1')
+        self.assertEqual(3, hit_count)
+
+        # Hit count will be 0 for image on node_url_2
+        hit_count = self.db_api.get_hit_count(
+            self.adm_context, self.images[0]['id'], 'node_url_2')
+        self.assertEqual(0, hit_count)
+
+    def test_delete_all_cached_images(self):
+        # delete all images from node_url_1
+        self.db_api.delete_all_cached_images(
+            self.adm_context, 'node_url_1')
+        # Verify all images are deleted
+        cached_images = self.db_api.get_cached_images(
+            self.adm_context, 'node_url_1')
+        self.assertEqual(0, len(cached_images))
+
+    def test_delete_cached_image(self):
+        # Delete cached image from node_url_1
+        self.db_api.delete_cached_image(
+            self.adm_context, self.images[0]['id'], 'node_url_1')
+
+        # verify that image is deleted
+        self.assertFalse(self.db_api.is_image_cached_for_node(
+            self.adm_context, 'node_url_1', self.images[0]['id']))
+
+    def test_get_least_recently_accessed(self):
+        recently_accessed = self.db_api.get_least_recently_accessed(
+            self.adm_context, 'node_url_1')
+        # Verify we get last cached image in response
+        self.assertEqual(self.images[0]['id'], recently_accessed)
+
+    def test_is_image_cached_for_node(self):
+        # Verify image is cached for node_url_1
+        self.assertTrue(self.db_api.is_image_cached_for_node(
+            self.adm_context, 'node_url_1', self.images[0]['id']))
+
+        # Verify image is not cached for node_url_2
+        self.assertFalse(self.db_api.is_image_cached_for_node(
+            self.adm_context, 'node_url_2', self.images[0]['id']))
+
+    def test_update_hit_count(self):
+        # Verify image on node_url_1 has 3 as hit count
+        hit_count = self.db_api.get_hit_count(
+            self.adm_context, self.images[0]['id'], 'node_url_1')
+        self.assertEqual(3, hit_count)
+
+        # Update the hit count of UUID1
+        self.db_api.update_hit_count(
+            self.adm_context, self.images[0]['id'], 'node_url_1')
+
+        # Verify hit count is now 4
+        hit_count = self.db_api.get_hit_count(
+            self.adm_context, self.images[0]['id'], 'node_url_1')
+        self.assertEqual(4, hit_count)
+
+
 class TestImageAtomicOps(base.TestDriver,
                          base.FunctionalInitWrapper):
 
