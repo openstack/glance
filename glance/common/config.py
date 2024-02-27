@@ -657,7 +657,12 @@ def parse_args(args=None, usage=None, default_config_files=None):
 
 
 def parse_cache_args(args=None):
-    config_files = cfg.find_config_files(project='glance', prog='glance-cache')
+    config_files = cfg.find_config_files(project='glance', prog='glance-api')
+    # NOTE(abhishekk): Reading glance-api file first and glance-cache file
+    # later so that if glance-cache file has different values set for some
+    # cache related options then they should take precedence.
+    config_files.extend(cfg.find_config_files(project='glance',
+                                              prog='glance-cache'))
     parse_args(args=args, default_config_files=config_files)
 
 
