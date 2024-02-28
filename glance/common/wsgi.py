@@ -56,6 +56,7 @@ import glance.db
 from glance import housekeeping
 from glance import i18n
 from glance.i18n import _, _LE, _LI, _LW
+from glance import sqlite_migration
 
 
 bind_opts = [
@@ -454,6 +455,10 @@ class BaseServer(metaclass=abc.ABCMeta):
         self.application = application
         self.default_port = default_port
         self.configure()
+
+        # NOTE(abhishekk): This will raise RuntimeError if
+        # worker_self_reference_url is not set in glance-api.conf
+        sqlite_migration.migrate_if_required()
         self.start_wsgi()
 
         # NOTE(danms): This may raise GlanceException if the staging store is
