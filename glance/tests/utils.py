@@ -32,6 +32,7 @@ from unittest import mock
 
 from alembic import command as alembic_command
 import fixtures
+from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log.fixture import logging_error as log_fixture
@@ -86,6 +87,9 @@ class BaseTestCase(testtools.TestCase):
         self.test_dir2 = self.useFixture(fixtures.TempDir()).path
         self.conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(self.conf_dir)
+        self.lock_dir = os.path.join(self.test_dir, 'locks')
+        utils.safe_mkdirs(self.lock_dir)
+        lockutils.set_defaults(self.lock_dir)
         self.set_policy()
 
         # Limit the amount of DeprecationWarning messages in the unit test logs
