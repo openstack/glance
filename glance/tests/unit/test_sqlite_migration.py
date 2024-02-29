@@ -16,6 +16,7 @@
 from contextlib import contextmanager
 import os
 import sqlite3
+import tempfile
 import time
 from unittest import mock
 import uuid
@@ -38,8 +39,8 @@ class TestMigrate(test_utils.BaseTestCase):
         super(TestMigrate, self).setUp()
 
         self.config(worker_self_reference_url='http://worker1.example.com')
-
-        self.db = 'cache.db'
+        fd, self.db = tempfile.mkstemp(suffix=".db")
+        os.close(fd)
         self.db_api = unit_test_utils.FakeDB(initialize=False)
         self.migrate = sqlite_migration.Migrate(self.db, self.db_api)
         self.addCleanup(self.drop_db)
@@ -116,7 +117,7 @@ class TestMigrate(test_utils.BaseTestCase):
                 mock.call('Adding local node reference %(node)s in '
                           'centralized db',
                           {'node': 'http://worker1.example.com'}),
-                mock.call('Connecting to SQLite db %s', 'cache.db'),
+                mock.call('Connecting to SQLite db %s', self.db),
             ]
             mock_log.debug.assert_has_calls(expected_calls)
 
@@ -132,7 +133,7 @@ class TestMigrate(test_utils.BaseTestCase):
                 mock.call('Node reference %(node)s is already recorded, '
                           'ignoring it',
                           {'node': 'http://worker1.example.com'}),
-                mock.call('Connecting to SQLite db %s', 'cache.db'),
+                mock.call('Connecting to SQLite db %s', self.db),
             ]
             mock_log.debug.assert_has_calls(expected_calls)
 
@@ -149,7 +150,7 @@ class TestMigrate(test_utils.BaseTestCase):
                 mock.call('Adding local node reference %(node)s in '
                           'centralized db',
                           {'node': 'http://worker1.example.com'}),
-                mock.call('Connecting to SQLite db %s', 'cache.db'),
+                mock.call('Connecting to SQLite db %s', self.db),
                 mock.call('Skipping migrating image %(uuid)s from SQLite to '
                           'Centralized db for node %(node)s as it is present '
                           'in Centralized db.',
@@ -169,7 +170,7 @@ class TestMigrate(test_utils.BaseTestCase):
                 mock.call('Adding local node reference %(node)s in '
                           'centralized db',
                           {'node': 'http://worker1.example.com'}),
-                mock.call('Connecting to SQLite db %s', 'cache.db'),
+                mock.call('Connecting to SQLite db %s', self.db),
                 mock.call('Migrating image %s from SQLite to Centralized db.',
                           FAKE_IMAGE_1),
                 mock.call('Image %(uuid)s is migrated to centralized db for '
