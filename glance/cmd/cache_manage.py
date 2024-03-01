@@ -499,6 +499,9 @@ def user_confirm(prompt, default=False):
 
 
 def main():
+    print('In the Caracal development cycle, the glance-cache-manage command '
+          'has been deprecated in favor of the new Cache API. It is scheduled '
+          'to be removed in the Dalmatian development cycle.', file=sys.stderr)
     parser = argparse.ArgumentParser(
         description=_format_command_help(),
         formatter_class=argparse.RawDescriptionHelpFormatter)

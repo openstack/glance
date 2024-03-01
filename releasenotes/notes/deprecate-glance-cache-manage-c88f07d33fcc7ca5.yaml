@@ -1,0 +1,7 @@
+deprecations:
+  - |
+    The ``glance-cache-manage`` command is deprecated in this release in favor
+    of the new Cache API. It is subject to removal at the beginning of the
+    Dalmatian development cycle, following the `OpenStack standard deprecation
+    policy
+    <https://governance.openstack.org/reference/tags/assert_follows-standard-deprecation.html>`_.
