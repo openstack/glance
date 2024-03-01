@@ -42,8 +42,8 @@ CONF = cfg.CONF
 class Driver(base.Driver):
 
     """
-    Cache driver that uses xattr file tags and requires a filesystem
-    that has atimes set.
+    Cache driver that uses centralized database to store cache
+    information.
     """
 
     def __init__(self):
