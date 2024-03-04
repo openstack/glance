@@ -3877,7 +3877,9 @@ class TestImagesController(base.IsolatedUnitTest):
             virtual_size=3072, extra_properties=props)
         self.controller._delete_encryption_key(request.context, image)
         # Make sure the encryption key is gone
-        self.assertRaises(KeyError,
+        # TODO(tkajinam): Replace Exception by ManagedObjectNotFoundError once
+        #                 castellan in u-c is bumped to 4.4.0
+        self.assertRaises(Exception,  # noqa
                           self.controller._key_manager.get,
                           request.context, fake_encryption_key)
 
