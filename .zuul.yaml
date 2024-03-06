@@ -266,6 +266,35 @@
               image_cache_driver: "centralized_db"
 
 - job:
+    name: glance-grenade-centralized-cache
+    parent: grenade-multinode
+    description: |
+      Glance grenade multinode job where old glance will use
+      sqlite as cache driver and new glance will use centralized_db
+      as cache driver.
+    required-projects:
+      - opendev.org/openstack/grenade
+      - opendev.org/openstack/glance
+    vars:
+      # NOTE(abhishekk): We always want base devstack to install from
+      # stable/2023.2 where 'sqlite' is default cache driver, so that
+      # on upgrade we can verify that cache data is transferred from
+      # sqlite to central database. We will remove this job in 'E'
+      # cycle when 'sqlite' cache driver is removed from the glance.
+      grenade_from_branch: stable/2023.2
+      grenade_devstack_localrc:
+        shared:
+          GLANCE_STANDALONE: False
+          GLANCE_USE_IMPORT_WORKFLOW: True
+      devstack_local_conf:
+        test-config:
+          "$TEMPEST_CONFIG":
+            image:
+              image_caching_enabled: True
+      tox_envlist: all
+      tempest_test_regex: tempest.api.image.v2.admin.test_image_caching
+
+- job:
     name: glance-multistore-cinder-import
     parent: tempest-integrated-storage-import
     description: |
@@ -393,6 +422,9 @@
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
         - glance-centralized-cache:
+            voting: false
+            irrelevant-files: *tempest-irrelevant-files
+        - glance-grenade-centralized-cache:
             voting: false
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
