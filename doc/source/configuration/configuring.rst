@@ -759,10 +759,37 @@ using a pool called ``images``, run::
 Configuring the Cinder Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Note**: To create a Cinder volume from an image in this store quickly, additional
-settings are required. Please see the
+The cinder store gives you the ability to store images in volumes
+(one volume per image) in the Block Storage (Cinder) service.
+Glance does not have direct access to whatever backend(s) are configured
+for Cinder; it simply hands the image data over to the Block Storage
+service, and Cinder decides where exactly it will be stored.
+
+Glance can influence where the data will be stored by setting the
+``cinder_volume_type`` option when configuring your cinder store.
+See below for details.
+
+**Note**: To create a Cinder volume from an image in this store quickly,
+additional settings are required. Please see the
 `Volume-backed image <https://docs.openstack.org/cinder/latest/admin/blockstorage-volume-backed-image.html>`_
 documentation for more information.
+
+.. warning::
+
+    Because an Image-Volume created in a user account is susceptible to
+    modifications by normal users that can corrupt the image, we recommend
+    that service credentials should *always* be set in the configuration file
+    so that the Image-Volume will be created in an internal project not
+    directly accessible by non-service users.
+
+    To create the Image-Volume in internal project, we need to set the following
+    configuration parameters to the glance service user and the internal service
+    project:
+
+    * ``cinder_store_user_name``
+    * ``cinder_store_password``
+    * ``cinder_store_project_name``
+    * ``cinder_store_auth_address``
 
 ``cinder_catalog_info=<service_type>:<service_name>:<endpoint_type>``
   Optional. Default: ``volumev2::publicURL``
@@ -961,15 +988,34 @@ Configuring multiple Cinder Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From Victoria onwards Glance fully supports configuring multiple cinder
-backends and user/operator will decide which cinder backend to use. While
-using cinder as a store for glance, operator may configure which volume
-types to used by setting the ``enabled_backends`` configuration option in
-``glance-api.conf``. For each of the stores defined in ``enabled_backends``
-administrator has to set specific ``volume_type`` using
-``cinder_volume_type`` configuration option in its own config section.
+stores by taking advantage of cinder ``volume-types``. Note that volume-types
+are defined by a Cinder administrator, and hence setting up multiple cinder
+stores will require collaboration with the Cinder admin.
 
-**NOTE** Even in cinder one backend can be associated with multiple
-volume type(s), glance will support only one store per cinder volume type.
+From the Glance side, you will add each of the cinder stores you want to
+define to the ``enabled_backends`` configuration option in glance
+configuration file. For each of these stores, you must then set the
+``cinder_volume_type`` configuration option in the store's specific
+configuration section of glance-api.conf. What to set it to will depend on
+the volume-types that are available in Cinder; consult with your Cinder
+administrator to get a list of appropriate volume-types.
+
+.. warning::
+
+    It is mandatory to set the following configuration parameters for
+    multiple cinder stores to work:
+
+    * ``cinder_store_user_name``
+    * ``cinder_store_password``
+    * ``cinder_store_project_name``
+    * ``cinder_store_auth_address``
+    * ``cinder_volume_type``
+
+    This is because, when initializing the cinder store, we query cinder
+    to validate the volume types set in the glance configuration file using
+    the above credentials. If this is not validated during sevice start, we
+    might fail to create the image later due to invalid volume type being
+    configured.
 
 Below are some multiple cinder store configuration examples.
 
@@ -1029,6 +1075,10 @@ Example config before upgrade::
     default_store = cinder
     cinder_state_transition_timeout = 300
     rootwrap_config = /etc/glance/rootwrap.conf
+    cinder_store_auth_address = http://localhost/identity/v3
+    cinder_store_user_name = glance
+    cinder_store_password = admin
+    cinder_store_project_name = service
     cinder_catalog_info = volumev2::publicURL
     cinder_volume_type = glance-old
 
@@ -1081,6 +1131,10 @@ Example config before upgrade::
     stores = cinder, file, http
     default_store = cinder
     cinder_state_transition_timeout = 300
+    cinder_store_auth_address = http://localhost/identity/v3
+    cinder_store_user_name = glance
+    cinder_store_password = admin
+    cinder_store_project_name = service
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_catalog_info = volumev2::publicURL
 
@@ -1136,6 +1190,10 @@ Example config before upgrade::
     cinder_state_transition_timeout = 300
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_catalog_info = volumev2::publicURL
+    cinder_store_auth_address = http://localhost/identity/v3
+    cinder_store_user_name = glance
+    cinder_store_password = admin
+    cinder_store_project_name = service
 
 Example config after upgrade::
 
@@ -1168,11 +1226,123 @@ Example config after upgrade::
     cinder_store_project_name = service
     # etc..
 
+Example 5: Upgrade from single cinder store to multiple cinder stores, if
+properties like ``cinder_store_user_name``, ``cinder_store_password``,
+``cinder_store_project_name`` and ``cinder_store_auth_address``, are not
+set in single store::
+
+    # old configuration in glance
+    [glance_store]
+    stores = cinder, file, http
+    default_store = cinder
+    cinder_state_transition_timeout = 300
+    rootwrap_config = /etc/glance/rootwrap.conf
+
+Example config after upgrade::
+
+    # new configuration in glance
+    [DEFAULT]
+    enabled_backends = new:cinder
+
+    [glance_store]
+    default_backend = new
+
+    [new]
+    rootwrap_config = /etc/glance/rootwrap.conf
+    cinder_volume_type = glance-new
+    description = NFS based cinder store
+    cinder_catalog_info = volumev2::publicURL
+    cinder_store_auth_address = http://localhost/identity/v3
+    cinder_store_user_name = glance
+    cinder_store_password = admin
+    cinder_store_project_name = service
+    # etc..
+
+Since the cinder specific properties were not set in single store, the
+Image-Volumes would exist in user projects which needs to be transferred.
+After upgrading to multi store, you need to make sure all the
+Image-Volumes are transferred to the ``service`` project.
+
+Procedure:
+
+1. Login to the user and project owning the Image-Volume and create a volume
+transfer request.
+
+.. code-block:: console
+
+    openstack volume transfer request create <Image-Volume-ID>
+
+Note down the ``id`` and ``auth_key`` as they will be used
+when accepting the transfer.
+
+2. List the transfer request to verify the transfer was created successfully.
+
+.. code-block:: console
+
+    openstack volume transfer request list
+
+3. Login to the glance user and service project and accept the transfer.
+
+.. code-block:: console
+
+    openstack volume transfer request accept transferID authKey
+
+4. List the volumes to see if the Image-Volume was transferred successfully.
+
+.. code-block:: console
+
+    openstack volume list --name <Image-Volume-Name>
+
+Once all the Image-Volumes are migrated to the service project, you can
+list or show the images and it will update the location from old format
+to the new format.
+
+.. warning::
+
+    It is important to note that when upgrading from single store to
+    multiple stores, the values for cinder store specific configuration
+    parameters should remain the same before and after the upgrade.
+
+    Example: Suppose you have the following credentials set in single store
+    configuration::
+
+        [glance_store]
+        stores = cinder, file, http
+        default_store = cinder
+        cinder_state_transition_timeout = 300
+        rootwrap_config = /etc/glance/rootwrap.conf
+        cinder_catalog_info = volumev2::publicURL
+        cinder_store_auth_address = http://localhost/identity/v3
+        cinder_store_user_name = glance
+        cinder_store_password = admin
+        cinder_store_project_name = service
+
+    Then after the upgrade, the cinder specific paramter values for
+    ``cinder_store_auth_address``, ``cinder_store_user_name``,
+    ``cinder_store_password`` and ``cinder_store_project_name``
+    should be same::
+
+        [DEFAULT]
+        enabled_backends = new:cinder
+
+        [glance_store]
+        default_backend = new
+
+        [new]
+        rootwrap_config = /etc/glance/rootwrap.conf
+        cinder_volume_type = glance-new
+        description = NFS based cinder store
+        cinder_catalog_info = volumev2::publicURL
+        cinder_store_auth_address = http://localhost/identity/v3
+        cinder_store_user_name = glance
+        cinder_store_password = admin
+        cinder_store_project_name = service
+
 While upgrading from single cinder stores to multiple single stores, location
 URLs for legacy images will be changed from ``cinder://volume-id`` to
 ``cinder://store-name/volume-id``.
 
-**Note** After upgrade from single cinder store to use multiple cinder
+**Note**: After upgrade from single cinder store to use multiple cinder
 stores the first ``image-list`` or first ``GET`` or ``image-show`` call for
 image will take additional time as we will perform the lazy loading
 operation to update legacy image location url to use new image location urls.
