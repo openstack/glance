@@ -33,15 +33,18 @@ CONF.import_opt("image_cache_sqlite_db", "glance.image_cache.drivers.sqlite")
 
 
 def can_migrate_to_central_db():
+    # Return immediately if cache is disabled
+    if not (CONF.paste_deploy.flavor and 'cache' in CONF.paste_deploy.flavor):
+        return False
+
+    is_centralized_db_driver = CONF.image_cache_driver == "centralized_db"
     # Check worker_self_reference_url is set if cache is enabled and
     # cache driver is centralized_db
-    is_centralized_db_driver = CONF.image_cache_driver == "centralized_db"
-    if CONF.paste_deploy.flavor and 'cache' in CONF.paste_deploy.flavor:
-        if is_centralized_db_driver and not CONF.worker_self_reference_url:
-            msg = _("'worker_self_reference_url' needs to be set "
-                    "if `centralized_db` is defined as cache driver "
-                    "for image_cache_driver config option.")
-            raise RuntimeError(msg)
+    if is_centralized_db_driver and not CONF.worker_self_reference_url:
+        msg = _("'worker_self_reference_url' needs to be set "
+                "if `centralized_db` is defined as cache driver "
+                "for image_cache_driver config option.")
+        raise RuntimeError(msg)
 
     return is_centralized_db_driver
 

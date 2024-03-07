@@ -101,10 +101,16 @@ class TestMigrate(test_utils.BaseTestCase):
         self.config(image_cache_driver="sqlite")
         self.assertFalse(sqlite_migration.migrate_if_required())
 
+    def test_migrate_if_required_cache_disabled(self):
+        self.config(flavor="keystone", group="paste_deploy")
+        self.config(image_cache_driver="centralized_db")
+        self.assertFalse(sqlite_migration.migrate_if_required())
+
     @mock.patch('os.path.exists')
     @mock.patch('os.path.join', new=mock.MagicMock())
     def test_migrate_if_required_db_not_found(self, mock_exists):
         mock_exists.return_value = False
+        self.config(flavor="keystone+cache", group="paste_deploy")
         self.config(image_cache_driver="centralized_db")
         with mock.patch.object(sqlite_migration, 'LOG') as mock_log:
             sqlite_migration.migrate_if_required()
