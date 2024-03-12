@@ -714,7 +714,6 @@ class _VerifyImageState(task.Task):
     def execute(self):
         """Verify we have active image
 
-        :param image_id: Glance Image ID
         """
         with self.action_wrapper as action:
             if action.image_status != 'active':
@@ -773,7 +772,6 @@ class _CompleteTask(task.Task):
     def execute(self):
         """Finishing the task flow
 
-        :param image_id: Glance Image ID
         """
         task = script_utils.get_task(self.task_repo, self.task_id)
         if task is not None:

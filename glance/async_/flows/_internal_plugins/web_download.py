@@ -40,7 +40,6 @@ class _WebDownload(base_download.BaseDownload):
     def execute(self):
         """Create temp file into store and return path to it
 
-        :param image_id: Glance Image ID
         """
         # NOTE(jokke): We've decided to use staging area for this task as
         # a way to expect users to configure a local store for pre-import

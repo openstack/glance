@@ -496,7 +496,7 @@ class BaseServer(metaclass=abc.ABCMeta):
         Apply configuration settings
 
         :param old_conf: Cached old configuration settings (if any)
-        :param has changed: callable to determine if a parameter has changed
+        :param has_changed: callable to determine if a parameter has changed
         """
         eventlet.wsgi.MAX_HEADER_LINE = CONF.max_header_line
         self.client_socket_timeout = CONF.client_socket_timeout or None

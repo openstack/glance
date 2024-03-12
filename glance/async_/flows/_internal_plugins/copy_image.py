@@ -52,7 +52,7 @@ class _CopyImage(task.Task):
     def _execute(self, action):
         """Create temp file into store and return path to it
 
-        :param image_id: Glance Image ID
+        :param action: Action wrapper
         """
         # NOTE (abhishekk): If ``all_stores_must_succeed`` is set to True
         # and copying task fails then we keep data in staging area as it
