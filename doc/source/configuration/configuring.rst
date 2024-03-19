@@ -1703,22 +1703,6 @@ load balancer URL would be used for this value.
 ``public_endpoint=<None|URL>``
   Optional. Default: ``None``
 
-Configuring Glance digest algorithm
------------------------------------
-
-Digest algorithm that will be used for digital signature. The default
-is sha256. Use the command::
-
-  openssl list-message-digest-algorithms
-
-to get the available algorithms supported by the version of OpenSSL on the
-platform. Examples are "sha1", "sha256", "sha512", etc. If an invalid
-digest algorithm is configured, all digital signature operations will fail and
-return a ValueError exception with "No such digest method" error.
-
-``digest_algorithm=<algorithm>``
-  Optional. Default: ``sha256``
-
 Configuring http_keepalive option
 ---------------------------------
 

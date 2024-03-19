@@ -530,6 +530,11 @@ Related options:
 """)),
     cfg.StrOpt('digest_algorithm',
                default='sha256',
+               deprecated_for_removal=True,
+               deprecated_since="Dalmatian",
+               deprecated_reason=_("""
+This option has had no effect since the removal of native SSL support.
+"""),
                help=_("""
 Digest algorithm to use for digital signature.
 

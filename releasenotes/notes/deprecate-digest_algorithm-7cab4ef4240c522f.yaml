@@ -1,0 +1,10 @@
+---
+deprecations:
+  - |
+    The ``digest_algorithm`` configuration option has been deprecated in this
+    release and is subject to removal at the beginning of the F development
+    cycle, following the
+    `OpenStack standard deprecation policy
+    <https://governance.openstack.org/reference/tags/assert_follows-standard-deprecation.html>`_.
+
+    This option has had no effect since the removal of native SSL support.
