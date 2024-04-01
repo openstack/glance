@@ -122,6 +122,14 @@ class _ConvertImage(task.Task):
             raise RuntimeError(
                 'QCOW images with backing files are not allowed')
 
+        try:
+            data_file = metadata['format-specific']['data']['data-file']
+        except KeyError:
+            data_file = None
+        if data_file is not None:
+            raise RuntimeError(
+                'QCOW images with data-file set are not allowed')
+
         if metadata.get('format') == 'vmdk':
             create_type = metadata.get(
                 'format-specific', {}).get(
