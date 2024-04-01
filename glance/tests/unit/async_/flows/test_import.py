@@ -178,6 +178,39 @@ class TestImportTask(test_utils.BaseTestCase):
                 self.assertFalse(os.path.exists(tmp_image_path))
                 self.assertTrue(os.path.exists(image_path))
 
+    def test_import_flow_invalid_data_file(self):
+        self.config(engine_mode='serial',
+                    group='taskflow_executor')
+
+        img_factory = mock.MagicMock()
+
+        executor = taskflow_executor.TaskExecutor(
+            self.context,
+            self.task_repo,
+            self.img_repo,
+            img_factory)
+
+        self.task_repo.get.return_value = self.task
+
+        def create_image(*args, **kwargs):
+            kwargs['image_id'] = UUID1
+            return self.img_factory.new_image(*args, **kwargs)
+
+        self.img_repo.get.return_value = self.image
+        img_factory.new_image.side_effect = create_image
+
+        with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
+            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
+
+            with mock.patch.object(putils, 'trycmd') as tmock:
+                out = json.dumps({'format-specific':
+                                  {'data': {'data-file': 'somefile'}}})
+                tmock.return_value = (out, '')
+                e = self.assertRaises(RuntimeError,
+                                      executor.begin_processing,
+                                      self.task.task_id)
+                self.assertIn('somefile', str(e))
+
     def test_import_flow_revert_import_to_fs(self):
         self.config(engine_mode='serial', group='taskflow_executor')
 
