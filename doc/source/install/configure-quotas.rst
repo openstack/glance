@@ -9,13 +9,23 @@
      username = glance
      system_scope = all
      password = GLANCE_PASS
-     endpoint_id = 340be3625e9b4239a6415d034e98aace
+     endpoint_id = ENDPOINT_ID
      region_name = RegionOne
 
   .. end
 
   Replace ``GLANCE_PASS`` with the password you chose for the
   ``glance`` user in the Identity service.
+
+  Replace ENDPOINT_ID with the ID of the image endpoint you
+  created earlier (in our case, this would be
+  340be3625e9b4239a6415d034e98aace), and that you may find by running:
+
+  .. code-block:: console
+
+    $ openstack endpoint list --service glance --region RegionOne
+
+  .. end
 
   Make sure that the glance account has reader access to
   system-scope resources (like limits):
