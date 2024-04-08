@@ -234,9 +234,6 @@ def _update_cinder_location_and_store_id(context, loc):
             loc['metadata']['store'] = "%s" % store
             return
 
-    LOG.warning(_LW("Not able to update location url '%s' of legacy image "
-                    "due to unknown issues."), uri)
-
 
 def get_updated_store_location(locations):
     for loc in locations:
