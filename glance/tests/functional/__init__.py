@@ -1134,15 +1134,6 @@ class FunctionalTest(test_utils.BaseTestCase):
         if self.include_scrubber:
             self.stop_server(self.scrubber_daemon)
 
-    def run_sql_cmd(self, sql):
-        """
-        Provides a crude mechanism to run manual SQL commands for backend
-        DB verification within the functional tests.
-        The raw result set is returned.
-        """
-        engine = db_api.get_engine()
-        return engine.execute(sql)
-
     def copy_data_file(self, file_name, dst_dir):
         src_file_name = os.path.join('glance/tests/etc', file_name)
         shutil.copy(src_file_name, dst_dir)
@@ -1485,15 +1476,6 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         self.stop_server(self.api_server_multiple_backend)
         if self.include_scrubber:
             self.stop_server(self.scrubber_daemon)
-
-    def run_sql_cmd(self, sql):
-        """
-        Provides a crude mechanism to run manual SQL commands for backend
-        DB verification within the functional tests.
-        The raw result set is returned.
-        """
-        engine = db_api.get_engine()
-        return engine.execute(sql)
 
     def copy_data_file(self, file_name, dst_dir):
         src_file_name = os.path.join('glance/tests/etc', file_name)
