@@ -26,6 +26,7 @@ from taskflow.patterns import linear_flow as lf
 from taskflow import task
 
 from glance.async_ import utils
+from glance.common import format_inspector
 from glance.i18n import _, _LI
 
 LOG = logging.getLogger(__name__)
@@ -88,8 +89,40 @@ class _ConvertImage(task.Task):
                                              'target': target_format}
         self.dest_path = dest_path
 
+        source_format = action.image_disk_format
+        inspector_cls = format_inspector.get_inspector(source_format)
+        if not inspector_cls:
+            # We cannot convert from disk_format types that qemu-img doesn't
+            # support (like iso, ploop, etc). The ones it supports overlaps
+            # with the ones we have inspectors for, so reject conversion for
+            # any format we don't have an inspector for.
+            raise RuntimeError(
+                'Unable to convert from format %s' % source_format)
+
+        # Use our own cautious inspector module (if we have one for this
+        # format) to make sure a file is the format the submitter claimed
+        # it is and that it passes some basic safety checks _before_ we run
+        # qemu-img on it.
+        # See https://bugs.launchpad.net/nova/+bug/2059809 for details.
+        try:
+            inspector = inspector_cls.from_file(src_path)
+            if not inspector.safety_check():
+                LOG.error('Image failed %s safety check; aborting conversion',
+                          source_format)
+                raise RuntimeError('Image has disallowed configuration')
+        except RuntimeError:
+            raise
+        except format_inspector.ImageFormatError as e:
+            LOG.error('Image claimed to be %s format failed format '
+                      'inspection: %s', source_format, e)
+            raise RuntimeError('Image format detection failed')
+        except Exception as e:
+            LOG.exception('Unknown error inspecting image format: %s', e)
+            raise RuntimeError('Unable to inspect image')
+
         try:
             stdout, stderr = putils.trycmd("qemu-img", "info",
+                                           "-f", source_format,
                                            "--output=json",
                                            src_path,
                                            prlimit=utils.QEMU_IMG_PROC_LIMITS,
@@ -106,13 +139,10 @@ class _ConvertImage(task.Task):
             raise RuntimeError(stderr)
 
         metadata = json.loads(stdout)
-        try:
-            source_format = metadata['format']
-        except KeyError:
-            msg = ("Failed to do introspection as part of image "
-                   "conversion for %(iid)s: Source format not reported")
-            LOG.error(msg, {'iid': self.image_id})
-            raise RuntimeError(msg)
+        if metadata.get('format') != source_format:
+            LOG.error('Image claiming to be %s reported as %s by qemu-img',
+                      source_format, metadata.get('format', 'unknown'))
+            raise RuntimeError('Image metadata disagrees about format')
 
         virtual_size = metadata.get('virtual-size', 0)
         action.set_image_attribute(virtual_size=virtual_size)
