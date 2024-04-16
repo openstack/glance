@@ -51,17 +51,27 @@ class TestFormatInspectors(test_utils.BaseTestCase):
             except Exception:
                 pass
 
-    def _create_img(self, fmt, size, subformat=None):
+    def _create_img(self, fmt, size, subformat=None, options=None,
+                    backing_file=None):
         if fmt == 'vhd':
             # QEMU calls the vhd format vpc
             fmt = 'vpc'
 
+        if options is None:
+            options = {}
         opt = ''
         prefix = 'glance-unittest-formatinspector-'
 
         if subformat:
-            opt = ' -o subformat=%s' % subformat
+            options['subformat'] = subformat
             prefix += subformat + '-'
+
+        if options:
+            opt += '-o ' + ','.join('%s=%s' % (k, v)
+                                    for k, v in options.items())
+
+        if backing_file is not None:
+            opt += ' -b %s -F raw' % backing_file
 
         fn = tempfile.mktemp(prefix=prefix,
                              suffix='.%s' % fmt)
@@ -160,6 +170,15 @@ class TestFormatInspectors(test_utils.BaseTestCase):
     def test_vmdk_stream_optimized(self):
         self._test_format('vmdk', 'streamOptimized')
 
+    def test_from_file_reads_minimum(self):
+        img = self._create_img('qcow2', 10 * units.Mi)
+        file_size = os.stat(img).st_size
+        fmt = format_inspector.QcowInspector.from_file(img)
+        # We know everything we need from the first 512 bytes of a QCOW image,
+        # so make sure that we did not read the whole thing when we inspect
+        # a local file.
+        self.assertLess(fmt.actual_size, file_size)
+
     def _test_vmdk_bad_descriptor_offset(self, subformat=None):
         format_name = 'vmdk'
         image_size = 10 * units.Mi
@@ -230,6 +249,65 @@ class TestFormatInspectors(test_utils.BaseTestCase):
 
     def test_vmdk_bad_descriptor_mem_limit_stream_optimized(self):
         self._test_vmdk_bad_descriptor_mem_limit(subformat='streamOptimized')
+
+    def test_qcow2_safety_checks(self):
+        # Create backing and data-file names (and initialize the backing file)
+        backing_fn = tempfile.mktemp(prefix='backing')
+        self._created_files.append(backing_fn)
+        with open(backing_fn, 'w') as f:
+            f.write('foobar')
+        data_fn = tempfile.mktemp(prefix='data')
+        self._created_files.append(data_fn)
+
+        # A qcow with no backing or data file is safe
+        fn = self._create_img('qcow2', 5 * units.Mi, None)
+        inspector = format_inspector.QcowInspector.from_file(fn)
+        self.assertTrue(inspector.safety_check())
+
+        # A backing file makes it unsafe
+        fn = self._create_img('qcow2', 5 * units.Mi, None,
+                              backing_file=backing_fn)
+        inspector = format_inspector.QcowInspector.from_file(fn)
+        self.assertFalse(inspector.safety_check())
+
+        # Note(lajoskatona): This image create fails on bionic due to
+        # old qemu-img utilities, let's skip this only test from yoga
+        # A data-file makes it unsafe
+        # fn = self._create_img('qcow2', 5 * units.Mi,
+        #                       options={'data_file': data_fn,
+        #                                'data_file_raw': 'on'})
+        # inspector = format_inspector.QcowInspector.from_file(fn)
+        # self.assertFalse(inspector.safety_check())
+
+        # Trying to load a non-QCOW file is an error
+        self.assertRaises(format_inspector.ImageFormatError,
+                          format_inspector.QcowInspector.from_file,
+                          backing_fn)
+
+    def test_qcow2_feature_flag_checks(self):
+        data = bytearray(512)
+        data[0:4] = b'QFI\xFB'
+        inspector = format_inspector.QcowInspector()
+        inspector.region('header').data = data
+
+        # All zeros, no feature flags - all good
+        self.assertFalse(inspector.has_unknown_features)
+
+        # A feature flag set in the first byte (highest-order) is not
+        # something we know about, so fail.
+        data[0x48] = 0x01
+        self.assertTrue(inspector.has_unknown_features)
+
+        # The first bit in the last byte (lowest-order) is known (the dirty
+        # bit) so that should pass
+        data[0x48] = 0x00
+        data[0x4F] = 0x01
+        self.assertFalse(inspector.has_unknown_features)
+
+        # Currently (as of 2024), the high-order feature flag bit in the low-
+        # order byte is not assigned, so make sure we reject it.
+        data[0x4F] = 0x80
+        self.assertTrue(inspector.has_unknown_features)
 
     def test_vdi(self):
         self._test_format('vdi')
