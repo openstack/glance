@@ -19,7 +19,6 @@
 
 import collections.abc
 import copy
-import errno
 import functools
 import http.client
 import os
@@ -34,12 +33,6 @@ except ImportError:
     import ssl
 
 import osprofiler.web
-
-try:
-    import sendfile  # noqa
-    SENDFILE_SUPPORTED = True
-except ImportError:
-    SENDFILE_SUPPORTED = False
 
 from oslo_log import log as logging
 from oslo_utils import encodeutils
@@ -446,12 +439,6 @@ class BaseClient(object):
             def _filelike(body):
                 return hasattr(body, 'read')
 
-            def _sendbody(connection, iter):
-                connection.endheaders()
-                for sent in iter:
-                    # iterator has done the heavy lifting
-                    pass
-
             def _chunkbody(connection, iter):
                 connection.putheader('Transfer-Encoding', 'chunked')
                 connection.endheaders()
@@ -469,22 +456,15 @@ class BaseClient(object):
             elif _filelike(body) or self._iterable(body):
                 c.putrequest(method, path)
 
-                use_sendfile = self._sendable(body)
-
                 # According to HTTP/1.1, Content-Length and Transfer-Encoding
                 # conflict.
                 for header, value in headers.items():
-                    if use_sendfile or header.lower() != 'content-length':
+                    if header.lower() != 'content-length':
                         c.putheader(header, str(value))
 
                 iter = utils.chunkreadable(body)
 
-                if use_sendfile:
-                    # send actual file without copying into userspace
-                    _sendbody(c, iter)
-                else:
-                    # otherwise iterate and chunk
-                    _chunkbody(c, iter)
+                _chunkbody(c, iter)
             else:
                 raise TypeError('Unsupported image type: %s' % body.__class__)
 
@@ -527,22 +507,6 @@ class BaseClient(object):
 
         except (socket.error, IOError) as e:
             raise exception.ClientConnectionError(e)
-
-    def _seekable(self, body):
-        # pipes are not seekable, avoids sendfile() failure on e.g.
-        #   cat /path/to/image | glance add ...
-        # or where add command is launched via popen
-        try:
-            os.lseek(body.fileno(), 0, os.SEEK_CUR)
-            return True
-        except OSError as e:
-            return (e.errno != errno.ESPIPE)
-
-    def _sendable(self, body):
-        return (SENDFILE_SUPPORTED and
-                hasattr(body, 'fileno') and
-                self._seekable(body) and
-                not self.use_ssl)
 
     def _iterable(self, body):
         return isinstance(body, collections.abc.Iterable)

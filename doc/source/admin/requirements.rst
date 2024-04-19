@@ -23,9 +23,8 @@ External Requirements Affecting Glance
 
 Like other OpenStack projects, Glance uses some external libraries for a subset
 of its features. Some examples include the ``qemu-img`` utility used by the
-tasks feature, ``sendfile`` to utilize the "zero-copy" way of copying data
-faster, ``pydev`` to debug using popular IDEs, ``python-xattr`` for Image Cache
-using "xattr" driver.
+tasks feature, ``pydev`` to debug using popular IDEs, ``python-xattr`` for
+Image Cache using "xattr" driver.
 
 On the other hand, if ``dnspython`` is installed in the environment, Glance
 provides a workaround to make it work with IPV6.
