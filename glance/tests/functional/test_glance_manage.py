@@ -43,14 +43,14 @@ class TestGlanceManage(functional.FunctionalTest):
         utils.safe_mkdirs(conf_dir)
         self.conf_filepath = os.path.join(conf_dir, 'glance-manage.conf')
         self.db_filepath = os.path.join(self.test_dir, 'tests.sqlite')
-        self.connection = ('sql_connection = sqlite:///%s' %
+        self.connection = ('connection = sqlite:///%s' %
                            self.db_filepath)
         db_options.set_defaults(CONF, connection='sqlite:///%s' %
                                                  self.db_filepath)
 
     def _db_command(self, db_method):
         with open(self.conf_filepath, 'w') as conf_file:
-            conf_file.write('[DEFAULT]\n')
+            conf_file.write('[database]\n')
             conf_file.write(self.connection)
             conf_file.flush()
 
@@ -60,7 +60,7 @@ class TestGlanceManage(functional.FunctionalTest):
 
     def _check_db(self, expected_exitcode):
         with open(self.conf_filepath, 'w') as conf_file:
-            conf_file.write('[DEFAULT]\n')
+            conf_file.write('[database]\n')
             conf_file.write(self.connection)
             conf_file.flush()
 
