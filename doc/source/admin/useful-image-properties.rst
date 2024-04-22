@@ -21,10 +21,6 @@ Using image properties
 
 Some important points to keep in mind:
 
-* In order to allow custom image properties, Glance must be configured with
-  the ``glance-api.conf`` setting ``allow_additional_image_properties`` set
-  to True.  (This is the default setting.)
-
 * The ``glance-api.conf`` setting ``image_property_quota`` should be
   sufficiently high to allow any additional desired properties.  (The default
   is 128.)

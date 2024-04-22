@@ -1896,10 +1896,7 @@ def _get_base_links():
 def get_schema(custom_properties=None):
     properties = get_base_properties()
     links = _get_base_links()
-    if CONF.allow_additional_image_properties:
-        schema = glance.schema.PermissiveSchema('image', properties, links)
-    else:
-        schema = glance.schema.Schema('image', properties)
+    schema = glance.schema.PermissiveSchema('image', properties, links)
 
     if custom_properties:
         for property_value in custom_properties.values():
