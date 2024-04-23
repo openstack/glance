@@ -141,7 +141,7 @@ Here is a list of useful image properties and the values they expect.
   - ``qemu``
   - ``uml``
   - ``vmware``
-  - ``xen``.
+  - ``xen``
 
 ``instance_uuid``
   :Type: str
