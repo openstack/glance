@@ -2,9 +2,8 @@
 Image service overview
 ======================
 
-The Image service (glance) enables users to discover,
-register, and retrieve virtual machine images. It offers a
-:term:`REST <RESTful>` API that enables you to query virtual
+The Image service (glance) enables users to discover, register, and retrieve
+virtual machine images. It offers a REST API that enables you to query virtual
 machine image metadata and retrieve an actual image.
 You can store virtual machine images made available through
 the Image service in a variety of locations, from simple file

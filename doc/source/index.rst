@@ -99,8 +99,6 @@ Pick the documents that best match your user profile.
      - * `Image Service API Reference <https://docs.openstack.org/api-ref/image/>`_
        * `Image Service API Guide <https://specs.openstack.org/openstack/glance-specs/specs/api/v2/image-api-v2.html>`_
        * :doc:`user/index`
-   * - **Everyone**
-     - Here's a handy :doc:`glossary` of terms related to Glance
 
 .. toctree::
    :hidden:
@@ -111,4 +109,3 @@ Pick the documents that best match your user profile.
    install/index
    configuration/index
    user/index
-   glossary
