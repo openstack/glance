@@ -4252,11 +4252,6 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
             'checksum': CHKSUM,
             'bogus_key': 'bogus_value',
         }
-        request.body = jsonutils.dump_as_bytes(changes)
-        self.assertRaisesRegex(
-            webob.exc.HTTPBadRequest,
-            'Additional properties are not allowed',
-            self.deserializer.update, request)
 
         changes[0]['value']['validation_data'] = {
             'checksum': CHKSUM,
@@ -4971,7 +4966,6 @@ class TestImagesDeserializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImagesDeserializerWithExtendedSchema, self).setUp()
-        self.config(allow_additional_image_properties=False)
         custom_image_properties = {
             'pants': {
                 'type': 'string',
@@ -5030,7 +5024,6 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImagesDeserializerWithAdditionalProperties, self).setUp()
-        self.config(allow_additional_image_properties=True)
         self.deserializer = glance.api.v2.images.RequestDeserializer()
 
     def test_create(self):
@@ -5081,36 +5074,6 @@ class TestImagesDeserializerWithAdditionalProperties(test_utils.BaseTestCase):
             'path': ['foo'], 'value': 'bar'
         }
         self.assertEqual({'changes': [change]}, output)
-
-
-class TestImagesDeserializerNoAdditionalProperties(test_utils.BaseTestCase):
-
-    def setUp(self):
-        super(TestImagesDeserializerNoAdditionalProperties, self).setUp()
-        self.config(allow_additional_image_properties=False)
-        self.deserializer = glance.api.v2.images.RequestDeserializer()
-
-    def test_create_with_additional_properties_disallowed(self):
-        self.config(allow_additional_image_properties=False)
-        request = unit_test_utils.get_fake_request()
-        request.body = jsonutils.dump_as_bytes({'foo': 'bar'})
-        self.assertRaises(webob.exc.HTTPBadRequest,
-                          self.deserializer.create, request)
-
-    def test_neg_create_with_stores(self):
-        self.config(allow_additional_image_properties=True)
-        request = unit_test_utils.get_fake_request()
-        request.body = jsonutils.dump_as_bytes({'stores': 'test'})
-        self.assertRaises(webob.exc.HTTPForbidden,
-                          self.deserializer.create, request)
-
-    def test_update(self):
-        request = unit_test_utils.get_fake_request()
-        request.content_type = 'application/openstack-images-v2.1-json-patch'
-        doc = [{'op': 'add', 'path': '/foo', 'value': 'bar'}]
-        request.body = jsonutils.dump_as_bytes(doc)
-        self.assertRaises(webob.exc.HTTPBadRequest,
-                          self.deserializer.update, request)
 
 
 class TestImagesSerializer(test_utils.BaseTestCase):
@@ -5608,7 +5571,6 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImagesSerializerWithExtendedSchema, self).setUp()
-        self.config(allow_additional_image_properties=False)
         custom_image_properties = {
             'color': {
                 'type': 'string',
@@ -5651,6 +5613,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'min_disk': None,
             'disk_format': None,
             'container_format': None,
+            'mood': 'grouchy',
         }
         response = webob.Response()
         self.serializer.show(response, self.fixture)
@@ -5682,6 +5645,7 @@ class TestImagesSerializerWithExtendedSchema(test_utils.BaseTestCase):
             'min_disk': None,
             'disk_format': None,
             'container_format': None,
+            'mood': 'grouchy',
         }
         response = webob.Response()
         self.serializer.show(response, self.fixture)
@@ -5692,7 +5656,6 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
 
     def setUp(self):
         super(TestImagesSerializerWithAdditionalProperties, self).setUp()
-        self.config(allow_additional_image_properties=True)
         self.fixture = _domain_fixture(
             UUID2, name='image-2', owner=TENANT2,
             checksum='ca425b88f047ce8ec45ee90e813ada91',
@@ -5759,37 +5722,6 @@ class TestImagesSerializerWithAdditionalProperties(test_utils.BaseTestCase):
             'file': '/v2/images/%s/file' % UUID2,
             'schema': '/v2/schemas/image',
             'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
-            'min_ram': None,
-            'min_disk': None,
-            'disk_format': None,
-            'container_format': None,
-        }
-        response = webob.Response()
-        serializer.show(response, self.fixture)
-        self.assertEqual(expected, jsonutils.loads(response.body))
-
-    def test_show_with_additional_properties_disabled(self):
-        self.config(allow_additional_image_properties=False)
-        serializer = glance.api.v2.images.ResponseSerializer()
-        expected = {
-            'id': UUID2,
-            'name': 'image-2',
-            'status': 'queued',
-            'visibility': 'private',
-            'protected': False,
-            'os_hidden': False,
-            'checksum': 'ca425b88f047ce8ec45ee90e813ada91',
-            'os_hash_algo': FAKEHASHALGO,
-            'os_hash_value': MULTIHASH1,
-            'tags': [],
-            'size': 1024,
-            'virtual_size': 3072,
-            'owner': '2c014f32-55eb-467d-8fcb-4bd706012f81',
-            'created_at': ISOTIME,
-            'updated_at': ISOTIME,
-            'self': '/v2/images/%s' % UUID2,
-            'file': '/v2/images/%s/file' % UUID2,
-            'schema': '/v2/schemas/image',
             'min_ram': None,
             'min_disk': None,
             'disk_format': None,
@@ -5920,7 +5852,6 @@ class TestImageSchemaFormatConfiguration(test_utils.BaseTestCase):
 class TestImageSchemaDeterminePropertyBasis(test_utils.BaseTestCase):
 
     def test_custom_property_marked_as_non_base(self):
-        self.config(allow_additional_image_properties=False)
         custom_image_properties = {
             'pants': {
                 'type': 'string',

@@ -446,7 +446,6 @@ image_property_quota=%(image_property_quota)s
 image_tag_quota=%(image_tag_quota)s
 image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
-allow_additional_image_properties = True
 node_staging_uri=%(node_staging_uri)s
 [database]
 connection = %(sql_connection)s
@@ -633,7 +632,6 @@ image_property_quota=%(image_property_quota)s
 image_tag_quota=%(image_tag_quota)s
 image_location_quota=%(image_location_quota)s
 location_strategy=%(location_strategy)s
-allow_additional_image_properties = True
 enabled_backends=file1:file,file2:file,file3:file
 [database]
 connection = %(sql_connection)s

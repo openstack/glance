@@ -173,36 +173,6 @@ Related Options:
 ]
 
 common_opts = [
-    cfg.BoolOpt('allow_additional_image_properties', default=True,
-                deprecated_for_removal=True,
-                deprecated_since="Ussuri",
-                deprecated_reason=_("""
-This option is redundant.  Control custom image property usage via the
-'image_property_quota' configuration option.  This option is scheduled
-to be removed during the Victoria development cycle.
-"""),
-                help=_("""
-Allow users to add additional/custom properties to images.
-
-Glance defines a standard set of properties (in its schema) that
-appear on every image. These properties are also known as
-``base properties``. In addition to these properties, Glance
-allows users to add custom properties to images. These are known
-as ``additional properties``.
-
-By default, this configuration option is set to ``True`` and users
-are allowed to add additional properties. The number of additional
-properties that can be added to an image can be controlled via
-``image_property_quota`` configuration option.
-
-Possible values:
-    * True
-    * False
-
-Related options:
-    * image_property_quota
-
-""")),
     cfg.StrOpt('hashing_algorithm',
                default='sha512',
                help=_("""
@@ -254,12 +224,6 @@ Maximum number of properties allowed on an image.
 
 This enforces an upper limit on the number of additional properties an image
 can have. Any negative value is interpreted as unlimited.
-
-NOTE: This won't have any impact if additional properties are disabled. Please
-refer to ``allow_additional_image_properties``.
-
-Related options:
-    * ``allow_additional_image_properties``
 
 """)),
     cfg.IntOpt('image_tag_quota', default=128,

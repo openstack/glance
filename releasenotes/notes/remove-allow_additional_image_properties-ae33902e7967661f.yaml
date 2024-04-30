@@ -1,0 +1,4 @@
+---
+upgrade:
+  - The ``allow_additional_image_properties`` configuration option, which
+    was deprecated in Ussuri, has been removed in this release.

@@ -114,7 +114,7 @@ class TestPermissiveSchema(test_utils.BaseTestCase):
         }
         self.schema = glance.schema.PermissiveSchema('permissive', properties)
 
-    def test_validate_with_additional_properties_allowed(self):
+    def test_validate_with_additional_properties(self):
         obj = {'ham': 'virginia', 'eggs': 'scrambled', 'bacon': 'crispy'}
         self.schema.validate(obj)  # No exception raised
 
