@@ -37,9 +37,9 @@ For information about how to manage images, see the
 
       Install ``wget`` if your distribution does not include it.
 
-#. Upload the image to the Image service using the
-   :term:`QCOW2 <QEMU Copy On Write 2 (QCOW2)>` disk format, :term:`bare`
-   container format, and public visibility so all projects can access it:
+#. Upload the image to the Image service using the QCOW2 (QEMU Copy On Write 2)
+   disk format, bare container format, and public visibility so all projects
+   can access it:
 
    .. code-block:: console
 
