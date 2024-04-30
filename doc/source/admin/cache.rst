@@ -64,12 +64,6 @@ The following values are the ones that are specific to the
 ``glance-cache.conf`` and are only required for the prefetcher to run
 correctly.
 
-- ``admin_user`` The username for an admin account, this is so it can
-  get the image data into the cache.
-- ``admin_password`` The password to the admin account.
-- ``admin_tenant_name`` The tenant of the admin account.
-- ``auth_url`` The URL used to authenticate to keystone. This will
-  be taken from the environment variables if it exists.
 - ``filesystem_store_datadir`` This is used if using the filesystem
   store, points to where the data is kept.
 - ``filesystem_store_datadirs`` This is used to point to multiple
