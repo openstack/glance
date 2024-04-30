@@ -732,9 +732,6 @@ class GetSocketTestCase(test_utils.BaseTestCase):
         self.useFixture(fixtures.MonkeyPatch(
             "glance.common.wsgi.time.time",
             mock.Mock(side_effect=[0, 1, 5, 10, 20, 35])))
-        self.useFixture(fixtures.MonkeyPatch(
-            "glance.common.wsgi.utils.validate_key_cert",
-            lambda *x: None))
         wsgi.CONF.tcp_keepidle = 600
 
     @mock.patch.object(prefetcher, 'Prefetcher')
