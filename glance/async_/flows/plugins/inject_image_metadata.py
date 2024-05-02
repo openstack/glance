@@ -66,7 +66,6 @@ class _InjectMetadataProperties(task.Task):
     def execute(self):
         """Inject custom metadata properties to image
 
-        :param image_id: Glance Image ID
         """
         user_roles = self.context.roles
         ignore_user_roles = CONF.inject_metadata_properties.ignore_user_roles
