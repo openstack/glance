@@ -19,10 +19,7 @@ import shutil
 import tarfile
 import urllib
 
-try:
-    from defusedxml import cElementTree as ET
-except ImportError:
-    from defusedxml import ElementTree as ET
+from defusedxml import ElementTree as etree
 
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -194,7 +191,7 @@ class OVAImageExtractor(object):
 
         disk_filename, file_elements, file_ref = None, None, None
         properties = {}
-        for event, elem in ET.iterparse(ovf):
+        for event, elem in etree.iterparse(ovf):
             if event == 'end':
                 ns, tag = _get_namespace_and_tag(elem.tag)
                 if ns in CIM_NS and tag in self.interested_properties:
