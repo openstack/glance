@@ -36,6 +36,7 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 import glance_store
 from oslo_log import log as logging
 
+import glance.async_
 from glance.common import config
 from glance.image_cache import prefetcher
 
@@ -49,6 +50,7 @@ def main():
         config.parse_cache_args()
         logging.setup(CONF, 'glance')
         CONF.import_opt('enabled_backends', 'glance.common.wsgi')
+        glance.async_.set_threadpool_model('eventlet')
 
         if CONF.enabled_backends:
             glance_store.register_store_opts(CONF)
