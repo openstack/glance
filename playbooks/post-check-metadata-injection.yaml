@@ -9,12 +9,16 @@
           set -xe
           cirrosimg=$(glance image-list | grep cirros | cut -d" " -f 2)
 
-          echo "Dumping the cirros image for debugging..."
-          glance image-show $cirrosimg
+          # There could be more than one cirros image so traverse through the list
+          for image in $cirrosimg
+          do
+              echo "Dumping the cirros image for debugging..."
+              glance image-show $image
 
-          echo "Checking that the cirros image was decorated with metdata on import..."
-          glance image-list --property-filter 'glance_devstack_test=doyouseeme?' | grep cirros
+              echo "Checking that the cirros image was decorated with metdata on import..."
+              glance image-list --property-filter 'glance_devstack_test=doyouseeme?' | grep $image
 
-          echo "Checking that the cirros image was converted to raw on import..."
-          glance image-show $cirrosimg | egrep -e 'disk_format.*raw'
+              echo "Checking that the cirros image was converted to raw on import..."
+              glance image-show $image | egrep -e 'disk_format.*raw'
+          done
       environment: '{{ zuul | zuul_legacy_vars }}'
