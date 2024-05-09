@@ -213,6 +213,8 @@
       The regular tempest-integrated-storage job but with glance metadata injection
     post-run: playbooks/post-check-metadata-injection.yaml
     vars:
+      configure_swap_size: 8192
+      tempest_concurrency: 3
       zuul_copy_output:
         /etc/glance-remote: logs
       devstack_localrc:
