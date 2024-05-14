@@ -2,7 +2,7 @@
     name: glance-tox-oslo-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-focal
+    nodeset: ubuntu-jammy
     timeout: 2400
     description: Abstract job for Glance vs. oslo libraries
     # NOTE(rosmaita): we only need functional test jobs, oslo is
@@ -78,7 +78,7 @@
     name: glance-tox-keystone-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-focal
+    nodeset: ubuntu-jammy
     timeout: 2400
     description: Abstract job for Glance vs. keystone
     required-projects:
@@ -126,7 +126,7 @@
     name: glance-tox-glance_store-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-focal
+    nodeset: ubuntu-jammy
     timeout: 2400
     description: Abstract job for Glance vs. glance_store
     required-projects:
@@ -172,7 +172,7 @@
     name: glance-tox-cursive-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-focal
+    nodeset: ubuntu-jammy
     timeout: 2400
     description: Abstract job for Glance vs. cursive and related libs
     required-projects:
