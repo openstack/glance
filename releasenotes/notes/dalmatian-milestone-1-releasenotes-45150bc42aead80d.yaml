@@ -1,0 +1,6 @@
+---
+fixes:
+  - |
+    Bug 2065087_: glance-cache-prefetcher is not working as threadpool is not set
+
+    .. _2065087: https://code.launchpad.net/bugs/2065087
