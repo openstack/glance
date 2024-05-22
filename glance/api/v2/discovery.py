@@ -26,7 +26,7 @@ from glance.api.v2 import policy as api_policy
 from glance.common import exception
 from glance.common import wsgi
 import glance.db
-from glance.i18n import _
+from glance.i18n import _, _LW
 from glance.quota import keystone as ks_quota
 
 CONF = cfg.CONF
@@ -64,6 +64,21 @@ class InfoController(object):
                 continue
 
             stores = {}
+            if enabled_backends[backend] == 'swift':
+                conf_file = getattr(CONF, backend).swift_store_config_file
+                multitenant = getattr(CONF, backend).swift_store_multi_tenant
+                if multitenant and conf_file:
+                    msg = ("The config options 'swift_store_multi_tenant' "
+                           "and 'swift_store_config_file' are mutually "
+                           "exclusive. If you intend to use multi-tenant "
+                           "swift store, please make sure that you have "
+                           "not set a swift configuration file with the "
+                           "'swift_store_config_file' option. "
+                           "Excluding `%s:%s` store details from the "
+                           "response as it's not configured correctly."
+                           % (backend, enabled_backends[backend]))
+                    LOG.warning(_LW(msg))
+                    continue
             stores['id'] = backend
             description = getattr(CONF, backend).store_description
             if description:
@@ -103,7 +118,7 @@ class InfoController(object):
     @staticmethod
     def _get_swift_properties(store_detail):
         return {
-            'container': store_detail.container,
+            'container': getattr(store_detail, 'container', None),
             'large_object_size': store_detail.large_object_size,
             'large_object_chunk_size': store_detail.large_object_chunk_size
         }
