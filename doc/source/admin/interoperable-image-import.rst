@@ -720,8 +720,9 @@ only compressed images.
 
 .. note::
 
-    The plugin will not decompressed images which container_format is set
-    to 'compressed' to maintain the original intent of the image creator.
+    The plugin will not decompress images whose ``container_format`` is set to
+    ``compressed``. This is to maintain the original intent of the image
+    creator.
 
 To use the Image Decompression Plugin, the following configuration is
 required.
