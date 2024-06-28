@@ -20,11 +20,14 @@ DEPRECATED_REASON = """
 The metadata API now supports project scope and default roles.
 """
 
+METADEF_ADMIN = "rule:metadef_admin"
+METADEF_DEFAULT = "rule:metadef_default"
+
 
 metadef_policies = [
     policy.RuleDefault(name="metadef_default", check_str=""),
     policy.RuleDefault(name="metadef_admin",
-                       check_str="rule:context_is_admin"),
+                       check_str=base.ADMIN),
     policy.DocumentedRuleDefault(
         name="get_metadef_namespace",
         check_str=base.ADMIN_OR_PROJECT_READER_GET_NAMESPACE,
@@ -35,7 +38,7 @@ metadef_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_metadef_namespace", check_str="rule:metadef_default",
+            name="get_metadef_namespace", check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
@@ -50,14 +53,14 @@ metadef_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_metadef_namespaces", check_str="rule:metadef_default",
+            name="get_metadef_namespaces", check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
     ),
     policy.DocumentedRuleDefault(
         name="modify_metadef_namespace",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Modify an existing namespace.",
         operations=[
@@ -67,7 +70,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="add_metadef_namespace",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Create a namespace.",
         operations=[
@@ -77,7 +80,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_metadef_namespace",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Delete a namespace.",
         operations=[
@@ -97,7 +100,7 @@ metadef_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_metadef_object", check_str="rule:metadef_default",
+            name="get_metadef_object", check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
@@ -112,14 +115,14 @@ metadef_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_metadef_objects", check_str="rule:metadef_default",
+            name="get_metadef_objects", check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
     ),
     policy.DocumentedRuleDefault(
         name="modify_metadef_object",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Update an object within a namespace.",
         operations=[
@@ -130,7 +133,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="add_metadef_object",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Create an object within a namespace.",
         operations=[
@@ -140,7 +143,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_metadef_object",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Delete an object within a namespace.",
         operations=[
@@ -161,7 +164,7 @@ metadef_policies = [
         ],
         deprecated_rule=policy.DeprecatedRule(
             name="list_metadef_resource_types",
-            check_str="rule:metadef_default",
+            check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
@@ -177,14 +180,14 @@ metadef_policies = [
         ],
         deprecated_rule=policy.DeprecatedRule(
             name="get_metadef_resource_type",
-            check_str="rule:metadef_default",
+            check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
     ),
     policy.DocumentedRuleDefault(
         name="add_metadef_resource_type_association",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Create meta definition resource types association.",
         operations=[
@@ -194,7 +197,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="remove_metadef_resource_type_association",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Delete meta definition resource types association.",
         operations=[
@@ -216,7 +219,7 @@ metadef_policies = [
         ],
         deprecated_rule=policy.DeprecatedRule(
             name="get_metadef_property",
-            check_str="rule:metadef_default",
+            check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
@@ -232,14 +235,14 @@ metadef_policies = [
         ],
         deprecated_rule=policy.DeprecatedRule(
             name="get_metadef_properties",
-            check_str="rule:metadef_default",
+            check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
     ),
     policy.DocumentedRuleDefault(
         name="modify_metadef_property",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Update meta definition property.",
         operations=[
@@ -250,7 +253,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="add_metadef_property",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Create meta definition property.",
         operations=[
@@ -260,7 +263,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="remove_metadef_property",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Delete meta definition property.",
         operations=[
@@ -281,7 +284,7 @@ metadef_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_metadef_tag", check_str="rule:metadef_default",
+            name="get_metadef_tag", check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
@@ -296,14 +299,14 @@ metadef_policies = [
              'method': 'GET'}
         ],
         deprecated_rule=policy.DeprecatedRule(
-            name="get_metadef_tags", check_str="rule:metadef_default",
+            name="get_metadef_tags", check_str=METADEF_DEFAULT,
             deprecated_reason=DEPRECATED_REASON,
             deprecated_since=versionutils.deprecated.XENA
         ),
     ),
     policy.DocumentedRuleDefault(
         name="modify_metadef_tag",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Update tag definition.",
         operations=[
@@ -314,7 +317,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="add_metadef_tag",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Add tag definition.",
         operations=[
@@ -325,7 +328,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="add_metadef_tags",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Create tag definitions.",
         operations=[
@@ -335,7 +338,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_metadef_tag",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Delete tag definition.",
         operations=[
@@ -346,7 +349,7 @@ metadef_policies = [
     ),
     policy.DocumentedRuleDefault(
         name="delete_metadef_tags",
-        check_str="rule:metadef_admin",
+        check_str=METADEF_ADMIN,
         scope_types=['project'],
         description="Delete tag definitions.",
         operations=[

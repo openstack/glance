@@ -14,11 +14,13 @@
 #    under the License.
 from oslo_policy import policy
 
+from glance.policies import base
+
 
 discovery_policies = [
     policy.DocumentedRuleDefault(
         name="stores_info_detail",
-        check_str='rule:context_is_admin',
+        check_str=base.ADMIN,
         scope_types=['project'],
         description='Expose store specific information',
         operations=[
