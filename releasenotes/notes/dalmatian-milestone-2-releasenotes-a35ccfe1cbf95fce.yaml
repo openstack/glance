@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Bug 2059829_: Install and configure (Ubuntu) in glance
+
+    .. _2059829: https://code.launchpad.net/bugs/2059829
+
