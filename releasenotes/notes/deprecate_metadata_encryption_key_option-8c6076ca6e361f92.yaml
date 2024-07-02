@@ -1,0 +1,15 @@
+---
+deprecations:
+  - |
+    The Glance API configuration options ``metadata_encryption_key`` is
+    deprecated in this release and is subject to removal at the beginning
+    of the `F` (2025.2) development cycle.
+
+    The `metadata_encryption_key` and it's related functioanlity don't
+    serve the purpose of encryption of location metadata, whereas it encrypts
+    location url only for specific APIs. Also if enabled this during an
+    upgrade, may disrupt existing deployments, as it does not support/provide
+    db upgrade script to encrypt existing location URLs. Moreover, its
+    functionality for encrypting location URLs is inconsistent which
+    resulting in download failures.
+
