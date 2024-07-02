@@ -249,6 +249,7 @@
           "$TEMPEST_CONFIG":
             image:
               image_caching_enabled: True
+              disk_formats: qcow2,ari,aki,vhd,vmdk,raw,ami,vdi,iso,vhdx
 
 - job:
     name: glance-centralized-cache
