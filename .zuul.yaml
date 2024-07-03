@@ -205,6 +205,7 @@
     description: |
       The regular tempest-integrated-storage job but with glance metadata injection
     post-run: playbooks/post-check-metadata-injection.yaml
+    timeout: 10800
     vars:
       configure_swap_size: 8192
       tempest_concurrency: 3
@@ -300,6 +301,7 @@
     description: |
       This job runs the Tempest tests with scope and new defaults enabled
       Glance services.
+    timeout: 10800
     vars:
       devstack_localrc:
         NOVA_ENFORCE_SCOPE: true
