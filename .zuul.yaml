@@ -408,20 +408,16 @@
         - tempest-integrated-storage-enforce-scope-new-defaults:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import:
-            voting: false
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import-standalone:
-            voting: false
             irrelevant-files: *tempest-irrelevant-files
         - glance-multistore-cinder-import:
-            voting: false
             irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-ipv6-only:
             irrelevant-files: *tempest-irrelevant-files
         - nova-ceph-multistore:
-            voting: false
             irrelevant-files: *tempest-irrelevant-files
         - glance-centralized-cache:
             voting: false
@@ -441,10 +437,8 @@
         - tempest-integrated-storage-enforce-scope-new-defaults:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import:
-            voting: false
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import-standalone:
-            voting: false
             irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files
@@ -453,7 +447,6 @@
         - tempest-ipv6-only:
             irrelevant-files: *tempest-irrelevant-files
         - nova-ceph-multistore:
-            voting: false
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
     experimental:
