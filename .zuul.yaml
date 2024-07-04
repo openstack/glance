@@ -219,6 +219,7 @@
     description: |
       The regular tempest-integrated-storage job but with glance metadata injection
     post-run: playbooks/post-check-metadata-injection.yaml
+    timeout: 10800
     vars:
       configure_swap_size: 8192
       tempest_concurrency: 3
@@ -297,7 +298,6 @@
     parent: tempest-integrated-storage-import
     description: |
       The regular import workflow job to test with multiple cinder stores
-    timeout: 10800
     vars:
       devstack_localrc:
         USE_CINDER_FOR_GLANCE: True
@@ -366,6 +366,7 @@
     description: |
       This job runs the Tempest tests with scope and new defaults enabled
       Glance services.
+    timeout: 10800
     vars:
       tempest_concurrency: 3
       devstack_localrc:
