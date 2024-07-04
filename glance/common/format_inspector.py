@@ -28,6 +28,14 @@ from oslo_log import log as logging
 LOG = logging.getLogger(__name__)
 
 
+def chunked_reader(fileobj, chunk_size=512):
+    while True:
+        chunk = fileobj.read(chunk_size)
+        if not chunk:
+            break
+        yield chunk
+
+
 class CaptureRegion(object):
     """Represents a region of a file we want to capture.
 
@@ -176,9 +184,15 @@ class FileInspector(object):
     @property
     def actual_size(self):
         """Returns the total size of the file, usually smaller than
-        virtual_size.
+        virtual_size. NOTE: this will only be accurate if the entire
+        file is read and processed.
         """
         return self._total_count
+
+    @property
+    def complete(self):
+        """Returns True if we have all the information needed."""
+        return all(r.complete for r in self._capture_regions.values())
 
     def __str__(self):
         """The string name of this file format."""
@@ -194,6 +208,35 @@ class FileInspector(object):
         return {name: len(region.data) for name, region in
                 self._capture_regions.items()}
 
+    @classmethod
+    def from_file(cls, filename):
+        """Read as much of a file as necessary to complete inspection.
+
+        NOTE: Because we only read as much of the file as necessary, the
+        actual_size property will not reflect the size of the file, but the
+        amount of data we read before we satisfied the inspector.
+
+        Raises ImageFormatError if we cannot parse the file.
+        """
+        inspector = cls()
+        with open(filename, 'rb') as f:
+            for chunk in chunked_reader(f):
+                inspector.eat_chunk(chunk)
+                if inspector.complete:
+                    # No need to eat any more data
+                    break
+        if not inspector.complete or not inspector.format_match:
+            raise ImageFormatError('File is not in requested format')
+        return inspector
+
+    def safety_check(self):
+        """Perform some checks to determine if this file is safe.
+
+        Returns True if safe, False otherwise. It may raise ImageFormatError
+        if safety cannot be guaranteed because of parsing or other errors.
+        """
+        return True
+
 
 # The qcow2 format consists of a big-endian 72-byte header, of which
 # only a small portion has information we care about:
@@ -202,15 +245,26 @@ class FileInspector(object):
 #   0  0x00   Magic 4-bytes 'QFI\xfb'
 #   4  0x04   Version (uint32_t, should always be 2 for modern files)
 #  . . .
+#   8  0x08   Backing file offset (uint64_t)
 #  24  0x18   Size in bytes (unint64_t)
+#  . . .
+#  72  0x48   Incompatible features bitfield (6 bytes)
 #
-# https://people.gnome.org/~markmc/qcow-image-format.html
+# https://gitlab.com/qemu-project/qemu/-/blob/master/docs/interop/qcow2.txt
 class QcowInspector(FileInspector):
     """QEMU QCOW2 Format
 
     This should only require about 32 bytes of the beginning of the file
-    to determine the virtual size.
+    to determine the virtual size, and 104 bytes to perform the safety check.
     """
+
+    BF_OFFSET = 0x08
+    BF_OFFSET_LEN = 8
+    I_FEATURES = 0x48
+    I_FEATURES_LEN = 8
+    I_FEATURES_DATAFILE_BIT = 3
+    I_FEATURES_MAX_BIT = 4
+
     def __init__(self, *a, **k):
         super(QcowInspector, self).__init__(*a, **k)
         self.new_region('header', CaptureRegion(0, 512))
@@ -219,6 +273,10 @@ class QcowInspector(FileInspector):
         magic, version, bf_offset, bf_sz, cluster_bits, size = (
             struct.unpack('>4sIQIIQ', self.region('header').data[:32]))
         return magic, size
+
+    @property
+    def has_header(self):
+        return self.region('header').complete
 
     @property
     def virtual_size(self):
@@ -236,8 +294,76 @@ class QcowInspector(FileInspector):
         magic, size = self._qcow_header_data()
         return magic == b'QFI\xFB'
 
+    @property
+    def has_backing_file(self):
+        if not self.region('header').complete:
+            return None
+        if not self.format_match:
+            return False
+        bf_offset_bytes = self.region('header').data[
+            self.BF_OFFSET:self.BF_OFFSET + self.BF_OFFSET_LEN]
+        # nonzero means "has a backing file"
+        bf_offset, = struct.unpack('>Q', bf_offset_bytes)
+        return bf_offset != 0
+
+    @property
+    def has_unknown_features(self):
+        if not self.region('header').complete:
+            return None
+        if not self.format_match:
+            return False
+        i_features = self.region('header').data[
+            self.I_FEATURES:self.I_FEATURES + self.I_FEATURES_LEN]
+
+        # This is the maximum byte number we should expect any bits to be set
+        max_byte = self.I_FEATURES_MAX_BIT // 8
+
+        # The flag bytes are in big-endian ordering, so if we process
+        # them in index-order, they're reversed
+        for i, byte_num in enumerate(reversed(range(self.I_FEATURES_LEN))):
+            if byte_num == max_byte:
+                # If we're in the max-allowed byte, allow any bits less than
+                # the maximum-known feature flag bit to be set
+                allow_mask = ((1 << self.I_FEATURES_MAX_BIT) - 1)
+            elif byte_num > max_byte:
+                # If we're above the byte with the maximum known feature flag
+                # bit, then we expect all zeroes
+                allow_mask = 0x0
+            else:
+                # Any earlier-than-the-maximum byte can have any of the flag
+                # bits set
+                allow_mask = 0xFF
+
+            if i_features[i] & ~allow_mask:
+                LOG.warning('Found unknown feature bit in byte %i: %s/%s',
+                            byte_num, bin(i_features[byte_num] & ~allow_mask),
+                            bin(allow_mask))
+                return True
+
+        return False
+
+    @property
+    def has_data_file(self):
+        if not self.region('header').complete:
+            return None
+        if not self.format_match:
+            return False
+        i_features = self.region('header').data[
+            self.I_FEATURES:self.I_FEATURES + self.I_FEATURES_LEN]
+
+        # First byte of bitfield, which is i_features[7]
+        byte = self.I_FEATURES_LEN - 1 - self.I_FEATURES_DATAFILE_BIT // 8
+        # Third bit of bitfield, which is 0x04
+        bit = 1 << (self.I_FEATURES_DATAFILE_BIT - 1 % 8)
+        return bool(i_features[byte] & bit)
+
     def __str__(self):
         return 'qcow2'
+
+    def safety_check(self):
+        return (not self.has_backing_file and
+                not self.has_data_file and
+                not self.has_unknown_features)
 
 
 # The VHD (or VPC as QEMU calls it) format consists of a big-endian
