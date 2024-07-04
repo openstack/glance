@@ -650,6 +650,7 @@ class VMDKInspector(FileInspector):
     # at 0x200 and 1MB - 1
     DESC_OFFSET = 0x200
     DESC_MAX_SIZE = (1 << 20) - 1
+    GD_AT_END = 0xffffffffffffffff
 
     def __init__(self, *a, **k):
         super(VMDKInspector, self).__init__(*a, **k)
@@ -662,14 +663,20 @@ class VMDKInspector(FileInspector):
         if not self.region('header').complete:
             return
 
-        sig, ver, _flags, _sectors, _grain, desc_sec, desc_num = struct.unpack(
-            '<4sIIQQQQ', self.region('header').data[:44])
+        (sig, ver, _flags, _sectors, _grain, desc_sec, desc_num,
+         _numGTEsperGT, _rgdOffset, gdOffset) = struct.unpack(
+            '<4sIIQQQQIQQ', self.region('header').data[:64])
 
         if sig != b'KDMV':
             raise ImageFormatError('Signature KDMV not found: %r' % sig)
 
         if ver not in (1, 2, 3):
             raise ImageFormatError('Unsupported format version %i' % ver)
+
+        if gdOffset == self.GD_AT_END:
+            # This means we have a footer, which takes precedence over the
+            # header, which we cannot support since we stream.
+            raise ImageFormatError('Unsupported VMDK footer')
 
         # Since we parse both desc_sec and desc_num (the location of the
         # VMDK's descriptor, expressed in 512 bytes sectors) we enforce a
@@ -717,6 +724,59 @@ class VMDKInspector(FileInspector):
             struct.unpack('<IIIQQQQ', self.region('header').data[:44]))
 
         return sectors * 512
+
+    def safety_check(self):
+        if (not self.has_region('descriptor') or
+                not self.region('descriptor').complete):
+            return False
+
+        try:
+            # Descriptor is padded to 512 bytes
+            desc_data = self.region('descriptor').data.rstrip(b'\x00')
+            # Descriptor is actually case-insensitive ASCII text
+            desc_text = desc_data.decode('ascii').lower()
+        except UnicodeDecodeError:
+            LOG.error('VMDK descriptor failed to decode as ASCII')
+            raise ImageFormatError('Invalid VMDK descriptor data')
+
+        extent_access = ('rw', 'rdonly', 'noaccess')
+        header_fields = []
+        extents = []
+        ddb = []
+
+        # NOTE(danms): Cautiously parse the VMDK descriptor. Each line must
+        # be something we understand, otherwise we refuse it.
+        for line in [x.strip() for x in desc_text.split('\n')]:
+            if line.startswith('#') or not line:
+                # Blank or comment lines are ignored
+                continue
+            elif line.startswith('ddb'):
+                # DDB lines are allowed (but not used by us)
+                ddb.append(line)
+            elif '=' in line and ' ' not in line.split('=')[0]:
+                # Header fields are a single word followed by an '=' and some
+                # value
+                header_fields.append(line)
+            elif line.split(' ')[0] in extent_access:
+                # Extent lines start with one of the three access modes
+                extents.append(line)
+            else:
+                # Anything else results in a rejection
+                LOG.error('Unsupported line %r in VMDK descriptor', line)
+                raise ImageFormatError('Invalid VMDK descriptor data')
+
+        # Check all the extent lines for concerning content
+        for extent_line in extents:
+            if '/' in extent_line:
+                LOG.error('Extent line %r contains unsafe characters',
+                          extent_line)
+                return False
+
+        if not extents:
+            LOG.error('VMDK file specified no extents')
+            return False
+
+        return True
 
     def __str__(self):
         return 'vmdk'
