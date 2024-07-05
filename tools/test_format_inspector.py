@@ -102,6 +102,13 @@ def main():
         else:
             print('Confirmed size with qemu-img')
 
+    print('Image safety check: %s' % (
+        fmt.safety_check() and 'passed' or 'FAILED'))
+    if args.input:
+        detected_fmt = format_inspector.detect_file_format(args.input)
+        print('Detected inspector for image as: %s' % (
+            detected_fmt.__class__.__name__))
+
 
 if __name__ == '__main__':
     sys.exit(main())
