@@ -366,6 +366,23 @@ class QcowInspector(FileInspector):
                 not self.has_unknown_features)
 
 
+class QEDInspector(FileInspector):
+    def __init__(self, tracing=False):
+        super().__init__(tracing)
+        self.new_region('header', CaptureRegion(0, 512))
+
+    @property
+    def format_match(self):
+        if not self.region('header').complete:
+            return False
+        return self.region('header').data.startswith(b'QED\x00')
+
+    def safety_check(self):
+        # QED format is not supported by anyone, but we want to detect it
+        # and mark it as just always unsafe.
+        return False
+
+
 # The VHD (or VPC as QEMU calls it) format consists of a big-endian
 # 512-byte "footer" at the beginning of the file with various
 # information, most of which does not matter to us:
@@ -879,6 +896,7 @@ def get_inspector(format_name):
         'vhdx': VHDXInspector,
         'vmdk': VMDKInspector,
         'vdi': VDIInspector,
+        'qed': QEDInspector,
     }
 
     return formats.get(format_name)
