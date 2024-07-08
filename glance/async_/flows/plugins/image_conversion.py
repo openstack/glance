@@ -90,16 +90,7 @@ class _ConvertImage(task.Task):
         dest_path = "%(path)s.%(target)s" % {'path': self.src_path,
                                              'target': target_format}
         self.dest_path = dest_path
-
         source_format = action.image_disk_format
-        inspector_cls = format_inspector.get_inspector(source_format)
-        if not inspector_cls:
-            # We cannot convert from disk_format types that qemu-img doesn't
-            # support (like iso, ploop, etc). The ones it supports overlaps
-            # with the ones we have inspectors for, so reject conversion for
-            # any format we don't have an inspector for.
-            raise RuntimeError(
-                'Unable to convert from format %s' % source_format)
 
         # Use our own cautious inspector module (if we have one for this
         # format) to make sure a file is the format the submitter claimed
@@ -107,7 +98,7 @@ class _ConvertImage(task.Task):
         # qemu-img on it.
         # See https://bugs.launchpad.net/nova/+bug/2059809 for details.
         try:
-            inspector = inspector_cls.from_file(self.src_path)
+            inspector = format_inspector.detect_file_format(self.src_path)
             if not inspector.safety_check():
                 LOG.error('Image failed %s safety check; aborting conversion',
                           source_format)
@@ -121,6 +112,24 @@ class _ConvertImage(task.Task):
         except Exception as e:
             LOG.exception('Unknown error inspecting image format: %s', e)
             raise RuntimeError('Unable to inspect image')
+
+        if str(inspector) == 'iso':
+            if source_format == 'iso':
+                # NOTE(abhishekk): Excluding conversion and preserving image
+                # disk_format as `iso` only
+                LOG.debug("Avoiding conversion of an image %s having"
+                          " `iso` disk format.", self.image_id)
+                return file_path
+
+            # NOTE(abhishekk): Raising error as image detected as ISO but
+            # claimed as different format
+            LOG.error('Image claimed to be %s format but format '
+                      'inspection found: ISO', source_format)
+            raise RuntimeError("Image has disallowed configuration")
+        elif str(inspector) != source_format:
+            LOG.error('Image claimed to be %s format failed format '
+                      'inspection', source_format)
+            raise RuntimeError('Image format mismatch')
 
         try:
             stdout, stderr = putils.trycmd("qemu-img", "info",
