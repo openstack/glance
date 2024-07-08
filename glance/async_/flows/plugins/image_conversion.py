@@ -63,13 +63,16 @@ class _ConvertImage(task.Task):
 
     default_provides = 'file_path'
 
-    def __init__(self, context, task_id, task_type, action_wrapper):
+    def __init__(self, context, task_id, task_type, action_wrapper,
+                 stores):
         self.context = context
         self.task_id = task_id
         self.task_type = task_type
         self.action_wrapper = action_wrapper
+        self.stores = stores
         self.image_id = action_wrapper.image_id
         self.dest_path = ""
+        self.src_path = ""
         self.python = CONF.wsgi.python_interpreter
         super(_ConvertImage, self).__init__(
             name='%s-Convert_Image-%s' % (task_type, task_id))
@@ -83,8 +86,8 @@ class _ConvertImage(task.Task):
         target_format = CONF.image_conversion.output_format
         # TODO(jokke): Once we support other schemas we need to take them into
         # account and handle the paths here.
-        src_path = file_path.split('file://')[-1]
-        dest_path = "%(path)s.%(target)s" % {'path': src_path,
+        self.src_path = file_path.split('file://')[-1]
+        dest_path = "%(path)s.%(target)s" % {'path': self.src_path,
                                              'target': target_format}
         self.dest_path = dest_path
 
@@ -104,7 +107,7 @@ class _ConvertImage(task.Task):
         # qemu-img on it.
         # See https://bugs.launchpad.net/nova/+bug/2059809 for details.
         try:
-            inspector = inspector_cls.from_file(src_path)
+            inspector = inspector_cls.from_file(self.src_path)
             if not inspector.safety_check():
                 LOG.error('Image failed %s safety check; aborting conversion',
                           source_format)
@@ -123,7 +126,7 @@ class _ConvertImage(task.Task):
             stdout, stderr = putils.trycmd("qemu-img", "info",
                                            "-f", source_format,
                                            "--output=json",
-                                           src_path,
+                                           self.src_path,
                                            prlimit=utils.QEMU_IMG_PROC_LIMITS,
                                            python_exec=self.python,
                                            log_errors=putils.LOG_ALL_ERRORS,)
@@ -186,7 +189,7 @@ class _ConvertImage(task.Task):
             stdout, stderr = putils.trycmd('qemu-img', 'convert',
                                            '-f', source_format,
                                            '-O', target_format,
-                                           src_path, dest_path,
+                                           self.src_path, dest_path,
                                            log_errors=putils.LOG_ALL_ERRORS)
         except OSError as exc:
             with excutils.save_and_reraise_exception():
@@ -204,7 +207,7 @@ class _ConvertImage(task.Task):
         LOG.info(_LI('Updated image %s size=%i disk_format=%s'),
                  self.image_id, new_size, target_format)
 
-        os.remove(src_path)
+        os.remove(self.src_path)
 
         return "file://%s" % dest_path
 
@@ -216,6 +219,23 @@ class _ConvertImage(task.Task):
             LOG.debug("Image conversion failed.")
             if os.path.exists(self.dest_path):
                 os.remove(self.dest_path)
+
+        # NOTE(abhishekk): If we failed to convert the image, then none
+        # of the _ImportToStore() tasks could have run, so we need
+        # to move all stores out of "importing" to "failed".
+        with self.action_wrapper as action:
+            action.set_image_attribute(status='queued')
+            if self.stores:
+                action.remove_importing_stores(self.stores)
+                action.add_failed_stores(self.stores)
+
+        if self.src_path:
+            try:
+                os.remove(self.src_path)
+            except FileNotFoundError:
+                # NOTE(abhishekk): We must have raced with something
+                # else, so this is not a problem
+                pass
 
 
 def get_flow(**kwargs):
@@ -232,7 +252,8 @@ def get_flow(**kwargs):
     task_id = kwargs.get('task_id')
     task_type = kwargs.get('task_type')
     action_wrapper = kwargs.get('action_wrapper')
+    stores = kwargs.get('backend', [])
 
     return lf.Flow(task_type).add(
-        _ConvertImage(context, task_id, task_type, action_wrapper)
+        _ConvertImage(context, task_id, task_type, action_wrapper, stores)
     )
