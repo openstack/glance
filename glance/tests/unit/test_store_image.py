@@ -44,7 +44,7 @@ class ImageRepoStub(object):
 
 class ImageStub(object):
     def __init__(self, image_id, status=None, locations=None,
-                 visibility=None, extra_properties=None):
+                 visibility=None, extra_properties=None, virtual_size=0):
         self.image_id = image_id
         self.status = status
         self.locations = locations or []
@@ -56,7 +56,7 @@ class ImageStub(object):
         self.checksum = None
         self.disk_format = 'raw'
         self.container_format = 'bare'
-        self.virtual_size = 0
+        self.virtual_size = virtual_size
 
     def delete(self):
         self.status = 'deleted'
@@ -112,7 +112,8 @@ class TestStoreMultiBackends(utils.BaseTestCase):
             'img_signature': 'VALID'
         }
         image_stub = ImageStub(UUID2, status='queued', locations=[],
-                               extra_properties=extra_properties)
+                               extra_properties=extra_properties,
+                               virtual_size=4)
         image_stub.disk_format = 'iso'
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
