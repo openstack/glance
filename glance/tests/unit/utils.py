@@ -265,7 +265,7 @@ class FakeStoreAPI(object):
             # 'data' is a string wrapped in a LimitingReader|CooperativeReader
             # pipeline, so peek under the hood of those objects to get at the
             # string itself.
-            size = len(data.data.fd)
+            size = len(data.data.fd._source)
         if (current_store_size + size) > store_max_size:
             raise exception.StorageFull()
         if context.user_id == USER2:
