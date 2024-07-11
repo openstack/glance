@@ -12,6 +12,7 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import glance_store
 from oslo_config import cfg
 import webob.exc
 
@@ -128,3 +129,23 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.controller.get_stores_detail,
                           req)
+
+    def test_swift_multitenant_and_conf_file_enabled(self):
+        self.config(enabled_backends={'fast-rbd': 'rbd', 'test': 'swift'})
+        glance_store.register_store_opts(CONF)
+        self.config(default_backend='fast-rbd',
+                    group='glance_store')
+        self.config(rbd_store_chunk_size=8688388, rbd_store_pool='images',
+                    rbd_thin_provisioning=False, group='fast-rbd')
+        self.config(swift_store_container='glance',
+                    swift_store_large_object_size=524288000,
+                    swift_store_large_object_chunk_size=204800000,
+                    swift_store_config_file='fake-file.conf',
+                    swift_store_multi_tenant=True,
+                    group='test')
+        glance_store.create_multi_stores(CONF)
+        req = unit_test_utils.get_fake_request(roles=['admin'])
+        output = self.controller.get_stores_detail(req)
+        self.assertNotEqual(len(CONF.enabled_backends), len(output['stores']))
+        self.assertNotIn('test',
+                         [store.get('id') for store in output['stores']])
