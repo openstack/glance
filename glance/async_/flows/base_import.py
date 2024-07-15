@@ -181,6 +181,16 @@ class _ImportToFS(task.Task):
                                                'bfile': backing_file}
             raise RuntimeError(msg)
 
+        try:
+            data_file = metadata['format-specific']['data']['data-file']
+        except KeyError:
+            data_file = None
+        if data_file is not None:
+            msg = _("File %(path)s has invalid data-file "
+                    "%(dfile)s, aborting.") % {"path": path,
+                                               "dfile": data_file}
+            raise RuntimeError(msg)
+
         return path
 
     def revert(self, image_id, result, **kwargs):

@@ -184,6 +184,22 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             self.assertEqual('QCOW images with backing files are not allowed',
                              str(e))
 
+    def test_image_convert_invalid_qcow_data_file(self):
+        data = {'format': 'qcow2',
+                'format-specific': {
+                    'data': {
+                        'data-file': '/etc/hosts',
+                    },
+                }}
+
+        convert = self._setup_image_convert_info_fail()
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.return_value = json.dumps(data), ''
+            e = self.assertRaises(RuntimeError,
+                                  convert.execute, 'file:///test/path.qcow')
+            self.assertEqual('QCOW images with data-file set are not allowed',
+                             str(e))
+
     def _test_image_convert_invalid_vmdk(self):
         data = {'format': 'vmdk',
                 'format-specific': {
