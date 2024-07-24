@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    `Bug #2073945 <https://bugs.launchpad.net/glance/+bug/2073945>`_:
+    Fixed issue with VM creation in DCN cases with RBD backend where
+    an edge node doesn't have the store defined which is part of the
+    image locations and the operation fails.

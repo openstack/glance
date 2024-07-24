@@ -63,8 +63,19 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
             member_ids = [m.member_id for m in member_repo.list()]
         for location in image.locations:
             if CONF.enabled_backends:
+                # NOTE(whoami-rajat): Do not set_acls if store is not defined
+                # on this node. This is possible in case of edge deployment
+                # that image location is present but the actual store is
+                # not related to this node.
+                image_store = location['metadata'].get('store')
+                if image_store not in CONF.enabled_backends:
+                    msg = (_("Store %s is not available on "
+                             "this node, skipping `_set_acls` "
+                             "call.") % image_store)
+                    LOG.debug(msg)
+                    continue
                 self.store_api.set_acls_for_multi_store(
-                    location['url'], location['metadata'].get('store'),
+                    location['url'], image_store,
                     public=public, read_tenants=member_ids,
                     context=self.context
                 )
@@ -655,8 +666,19 @@ class ImageMemberRepoProxy(glance.domain.proxy.Repo):
             member_ids = [m.member_id for m in self.repo.list()]
             for location in self.image.locations:
                 if CONF.enabled_backends:
+                    # NOTE(whoami-rajat): Do not set_acls if store is not
+                    # defined on this node. This is possible in case of edge
+                    # deployment that image location is present but the actual
+                    # store is not related to this node.
+                    image_store = location['metadata'].get('store')
+                    if image_store not in CONF.enabled_backends:
+                        msg = (_("Store %s is not available on "
+                                 "this node, skipping `_set_acls` "
+                                 "call.") % image_store)
+                        LOG.debug(msg)
+                        continue
                     self.store_api.set_acls_for_multi_store(
-                        location['url'], location['metadata'].get('store'),
+                        location['url'], image_store,
                         public=public, read_tenants=member_ids,
                         context=self.context
                     )
