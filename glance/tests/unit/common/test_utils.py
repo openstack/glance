@@ -102,7 +102,8 @@ class TestCinderStoreUtils(base.MultiStoreClearingUnitTest):
                        new_callable=mock.PropertyMock)
     def _test_update_cinder_store_in_location(self, mock_url_prefix,
                                               mock_associate_store,
-                                              is_valid=True):
+                                              is_valid=True,
+                                              modify_source_url=False):
         volume_id = 'db457a25-8f16-4b2c-a644-eae8d17fe224'
         store_id = 'fast-cinder'
         expected = 'fast-cinder'
@@ -117,7 +118,11 @@ class TestCinderStoreUtils(base.MultiStoreClearingUnitTest):
         }]
         mock_url_prefix.return_value = 'cinder://%s' % store_id
         image.locations = locations
-        store_utils.update_store_in_locations(context, image, image_repo)
+        if modify_source_url:
+            updated_location = store_utils.get_updated_store_location(
+                locations, context=context)
+        else:
+            store_utils.update_store_in_locations(context, image, image_repo)
 
         if is_valid:
             # This is the case where we found an image that has an
@@ -129,10 +134,18 @@ class TestCinderStoreUtils(base.MultiStoreClearingUnitTest):
             # format i.e. this is the case when store is valid and location
             # url, metadata are updated and image_repo.save is called
             expected_url = mock_url_prefix.return_value + '/' + volume_id
-            self.assertEqual(expected_url, image.locations[0].get('url'))
-            self.assertEqual(expected, image.locations[0]['metadata'].get(
-                'store'))
-            self.assertEqual(1, image_repo.save.call_count)
+            if modify_source_url:
+                # This is the case where location url is modified to be
+                # compatible with multistore as below,
+                # `cinder://store_id/volume_id` to avoid InvalidLocation error
+                self.assertEqual(expected_url, updated_location[0].get('url'))
+                self.assertEqual(expected,
+                                 updated_location[0]['metadata'].get('store'))
+            else:
+                self.assertEqual(expected_url, image.locations[0].get('url'))
+                self.assertEqual(expected, image.locations[0]['metadata'].get(
+                    'store'))
+                self.assertEqual(1, image_repo.save.call_count)
         else:
             # Here, we've got an image backed by a volume which does
             # not have a corresponding store specifying the volume_type.
@@ -150,6 +163,15 @@ class TestCinderStoreUtils(base.MultiStoreClearingUnitTest):
 
     def test_update_cinder_store_location_invalid_type(self):
         self._test_update_cinder_store_in_location(is_valid=False)
+
+    def test_get_updated_cinder_store_location(self):
+        """
+        Test if location url is modified to be compatible
+        with multistore.
+        """
+
+        self._test_update_cinder_store_in_location(
+            modify_source_url=True)
 
 
 class TestUtils(test_utils.BaseTestCase):

@@ -674,7 +674,7 @@ class ImagesController(object):
         json_schema_version = change.get('json_schema_version', 10)
         if path_root == 'locations':
             api_pol.update_locations()
-            self._do_add_locations(image, path[1], value)
+            self._do_add_locations(image, path[1], value, req.context)
         else:
             api_pol.update_property(path_root, value)
             if ((hasattr(image, path_root) or
@@ -1043,7 +1043,7 @@ class ImagesController(object):
             raise webob.exc.HTTPBadRequest(
                 explanation=encodeutils.exception_to_unicode(ve))
 
-    def _do_add_locations(self, image, path_pos, value):
+    def _do_add_locations(self, image, path_pos, value, context):
         if CONF.show_multiple_locations == False:
             msg = _("It's not allowed to add locations if locations are "
                     "invisible.")
@@ -1059,7 +1059,7 @@ class ImagesController(object):
         updated_location = value
         if CONF.enabled_backends:
             updated_location = store_utils.get_updated_store_location(
-                [value])[0]
+                [value], context=context)[0]
 
         pos = self._get_locations_op_pos(path_pos,
                                          len(image.locations), True)
