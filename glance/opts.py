@@ -33,8 +33,6 @@ import glance.async_.flows.convert
 from glance.async_.flows.plugins import plugin_opts
 import glance.async_.taskflow_executor
 import glance.common.config
-import glance.common.location_strategy
-import glance.common.location_strategy.store_type
 import glance.common.property_utils
 import glance.common.wsgi
 import glance.image_cache
@@ -48,7 +46,6 @@ _api_opts = [
         glance.api.middleware.context.context_opts,
         glance.api.versions.versions_opts,
         glance.common.config.common_opts,
-        glance.common.location_strategy.location_strategy_opts,
         glance.common.property_utils.property_opts,
         glance.common.wsgi.bind_opts,
         glance.common.wsgi.eventlet_opts,
@@ -64,8 +61,6 @@ _api_opts = [
     ('taskflow_executor', list(itertools.chain(
         glance.async_.taskflow_executor.taskflow_executor_opts,
         glance.async_.flows.convert.convert_task_opts))),
-    ('store_type_location_strategy',
-     glance.common.location_strategy.store_type.store_type_opts),
     profiler.list_opts()[0],
     ('paste_deploy', glance.common.config.paste_deploy_opts),
     ('wsgi', glance.common.config.wsgi_opts),

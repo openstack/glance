@@ -42,7 +42,6 @@ from oslo_utils import strutils
 from webob import exc
 
 from glance.common import exception
-from glance.common import location_strategy
 from glance.common import timeutils
 from glance.common import wsgi
 from glance.i18n import _, _LE, _LW
@@ -717,7 +716,7 @@ def get_stores_from_request(req, body):
 
 def sort_image_locations(locations):
     if not CONF.enabled_backends:
-        return location_strategy.get_ordered_locations(locations)
+        return locations
 
     def get_store_weight(location):
         store_id = location['metadata'].get('store')

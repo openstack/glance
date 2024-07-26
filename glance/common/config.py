@@ -304,8 +304,8 @@ location is where the image data is stored in backend storage. This
 image location is shown under the image property ``direct_url``.
 
 When multiple image locations exist for an image, the best location
-is displayed based on the location strategy indicated by the
-configuration option ``location_strategy``.
+is displayed based on the store weightage assigned for each store
+indicated by the configuration option ``weight``.
 
 NOTES:
     * Revealing image locations can present a GRAVE SECURITY RISK as
@@ -322,7 +322,7 @@ Possible values:
 
 Related options:
     * show_multiple_locations
-    * location_strategy
+    * weight
 
 """)),
     # NOTE(flaper87): The policy.yaml file should be updated and the location
@@ -354,9 +354,9 @@ Show all image locations when returning an image.
 This configuration option indicates whether to show all the image
 locations when returning image details to the user. When multiple
 image locations exist for an image, the locations are ordered based
-on the location strategy indicated by the configuration opt
-``location_strategy``. The image locations are shown under the
-image property ``locations``.
+on the store weightage assigned for each store indicated by the
+configuration option ``weight``. The image locations are shown
+under the image property ``locations``.
 
 NOTES:
     * Revealing image locations can present a GRAVE SECURITY RISK as
@@ -375,7 +375,7 @@ Possible values:
 
 Related options:
     * show_image_direct_url
-    * location_strategy
+    * weight
 
 """)),
     cfg.IntOpt('image_size_cap', default=1099511627776, min=1,
