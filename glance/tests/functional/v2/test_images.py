@@ -4362,9 +4362,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.api_server.show_image_direct_url = True
         self.api_server.show_multiple_locations = True
         self.image_location_quota = 10
-        self.api_server.location_strategy = 'location_order'
-        preference = "http, swift, filesystem"
-        self.api_server.store_type_location_strategy_preference = preference
+
         self.start_servers(**self.__dict__.copy())
 
         # Create an image

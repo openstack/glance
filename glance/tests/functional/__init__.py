@@ -418,9 +418,6 @@ class ApiServer(Server):
         self.user_storage_quota = '0'
         self.lock_path = self.test_dir
 
-        self.location_strategy = 'location_order'
-        self.store_type_location_strategy_preference = ""
-
         self.node_staging_uri = 'file://%s' % os.path.join(
             self.test_dir, 'staging')
 
@@ -449,7 +446,6 @@ image_member_quota=%(image_member_quota)s
 image_property_quota=%(image_property_quota)s
 image_tag_quota=%(image_tag_quota)s
 image_location_quota=%(image_location_quota)s
-location_strategy=%(location_strategy)s
 node_staging_uri=%(node_staging_uri)s
 [database]
 connection = %(sql_connection)s
@@ -459,8 +455,6 @@ policy_default_rule = %(policy_default_rule)s
 enforce_new_defaults=%(enforce_new_defaults)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
-[store_type_location_strategy]
-store_type_preference = %(store_type_location_strategy_preference)s
 [glance_store]
 filesystem_store_datadir=%(image_dir)s
 default_store = %(default_store)s
@@ -609,9 +603,6 @@ class ApiServerForMultipleBackend(Server):
         self.user_storage_quota = '0'
         self.lock_path = self.test_dir
 
-        self.location_strategy = 'location_order'
-        self.store_type_location_strategy_preference = ""
-
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG,stevedore.extension=INFO
@@ -637,7 +628,6 @@ image_member_quota=%(image_member_quota)s
 image_property_quota=%(image_property_quota)s
 image_tag_quota=%(image_tag_quota)s
 image_location_quota=%(image_location_quota)s
-location_strategy=%(location_strategy)s
 enabled_backends=file1:file,file2:file,file3:file
 [database]
 connection = %(sql_connection)s
@@ -647,8 +637,6 @@ policy_default_rule = %(policy_default_rule)s
 enforce_new_defaults=%(enforce_new_defaults)s
 [paste_deploy]
 flavor = %(deployment_flavor)s
-[store_type_location_strategy]
-store_type_preference = %(store_type_location_strategy_preference)s
 [glance_store]
 default_backend = %(default_backend)s
 [file1]

@@ -1,0 +1,4 @@
+---
+upgrade:
+  - The ``location_strategy`` functionality which was deprecated in
+    Bobcat(2023.2), has been removed in this release.
