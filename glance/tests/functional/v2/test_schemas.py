@@ -60,7 +60,6 @@ class TestSchemas(functional.FunctionalTest):
             'protected',
             'os_hidden',
             'stores',
-            'add_location',
         ])
         self.assertEqual(expected, set(image_schema['properties'].keys()))
 

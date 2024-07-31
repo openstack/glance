@@ -1266,9 +1266,10 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
     _supported_operations = ('add', 'remove', 'replace')
 
-    def __init__(self, schema=None):
+    def __init__(self, schema=None, location_schema=None):
         super(RequestDeserializer, self).__init__()
         self.schema = schema or get_schema()
+        self.location_schema = location_schema or get_location_schema()
 
     def _get_request_body(self, request):
         output = super(RequestDeserializer, self).default(request)
@@ -1686,7 +1687,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         body = self._get_request_body(request)
         values = {'add_location': body}
         try:
-            self.schema.validate(values)
+            self.location_schema.validate(values)
         except exception.InvalidObject as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
 
@@ -1698,9 +1699,10 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
     # exposed to the client
     _hidden_properties = ['os_glance_stage_host']
 
-    def __init__(self, schema=None):
+    def __init__(self, schema=None, location_schema=None):
         super(ResponseSerializer, self).__init__()
         self.schema = schema or get_schema()
+        self.location_schema = location_schema or get_location_schema()
 
     def _get_image_href(self, image, subcollection=''):
         base_href = '/v2/images/%s' % image.image_id
@@ -1979,48 +1981,6 @@ def get_base_properties():
             'readOnly': True,
             'description': _('An image schema url'),
         },
-        'add_location': {
-            'type': 'object',
-            'description': _('Values of location url, do_secure_hash and '
-                             'validation_data for new add location API'),
-            'properties': {
-                'url': {
-                    'type': 'string',
-                    'readOnly': True,
-                    'description': _('The URL of the new location to be '
-                                     'added in the image.')
-                },
-                'validation_data': {
-                    'description': _('Values to be used to populate the '
-                                     'corresponding image properties.'
-                                     'do_secure_hash is not True then '
-                                     'image checksum and hash will not be '
-                                     'calculated so it is the responsibility'
-                                     ' of the consumer of location ADD API '
-                                     'to provide the correct values in the '
-                                     'validation_data parameter'),
-                    'type': 'object',
-                    'writeOnly': True,
-                    'additionalProperties': False,
-                    'properties': {
-                        'os_hash_algo': {
-                            'type': 'string',
-                            'maxLength': 64,
-                            'enum': ['sha1', 'sha256', 'sha512', 'md5'],
-                        },
-                        'os_hash_value': {
-                            'type': 'string',
-                            'maxLength': 128,
-                        },
-                    },
-                    'dependentRequired': {
-                        "os_hash_value": ["os_hash_algo"],
-                        "os_hash_algo": ["os_hash_value"]
-                    },
-                },
-            },
-            'required': ['url'],
-        },
         'locations': {
             'type': 'array',
             'items': {
@@ -2072,6 +2032,53 @@ def get_base_properties():
     }
 
 
+def get_add_location_properties():
+    return {
+        'add_location': {
+            'type': 'object',
+            'description': _('Values of location url, do_secure_hash and '
+                             'validation_data for new add location API'),
+            'properties': {
+                'url': {
+                    'type': 'string',
+                    'readOnly': True,
+                    'description': _('The URL of the new location to be '
+                                     'added in the image.')
+                },
+                'validation_data': {
+                    'description': _('Values to be used to populate the '
+                                     'corresponding image properties.'
+                                     'do_secure_hash is not True then '
+                                     'image checksum and hash will not be '
+                                     'calculated so it is the responsibility'
+                                     ' of the consumer of location ADD API '
+                                     'to provide the correct values in the '
+                                     'validation_data parameter'),
+                    'type': 'object',
+                    'writeOnly': True,
+                    'additionalProperties': False,
+                    'properties': {
+                        'os_hash_algo': {
+                            'type': 'string',
+                            'maxLength': 64,
+                            'enum': ['sha1', 'sha256', 'sha512', 'md5'],
+                        },
+                        'os_hash_value': {
+                            'type': 'string',
+                            'maxLength': 128,
+                        },
+                    },
+                    'dependentRequired': {
+                        "os_hash_value": ["os_hash_algo"],
+                        "os_hash_algo": ["os_hash_value"]
+                    },
+                },
+            },
+            'required': ['url'],
+        },
+    }
+
+
 def _get_base_links():
     return [
         {'rel': 'self', 'href': '{self}'},
@@ -2089,6 +2096,12 @@ def get_schema(custom_properties=None):
         for property_value in custom_properties.values():
             property_value['is_base'] = False
         schema.merge_properties(custom_properties)
+    return schema
+
+
+def get_location_schema():
+    properties = get_add_location_properties()
+    schema = glance.schema.PermissiveSchema('location', properties)
     return schema
 
 
@@ -2115,7 +2128,8 @@ def load_custom_properties():
 def create_resource(custom_properties=None):
     """Images resource factory method"""
     schema = get_schema(custom_properties)
-    deserializer = RequestDeserializer(schema)
-    serializer = ResponseSerializer(schema)
+    location_schema = get_location_schema()
+    deserializer = RequestDeserializer(schema, location_schema)
+    serializer = ResponseSerializer(schema, location_schema)
     controller = ImagesController()
     return wsgi.Resource(controller, deserializer, serializer)
