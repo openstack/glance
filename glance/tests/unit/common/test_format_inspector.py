@@ -179,7 +179,14 @@ class TestFormatInspectors(test_utils.BaseTestCase):
         # a local file.
         self.assertLess(fmt.actual_size, file_size)
 
+    def qed_supported(self):
+        output = subprocess.check_output('qemu-img create --help', shell=True)
+        return b' qed ' in output
+
     def test_qed_always_unsafe(self):
+        if not self.qed_supported():
+            raise self.skipException('qed format not supported by qemu-img')
+
         img = self._create_img('qed', 10 * units.Mi)
         fmt = format_inspector.get_inspector('qed').from_file(img)
         self.assertTrue(fmt.format_match)
