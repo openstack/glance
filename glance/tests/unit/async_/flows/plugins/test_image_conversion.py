@@ -59,6 +59,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         self.context = mock.MagicMock()
         self.img_repo = mock.MagicMock()
         self.task_repo = mock.MagicMock()
+        self.stores = mock.MagicMock()
         self.image_id = UUID1
 
         self.gateway = gateway.Gateway()
@@ -87,7 +88,10 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                                                task_input=task_input)
 
         self.image.extra_properties = {
-            'os_glance_import_task': self.task.task_id}
+            'os_glance_import_task': self.task.task_id,
+            'os_glance_importing_to_stores': mock.MagicMock(),
+            'os_glance_failed_import': ""
+        }
         self.wrapper = import_flow.ImportActionWrapper(self.img_repo,
                                                        self.image_id,
                                                        self.task.task_id)
@@ -105,7 +109,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         image_convert = image_conversion._ConvertImage(self.context,
                                                        self.task.task_id,
                                                        self.task_type,
-                                                       self.wrapper)
+                                                       self.wrapper,
+                                                       self.stores)
 
         self.task_repo.get.return_value = self.task
         image = mock.MagicMock(image_id=self.image_id, virtual_size=None,
@@ -137,7 +142,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         image_convert = image_conversion._ConvertImage(self.context,
                                                        self.task.task_id,
                                                        self.task_type,
-                                                       self.wrapper)
+                                                       self.wrapper,
+                                                       self.stores)
 
         self.task_repo.get.return_value = self.task
         image = mock.MagicMock(image_id=self.image_id, virtual_size=None,
@@ -354,15 +360,23 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         image = self.img_repo.get.return_value
         self.assertEqual(123, image.virtual_size)
 
-    @mock.patch.object(os, 'remove')
-    def test_image_convert_revert_success(self, mock_os_remove):
+    def _set_image_conversion(self, mock_os_remove, stores=[]):
         mock_os_remove.return_value = None
+        wrapper = mock.MagicMock()
         image_convert = image_conversion._ConvertImage(self.context,
                                                        self.task.task_id,
                                                        self.task_type,
-                                                       self.wrapper)
-
+                                                       wrapper,
+                                                       stores)
+        action = wrapper.__enter__.return_value
         self.task_repo.get.return_value = self.task
+        return action, image_convert
+
+    @mock.patch.object(os, 'remove')
+    def test_image_convert_revert_success_multiple_stores(
+            self, mock_os_remove):
+        action, image_convert = self._set_image_conversion(
+            mock_os_remove, stores=self.stores)
 
         with mock.patch.object(processutils, 'execute') as exc_mock:
             exc_mock.return_value = ("", None)
@@ -370,6 +384,48 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                 os_exists_mock.return_value = True
                 image_convert.revert(result=mock.MagicMock())
                 self.assertEqual(1, mock_os_remove.call_count)
+                action.set_image_attribute.assert_called_once_with(
+                    status='queued')
+                action.remove_importing_stores.assert_called_once_with(
+                    self.stores)
+                action.add_failed_stores.assert_called_once_with(
+                    self.stores)
+
+    @mock.patch.object(os, 'remove')
+    def test_image_convert_revert_success_single_store(
+            self, mock_os_remove):
+        action, image_convert = self._set_image_conversion(mock_os_remove)
+
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.return_value = ("", None)
+            with mock.patch.object(os.path, 'exists') as os_exists_mock:
+                os_exists_mock.return_value = True
+                image_convert.revert(result=mock.MagicMock())
+                self.assertEqual(1, mock_os_remove.call_count)
+                self.assertEqual(0, action.remove_importing_stores.call_count)
+                self.assertEqual(0, action.add_failed_store.call_count)
+                action.set_image_attribute.assert_called_once_with(
+                    status='queued')
+
+    @mock.patch.object(os, 'remove')
+    def test_image_convert_revert_success_src_file_exists(
+            self, mock_os_remove):
+        action, image_convert = self._set_image_conversion(
+            mock_os_remove, stores=self.stores)
+        image_convert.src_path = mock.MagicMock()
+
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.return_value = ("", None)
+            with mock.patch.object(os.path, 'exists') as os_exists_mock:
+                os_exists_mock.return_value = True
+                image_convert.revert(result=mock.MagicMock())
+                action.set_image_attribute.assert_called_once_with(
+                    status='queued')
+                action.remove_importing_stores.assert_called_once_with(
+                    self.stores)
+                action.add_failed_stores.assert_called_once_with(
+                    self.stores)
+                self.assertEqual(2, mock_os_remove.call_count)
 
     def test_image_convert_interpreter_configured(self):
         # By default, wsgi.python_interpreter is None; if it is
@@ -380,5 +436,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         convert = image_conversion._ConvertImage(self.context,
                                                  self.task.task_id,
                                                  self.task_type,
-                                                 self.wrapper)
+                                                 self.wrapper,
+                                                 self.stores)
         self.assertEqual(fake_interpreter, convert.python)
