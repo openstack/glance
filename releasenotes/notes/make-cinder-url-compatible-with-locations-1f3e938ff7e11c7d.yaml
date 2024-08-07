@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    `Bug #2054575 <https://bugs.launchpad.net/glance/+bug/2054575>`_:
+    Fixed the issue when cinder uploads a volume to glance in the
+    optimized path and glance rejects the request with invalid location.
+    Now we convert the old location format sent by cinder into the new
+    location format supported by multi store, hence allowing volumes to
+    be uploaded in an optimized way.
