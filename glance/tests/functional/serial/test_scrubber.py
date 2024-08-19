@@ -63,7 +63,7 @@ class TestScrubber(functional.SynchronousAPIBase):
         # In Glance V2, there is no way to get the 'pending_delete' image from
         # API. So we get the image from db here for testing.
         # Clean the session cache first to avoid connecting to the old db data.
-        db_api.get_api()._FACADE = None
+        db_api.get_api().clear_db_env()
         image = db_api.get_api().image_get(self.admin_context, image_id)
         return image
 

@@ -2078,8 +2078,7 @@ class DBPurgeTests(test_utils.BaseTestCase):
 
         # purge records from locations table
         for image in images:
-            session = self.db_api.get_session()
-            with session.begin():
+            with db_api.session_for_write() as session:
                 session.execute(
                     sql.delete(models.ImageLocation)
                     .where(models.ImageLocation.image_id == image['id'])
@@ -2102,7 +2101,6 @@ class DBPurgeTests(test_utils.BaseTestCase):
         Test whether foreign key constraint failure during purge
         operation is raising DBReferenceError or not.
         """
-        session = db_api.get_session()
         engine = db_api.get_engine()
         connection = engine.connect()
 
@@ -2149,12 +2147,11 @@ class DBPurgeTests(test_utils.BaseTestCase):
 
         # Verify that no records from images have been deleted
         # due to DBReferenceError being raised
-        with session.begin():
+        with db_api.session_for_read() as session:
             images_rows = session.query(images).count()
         self.assertEqual(4, images_rows)
 
     def test_purge_task_info_with_refs_to_soft_deleted_tasks(self):
-        session = db_api.get_session()
         engine = db_api.get_engine()
 
         # check initial task and task_info row number are 3
@@ -2162,7 +2159,7 @@ class DBPurgeTests(test_utils.BaseTestCase):
         self.assertEqual(3, len(tasks))
 
         task_info = sqlalchemyutils.get_table(engine, 'task_info')
-        with session.begin():
+        with db_api.session_for_read() as session:
             task_info_rows = session.query(task_info).count()
         self.assertEqual(3, task_info_rows)
 
@@ -2174,7 +2171,7 @@ class DBPurgeTests(test_utils.BaseTestCase):
         self.assertEqual(2, len(tasks))
 
         # and no task_info was left behind, 1 row purged
-        with session.begin():
+        with db_api.session_for_read() as session:
             task_info_rows = session.query(task_info).count()
         self.assertEqual(2, task_info_rows)
 
