@@ -51,6 +51,11 @@
                 "uefi"
             ]
         },
+        "hw_firmware_stateless": {
+            "title": "Stateless Firmware",
+            "description": "Specifies whether the image should be booted with only read-only firmware image. If true, firmware configurations do not persist over server reboot. Note stateless firmware is only supported when UEFI is used.",
+            "type": "boolean"
+        },
         "hw_rng_model": {
             "title": "Random Number Generator Device",
             "description": "Adds a random-number generator device to the image's instances. The cloud administrator can enable and control device behavior by configuring the instance's flavor. By default: The generator device is disabled. /dev/random is used as the default entropy source. To specify a physical HW RNG device, use the following option in the nova.conf file: rng_dev_path=/dev/hwrng",

@@ -793,7 +793,7 @@ class MetadefLoadUnloadTests:
         'OS::Compute::VMwareFlavor': 2,
         'OS::Compute::TPM': 1,
         'OS::Compute::GuestMemoryBacking': 1,
-        'OS::Compute::LibvirtImage': 16,
+        'OS::Compute::LibvirtImage': 17,
         'OS::Compute::VMware': 6,
         'OS::Compute::Watchdog': 1,
     }
