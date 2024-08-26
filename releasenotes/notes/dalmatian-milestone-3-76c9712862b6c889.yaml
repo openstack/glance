@@ -1,0 +1,13 @@
+---
+fixes:
+  - |
+    Bug 1636243_: Add CPU Mode Metadata Def
+  - |
+    Bug 2072483_: Revert image status to queued if image conversion fails
+  - |
+    Bug 2061947_: stores-info --detail command fails if swift store is enabled
+
+    .. _1636243: https://code.launchpad.net/bugs/1636243
+    .. _2072483: https://code.launchpad.net/bugs/2072483
+    .. _2061947: https://code.launchpad.net/bugs/2061947
+
