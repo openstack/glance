@@ -21,11 +21,11 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
+from oslo_utils.imageutils import format_inspector
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
 
 from glance.async_ import utils
-from glance.common import format_inspector
 from glance.i18n import _, _LI
 
 LOG = logging.getLogger(__name__)
@@ -99,12 +99,11 @@ class _ConvertImage(task.Task):
         # See https://bugs.launchpad.net/nova/+bug/2059809 for details.
         try:
             inspector = format_inspector.detect_file_format(self.src_path)
-            if not inspector.safety_check():
-                LOG.error('Image failed %s safety check; aborting conversion',
-                          source_format)
-                raise RuntimeError('Image has disallowed configuration')
-        except RuntimeError:
-            raise
+            inspector.safety_check()
+        except format_inspector.SafetyCheckFailed:
+            LOG.error('Image failed %s safety check; aborting conversion',
+                      source_format)
+            raise RuntimeError('Image has disallowed configuration')
         except format_inspector.ImageFormatError as e:
             LOG.error('Image claimed to be %s format failed format '
                       'inspection: %s', source_format, e)
@@ -113,7 +112,12 @@ class _ConvertImage(task.Task):
             LOG.exception('Unknown error inspecting image format: %s', e)
             raise RuntimeError('Unable to inspect image')
 
-        if str(inspector) == 'iso':
+        detected_format = str(inspector)
+        if detected_format == 'gpt':
+            # FIXME(danms): We need to consider GPT to be raw for compatibility
+            detected_format = 'raw'
+
+        if detected_format == 'iso':
             if source_format == 'iso':
                 # NOTE(abhishekk): Excluding conversion and preserving image
                 # disk_format as `iso` only
@@ -126,7 +130,7 @@ class _ConvertImage(task.Task):
             LOG.error('Image claimed to be %s format but format '
                       'inspection found: ISO', source_format)
             raise RuntimeError("Image has disallowed configuration")
-        elif str(inspector) != source_format:
+        elif detected_format != source_format:
             LOG.error('Image claimed to be %s format failed format '
                       'inspection', source_format)
             raise RuntimeError('Image format mismatch')

@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import io
+
 from cryptography import exceptions as crypto_exception
 from cursive import exception as cursive_exception
 from cursive import signature_utils
@@ -117,14 +119,23 @@ class TestStoreMultiBackends(utils.BaseTestCase):
         image_stub.disk_format = 'iso'
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
+        found_data = []
+
+        def consumer(data, _v, _b, _s):
+            found_data.append(data.read(4))
+
         with mock.patch.object(image, "_upload_to_store") as mloc:
-            image.set_data('YYYY', 4, backend='ceph1')
+            mloc.side_effect = consumer
+            src_data = io.BytesIO(b'YYYY')
+            image.set_data(src_data, 4, backend='ceph1')
             msig.assert_called_once_with(context=context,
                                          img_signature_certificate_uuid='UUID',
                                          img_signature_hash_method='METHOD',
                                          img_signature='VALID',
                                          img_signature_key_type='TYPE')
-            mloc.assert_called_once_with('YYYY', msig.return_value, 'ceph1', 4)
+            mloc.assert_called_once_with(mock.ANY, msig.return_value, 'ceph1',
+                                         4)
+            self.assertEqual([b'YYYY'], found_data)
 
         self.assertEqual('active', image.status)
 
@@ -284,9 +295,11 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual('active', image.status)
         self.assertEqual(0, image.virtual_size)
 
-    @mock.patch('glance.common.format_inspector.QcowInspector.virtual_size',
+    @mock.patch('oslo_utils.imageutils.format_inspector.QcowInspector.'
+                'virtual_size',
                 new_callable=mock.PropertyMock)
-    @mock.patch('glance.common.format_inspector.QcowInspector.format_match',
+    @mock.patch('oslo_utils.imageutils.format_inspector.QcowInspector.'
+                'format_match',
                 new_callable=mock.PropertyMock)
     def test_image_set_data_inspector_virtual_size_failure(self, mock_fm,
                                                            mock_vs):
@@ -315,11 +328,12 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual('active', image.status)
         self.assertEqual(0, image.virtual_size)
 
-    @mock.patch('glance.common.format_inspector.get_inspector')
-    def test_image_set_data_inspector_not_needed(self, mock_gi):
+    @mock.patch('oslo_utils.imageutils.format_inspector.InspectWrapper')
+    def test_image_set_data_inspector_not_needed(self, mock_inspect):
         context = glance.context.RequestContext(user=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.virtual_size = 123
+        image_stub.container_format = 'gzip'
         image_stub.disk_format = 'qcow2'
         # We are going to pass an iterable data source, so use the
         # FakeStoreAPIReader that actually reads from that data
@@ -335,7 +349,7 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(123, image.virtual_size)
         # If the image already had virtual_size set (i.e. we're setting
         # a new location), we should not re-calculate the value.
-        mock_gi.assert_not_called()
+        mock_inspect.assert_not_called()
 
     def test_image_set_data_location_metadata(self):
         context = glance.context.RequestContext(user=USER1)
