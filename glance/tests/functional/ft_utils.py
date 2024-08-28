@@ -98,6 +98,54 @@ def wait_for_status(test_obj, request_path, request_headers,
     raise Exception(msg.format(entity_id, status, max_sec))
 
 
+def wait_for_image_checksum_and_status(test_obj, image_id,
+                                       status=None, max_sec=10,
+                                       delay_sec=0.2, start_delay_sec=None,
+                                       multistore=False):
+    """
+    Performs a time-bounded wait for the entity at the request_path to
+    wait until image hash and checksum calculation.
+
+    :param test_obj: The test object; expected to have _url() and
+                     _headers() defined on it
+    :param image_id: Image id to use in the request
+    :param status: Expected status (default: None)
+    :param max_sec: the maximum number of seconds to wait (default: 10)
+    :param delay_sec: seconds to sleep before the next request is
+                      made (default: 0.2)
+    :param start_delay_sec: seconds to wait before making the first
+                            request (default: None)
+    :multistore: Optional flag if multiple backends enabled
+    """
+    if multistore:
+        path = '/v2/images/%s' % image_id
+    else:
+        path = test_obj._url('/v2/images/%s' % image_id)
+    start_time = time.time()
+    done_time = start_time + max_sec
+    if start_delay_sec:
+        time.sleep(start_delay_sec)
+    while time.time() <= done_time:
+        if multistore:
+            resp = test_obj.api_get(path, headers=test_obj._headers())
+        else:
+            resp = requests.get(path, headers=test_obj._headers())
+        test_obj.assertEqual(http.OK, resp.status_code)
+        image = jsonutils.loads(resp.text)
+        LOG.info('Image status is: %s', image['status'])
+        if image['checksum'] and image['status'] == status:
+            return
+
+        time.sleep(delay_sec)
+    if image['checksum'] is None:
+        msg = ("Entity {0} failed to complete hash caclulation "
+               "within {1} sec")
+        raise Exception(msg.format(image_id, max_sec))
+    if image['status'] != status:
+        msg = "Entity {0} failed to reach status '{1}' within {2} sec"
+        raise Exception(msg.format(image_id, status, max_sec))
+
+
 def wait_for_copying(request_path, request_headers, stores=[],
                      max_sec=10, delay_sec=0.2, start_delay_sec=None,
                      failure_scenario=False):

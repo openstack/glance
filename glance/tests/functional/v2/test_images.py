@@ -3803,12 +3803,11 @@ class TestImages(functional.FunctionalTest):
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.ACCEPTED, response.status_code, response.text)
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(self, request_path=path,
-                                   request_headers=headers,
-                                   status='active',
-                                   max_sec=10,
-                                   delay_sec=0.2,
-                                   start_delay_sec=1)
+        func_utils.wait_for_image_checksum_and_status(self, image_id,
+                                                      status='active',
+                                                      max_sec=10,
+                                                      delay_sec=0.2,
+                                                      start_delay_sec=1)
         # Show Image
         path = self._url('/v2/images/%s' % image_id)
         resp = requests.get(path, headers=headers)
@@ -3851,12 +3850,11 @@ class TestImages(functional.FunctionalTest):
         resp = requests.get(path, headers=self._headers())
         output = jsonutils.loads(resp.text)
         self.assertEqual('queued', output['status'])
-        func_utils.wait_for_status(self, request_path=path,
-                                   request_headers=self._headers(),
-                                   status='active',
-                                   max_sec=10,
-                                   delay_sec=0.2,
-                                   start_delay_sec=1)
+        func_utils.wait_for_image_checksum_and_status(self, image_id,
+                                                      status='active',
+                                                      max_sec=10,
+                                                      delay_sec=0.2,
+                                                      start_delay_sec=1)
         # Show Image
         resp = requests.get(path, headers=self._headers())
         image = jsonutils.loads(resp.text)
@@ -3890,12 +3888,11 @@ class TestImages(functional.FunctionalTest):
         response = requests.post(path, headers=headers, data=data)
         self.assertEqual(http.ACCEPTED, response.status_code, response.text)
         path = self._url('/v2/images/%s' % image_id)
-        func_utils.wait_for_status(self, request_path=path,
-                                   request_headers=headers,
-                                   status='active',
-                                   max_sec=10,
-                                   delay_sec=0.2,
-                                   start_delay_sec=1)
+        func_utils.wait_for_image_checksum_and_status(self, image_id,
+                                                      status='active',
+                                                      max_sec=10,
+                                                      delay_sec=0.2,
+                                                      start_delay_sec=1)
         # Show Image
         path = self._url('/v2/images/%s' % image_id)
         resp = requests.get(path, headers=headers)
@@ -7954,12 +7951,12 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.ACCEPTED, response.status_code, response.text)
         path = '/v2/images/%s' % image_id
-        func_utils.wait_for_status(self, request_path=path,
-                                   request_headers=headers,
-                                   status='active',
-                                   max_sec=20,
-                                   delay_sec=0.2,
-                                   start_delay_sec=1, multistore=True)
+        func_utils.wait_for_image_checksum_and_status(self, image_id,
+                                                      status='active',
+                                                      max_sec=10,
+                                                      delay_sec=0.2,
+                                                      start_delay_sec=1,
+                                                      multistore=True)
         # Show Image
         path = '/v2/images/%s' % image_id
         resp = self.api_get(path, headers=self._headers())
@@ -8003,12 +8000,12 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         output = jsonutils.loads(resp.text)
         self.assertEqual('queued', output['status'])
         path = '/v2/images/%s' % image_id
-        func_utils.wait_for_status(self, request_path=path,
-                                   request_headers=headers,
-                                   status='active',
-                                   max_sec=10,
-                                   delay_sec=0.2,
-                                   start_delay_sec=1, multistore=True)
+        func_utils.wait_for_image_checksum_and_status(self, image_id,
+                                                      status='active',
+                                                      max_sec=10,
+                                                      delay_sec=0.2,
+                                                      start_delay_sec=1,
+                                                      multistore=True)
         # Show Image
         path = '/v2/images/%s' % image_id
         resp = self.api_get(path, headers=self._headers())
@@ -8041,12 +8038,12 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.ACCEPTED, response.status_code, response.text)
         path = '/v2/images/%s' % image_id
-        func_utils.wait_for_status(self, request_path=path,
-                                   request_headers=headers,
-                                   status='active',
-                                   max_sec=10,
-                                   delay_sec=0.2,
-                                   start_delay_sec=1, multistore=True)
+        func_utils.wait_for_image_checksum_and_status(self, image_id,
+                                                      status='active',
+                                                      max_sec=10,
+                                                      delay_sec=0.2,
+                                                      start_delay_sec=1,
+                                                      multistore=True)
         # Show Image
         path = '/v2/images/%s' % image_id
         resp = self.api_get(path, headers=self._headers())
