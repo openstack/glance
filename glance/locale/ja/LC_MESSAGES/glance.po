@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2022-07-28 16:11+0000\n"
+"POT-Creation-Date: 2024-08-29 21:46+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -41,13 +41,6 @@ msgstr "%(serv)s (pid %(pid)s) が実行中..."
 #, python-format
 msgid "%(serv)s appears to already be running: %(pid)s"
 msgstr "%(serv)s は既に実行されている可能性があります: %(pid)s"
-
-#, python-format
-msgid ""
-"%(strategy)s is registered as a module twice. %(module)s is not being used."
-msgstr ""
-"%(strategy)s はモジュールとして 2 回登録されています。%(module)s は使用されて"
-"いません。"
 
 #, python-format
 msgid ""
@@ -703,14 +696,6 @@ msgstr "無効な場所"
 #, python-format
 msgid "Invalid location: %s"
 msgstr "無効な場所: %s"
-
-#, python-format
-msgid ""
-"Invalid location_strategy option: %(name)s. The valid strategy option(s) "
-"is(are): %(strategies)s"
-msgstr ""
-"location_strategy オプションが無効です: %(name)s。有効なストラテジーオプショ"
-"ン: %(strategies)s"
 
 msgid "Invalid locations"
 msgstr "無効な場所"

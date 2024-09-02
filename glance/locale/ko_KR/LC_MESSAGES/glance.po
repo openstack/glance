@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2023-09-01 09:13+0000\n"
+"POT-Creation-Date: 2024-08-29 21:46+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -42,13 +42,6 @@ msgstr "%(serv)s(pid %(pid)s)이(가) 실행 중..."
 #, python-format
 msgid "%(serv)s appears to already be running: %(pid)s"
 msgstr "%(serv)s이(가) 이미 실행 중으로 표시됨: %(pid)s"
-
-#, python-format
-msgid ""
-"%(strategy)s is registered as a module twice. %(module)s is not being used."
-msgstr ""
-"%(strategy)s이(가) 모듈로 두 번 등록되었습니다. %(module)s이(가) 사용되지 사"
-"용됩니다."
 
 #, python-format
 msgid ""
@@ -592,14 +585,6 @@ msgstr "잘못된 위치"
 #, python-format
 msgid "Invalid location: %s"
 msgstr "올바르지 않은 위치: %s"
-
-#, python-format
-msgid ""
-"Invalid location_strategy option: %(name)s. The valid strategy option(s) "
-"is(are): %(strategies)s"
-msgstr ""
-"올바르지 않은 location_strategy 옵션: %(name)s. 올바른 전략 옵션 : "
-"%(strategies)s"
 
 msgid "Invalid locations"
 msgstr "잘못된 위치들"
