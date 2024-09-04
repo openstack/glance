@@ -173,7 +173,6 @@ def do_start(verb, pid_file, server, args):
                 msg = (_('unable to launch %(serv)s. Got error: %(e)s') %
                        {'serv': server, 'e': e})
                 sys.exit(msg)
-            sys.exit(0)
         else:
             write_pid_file(pid_file, pid)
             await_child(pid, await_time)
