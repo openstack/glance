@@ -30,16 +30,6 @@
       - name: openstack/taskflow
 
 - job:
-    name: glance-tox-functional-py39-rbac-defaults
-    parent: openstack-tox-functional-py39
-    voting: false
-    description: |
-      Glance py39 functional tests with enforce_secure_rbac=True
-    vars:
-      python_version: 3.9
-      tox_envlist: functional-py39-rbac
-
-- job:
     name: glance-tox-functional-py312-oslo-tips
     parent: glance-tox-oslo-tips-base
     description: |
@@ -357,8 +347,9 @@
             glance_store:
               rbd_thin_provisioning: True
 
-# TODO(pdeore): Remove this jobs once all the glance jobs will be tested
-# with new RBAC in integrated way and we do not need this separate job.
+# TODO(pdeore): Remove this jobs once Cinder enable the RBAC new defaults
+# by default. All other services including glance enable new defaults by
+# default.
 - job:
     name: tempest-integrated-storage-enforce-scope-new-defaults
     parent: tempest-integrated-storage
@@ -372,6 +363,18 @@
         # Nova and glance scope and new defaults are enabled by default in
         # Devstack so we do not need to explicitly set that to True.
         CINDER_ENFORCE_SCOPE: true
+
+# NOTE(gmann): Remove this job once Glance remove the RBAC old defaults.
+- job:
+    name: tempest-integrated-storage-rbac-old-defaults
+    parent: tempest-integrated-storage
+    description: |
+      This job runs the Tempest tests with glance RBAC old defaults.
+    timeout: 10800
+    vars:
+      tempest_concurrency: 3
+      devstack_localrc:
+        GLANCE_ENFORCE_SCOPE: false
 
 - project:
     templates:
@@ -387,7 +390,6 @@
         - openstack-tox-functional-py39
         - openstack-tox-functional-py310
         - openstack-tox-functional-py312
-        - glance-tox-functional-py39-rbac-defaults
         - glance-ceph-thin-provisioning:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
@@ -459,6 +461,7 @@
             irrelevant-files: *tempest-irrelevant-files
         - glance-multistore-cinder-import-fips:
             irrelevant-files: *tempest-irrelevant-files
+        - tempest-integrated-storage-rbac-old-defaults
     periodic:
       jobs:
         # NOTE(rosmaita): we only want the "tips" jobs to be run against
@@ -502,4 +505,6 @@
         - glance-tox-functional-py311-cursive-tips:
             branches: master
         - glance-multistore-cinder-import-fips:
+            branches: master
+        - tempest-integrated-storage-rbac-old-defaults:
             branches: master
