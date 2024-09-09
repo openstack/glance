@@ -184,7 +184,7 @@ _USAGE_SCHEMA = {
             'additionalProperties': True,
             'validation_data': {
                 'type': 'object',
-                'additonalProperties': False,
+                'additionalProperties': False,
                 'properties': {
                     'usage': {'type': 'integer'},
                     'limit': {'type': 'integer'},
