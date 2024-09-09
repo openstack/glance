@@ -701,7 +701,7 @@ Debian-based distributions.
   Sets the RADOS pool in which images are stored.
 
 ``rbd_store_chunk_size=CHUNK_SIZE_MB``
-  Optional. Default: ``4``
+  Optional. Default: ``8``
 
   Can only be specified in configuration files.
 
