@@ -63,7 +63,8 @@
                             "bare",
                             "ovf",
                             "ova",
-                            "docker"
+                            "docker",
+                            "compressed"
                         ],
                         "type": [
                             "null",
