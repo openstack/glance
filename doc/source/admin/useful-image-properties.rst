@@ -431,6 +431,14 @@ Here is a list of useful image properties and the values they expect.
   * ``bios``
   * ``uefi``
 
+``hw_firmware_stateless``
+  :Type: bool
+
+  Specifies whether the image should be booted with stateless firmware.
+  If true, firmware configurations do not persist over server reboot.
+
+  Only supported by the libvirt driver. Also UEFI firmware is required.
+
 ``hw_mem_encryption``
   :Type: bool
 
