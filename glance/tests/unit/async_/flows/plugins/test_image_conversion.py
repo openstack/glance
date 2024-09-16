@@ -21,11 +21,11 @@ from unittest import mock
 import glance_store
 from oslo_concurrency import processutils
 from oslo_config import cfg
+from oslo_utils.imageutils import format_inspector
 
 import glance.async_.flows.api_image_import as import_flow
 import glance.async_.flows.plugins.image_conversion as image_conversion
 from glance.async_ import utils as async_utils
-from glance.common import format_inspector
 from glance.common import utils
 from glance import domain
 from glance import gateway
@@ -97,9 +97,9 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                                                        self.task.task_id)
 
         self.detect_file_format_mock = mock.MagicMock()
-        self.useFixture(fixtures.MockPatch('glance.common.format_inspector.'
-                                           'detect_file_format',
-                                           self.detect_file_format_mock))
+        self.useFixture(fixtures.MockPatch(
+            'oslo_utils.imageutils.format_inspector.detect_file_format',
+            self.detect_file_format_mock))
 
     @mock.patch.object(os, 'stat')
     @mock.patch.object(os, 'remove')
@@ -126,7 +126,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                                             'virtual-size': 456}
                 inspector = self.detect_file_format_mock.return_value
                 inspector.__str__.return_value = 'raw'
-                inspector.safety_check.return_value = True
                 image_convert.execute('file:///test/path.raw')
 
                 # NOTE(hemanthm): Asserting that the source format is passed
@@ -164,7 +163,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         self.img_repo.get.return_value = image
         inspector = self.detect_file_format_mock.return_value
         inspector.__str__.return_value = 'iso'
-        inspector.safety_check.return_value = True
 
         image_convert.execute('file:///test/path.iso')
         self.assertEqual(fmt, image.disk_format)
@@ -206,7 +204,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         with mock.patch.object(processutils, 'execute') as exc_mock:
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
-            inspector.safety_check.return_value = True
             exc_mock.side_effect = OSError('fail')
             self.assertRaises(OSError,
                               convert.execute, 'file:///test/path.raw')
@@ -227,7 +224,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             exc_mock.return_value = '', 'some error'
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
-            inspector.safety_check.return_value = True
             self.assertRaises(RuntimeError,
                               convert.execute, 'file:///test/path.raw')
             exc_mock.assert_called_once_with(
@@ -249,7 +245,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         with mock.patch.object(processutils, 'execute') as exc_mock:
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
-            inspector.safety_check.return_value = True
             exc_mock.return_value = json.dumps(data), ''
             e = self.assertRaises(RuntimeError,
                                   convert.execute, 'file:///test/path.qcow')
@@ -269,7 +264,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             exc_mock.return_value = json.dumps(data), ''
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
-            inspector.safety_check.return_value = True
             e = self.assertRaises(RuntimeError,
                                   convert.execute, 'file:///test/path.qcow')
             self.assertEqual('QCOW images with data-file set are not allowed',
@@ -284,7 +278,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
     def test_image_convert_fails_inspection_safety_check(self):
         convert = self._setup_image_convert_info_fail()
         inspector = self.detect_file_format_mock.return_value
-        inspector.safety_check.return_value = False
+        inspector.safety_check.side_effect = (
+            format_inspector.SafetyCheckFailed({}))
         self.assertRaisesRegex(RuntimeError,
                                'Image has disallowed configuration',
                                convert.execute, 'file:///test/path.qcow')
@@ -315,7 +310,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         with mock.patch.object(processutils, 'execute') as exc_mock:
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'vmdk'
-            inspector.safety_check.return_value = True
             exc_mock.return_value = json.dumps(data), ''
             convert.execute('file:///test/path.vmdk')
 
@@ -347,7 +341,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         with mock.patch.object(processutils, 'execute') as exc_mock:
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'raw'
-            inspector.safety_check.return_value = True
             exc_mock.side_effect = [('{"format":"raw"}', ''),
                                     OSError('convert_fail')]
             self.assertRaises(OSError,
@@ -373,7 +366,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                                     ('', 'some error')]
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'raw'
-            inspector.safety_check.return_value = True
             self.assertRaises(RuntimeError,
                               convert.execute, 'file:///test/path.raw')
             exc_mock.assert_has_calls(
@@ -396,7 +388,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             exc_mock.return_value = ('{}', '')
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
-            inspector.safety_check.return_value = True
             exc = self.assertRaises(RuntimeError,
                                     convert.execute, 'file:///test/path.raw')
             self.assertIn('Image metadata disagrees about format', str(exc))
@@ -429,7 +420,6 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                 '{"format": "qcow2", "virtual-size": 123}', '')
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
-            inspector.safety_check.return_value = True
             convert.execute('file:///test/path.qcow')
             # Make sure we only called qemu-img for inspection, not conversion
             exc_mock.assert_called_once_with(

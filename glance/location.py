@@ -25,9 +25,9 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
 from oslo_utils import excutils
+from oslo_utils.imageutils import format_inspector
 
 from glance.common import exception
-from glance.common import format_inspector
 from glance.common import store_utils
 from glance.common import utils
 import glance.domain.proxy
@@ -580,37 +580,55 @@ class ImageProxy(glance.domain.proxy.Image):
                 img_signature_key_type=key_type
             )
 
-        if not self.image.virtual_size:
-            inspector = format_inspector.get_inspector(self.image.disk_format)
-        else:
-            # No need to do this again
-            inspector = None
-
-        if inspector and self.image.container_format == 'bare':
-            fmt = inspector()
-            data = format_inspector.InfoWrapper(data, fmt)
-            LOG.debug('Enabling in-flight format inspection for %s', fmt)
-        else:
-            fmt = None
+        if self.image.container_format == 'bare':
+            # FIXME(danms): We do not pass an expected_format here because
+            # we do not (currently) want to interrupt the data pipeline if
+            # the format does not match.
+            data = format_inspector.InspectWrapper(data)
+            LOG.debug('Enabling in-flight format inspection for %s',
+                      self.image.disk_format)
 
         self._upload_to_store(data, verifier, backend, size)
 
+        try:
+            data.close()
+        except AttributeError:
+            # We did not get a closeable or file-like object as data and/or
+            # did not wrap it because of container_format
+            pass
+
         virtual_size = 0
-        if fmt and fmt.format_match:
-            try:
-                virtual_size = fmt.virtual_size
+        try:
+            inspector = data.format
+            format = str(inspector)
+            # format_inspector detects GPT, which we need to treat as raw for
+            # compatibility reasons
+            if format == 'gpt':
+                format = 'raw'
+            if format == self.image.disk_format:
+                virtual_size = inspector.virtual_size
                 LOG.info('Image format matched and virtual size computed: %i',
                          virtual_size)
-            except Exception as e:
-                LOG.error(_LE('Unable to determine virtual_size because: %s'),
-                          e)
-        elif fmt:
+            else:
+                LOG.info('Image declared as %s but detected as %s, '
+                         'not updating virtual_size',
+                         self.image.disk_format, inspector)
+        except AttributeError:
+            # We must not have wrapped this for inspection because of
+            # container_format
+            pass
+        except format_inspector.ImageFormatError:
+            # No format matched!
+            # FIXME(danms): This should be an error in the future for most
+            # cases
             LOG.warning('Image format %s did not match; '
                         'unable to calculate virtual size',
                         self.image.disk_format)
+        except Exception as e:
+            LOG.error(_LE('Unable to determine virtual_size because: %s'), e)
 
         if virtual_size:
-            self.image.virtual_size = fmt.virtual_size
+            self.image.virtual_size = virtual_size
 
         if set_active and self.image.status != 'active':
             self.image.status = 'active'
