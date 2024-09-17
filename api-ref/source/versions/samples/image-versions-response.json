@@ -1,7 +1,7 @@
 {
     "versions": [
         {
-            "id": "v2.16",
+            "id": "v2.17",
             "links": [
                 {
                     "href": "http://glance.openstack.example.org/v2/",
@@ -9,6 +9,16 @@
                 }
             ],
             "status": "CURRENT"
+        },
+        {
+            "id": "v2.16",
+            "links": [
+                {
+                    "href": "http://glance.openstack.example.org/v2/",
+                    "rel": "self"
+                }
+            ],
+            "status": "SUPPORTED"
         },
         {
             "id": "v2.15",
