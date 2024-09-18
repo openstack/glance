@@ -23,7 +23,6 @@ import os
 from oslo_config import cfg
 from oslo_middleware import cors
 from oslo_policy import opts
-from oslo_policy import policy
 from paste import deploy
 
 from glance.i18n import _
@@ -640,7 +639,6 @@ CONF.register_opts(image_format_opts, group='image_format')
 CONF.register_opts(task_opts, group='task')
 CONF.register_opts(common_opts)
 CONF.register_opts(wsgi_opts, group='wsgi')
-policy.Enforcer(CONF)
 
 
 def parse_args(args=None, usage=None, default_config_files=None):
