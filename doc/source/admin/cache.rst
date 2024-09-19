@@ -48,11 +48,8 @@ same values otherwise the cache will potentially run into problems.
 
 - ``image_cache_dir`` This is the base directory where Glance stores
   the cache data (Required to be set, as does not have a default).
-- ``image_cache_sqlite_db`` Path to the sqlite file database that will
-  be used for cache management. This is a relative path from the
-  ``image_cache_dir`` directory (Default:``cache.db``).
 - ``image_cache_driver`` The driver used for cache management.
-  (Default:``sqlite``)
+  (Default:``centralized_db``)
 - ``image_cache_max_size`` The size when the glance-cache-pruner will
   remove the oldest images, to reduce the bytes until under this value.
   (Default:``10 GB``)

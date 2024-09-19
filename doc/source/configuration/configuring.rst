@@ -1859,7 +1859,7 @@ One main configuration file option affects the image cache.
   ``glance-api`` server
 
 ``image_cache_driver=DRIVER``
-  Optional. Choice of ``sqlite``, ``xattr`` or ``centralized_db``
+  Optional. Choice of ``xattr`` or ``centralized_db``
 
   Default: ``centralized_db``
 
@@ -1873,10 +1873,6 @@ One main configuration file option affects the image cache.
   be :ref:`migrated <sqlite-to-centralized_db-migration>` to
   central database on service restart during upgrade process.
 
-  The ``sqlite`` cache driver has no special dependencies, and uses
-  the built-in ``sqlite3`` module. It stores information about the cached
-  files in a SQLite database.
-
   **NOTE**
   In Caracal release ``sqlite`` cache driver has been deprecated and will
   be removed in ``F`` development cycle.
@@ -1886,19 +1882,6 @@ One main configuration file option affects the image cache.
   access times tracked for all files (in other words, the noatime option
   CANNOT be set for that filesystem). In addition, ``user_xattr`` must be
   set on the filesystem's description line in fstab.
-
-``image_cache_sqlite_db=DB_FILE``
-  Optional.
-
-  Default: ``cache.db``
-
-  When using the ``sqlite`` cache driver, you can set the name of the database
-  that will be used to store the cached images information. The database
-  is always contained in the ``image_cache_dir``.
-
-  **NOTE**
-  In Caracal release ``image_cache_sqlite_db`` option has been deprecated
-  and will be removed in ``F`` development cycle.
 
 ``image_cache_max_size=SIZE``
   Optional.

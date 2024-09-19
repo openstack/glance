@@ -38,9 +38,7 @@ class TestImageCache(functional.SynchronousAPIBase):
             oslo_policy.policy.Rules.from_dict(rules),
             overwrite=True)
 
-    def start_server(self, enable_cache=True, cache_driver='sqlite'):
-        # NOTE(abhishekk): Once sqlite driver is removed, fix these tests
-        # to work with centralized_db driver
+    def start_server(self, enable_cache=True, cache_driver='centralized_db'):
         self.config(image_cache_driver=cache_driver)
         with mock.patch.object(policy, 'Enforcer') as mock_enf:
             mock_enf.return_value = self.policy
@@ -210,7 +208,7 @@ class TestImageCache(functional.SynchronousAPIBase):
         self.assertEqual(1, total)
 
     def test_list_cached_nodes_centralized_cache_disabled(self):
-        self.start_server(enable_cache=True)
+        self.start_server(enable_cache=True, cache_driver='xattr')
         images = self.load_data()
 
         # Test that 409 is returned when centralized caching is disabled
@@ -581,11 +579,8 @@ class TestImageCache(functional.SynchronousAPIBase):
 
             # Queue for caching
             self.cache_queue(image_id)
-            cached_image_ids.append(image_id)
-
-        # Wait for all images to be cached
-        for image_id in cached_image_ids:
             self.wait_for_caching(image_id)
+            cached_image_ids.append(image_id)
 
         # Verify all images are cached
         output = self.list_cache()

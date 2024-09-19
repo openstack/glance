@@ -29,7 +29,17 @@ from glance.image_cache.drivers import common
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-CONF.import_opt("image_cache_sqlite_db", "glance.image_cache.drivers.sqlite")
+
+sqlite_opts = [
+    cfg.StrOpt('image_cache_sqlite_db', default='cache.db',
+               deprecated_for_removal=True,
+               deprecated_reason=_("""
+As centralized database will now be used for image cache management, the use
+of `sqlite` database and driver has been removed.
+""")),
+]
+
+CONF.register_opts(sqlite_opts)
 
 
 def can_migrate_to_central_db():

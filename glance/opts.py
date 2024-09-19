@@ -35,7 +35,6 @@ import glance.async_.taskflow_executor
 import glance.common.config
 import glance.common.property_utils
 import glance.image_cache
-import glance.image_cache.drivers.sqlite
 import glance.notifier
 import glance.scrubber
 
@@ -47,7 +46,6 @@ _api_opts = [
         glance.common.config.common_opts,
         glance.common.property_utils.property_opts,
         glance.common.config.store_opts,
-        glance.image_cache.drivers.sqlite.sqlite_opts,
         glance.image_cache.image_cache_opts,
         glance.notifier.notifier_opts,
         glance.scrubber.scrubber_opts))),
@@ -70,7 +68,6 @@ _scrubber_opts = [
 _cache_opts = [
     (None, list(itertools.chain(
         glance.common.config.common_opts,
-        glance.image_cache.drivers.sqlite.sqlite_opts,
         glance.image_cache.image_cache_opts))),
 ]
 _manage_opts = [

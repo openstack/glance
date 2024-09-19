@@ -1,0 +1,11 @@
+---
+prelude: >
+  - The deprecated ``sqlite`` image cache driver has been removed. The
+    ``image_cache_sqlite_db`` option remains temporarily supported only
+    to locate the legacy SQLite database during migration to
+    centralized_db. It no longer selects a cache driver and should be
+    removed after migration.
+upgrade:
+  - |
+    The ``sqlite`` cache driver has been removed in this release. The
+    ``image_cache_sqlite_db`` configuration option has also been removed.

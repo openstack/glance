@@ -14,10 +14,9 @@
 #    under the License.
 
 """
-Tests a Glance API server which uses the caching middleware that
-uses the default SQLite cache driver. We use the filesystem store,
-but that is really not relevant, as the image cache is transparent
-to the backend store.
+Tests a Glance API server which uses the caching middleware. We use the
+filesystem store, but that is really not relevant, as the image cache is
+transparent to the backend store.
 """
 
 import http.client as http_client
@@ -311,46 +310,3 @@ class TestImageCacheXattr(functional.SynchronousAPIBase,
         with mock.patch.object(policy, 'Enforcer') as mock_enf:
             mock_enf.return_value = self.policy
             super(TestImageCacheXattr, self).start_server()
-
-
-class TestImageCacheSqlite(functional.SynchronousAPIBase,
-                           BaseCacheMiddlewareTest):
-
-    """
-    Functional tests that exercise the image cache using the
-    SQLite driver
-    """
-
-    def setUp(self):
-        """
-        Test to see if the pre-requisites for the image cache
-        are working (python-xattr installed and xattr support on the
-        filesystem)
-        """
-        if getattr(self, 'disabled', False):
-            return
-
-        if not getattr(self, 'inited', False):
-            try:
-                import sqlite3  # noqa
-            except ImportError:
-                self.inited = True
-                self.disabled = True
-                self.disabled_message = ("python-sqlite3 not installed.")
-                return
-
-        self.inited = True
-        self.disabled = False
-
-        super(TestImageCacheSqlite, self).setUp()
-        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
-
-    def set_policy_rules(self, rules):
-        self.policy.set_rules(
-            oslo_policy.policy.Rules.from_dict(rules),
-            overwrite=True)
-
-    def start_server(self):
-        with mock.patch.object(policy, 'Enforcer') as mock_enf:
-            mock_enf.return_value = self.policy
-            super(TestImageCacheSqlite, self).start_server()
