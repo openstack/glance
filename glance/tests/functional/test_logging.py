@@ -70,12 +70,6 @@ class TestLogging(functional.FunctionalTest):
         """
         Test that we notice when our log file has been rotated
         """
-
-        # Moving in-use files is not supported on Windows.
-        # The log handler itself may be configured to rotate files.
-        if os.name == 'nt':
-            raise self.skipException("Unsupported platform.")
-
         self.cleanup()
         self.start_servers()
 

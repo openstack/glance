@@ -161,26 +161,6 @@ class BaseTestCase(testtools.TestCase):
         self.addCleanup(patcher.stop)
         return result
 
-    def delay_inaccurate_clock(self, duration=0.001):
-        """Add a small delay to compensate for inaccurate system clocks.
-
-        Some tests make assertions based on timestamps (e.g. comparing
-        'created_at' and 'updated_at' fields). In some cases, subsequent
-        time.time() calls may return identical values (python timestamps can
-        have a lower resolution on Windows compared to Linux - 1e-7 as
-        opposed to 1e-9).
-
-        A small delay (a few ms should be negligeable) can prevent such
-        issues. At the same time, it spares us from mocking the time
-        module, which might be undesired.
-        """
-
-        # For now, we'll do this only for Windows. If really needed,
-        # on Py3 we can get the clock resolution using time.get_clock_info,
-        # but at that point we may as well just sleep 1ms all the time.
-        if os.name == 'nt':
-            time.sleep(duration)
-
 
 class requires(object):
     """Decorator that initiates additional test setup/teardown."""
@@ -209,12 +189,8 @@ class depends_on_exe(object):
 
     def __call__(self, func):
         def _runner(*args, **kw):
-            if os.name != 'nt':
-                cmd = 'which %s' % self.exe
-            else:
-                cmd = 'where.exe', '%s' % self.exe
-
-            exitcode, out, err = execute(cmd, raise_error=False)
+            exitcode, out, err = execute('which %s' % self.exe,
+                                         raise_error=False)
             if exitcode != 0:
                 args[0].disabled_message = 'test requires exe: %s' % self.exe
                 args[0].disabled = True
@@ -394,10 +370,7 @@ def execute(cmd,
     path_ext = [os.path.join(os.getcwd(), 'bin')]
 
     # Also jack in the path cmd comes from, if it's absolute
-    if os.name != 'nt':
-        args = shlex.split(cmd)
-    else:
-        args = cmd
+    args = shlex.split(cmd)
 
     executable = args[0]
     if os.path.isabs(executable):

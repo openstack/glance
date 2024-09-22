@@ -578,7 +578,6 @@ class TestImageRepo(test_utils.BaseTestCase):
         original_update_time = image.updated_at
         image.name = 'foo'
         image.tags = ['king', 'kong']
-        self.delay_inaccurate_clock()
         self.image_repo.save(image)
         current_update_time = image.updated_at
         self.assertGreater(current_update_time, original_update_time)
@@ -636,7 +635,6 @@ class TestImageRepo(test_utils.BaseTestCase):
     def test_remove_image(self):
         image = self.image_repo.get(UUID1)
         previous_update_time = image.updated_at
-        self.delay_inaccurate_clock()
         self.image_repo.remove(image)
         self.assertGreater(image.updated_at, previous_update_time)
         self.assertRaises(exception.ImageNotFound, self.image_repo.get, UUID1)
@@ -1053,7 +1051,6 @@ class TestTaskRepo(test_utils.BaseTestCase):
     def test_save_task(self):
         task = self.task_repo.get(UUID1)
         original_update_time = task.updated_at
-        self.delay_inaccurate_clock()
         self.task_repo.save(task)
         current_update_time = task.updated_at
         self.assertGreater(current_update_time, original_update_time)

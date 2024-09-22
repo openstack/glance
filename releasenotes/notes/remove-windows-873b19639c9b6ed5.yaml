@@ -1,0 +1,5 @@
+---
+upgrade:
+  - |
+    Support for running glance services in Windows operating systems has been
+    removed.

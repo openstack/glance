@@ -1756,8 +1756,7 @@ One main configuration file option affects the image cache.
   and requires that the filesystem containing ``image_cache_dir`` have
   access times tracked for all files (in other words, the noatime option
   CANNOT be set for that filesystem). In addition, ``user_xattr`` must be
-  set on the filesystem's description line in fstab. Because of these
-  requirements, the ``xattr`` cache driver is not available on Windows.
+  set on the filesystem's description line in fstab.
 
 ``image_cache_sqlite_db=DB_FILE``
   Optional.

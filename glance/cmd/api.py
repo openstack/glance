@@ -25,13 +25,7 @@ import os
 import sys
 
 import eventlet
-
-if os.name == 'nt':
-    # eventlet monkey patching the os module causes subprocess.Popen to fail
-    # on Windows when using pipes due to missing non-blocking IO support.
-    eventlet.patcher.monkey_patch(os=False)
-else:
-    eventlet.patcher.monkey_patch()
+eventlet.patcher.monkey_patch()
 
 # Monkey patch the original current_thread to use the up-to-date _active
 # global variable. See https://bugs.launchpad.net/bugs/1863021 and
@@ -66,7 +60,6 @@ from glance import version
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
 logging.register_options(CONF)
-wsgi.register_cli_opts()
 
 # NOTE(rosmaita): Any new exceptions added should preserve the current
 # error codes for backward compatibility.  The value 99 is returned

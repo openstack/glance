@@ -23,13 +23,7 @@ import os
 import sys
 
 import eventlet
-
-if os.name == 'nt':
-    # eventlet monkey patching the os module causes subprocess.Popen to fail
-    # on Windows when using pipes due to missing non-blocking IO support.
-    eventlet.patcher.monkey_patch(os=False)
-else:
-    eventlet.patcher.monkey_patch()
+eventlet.patcher.monkey_patch()
 
 # Monkey patch the original current_thread to use the up-to-date _active
 # global variable. See https://bugs.launchpad.net/bugs/1863021 and
@@ -49,7 +43,6 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
     sys.path.insert(0, possible_topdir)
 
 import glance_store
-from os_win import utilsfactory as os_win_utilsfactory
 from oslo_config import cfg
 from oslo_log import log as logging
 
@@ -64,18 +57,7 @@ CONF.set_default(name='use_stderr', default=True)
 
 
 def main():
-    # Used on Window, ensuring that a single scrubber can run at a time.
-    mutex = None
-    mutex_acquired = False
-
     try:
-        if os.name == 'nt':
-            # We can't rely on process names on Windows as there may be
-            # wrappers with the same name.
-            mutex = os_win_utilsfactory.get_mutex(
-                name='Global\\glance-scrubber')
-            mutex_acquired = mutex.acquire(timeout_ms=0)
-
         CONF.register_cli_opts(scrubber.scrubber_cmd_cli_opts)
         CONF.register_opts(scrubber.scrubber_cmd_opts)
 
@@ -99,12 +81,7 @@ def main():
         app = scrubber.Scrubber(glance_store)
 
         if CONF.restore:
-            if os.name == 'nt':
-                scrubber_already_running = not mutex_acquired
-            else:
-                scrubber_already_running = scrubber_already_running_posix()
-
-            if scrubber_already_running:
+            if scrubber_already_running():
                 already_running_msg = (
                     "ERROR: glance-scrubber is already running. "
                     "Please ensure that the daemon is stopped.")
@@ -121,12 +98,9 @@ def main():
         sys.exit("ERROR: %s" % e)
     except RuntimeError as e:
         sys.exit("ERROR: %s" % e)
-    finally:
-        if mutex and mutex_acquired:
-            mutex.release()
 
 
-def scrubber_already_running_posix():
+def scrubber_already_running():
     # Try to check the glance-scrubber is running or not.
     # 1. Try to find the pid file if scrubber is controlled by
     #    glance-control

@@ -24,10 +24,7 @@ import abc
 import errno
 import functools
 import os
-import re
 import signal
-import struct
-import subprocess
 import sys
 import time
 
@@ -35,7 +32,6 @@ from eventlet.green import socket
 import eventlet.greenio
 import eventlet.wsgi
 import glance_store
-from os_win import utilsfactory as os_win_utilsfactory
 from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -252,13 +248,6 @@ store_opts = [
                        'using comma.')),
 ]
 
-cli_opts = [
-    cfg.StrOpt('pipe-handle',
-               help='This argument is used internally on Windows. Glance '
-                    'passes a pipe handle to child processes, which is then '
-                    'used for inter-process communication.'),
-]
-
 
 LOG = logging.getLogger(__name__)
 
@@ -286,16 +275,8 @@ RESERVED_STORES = {
 }
 
 
-def register_cli_opts():
-    CONF.register_cli_opts(cli_opts)
-
-
 def get_num_workers():
     """Return the configured number of workers."""
-
-    # Windows only: we're already running on the worker side.
-    if os.name == 'nt' and getattr(CONF, 'pipe_handle', None):
-        return 0
 
     if CONF.workers is None:
         # None implies the number of CPUs limited to 8
@@ -740,125 +721,7 @@ class PosixServer(BaseServer):
         self.start_wsgi()
 
 
-class Win32ProcessLauncher(object):
-    def __init__(self):
-        self._processutils = os_win_utilsfactory.get_processutils()
-
-        self._workers = []
-        self._worker_job_handles = []
-
-    def add_process(self, cmd):
-        LOG.info("Starting subprocess: %s", cmd)
-
-        worker = subprocess.Popen(cmd, close_fds=False)
-        try:
-            job_handle = self._processutils.kill_process_on_job_close(
-                worker.pid)
-        except Exception:
-            LOG.exception("Could not associate child process "
-                          "with a job, killing it.")
-            worker.kill()
-            raise
-
-        self._worker_job_handles.append(job_handle)
-        self._workers.append(worker)
-
-        return worker
-
-    def wait(self):
-        pids = [worker.pid for worker in self._workers]
-        if pids:
-            self._processutils.wait_for_multiple_processes(pids,
-                                                           wait_all=True)
-        # By sleeping here, we allow signal handlers to be executed.
-        time.sleep(0)
-
-
-class Win32Server(BaseServer):
-    _py_script_re = re.compile(r'.*\.py\w?$')
-    _sock = None
-
-    def __init__(self, *args, **kwargs):
-        LOG.warning("Support for Glance on Windows operating systems is"
-                    "deprecated.")
-        super(Win32Server, self).__init__(*args, **kwargs)
-        self._launcher = Win32ProcessLauncher()
-        self._ioutils = os_win_utilsfactory.get_ioutils()
-
-    def run_child(self):
-        # We're passing copies of the socket through pipes.
-        rfd, wfd = self._ioutils.create_pipe(inherit_handle=True)
-
-        cmd = sys.argv + ['--pipe-handle=%s' % int(rfd)]
-        # Recent setuptools versions will trim '-script.py' and '.exe'
-        # extensions from sys.argv[0].
-        if self._py_script_re.match(sys.argv[0]):
-            cmd = [sys.executable] + cmd
-
-        worker = self._launcher.add_process(cmd)
-        self._ioutils.close_handle(rfd)
-
-        share_sock_buff = self._sock.share(worker.pid)
-        self._ioutils.write_file(
-            wfd,
-            struct.pack('<I', len(share_sock_buff)),
-            4)
-        self._ioutils.write_file(
-            wfd, share_sock_buff, len(share_sock_buff))
-
-        self.children.add(worker.pid)
-
-    def kill_children(self, *args):
-        # We're using job objects, the children will exit along with the
-        # main process.
-        exit(0)
-
-    def wait_on_children(self):
-        self._launcher.wait()
-
-    def _get_sock_from_parent(self):
-        # This is supposed to be called exactly once in the child process.
-        # We're passing a copy of the socket through a pipe.
-        pipe_handle = int(getattr(CONF, 'pipe_handle', 0))
-        if not pipe_handle:
-            err_msg = _("Did not receive a pipe handle, which is used when "
-                        "communicating with the parent process.")
-            raise exception.GlanceException(err_msg)
-
-        # Get the length of the data to be received.
-        buff = self._ioutils.get_buffer(4)
-        self._ioutils.read_file(pipe_handle, buff, 4)
-        socket_buff_sz = struct.unpack('<I', buff)[0]
-
-        # Get the serialized socket object.
-        socket_buff = self._ioutils.get_buffer(socket_buff_sz)
-        self._ioutils.read_file(pipe_handle, socket_buff, socket_buff_sz)
-        self._ioutils.close_handle(pipe_handle)
-
-        # Recreate the socket object. This will only work with
-        # Python 3.6 or later.
-        return socket.fromshare(bytes(socket_buff[:]))
-
-    def configure_socket(self, old_conf=None, has_changed=None):
-        fresh_start = not (old_conf or has_changed)
-        pipe_handle = getattr(CONF, 'pipe_handle', None)
-
-        if not (fresh_start and pipe_handle):
-            return super(Win32Server, self).configure_socket(
-                old_conf, has_changed)
-
-        self.sock = self._get_sock_from_parent()
-
-        if hasattr(socket, 'TCP_KEEPIDLE'):
-            # This was introduced in WS 2016 RS3
-            self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE,
-                                 CONF.tcp_keepidle)
-
-
-if os.name == 'nt':
-    Server = Win32Server
-else:
-    Server = PosixServer
+Server = PosixServer
 
 
 class Middleware(object):

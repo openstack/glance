@@ -606,8 +606,6 @@ class ServerTest(test_utils.BaseTestCase):
     def test_number_of_workers_posix(self, mock_migrate_db, mock_prefetcher):
         """Ensure the number of workers matches num cpus limited to 8."""
         mock_migrate_db.return_value = False
-        if os.name == 'nt':
-            raise self.skipException("Unsupported platform.")
 
         def pid():
             i = 1

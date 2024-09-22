@@ -14,16 +14,9 @@
 #    under the License.
 
 import builtins
-import os
 
 import eventlet
-
-if os.name == 'nt':
-    # eventlet monkey patching the os module causes subprocess.Popen to fail
-    # on Windows when using pipes due to missing non-blocking IO support.
-    eventlet.patcher.monkey_patch(os=False)
-else:
-    eventlet.patcher.monkey_patch()
+eventlet.patcher.monkey_patch()
 
 import glance.async_
 # NOTE(danms): Default to eventlet threading for tests

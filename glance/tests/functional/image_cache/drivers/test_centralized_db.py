@@ -351,7 +351,6 @@ class TestCentralizedDb(functional.SynchronousAPIBase):
 
         self.assertTrue(os.path.exists(incomplete_file_path))
 
-        self.delay_inaccurate_clock()
         self.driver.clean(stall_time=0)
 
         self.assertFalse(os.path.exists(incomplete_file_path))

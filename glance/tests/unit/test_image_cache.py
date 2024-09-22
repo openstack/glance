@@ -139,7 +139,6 @@ class ImageCacheTestCase(object):
 
         self.assertTrue(os.path.exists(invalid_file_path))
 
-        self.delay_inaccurate_clock()
         if failure:
             with mock.patch.object(
                     fileutils, 'delete_if_exists') as mock_delete:
@@ -167,7 +166,6 @@ class ImageCacheTestCase(object):
 
         self.assertTrue(os.path.exists(incomplete_file_path))
 
-        self.delay_inaccurate_clock()
         self.cache.clean(stall_time=0)
 
         self.assertFalse(os.path.exists(incomplete_file_path))
