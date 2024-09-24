@@ -458,3 +458,7 @@ class InvalidDataMigrationScript(GlanceException):
 class GlanceEndpointNotFound(NotFound):
     message = _("%(interface)s glance endpoint not "
                 "found for region %(region)s")
+
+
+class InvalidImageData(Invalid):
+    message = _("Image data is not acceptable or does not match parameters")

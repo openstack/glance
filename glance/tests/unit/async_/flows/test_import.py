@@ -74,7 +74,7 @@ class TestImportTask(test_utils.BaseTestCase):
         self.task_factory = domain.TaskFactory()
         self.img_factory = self.gateway.get_image_factory(self.context)
         self.image = self.img_factory.new_image(image_id=UUID1,
-                                                disk_format='qcow2',
+                                                disk_format='raw',
                                                 container_format='bare')
 
         task_input = {
@@ -127,7 +127,7 @@ class TestImportTask(test_utils.BaseTestCase):
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
-                    'format': 'qcow2',
+                    'format': 'raw',
                 }), None)
 
                 executor.begin_processing(self.task.task_id)

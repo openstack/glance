@@ -110,6 +110,17 @@ image_format_opts = [
                        "checked during image conversion (if enabled), and "
                        "limits the types of VMDK images we will convert "
                        "from.")),
+    cfg.BoolOpt('require_image_format_match',
+                default=True,
+                help=_('When enabled, glance will inspect the content of '
+                       'uploads and require that they match the disk_format '
+                       'set on the image. A mismatch will abort the upload '
+                       'with an error. Disabling this may be required in the '
+                       'case of false match (or mismatch) issues, but those '
+                       'are bugs that should be filed and fixed. Enabling '
+                       'this feature improves security and consistency by '
+                       'ensuring that images claiming to be a given format '
+                       'have content matching that format.')),
 ]
 task_opts = [
     cfg.IntOpt('task_time_to_live',
