@@ -630,6 +630,7 @@ class ImageProxy(glance.domain.proxy.Image):
                 raise format_inspector.ImageFormatError(
                     _('Image disk_format %s does not match stream data %s' % (
                         self.image.disk_format, format)))
+            inspector.safety_check()
         except AttributeError:
             # We must not have wrapped this for inspection because of
             # container_format
@@ -642,6 +643,9 @@ class ImageProxy(glance.domain.proxy.Image):
                 LOG.warning('Image format %s did not match; '
                             'unable to calculate virtual size',
                             self.image.disk_format)
+        except format_inspector.SafetyCheckFailed as e:
+            LOG.warning('Image %s %s', format, e)
+            raise exception.InvalidImageData('Image failed safety checks')
         except Exception as e:
             LOG.error(_LE('Unable to determine stream format because: %s'), e)
             # FIXME(danms): Do this based on config
