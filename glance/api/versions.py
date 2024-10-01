@@ -76,6 +76,9 @@ class Controller(object):
                 ],
             }
 
+        # NOTE: if a version is added/removed here, make sure that the
+        # api-ref is also updated to reflect an accurate version history
+        # and sample /versions response
         version_objs = []
         if CONF.image_cache_dir:
             version_objs.extend([
