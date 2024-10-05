@@ -26,6 +26,7 @@ import glance_store as store
 from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils import fixture
+from oslo_utils import timeutils
 import testtools
 import webob
 import webob.exc
@@ -34,7 +35,6 @@ import glance.api.v2.image_actions
 import glance.api.v2.images
 from glance.common import exception
 from glance.common import store_utils
-from glance.common import timeutils
 from glance import domain
 import glance.notifier
 import glance.schema

@@ -21,10 +21,10 @@ import uuid
 
 from oslo_config import cfg
 from oslo_serialization import jsonutils
+from oslo_utils import timeutils
 import webob
 
 import glance.api.v2.tasks
-from glance.common import timeutils
 import glance.domain
 import glance.gateway
 from glance.tests.unit import base

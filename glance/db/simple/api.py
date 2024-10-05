@@ -20,6 +20,7 @@ import uuid
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import timeutils as oslo_timeutils
 
 from glance.common import exception
 from glance.common import timeutils
@@ -110,7 +111,7 @@ def _get_session():
 
 @utils.no_4byte_params
 def _image_location_format(image_id, value, meta_data, status, deleted=False):
-    dt = timeutils.utcnow()
+    dt = oslo_timeutils.utcnow()
     return {
         'id': str(uuid.uuid4()),
         'image_id': image_id,
@@ -136,7 +137,7 @@ def _image_property_format(image_id, name, value):
 
 def _image_member_format(image_id, tenant_id, can_share, status='pending',
                          deleted=False):
-    dt = timeutils.utcnow()
+    dt = oslo_timeutils.utcnow()
     return {
         'id': str(uuid.uuid4()),
         'image_id': image_id,
@@ -169,7 +170,7 @@ def _format_task_from_db(task_ref, task_info_ref):
 
 
 def _task_format(task_id, **values):
-    dt = timeutils.utcnow()
+    dt = oslo_timeutils.utcnow()
     task = {
         'id': task_id,
         'type': 'import',
@@ -215,7 +216,7 @@ def _image_update(image, values, properties):
 
 
 def _image_format(image_id, **values):
-    dt = timeutils.utcnow()
+    dt = oslo_timeutils.utcnow()
     image = {
         'id': image_id,
         'name': None,
@@ -558,7 +559,7 @@ def image_property_delete(context, prop_ref, image_ref):
             prop = p
     if not prop:
         raise exception.NotFound()
-    prop['deleted_at'] = timeutils.utcnow()
+    prop['deleted_at'] = oslo_timeutils.utcnow()
     prop['deleted'] = True
     return prop
 
@@ -622,7 +623,7 @@ def image_member_update(context, member_id, values):
     for member in DATA['members']:
         if member['id'] == member_id:
             member.update(values)
-            member['updated_at'] = timeutils.utcnow()
+            member['updated_at'] = oslo_timeutils.utcnow()
             return copy.deepcopy(member)
     else:
         raise exception.NotFound()
@@ -662,7 +663,7 @@ def image_location_update(context, image_id, location):
         raise exception.Invalid(msg)
 
     deleted = location['status'] in ('deleted', 'pending_delete')
-    updated_time = timeutils.utcnow()
+    updated_time = oslo_timeutils.utcnow()
     delete_time = updated_time if deleted else None
 
     updated = False
@@ -696,7 +697,7 @@ def image_location_delete(context, image_id, location_id, status,
     for loc in DATA['locations']:
         if loc['id'] == location_id and loc['image_id'] == image_id:
             deleted = True
-            delete_time = delete_time or timeutils.utcnow()
+            delete_time = delete_time or oslo_timeutils.utcnow()
             loc.update({"deleted": deleted,
                         "status": status,
                         "updated_at": delete_time,
@@ -827,7 +828,7 @@ def image_update(context, image_id, image_values, purge_props=False,
             # this matches weirdness in the sqlalchemy api
             prop['deleted'] = True
 
-    image['updated_at'] = timeutils.utcnow()
+    image['updated_at'] = oslo_timeutils.utcnow()
     _image_update(image, image_values,
                   {k: v for k, v in new_properties.items()
                    if k not in atomic_props})
@@ -843,7 +844,7 @@ def image_update(context, image_id, image_values, purge_props=False,
 def image_destroy(context, image_id):
     global DATA
     try:
-        delete_time = timeutils.utcnow()
+        delete_time = oslo_timeutils.utcnow()
         DATA['images'][image_id]['deleted'] = True
         DATA['images'][image_id]['deleted_at'] = delete_time
 
@@ -976,7 +977,7 @@ def task_update(context, task_id, values):
         raise exception.TaskNotFound(task_id=task_id)
 
     task.update(task_values)
-    task['updated_at'] = timeutils.utcnow()
+    task['updated_at'] = oslo_timeutils.utcnow()
     DATA['tasks'][task_id] = task
     task_info = _task_info_update(task['id'], task_info_values)
 
@@ -1017,8 +1018,8 @@ def task_delete(context, task_id):
     global DATA
     try:
         DATA['tasks'][task_id]['deleted'] = True
-        DATA['tasks'][task_id]['deleted_at'] = timeutils.utcnow()
-        DATA['tasks'][task_id]['updated_at'] = timeutils.utcnow()
+        DATA['tasks'][task_id]['deleted_at'] = oslo_timeutils.utcnow()
+        DATA['tasks'][task_id]['updated_at'] = oslo_timeutils.utcnow()
         return copy.deepcopy(DATA['tasks'][task_id])
     except KeyError:
         LOG.debug("No task found with ID %s", task_id)
@@ -1028,7 +1029,7 @@ def task_delete(context, task_id):
 def _task_soft_delete(context):
     """Scrub task entities which are expired """
     global DATA
-    now = timeutils.utcnow()
+    now = oslo_timeutils.utcnow()
     tasks = DATA['tasks'].values()
 
     for task in tasks:
@@ -1036,7 +1037,7 @@ def _task_soft_delete(context):
                 and task['expires_at'] <= now):
 
             task['deleted'] = True
-            task['deleted_at'] = timeutils.utcnow()
+            task['deleted_at'] = oslo_timeutils.utcnow()
 
 
 @log_call
@@ -1246,7 +1247,7 @@ def metadef_namespace_update(context, namespace_id, values):
     DATA['metadef_namespaces'].remove(namespace)
 
     namespace.update(namespace_values)
-    namespace['updated_at'] = timeutils.utcnow()
+    namespace['updated_at'] = oslo_timeutils.utcnow()
     DATA['metadef_namespaces'].append(namespace)
 
     return namespace
@@ -1483,7 +1484,7 @@ def metadef_object_update(context, namespace_name, object_id, values):
     DATA['metadef_objects'].remove(object)
 
     object.update(values)
-    object['updated_at'] = timeutils.utcnow()
+    object['updated_at'] = oslo_timeutils.utcnow()
     DATA['metadef_objects'].append(object)
 
     return object
@@ -1611,7 +1612,7 @@ def metadef_property_update(context, namespace_name, property_id, values):
     DATA['metadef_properties'].remove(property)
 
     property.update(values)
-    property['updated_at'] = timeutils.utcnow()
+    property['updated_at'] = oslo_timeutils.utcnow()
     DATA['metadef_properties'].append(property)
 
     return property
@@ -1988,7 +1989,7 @@ def metadef_tag_update(context, namespace_name, id, values):
     DATA['metadef_tags'].remove(tag)
 
     tag.update(values)
-    tag['updated_at'] = timeutils.utcnow()
+    tag['updated_at'] = oslo_timeutils.utcnow()
     DATA['metadef_tags'].append(tag)
     return tag
 
@@ -2031,8 +2032,8 @@ def _format_association(namespace, resource_type, association_values):
         'resource_type': resource_type['id'],
         'properties_target': None,
         'prefix': None,
-        'created_at': timeutils.utcnow(),
-        'updated_at': timeutils.utcnow()
+        'created_at': oslo_timeutils.utcnow(),
+        'updated_at': oslo_timeutils.utcnow()
 
     }
     association.update(association_values)
@@ -2040,7 +2041,7 @@ def _format_association(namespace, resource_type, association_values):
 
 
 def _format_resource_type(values):
-    dt = timeutils.utcnow()
+    dt = oslo_timeutils.utcnow()
     resource_type = {
         'id': _get_metadef_id(),
         'name': values['name'],
@@ -2064,7 +2065,7 @@ def _format_property(values):
 
 
 def _format_namespace(values):
-    dt = timeutils.utcnow()
+    dt = oslo_timeutils.utcnow()
     namespace = {
         'id': _get_metadef_id(),
         'namespace': None,
@@ -2081,7 +2082,7 @@ def _format_namespace(values):
 
 
 def _format_object(values):
-    dt = timeutils.utcnow()
+    dt = oslo_timeutils.utcnow()
     object = {
         'id': _get_metadef_id(),
         'namespace_id': None,
@@ -2097,7 +2098,7 @@ def _format_object(values):
 
 
 def _format_tag(values):
-    dt = timeutils.utcnow()
+    dt = oslo_timeutils.utcnow()
     tag = {
         'id': _get_metadef_id(),
         'namespace_id': None,
@@ -2261,8 +2262,8 @@ def insert_cache_details(context, node_reference_url, image_id,
                          last_modified=None, hits=None):
     global DATA
     node_reference = node_reference_get_by_url(context, node_reference_url)
-    accessed = last_accessed or timeutils.utcnow()
-    modified = last_modified or timeutils.utcnow()
+    accessed = last_accessed or oslo_timeutils.utcnow()
+    modified = last_modified or oslo_timeutils.utcnow()
 
     values = {
         'last_accessed': accessed,
@@ -2287,7 +2288,7 @@ def update_hit_count(context, image_id, node_reference_url):
     last_hit_count = get_hit_count(context, image_id, node_reference_url)
     node_reference = node_reference_get_by_url(context, node_reference_url)
     all_images = DATA['cached_images']
-    last_accessed = timeutils.utcnow()
+    last_accessed = oslo_timeutils.utcnow()
     values = {
         'hits': last_hit_count + 1,
         'last_accessed': last_accessed

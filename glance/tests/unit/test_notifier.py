@@ -674,9 +674,10 @@ class TestTaskNotifications(utils.BaseTestCase):
             self.context,
             self.notifier
         )
-        self.patcher = mock.patch.object(timeutils, 'utcnow')
+        self.patcher = mock.patch('oslo_utils.timeutils.utcnow')
         mock_utcnow = self.patcher.start()
-        mock_utcnow.return_value = datetime.datetime.utcnow()
+        mock_utcnow.return_value = datetime.datetime.now(
+            datetime.timezone.utc).replace(tzinfo=None)
 
     def tearDown(self):
         super(TestTaskNotifications, self).tearDown()

@@ -22,6 +22,7 @@ import uuid
 
 from oslo_db.sqlalchemy import models
 from oslo_serialization import jsonutils
+from oslo_utils import timeutils
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean
 from sqlalchemy import Column
@@ -37,8 +38,6 @@ from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy import UniqueConstraint
-
-from glance.common import timeutils
 
 
 BASE = declarative_base()

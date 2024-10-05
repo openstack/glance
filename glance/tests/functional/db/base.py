@@ -23,6 +23,7 @@ import uuid
 
 from oslo_db import exception as db_exception
 from oslo_db.sqlalchemy import utils as sqlalchemyutils
+from oslo_utils import timeutils as oslo_timeutils
 from sqlalchemy import sql
 
 from glance.common import exception
@@ -44,7 +45,7 @@ UUID1, UUID2, UUID3 = sorted([str(uuid.uuid4()) for x in range(3)])
 
 
 def build_image_fixture(**kwargs):
-    default_datetime = timeutils.utcnow()
+    default_datetime = oslo_timeutils.utcnow()
     image = {
         'id': str(uuid.uuid4()),
         'name': 'fake image #2',
@@ -71,7 +72,7 @@ def build_image_fixture(**kwargs):
 
 
 def build_task_fixture(**kwargs):
-    default_datetime = timeutils.utcnow()
+    default_datetime = oslo_timeutils.utcnow()
     task = {
         'id': str(uuid.uuid4()),
         'type': 'import',
@@ -109,7 +110,7 @@ class TestDriver(test_utils.BaseTestCase):
         self.create_images(self.fixtures)
 
     def build_image_fixtures(self):
-        dt1 = timeutils.utcnow()
+        dt1 = oslo_timeutils.utcnow()
         dt2 = dt1 + datetime.timedelta(microseconds=5)
         fixtures = [
             {
@@ -148,10 +149,11 @@ class DriverTests(object):
         fixture = {'name': 'mark', 'size': 12, 'status': 'queued'}
         self.db_api.image_create(self.context, fixture)
 
-    @mock.patch.object(timeutils, 'utcnow')
+    @mock.patch.object(oslo_timeutils, 'utcnow')
     def test_image_create_defaults(self, mock_utcnow):
-        mock_utcnow.return_value = datetime.datetime.utcnow()
-        create_time = timeutils.utcnow()
+        mock_utcnow.return_value = datetime.datetime.now(
+            datetime.timezone.utc).replace(tzinfo=None)
+        create_time = oslo_timeutils.utcnow()
         values = {'status': 'queued',
                   'created_at': create_time,
                   'updated_at': create_time}
@@ -923,7 +925,7 @@ class DriverTests(object):
 
     def test_image_paginate(self):
         """Paginate through a list of images using limit and marker"""
-        now = timeutils.utcnow()
+        now = oslo_timeutils.utcnow()
         extra_uuids = [(str(uuid.uuid4()),
                         now + datetime.timedelta(seconds=i * 5))
                        for i in range(2)]
@@ -1242,9 +1244,10 @@ class DriverTests(object):
         self.assertRaises(exception.NotFound, self.db_api.image_tag_delete,
                           self.context, UUID1, 'snap')
 
-    @mock.patch.object(timeutils, 'utcnow')
+    @mock.patch.object(oslo_timeutils, 'utcnow')
     def test_image_member_create(self, mock_utcnow):
-        mock_utcnow.return_value = datetime.datetime.utcnow()
+        mock_utcnow.return_value = datetime.datetime.now(
+            datetime.timezone.utc).replace(tzinfo=None)
         memberships = self.db_api.image_member_find(self.context)
         self.assertEqual([], memberships)
 
@@ -1473,7 +1476,7 @@ class DriverQuotaTests(test_utils.BaseTestCase):
             auth_token='%s:%s:user' % (self.owner_id1, self.owner_id1))
         self.db_api = db_tests.get_db(self.config)
         db_tests.reset_db(self.db_api)
-        dt1 = timeutils.utcnow()
+        dt1 = oslo_timeutils.utcnow()
         dt2 = dt1 + datetime.timedelta(microseconds=5)
         fixtures = [
             {
@@ -1524,7 +1527,7 @@ class DriverQuotaTests(test_utils.BaseTestCase):
         self.assertEqual(total, x)
 
     def test_storage_quota_multiple_locations(self):
-        dt1 = timeutils.utcnow()
+        dt1 = oslo_timeutils.utcnow()
         sz = 53
         new_fixture_dict = {'id': str(uuid.uuid4()), 'created_at': dt1,
                             'updated_at': dt1, 'size': sz,
@@ -1546,7 +1549,7 @@ class DriverQuotaTests(test_utils.BaseTestCase):
         # NOTE(flaper87): This needs to be tested for
         # soft deleted images as well. Currently there's no
         # good way to delete locations.
-        dt1 = timeutils.utcnow()
+        dt1 = oslo_timeutils.utcnow()
         sz = 53
         image_id = str(uuid.uuid4())
         new_fixture_dict = {'id': image_id, 'created_at': dt1,
@@ -1671,7 +1674,7 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertEqual(0, len(tasks))
 
     def test_task_get_all_owned(self):
-        then = timeutils.utcnow() + datetime.timedelta(days=365)
+        then = oslo_timeutils.utcnow() + datetime.timedelta(days=365)
         TENANT1 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False,
                                        tenant=TENANT1,
@@ -1699,7 +1702,7 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertEqual(sorted(expected), sorted(task_owners))
 
     def test_task_get(self):
-        expires_at = timeutils.utcnow()
+        expires_at = oslo_timeutils.utcnow()
         image_id = str(uuid.uuid4())
         fixture = {
             'owner': self.context.owner,
@@ -1731,7 +1734,7 @@ class TaskTests(test_utils.BaseTestCase):
 
     def _test_task_get_by_image(self, expired=False, deleted=False,
                                 other_owner=False):
-        expires_at = timeutils.utcnow()
+        expires_at = oslo_timeutils.utcnow()
         if expired is False:
             expires_at += datetime.timedelta(hours=1)
         elif expired is None:
@@ -1801,7 +1804,7 @@ class TaskTests(test_utils.BaseTestCase):
         self.assertEqual(0, len(tasks))
 
     def test_task_get_all(self):
-        now = timeutils.utcnow()
+        now = oslo_timeutils.utcnow()
         then = now + datetime.timedelta(days=365)
         image_id = str(uuid.uuid4())
         fixture1 = {
@@ -1858,7 +1861,7 @@ class TaskTests(test_utils.BaseTestCase):
                 self.assertNotIn(key, task)
 
     def test_task_soft_delete(self):
-        now = timeutils.utcnow()
+        now = oslo_timeutils.utcnow()
         then = now + datetime.timedelta(days=365)
 
         fixture1 = build_task_fixture(id='1', expires_at=now,
@@ -2028,7 +2031,7 @@ class DBPurgeTests(test_utils.BaseTestCase):
         self.create_images(self.image_fixtures)
 
     def build_fixtures(self):
-        dt1 = timeutils.utcnow() - datetime.timedelta(days=5)
+        dt1 = oslo_timeutils.utcnow() - datetime.timedelta(days=5)
         dt2 = dt1 + datetime.timedelta(days=1)
         dt3 = dt2 + datetime.timedelta(days=1)
         fixtures = [
@@ -2041,7 +2044,7 @@ class DBPurgeTests(test_utils.BaseTestCase):
             {
                 'created_at': dt1,
                 'updated_at': dt2,
-                'deleted_at': timeutils.utcnow(),
+                'deleted_at': oslo_timeutils.utcnow(),
                 'deleted': True,
             },
             {
@@ -2116,7 +2119,7 @@ class DBPurgeTests(test_utils.BaseTestCase):
 
         # Add a 4th row in images table and set it deleted 15 days ago
         uuidstr = uuid.uuid4().hex
-        created_time = timeutils.utcnow() - datetime.timedelta(days=20)
+        created_time = oslo_timeutils.utcnow() - datetime.timedelta(days=20)
         deleted_time = created_time + datetime.timedelta(days=5)
         images_row_fixture = {
             'id': uuidstr,

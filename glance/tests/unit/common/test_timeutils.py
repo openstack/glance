@@ -18,6 +18,7 @@ import datetime
 from unittest import mock
 
 import iso8601
+from oslo_utils import timeutils as oslo_timeutils
 
 from glance.common import timeutils
 from glance.tests import utils as test_utils
@@ -39,14 +40,14 @@ class TimeUtilsTest(test_utils.BaseTestCase):
                                                                 6, 14, 0)
 
     def test_isotime(self):
-        with mock.patch('datetime.datetime') as datetime_mock:
-            datetime_mock.utcnow.return_value = self.skynet_self_aware_time
+        with mock.patch('oslo_utils.timeutils.utcnow') as utcnow_mock:
+            utcnow_mock.return_value = self.skynet_self_aware_time
             dt = timeutils.isotime()
             self.assertEqual(dt, self.skynet_self_aware_time_str)
 
     def test_isotimei_micro_second_precision(self):
-        with mock.patch('datetime.datetime') as datetime_mock:
-            datetime_mock.utcnow.return_value = self.skynet_self_aware_ms_time
+        with mock.patch('oslo_utils.timeutils.utcnow') as utcnow_mock:
+            utcnow_mock.return_value = self.skynet_self_aware_ms_time
             dt = timeutils.isotime(subsecond=True)
             self.assertEqual(dt, self.skynet_self_aware_time_ms_str)
 
@@ -62,23 +63,8 @@ class TimeUtilsTest(test_utils.BaseTestCase):
             tzinfo=iso8601.iso8601.UTC)
         self.assertEqual(skynet_self_aware_time_ms_utc, expect)
 
-    def test_utcnow(self):
-        with mock.patch('datetime.datetime') as datetime_mock:
-            datetime_mock.utcnow.return_value = self.skynet_self_aware_time
-            self.assertEqual(timeutils.utcnow(), self.skynet_self_aware_time)
-
-        self.assertFalse(timeutils.utcnow() == self.skynet_self_aware_time)
-        self.assertTrue(timeutils.utcnow())
-
-    def test_delta_seconds(self):
-        before = timeutils.utcnow()
-        after = before + datetime.timedelta(days=7, seconds=59,
-                                            microseconds=123456)
-        self.assertAlmostEqual(604859.123456,
-                               timeutils.delta_seconds(before, after))
-
     def test_iso8601_from_timestamp(self):
-        utcnow = timeutils.utcnow()
+        utcnow = oslo_timeutils.utcnow()
         iso = timeutils.isotime(utcnow)
         ts = calendar.timegm(utcnow.timetuple())
         self.assertEqual(iso, timeutils.iso8601_from_timestamp(ts))

@@ -17,6 +17,7 @@ SQLAlchemy models for glance metadata schema
 """
 
 from oslo_db.sqlalchemy import models
+from oslo_utils import timeutils
 from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -29,7 +30,6 @@ from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import UniqueConstraint
 
-from glance.common import timeutils
 from glance.db.sqlalchemy.models import JSONEncodedDict
 
 

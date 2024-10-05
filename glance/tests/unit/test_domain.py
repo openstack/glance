@@ -20,11 +20,11 @@ import uuid
 
 from oslo_config import cfg
 import oslo_utils.importutils
+from oslo_utils import timeutils
 
 import glance.async_
 from glance.async_ import taskflow_executor
 from glance.common import exception
-from glance.common import timeutils
 from glance import domain
 import glance.tests.utils as test_utils
 
@@ -456,7 +456,8 @@ class TestTask(test_utils.BaseTestCase):
 
     @mock.patch.object(timeutils, 'utcnow')
     def test_succeed(self, mock_utcnow):
-        mock_utcnow.return_value = datetime.datetime.utcnow()
+        mock_utcnow.return_value = datetime.datetime.now(
+            datetime.timezone.utc).replace(tzinfo=None)
         self.task.begin_processing()
         self.task.succeed('{"location": "file://home"}')
         self.assertEqual('success', self.task.status)
@@ -471,7 +472,8 @@ class TestTask(test_utils.BaseTestCase):
 
     @mock.patch.object(timeutils, 'utcnow')
     def test_fail(self, mock_utcnow):
-        mock_utcnow.return_value = datetime.datetime.utcnow()
+        mock_utcnow.return_value = datetime.datetime.now(
+            datetime.timezone.utc).replace(tzinfo=None)
         self.task.begin_processing()
         self.task.fail('{"message": "connection failed"}')
         self.assertEqual('failure', self.task.status)

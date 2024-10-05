@@ -106,10 +106,12 @@ class Migrate:
                               "db.", r['image_id'])
                     # NOTE(abhishekk): Converting dates to be compatible with
                     # centralized db
-                    last_accessed = datetime.datetime.utcfromtimestamp(
-                        r['last_accessed']).isoformat()
-                    last_modified = datetime.datetime.utcfromtimestamp(
-                        r['last_modified']).isoformat()
+                    last_accessed = datetime.datetime.fromtimestamp(
+                        r['last_accessed'], tz=datetime.timezone.utc).replace(
+                            tzinfo=None).isoformat()
+                    last_modified = datetime.datetime.fromtimestamp(
+                        r['last_modified'], tz=datetime.timezone.utc).replace(
+                            tzinfo=None).isoformat()
                     # insert into centralized database
                     self.db_api.insert_cache_details(
                         self.context, self.node_reference, r['image_id'],

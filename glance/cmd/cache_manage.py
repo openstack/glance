@@ -126,14 +126,16 @@ def list_cached(args):
         if last_accessed == 0:
             last_accessed = "N/A"
         else:
-            last_accessed = datetime.datetime.utcfromtimestamp(
-                last_accessed).isoformat()
+            last_accessed = datetime.datetime.fromtimestamp(
+                last_accessed, tz=datetime.timezone.utc).replace(
+                    tzinfo=None).isoformat()
 
         pretty_table.add_row((
             image['image_id'],
             last_accessed,
             datetime.datetime.utcfromtimestamp(
-                image['last_modified']).isoformat(),
+                image['last_modified'], tz=datetime.timezone.utc).replace(
+                    tzinfo=None).isoformat(),
             image['size'],
             image['hits']))
 

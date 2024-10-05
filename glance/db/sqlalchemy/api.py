@@ -30,6 +30,7 @@ from oslo_db import exception as db_exception
 from oslo_db.sqlalchemy import session as oslo_db_session
 from oslo_log import log as logging
 from oslo_utils import excutils
+from oslo_utils import timeutils as oslo_timeutils
 import osprofiler.sqlalchemy
 from retrying import retry
 import sqlalchemy
@@ -936,7 +937,7 @@ def image_set_property_atomic(image_id, name, value):
         try:
             connection.execute(table.insert(),
                                dict(deleted=False,
-                                    created_at=timeutils.utcnow(),
+                                    created_at=oslo_timeutils.utcnow(),
                                     image_id=image_id,
                                     name=name,
                                     value=value))
@@ -1035,7 +1036,7 @@ def _image_update(context, session, image_id, values, purge_props=False,
         _drop_protected_attrs(models.Image, values)
         # NOTE(iccha-sethi): updated_at must be explicitly set in case
         #                   only ImageProperty table was modifited
-        values['updated_at'] = timeutils.utcnow()
+        values['updated_at'] = oslo_timeutils.utcnow()
 
     if image_id:
         query = session.query(models.Image).filter_by(id=image_id)
@@ -1096,7 +1097,7 @@ def image_location_add(context, image_id, location):
 @utils.no_4byte_params
 def _image_location_add(context, session, image_id, location):
     deleted = location['status'] in ('deleted', 'pending_delete')
-    delete_time = timeutils.utcnow() if deleted else None
+    delete_time = oslo_timeutils.utcnow() if deleted else None
     location_ref = models.ImageLocation(image_id=image_id,
                                         value=location['url'],
                                         meta_data=location['metadata'],
@@ -1124,7 +1125,7 @@ def _image_location_update(context, session, image_id, location):
             id=loc_id).filter_by(image_id=image_id).one()
 
         deleted = location['status'] in ('deleted', 'pending_delete')
-        updated_time = timeutils.utcnow()
+        updated_time = oslo_timeutils.utcnow()
         delete_time = updated_time if deleted else None
 
         location_ref.update({"value": location['url'],
@@ -1162,7 +1163,7 @@ def _image_location_delete(
         location_ref = session.query(models.ImageLocation).filter_by(
             id=location_id).filter_by(image_id=image_id).one()
 
-        delete_time = delete_time or timeutils.utcnow()
+        delete_time = delete_time or oslo_timeutils.utcnow()
 
         location_ref.update({"deleted": True,
                              "status": status,
@@ -1280,7 +1281,7 @@ def _image_child_entry_delete_all(
     query = session.query(child_model_cls).filter_by(
         image_id=image_id).filter_by(deleted=False)
 
-    delete_time = delete_time or timeutils.utcnow()
+    delete_time = delete_time or oslo_timeutils.utcnow()
 
     count = query.update({"deleted": True, "deleted_at": delete_time})
     return count
@@ -1592,7 +1593,8 @@ def purge_deleted_rows(context, age_in_days, max_rows):
     session = get_session()
     metadata = MetaData()
     engine = get_engine()
-    deleted_age = timeutils.utcnow() - datetime.timedelta(days=age_in_days)
+    deleted_age = oslo_timeutils.utcnow() - datetime.timedelta(
+        days=age_in_days)
 
     tables = []
     for model_class in models.__dict__.values():
@@ -1691,7 +1693,8 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows):
     session = get_session()
     metadata = MetaData()
     engine = get_engine()
-    deleted_age = timeutils.utcnow() - datetime.timedelta(days=age_in_days)
+    deleted_age = oslo_timeutils.utcnow() - datetime.timedelta(
+        days=age_in_days)
 
     tbl = 'images'
     tab = Table(tbl, metadata, autoload_with=engine)
@@ -1836,7 +1839,7 @@ def task_update(context, task_id, values):
         task_ref = _task_get(context, session, task_id)
         _drop_protected_attrs(models.Task, values)
 
-        values['updated_at'] = timeutils.utcnow()
+        values['updated_at'] = oslo_timeutils.utcnow()
 
         _task_update(context, session, task_ref, values)
 
@@ -1877,10 +1880,10 @@ def _tasks_get_by_image(context, session, image_id):
 
     expires_at = models.Task.expires_at
     query = query.filter(sa_sql.or_(expires_at == None,
-                                    expires_at >= timeutils.utcnow()))
+                                    expires_at >= oslo_timeutils.utcnow()))
     updated_at = models.Task.updated_at
     query.filter(
-        updated_at <= (timeutils.utcnow() +
+        updated_at <= (oslo_timeutils.utcnow() +
                        datetime.timedelta(hours=CONF.task.task_time_to_live)))
 
     if not context.can_see_deleted:
@@ -1919,8 +1922,8 @@ def _task_soft_delete(context, session):
 
     query = (query.filter(models.Task.owner == context.owner)
                   .filter_by(deleted=False)
-                  .filter(expires_at <= timeutils.utcnow()))
-    values = {'deleted': True, 'deleted_at': timeutils.utcnow()}
+                  .filter(expires_at <= oslo_timeutils.utcnow()))
+    values = {'deleted': True, 'deleted_at': oslo_timeutils.utcnow()}
 
     query.update(values)
 
@@ -2537,8 +2540,8 @@ def insert_cache_details(context, node_reference_url, image_id,
                          last_modified=None, hits=None):
     node_reference = node_reference_get_by_url(context, node_reference_url)
     session = get_session()
-    accessed = last_accessed or timeutils.utcnow()
-    modified = last_modified or timeutils.utcnow()
+    accessed = last_accessed or oslo_timeutils.utcnow()
+    modified = last_modified or oslo_timeutils.utcnow()
 
     values = {
         'image_id': image_id,
@@ -2564,7 +2567,7 @@ def insert_cache_details(context, node_reference_url, image_id,
 @utils.no_4byte_params
 def update_hit_count(context, image_id, node_reference_url):
     session = get_session()
-    last_accessed = timeutils.utcnow()
+    last_accessed = oslo_timeutils.utcnow()
 
     with session.begin():
         node_id = session.query(models.NodeReference.node_reference_id).filter(
