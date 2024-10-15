@@ -26,9 +26,6 @@ of its features. Some examples include the ``qemu-img`` utility used by the
 tasks feature, ``pydev`` to debug using popular IDEs, ``python-xattr`` for
 Image Cache using "xattr" driver.
 
-On the other hand, if ``dnspython`` is installed in the environment, Glance
-provides a workaround to make it work with IPV6.
-
 Additionally, some libraries like ``xattr`` are not compatible when
 using Glance on Windows (see :ref:`the documentation on config options
 affecting the Image Cache <configuring>`).
