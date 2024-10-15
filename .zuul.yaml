@@ -238,6 +238,11 @@
                 "glance_devstack_test":"doyouseeme?"
             image_conversion:
               output_format: raw
+        test-config:
+          "$TEMPEST_CONFIG":
+            image:
+              image_caching_enabled: True
+              disk_formats: qcow2,ari,aki,vhd,vmdk,raw,ami,vdi,iso,vhdx
 
 - job:
     name: glance-multistore-cinder-import
