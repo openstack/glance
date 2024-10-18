@@ -52,6 +52,8 @@ apidoc_excluded_paths = [
     'hacking',
     'tests/*',
     'tests',
+    'glance/wsgi/*',
+    'glance/wsgi',
     'db/sqlalchemy/*',
     'db/sqlalchemy']
 apidoc_separate_modules = True

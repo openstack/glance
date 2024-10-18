@@ -1,0 +1,22 @@
+---
+features:
+  - |
+    A new file, ``glance/wsgi/api.py``, has been added as a place to hold a
+    WSGI ``application`` object. This is intended to ease deployment by
+    providing a consistent location for these objects. For example, if using
+    uWSGI then instead of:
+
+    .. code-block:: ini
+
+        [uwsgi]
+        wsgi-file = /bin/glance-wsgi-api
+
+    You can now use:
+
+    .. code-block:: ini
+
+        [uwsgi]
+        module = glance.wsgi.api:application
+
+    This also simplifies deployment with other WSGI servers that expect module
+    paths such as gunicorn.
