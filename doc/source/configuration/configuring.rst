@@ -981,6 +981,76 @@ documentation for more information.
 
   .. end
 
+Configuring multi-attach volume type
+------------------------------------
+
+When using Cinder as Glance backend, we store the image into an Image-Volume
+residing in the ``service`` project owned by the ``glance`` user
+(recommended).
+
+When we use the image to create a volume or a server, the Image-Volume gets
+attached to the Glance host and we copy the image data to the destination
+whether being the volume or the server.
+
+This workflow can cause problem when we try to create multiple resources using
+the same image since Cinder volumes, by default, does not provide the ability
+to attach the same volume multiple times.
+
+This requires a special feature called
+`Volume multi-attach <https://docs.openstack.org/cinder/latest/admin/volume-multiattach.html>`_
+which enables the volume to be attached multiple times to same or different
+host.
+
+To enable multi-attach functionality for Image-Volumes, we can perform the
+following steps:
+
+* Create a multiattach volume type and set the ``<is> multiattach`` property
+
+.. code-block:: console
+
+   $ openstack volume type create glance-multiattach
+   $ openstack volume type set --property multiattach="<is> True"  glance-multiattach
+
+.. note::
+
+   Creating a new volume type is an admin-only operation by default.
+
+* **(OPTIONAL)** Set the ``volume_backend_name`` property
+
+Once you create the multi-attach volume type for Glance, you should also set
+the ``volume_backend_name`` property so that your Image-Volumes don't end up
+in random backends based on the scheduling done by Cinder.
+
+.. note::
+
+   This is not needed if you are going to re-use the existing volume types
+   created for Cinder volumes.
+
+Ask your Cinder administrator for the right ``volume_backend_name`` to set
+for your multi-attach volume type. Here we are using ``LVM_iSCSI`` as an
+example.
+
+.. code-block:: console
+
+   $ openstack volume type set glance-multiattach --property volume_backend_name=LVM_iSCSI
+
+* Finally you need to set the multi-attach volume type as the value of
+  ``cinder_volume_type`` config option to use it for creating Image-Volumes.
+
+In glance-api.conf::
+
+    [DEFAULT]
+    # list of enabled stores identified by their property group name
+    enabled_backends = fast:cinder
+
+    # the default store, if not set glance-api service will not start
+    [glance_store]
+    default_backend = fast
+
+    # conf props for fast store instance
+    [fast]
+    ...
+    cinder_volume_type = glance-multiattach
 
 .. _configuring-multiple-cinder-storage-backend:
 
