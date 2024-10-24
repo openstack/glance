@@ -19,8 +19,8 @@ driver is removed from glance.
 """
 from contextlib import contextmanager
 import sqlite3
+from time import sleep
 
-from eventlet import sleep
 from eventlet import timeout
 from oslo_log import log as logging
 
