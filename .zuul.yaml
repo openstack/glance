@@ -296,6 +296,7 @@
         # Glance RBAC new defaults are tested by default so we need to test
         # old defaults in some job.
         GLANCE_ENFORCE_SCOPE: false
+        CINDER_QUOTA_VOLUMES: 50
 
 - job:
     name: glance-multistore-cinder-import-fips
