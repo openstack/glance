@@ -43,6 +43,10 @@ CONF.set_default(name='use_stderr', default=True)
 
 
 def main():
+    print('The Glance cache pruner has been deprecated since the Epoxy '
+          '(2025.1) release. It will be removed in the G (2026.1) release. '
+          'The Cache API should be used instead.',
+          file=sys.stderr)
     try:
         config.parse_cache_args()
         logging.setup(CONF, 'glance')
