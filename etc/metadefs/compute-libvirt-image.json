@@ -111,7 +111,7 @@
         },
         "hw_vif_model": {
             "title": "Virtual Network Interface",
-            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the hypervisor configuration. libvirt driver options: KVM and QEMU: e1000, ne2k_pci, pcnet, rtl8139, spapr-vlan, virtio, e1000e and vmxnet3. Xen: e1000, netfront, ne2k_pci, pcnet, and rtl8139.",
+            "description": "Specifies the model of virtual network interface device to use. The valid options depend on the hypervisor configuration. libvirt driver options: KVM and QEMU: e1000, ne2k_pci, pcnet, rtl8139, spapr-vlan, virtio, e1000e, vmxnet3 and igb. Xen: e1000, netfront, ne2k_pci, pcnet, and rtl8139.",
             "type": "string",
             "enum": [
                 "e1000",
@@ -122,7 +122,8 @@
                 "rtl8139",
                 "spapr-vlan",
                 "virtio",
-                "vmxnet3"
+                "vmxnet3",
+                "igb"
             ]
         },
         "hw_vif_multiqueue_enabled": {
