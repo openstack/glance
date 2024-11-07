@@ -299,6 +299,41 @@
         CINDER_QUOTA_VOLUMES: 50
 
 - job:
+    name: glance-s3-multistore
+    parent: tempest-integrated-storage-import
+    description: |
+      Just like the normal s3 job, but with glance multistore
+    timeout: 9000
+    vars:
+      devstack_localrc:
+        GLANCE_USE_S3: True
+        GLANCE_ENABLE_MULTIPLE_STORES: True
+        GLANCE_USE_IMPORT_WORKFLOW: True
+        GLANCE_LIMIT_IMAGE_SIZE_TOTAL: 2048
+      devstack_services:
+        c-bak: false
+        tls-proxy: false
+        s-account: true
+        s-container: true
+        s-object: true
+        s-proxy: true
+        s3api: true
+        openstack-cli-server: true
+      devstack_local_conf:
+        post-config:
+          $GLANCE_API_CONF:
+            DEFAULT:
+              enabled_backends: "cheap:file, s3_fast:s3, web:http"
+            cheap:
+              filesystem_store_datadir: /opt/stack/data/glance/images/
+            web:
+              https_insecure: false
+            os_glance_staging_store:
+              filesystem_store_datadir: /opt/stack/data/glance/os_glance_staging_store/
+            os_glance_tasks_store:
+              filesystem_store_datadir: /opt/stack/data/glance/os_glance_tasks_store/
+
+- job:
     name: glance-multistore-cinder-import-fips
     parent: tempest-integrated-storage-import
     description: |
@@ -424,6 +459,9 @@
             voting: false
             irrelevant-files: *tempest-irrelevant-files
         - glance-grenade-centralized-cache:
+            voting: false
+            irrelevant-files: *tempest-irrelevant-files
+        - glance-s3-multistore:
             voting: false
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
