@@ -29,5 +29,5 @@ db_options.set_defaults(cfg.CONF)
 # Migration-related constants
 EXPAND_BRANCH = 'expand'
 CONTRACT_BRANCH = 'contract'
-CURRENT_RELEASE = '2024_2'
+CURRENT_RELEASE = '2025_1'
 ALEMBIC_INIT_VERSION = 'liberty'
