@@ -37,6 +37,7 @@ from oslo_config import cfg
 from oslo_config import fixture as cfg_fixture
 from oslo_log.fixture import logging_error as log_fixture
 from oslo_log import log
+from oslo_policy import opts as opts
 from oslo_utils import timeutils
 from oslo_utils import units
 import testtools
@@ -104,6 +105,7 @@ class BaseTestCase(testtools.TestCase):
             cached_images.WORKER = None
 
     def set_policy(self):
+        opts.set_defaults(CONF)
         conf_file = "policy.yaml"
         self.policy_file = self._copy_data_file(conf_file, self.conf_dir)
         self.config(policy_file=self.policy_file, group='oslo_policy')

@@ -22,7 +22,6 @@ import os
 
 from oslo_config import cfg
 from oslo_middleware import cors
-from oslo_policy import opts
 from paste import deploy
 
 from glance.i18n import _
@@ -744,12 +743,6 @@ def load_paste_app(app_name, flavor=None, conf_file=None):
 def set_config_defaults():
     """This method updates all configuration default values."""
     set_cors_middleware_defaults()
-
-    # TODO(gmann): Remove setting the default value of config policy_file
-    # once oslo_policy change the default value to 'policy.yaml'.
-    # https://github.com/openstack/oslo.policy/blob/a626ad12fe5a3abd49d70e3e5b95589d279ab578/oslo_policy/opts.py#L49
-    DEFAULT_POLICY_FILE = 'policy.yaml'
-    opts.set_defaults(cfg.CONF, DEFAULT_POLICY_FILE)
 
 
 def set_cors_middleware_defaults():

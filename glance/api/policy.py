@@ -20,7 +20,6 @@ from collections import abc
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_policy import opts
 from oslo_policy import policy
 
 from glance.common import exception
@@ -31,15 +30,6 @@ from glance import policies
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 _ENFORCER = None
-
-
-# TODO(gmann): Remove overriding the default value of config options
-# 'policy_file' once oslo_policy changes its default value to what
-# is overridden here.
-DEFAULT_POLICY_FILE = 'policy.yaml'
-opts.set_defaults(
-    cfg.CONF,
-    DEFAULT_POLICY_FILE)
 
 
 class Enforcer(policy.Enforcer):
