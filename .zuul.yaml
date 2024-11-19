@@ -2,7 +2,7 @@
     name: glance-tox-oslo-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-jammy
+    nodeset: ubuntu-noble
     timeout: 2400
     description: Abstract job for Glance vs. oslo libraries
     # NOTE(rosmaita): we only need functional test jobs, oslo is
@@ -53,7 +53,7 @@
     name: glance-tox-keystone-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-jammy
+    nodeset: ubuntu-noble
     timeout: 2400
     description: Abstract job for Glance vs. keystone
     required-projects:
@@ -105,7 +105,7 @@
     name: glance-tox-glance_store-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-jammy
+    nodeset: ubuntu-noble
     timeout: 2400
     description: Abstract job for Glance vs. glance_store
     required-projects:
@@ -155,7 +155,7 @@
     name: glance-tox-cursive-tips-base
     parent: tox
     abstract: true
-    nodeset: ubuntu-jammy
+    nodeset: ubuntu-noble
     timeout: 2400
     description: Abstract job for Glance vs. cursive and related libs
     required-projects:
@@ -354,6 +354,7 @@
 - job:
     name: tempest-integrated-storage-enforce-scope-new-defaults
     parent: tempest-integrated-storage
+    nodeset: openstack-single-node-jammy
     description: |
       This job runs the Tempest tests with scope and new defaults enabled
       Glance services.
