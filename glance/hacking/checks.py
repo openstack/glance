@@ -32,51 +32,8 @@ Guidelines for writing new hacking checks
 """
 
 
-asse_trueinst_re = re.compile(
-    r"(.)*assertTrue\(isinstance\((\w|\.|\'|\"|\[|\])+, "
-    r"(\w|\.|\'|\"|\[|\])+\)\)")
-asse_equal_type_re = re.compile(
-    r"(.)*assertEqual\(type\((\w|\.|\'|\"|\[|\])+\), "
-    r"(\w|\.|\'|\"|\[|\])+\)")
-asse_equal_end_with_none_re = re.compile(
-    r"(.)*assertEqual\((\w|\.|\'|\"|\[|\])+, None\)")
-asse_equal_start_with_none_re = re.compile(
-    r"(.)*assertEqual\(None, (\w|\.|\'|\"|\[|\])+\)")
 unicode_func_re = re.compile(r"(\s|\W|^)unicode\(")
 dict_constructor_with_list_copy_re = re.compile(r".*\bdict\((\[)?(\(|\[)")
-
-
-@core.flake8ext
-def assert_true_instance(logical_line):
-    """Check for assertTrue(isinstance(a, b)) sentences
-
-    G316
-    """
-    if asse_trueinst_re.match(logical_line):
-        yield (0, "G316: assertTrue(isinstance(a, b)) sentences not allowed")
-
-
-@core.flake8ext
-def assert_equal_type(logical_line):
-    """Check for assertEqual(type(A), B) sentences
-
-    G317
-    """
-    if asse_equal_type_re.match(logical_line):
-        yield (0, "G317: assertEqual(type(A), B) sentences not allowed")
-
-
-@core.flake8ext
-def assert_equal_none(logical_line):
-    """Check for assertEqual(A, None) or assertEqual(None, A) sentences
-
-    G318
-    """
-    res = (asse_equal_start_with_none_re.match(logical_line) or
-           asse_equal_end_with_none_re.match(logical_line))
-    if res:
-        yield (0, "G318: assertEqual(A, None) or assertEqual(None, A) "
-               "sentences not allowed")
 
 
 @core.flake8ext
