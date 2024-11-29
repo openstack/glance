@@ -257,27 +257,6 @@
         GLANCE_CINDER_DEFAULT_BACKEND: lvmdriver-1
 
 - job:
-    name: glance-multistore-cinder-import-fips
-    parent: tempest-integrated-storage-import
-    description: |
-      The regular import workflow job to test with multiple cinder stores with
-      fips enabled
-    nodeset: devstack-single-node-centos-8-stream
-    pre-run: playbooks/enable-fips.yaml
-    vars:
-      configure_swap_size: 4096
-      devstack_localrc:
-        USE_CINDER_FOR_GLANCE: True
-        GLANCE_ENABLE_MULTIPLE_STORES: True
-        CINDER_ENABLED_BACKENDS: lvm:lvmdriver-1,lvm:lvmdriver-2
-        GLANCE_CINDER_DEFAULT_BACKEND: lvmdriver-1
-      devstack_local_conf:
-        test-config:
-          "$TEMPEST_CONFIG":
-            validation:
-              ssh_key_type: 'ecdsa'
-
-- job:
     name: tempest-integrated-storage-import-standalone
     parent: tempest-integrated-storage-import
     description: |
@@ -337,16 +316,18 @@
             irrelevant-files: *tempest-irrelevant-files
         - glance-multistore-cinder-import:
             irrelevant-files: *tempest-irrelevant-files
-        - glance-multistore-cinder-import-fips:
-            voting: false
-            irrelevant-files: *tempest-irrelevant-files
         - grenade:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-ipv6-only:
             irrelevant-files: *tempest-irrelevant-files
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
-        - glance-secure-rbac-protection-functional
+        - glance-secure-rbac-protection-functional:
+            required-projects:
+              - name: openstack/glance
+                override-checkout: yoga-last
+              - name: openstack/glance-tempest-plugin
+                override-checkout: yoga-last
 
     gate:
       jobs:
@@ -364,7 +345,12 @@
             irrelevant-files: *tempest-irrelevant-files
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
-        - glance-secure-rbac-protection-functional
+        - glance-secure-rbac-protection-functional:
+            required-projects:
+              - name: openstack/glance
+                override-checkout: yoga-last
+              - name: openstack/glance-tempest-plugin
+                override-checkout: yoga-last
     experimental:
       jobs:
         - glance-tox-py39-glance_store-tips
