@@ -93,11 +93,33 @@ class InfoController(object):
         return {'stores': backends}
 
     @staticmethod
+    def _get_fsid_from_url(store_detail):
+        fsid = None
+        prefix = 'rbd://'
+        url_prefix = store_detail.url_prefix
+        # When fsid and pool info are not available,
+        # url_prefix is same as prefix
+        if url_prefix and url_prefix.startswith(
+                prefix) and len(url_prefix) > len(prefix):
+            # Remove last trailing forward slash
+            url_prefix = (
+                url_prefix[:-1] if url_prefix.endswith('/') else url_prefix)
+            pieces = url_prefix[len(prefix):].split('/')
+            # We expect the rbd store's url format to look like 'rbd://%s/%s/'
+            # where the fsid is in the first position; if there are more than
+            # 2 pieces, then something has changed in the driver code, so we
+            # won't set the fsid
+            if len(pieces) == 2:
+                fsid = pieces[0]
+        return fsid
+
+    @staticmethod
     def _get_rbd_properties(store_detail):
         return {
             'chunk_size': store_detail.chunk_size,
             'pool': store_detail.pool,
-            'thin_provisioning': store_detail.thin_provisioning
+            'thin_provisioning': store_detail.thin_provisioning,
+            'fsid': InfoController._get_fsid_from_url(store_detail),
         }
 
     @staticmethod

@@ -9,7 +9,8 @@
             "properties": {
                 "pool": "pool1",
                 "chunk_size": 65536,
-                "thin_provisioning": false
+                "thin_provisioning": false,
+                "fsid": "ddf1b25f-1907-449e-89f6-cd30a679c8dc",
             }
         },
         {
