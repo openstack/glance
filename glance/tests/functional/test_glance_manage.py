@@ -26,7 +26,7 @@ from glance.db import migration as db_migration
 from glance.db.sqlalchemy import alembic_migrations
 from glance.db.sqlalchemy.alembic_migrations import data_migrations
 from glance.db.sqlalchemy import api as db_api
-from glance.tests import functional
+from glance.tests import utils as test_utils
 from glance.tests.utils import depends_on_exe
 from glance.tests.utils import execute
 from glance.tests.utils import skip_if_disabled
@@ -34,7 +34,7 @@ from glance.tests.utils import skip_if_disabled
 CONF = cfg.CONF
 
 
-class TestGlanceManage(functional.FunctionalTest):
+class TestGlanceManage(test_utils.BaseTestCase):
     """Functional tests for glance-manage"""
 
     def setUp(self):

@@ -24,7 +24,6 @@ import webob.exc
 from glance.common import client
 from glance.common import exception
 from glance.common import wsgi
-from glance.tests import functional
 from glance.tests import utils
 
 
@@ -80,7 +79,7 @@ def RedirectTestApp(name):
     return App
 
 
-class TestClientRedirects(functional.FunctionalTest):
+class TestClientRedirects(utils.BaseTestCase):
 
     def setUp(self):
         super(TestClientRedirects, self).setUp()
