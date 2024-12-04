@@ -93,7 +93,8 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
             self.assertIsNotNone(stores['properties'])
 
     def test_get_stores_detail_properties(self):
-        store_attributes = {'rbd': ['chunk_size', 'pool', 'thin_provisioning'],
+        store_attributes = {'rbd': ['chunk_size', 'pool', 'thin_provisioning',
+                                    'fsid'],
                             'file': ['data_dir', 'chunk_size',
                                      'thin_provisioning'],
                             'cinder': ['volume_type', 'use_multipath'],

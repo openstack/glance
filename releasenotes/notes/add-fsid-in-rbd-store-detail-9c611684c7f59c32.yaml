@@ -1,0 +1,5 @@
+---
+other:
+  - |
+    Updated the stores detail API response to include
+    ``fsid`` field in RBD store properties.

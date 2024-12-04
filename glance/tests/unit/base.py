@@ -73,9 +73,12 @@ class MultiStoreClearingUnitTest(test_utils.BaseTestCase):
         :param passing_config: making store driver passes basic configurations.
         :returns: the number of how many store drivers been loaded.
         """
+        fake_fsid = "db437934-7e1c-445b-a4f5-7cc5bc44ba1b"
         rbd_store.rados = mock.MagicMock()
         rbd_store.rbd = mock.MagicMock()
-        rbd_store.Store._set_url_prefix = mock.MagicMock()
+        rbd_store.Store.get_connection = mock.MagicMock()
+        conn_mock = rbd_store.Store.get_connection.return_value.__enter__()
+        conn_mock.get_fsid.return_value = fake_fsid
         cinder.cinderclient = mock.MagicMock()
         cinder.Store.get_cinderclient = mock.MagicMock()
         swift.swiftclient = mock.MagicMock()
