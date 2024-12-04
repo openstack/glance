@@ -31,7 +31,6 @@ from glance.common import timeutils
 from glance import context
 from glance.db.sqlalchemy import api as db_api
 from glance.db.sqlalchemy import models
-from glance.tests import functional
 import glance.tests.functional.db as db_tests
 from glance.tests import utils as test_utils
 
@@ -86,13 +85,6 @@ def build_task_fixture(**kwargs):
     }
     task.update(kwargs)
     return task
-
-
-class FunctionalInitWrapper(functional.FunctionalTest):
-
-    def setUp(self):
-        super(FunctionalInitWrapper, self).setUp()
-        self.config(policy_file=self.policy_file, group='oslo_policy')
 
 
 class TestDriver(test_utils.BaseTestCase):

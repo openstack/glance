@@ -48,8 +48,7 @@ def reset_db_metadef(db_api):
 
 
 class TestSqlAlchemyDriver(base.TestDriver,
-                           base.DriverTests,
-                           base.FunctionalInitWrapper):
+                           base.DriverTests):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -79,8 +78,7 @@ class TestSqlAlchemyDriver(base.TestDriver,
 
 
 class TestSqlAlchemyVisibility(base.TestVisibility,
-                               base.VisibilityTests,
-                               base.FunctionalInitWrapper):
+                               base.VisibilityTests):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -89,8 +87,7 @@ class TestSqlAlchemyVisibility(base.TestVisibility,
 
 
 class TestSqlAlchemyMembershipVisibility(base.TestMembershipVisibility,
-                                         base.MembershipVisibilityTests,
-                                         base.FunctionalInitWrapper):
+                                         base.MembershipVisibilityTests):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -98,8 +95,7 @@ class TestSqlAlchemyMembershipVisibility(base.TestMembershipVisibility,
         self.addCleanup(db_tests.reset)
 
 
-class TestSqlAlchemyDBDataIntegrity(base.TestDriver,
-                                    base.FunctionalInitWrapper):
+class TestSqlAlchemyDBDataIntegrity(base.TestDriver):
     """Test class for checking the data integrity in the database.
 
     Helpful in testing scenarios specific to the sqlalchemy api.
@@ -137,8 +133,7 @@ class TestSqlAlchemyDBDataIntegrity(base.TestDriver,
         self.db_api.image_get_all(self.context, sort_key=['name'])
 
 
-class TestSqlAlchemyTask(base.TaskTests,
-                         base.FunctionalInitWrapper):
+class TestSqlAlchemyTask(base.TaskTests):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -146,8 +141,7 @@ class TestSqlAlchemyTask(base.TaskTests,
         self.addCleanup(db_tests.reset)
 
 
-class TestSqlAlchemyQuota(base.DriverQuotaTests,
-                          base.FunctionalInitWrapper):
+class TestSqlAlchemyQuota(base.DriverQuotaTests):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -155,8 +149,7 @@ class TestSqlAlchemyQuota(base.DriverQuotaTests,
         self.addCleanup(db_tests.reset)
 
 
-class TestDBPurge(base.DBPurgeTests,
-                  base.FunctionalInitWrapper):
+class TestDBPurge(base.DBPurgeTests):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -165,8 +158,7 @@ class TestDBPurge(base.DBPurgeTests,
 
 
 class TestMetadefSqlAlchemyDriver(base_metadef.TestMetadefDriver,
-                                  base_metadef.MetadefDriverTests,
-                                  base.FunctionalInitWrapper):
+                                  base_metadef.MetadefDriverTests):
 
     def setUp(self):
         db_tests.load(get_db, reset_db_metadef)
@@ -174,8 +166,7 @@ class TestMetadefSqlAlchemyDriver(base_metadef.TestMetadefDriver,
         self.addCleanup(db_tests.reset)
 
 
-class TestImageCacheOperations(base.TestDriver,
-                               base.FunctionalInitWrapper):
+class TestImageCacheOperations(base.TestDriver):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -296,8 +287,7 @@ class TestImageCacheOperations(base.TestDriver,
         self.assertEqual(4, hit_count)
 
 
-class TestImageAtomicOps(base.TestDriver,
-                         base.FunctionalInitWrapper):
+class TestImageAtomicOps(base.TestDriver):
 
     def setUp(self):
         db_tests.load(get_db, reset_db)
@@ -486,8 +476,7 @@ class TestImageAtomicOps(base.TestDriver,
                          self._propdict(image['properties']))
 
 
-class TestImageStorageUsage(base.TestDriver,
-                            base.FunctionalInitWrapper):
+class TestImageStorageUsage(base.TestDriver):
     def setUp(self):
         db_tests.load(get_db, reset_db)
         super(TestImageStorageUsage, self).setUp()
