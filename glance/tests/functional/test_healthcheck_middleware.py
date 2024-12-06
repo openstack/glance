@@ -16,40 +16,46 @@
 """Tests healthcheck middleware."""
 
 import http.client
-import tempfile
-
-import httplib2
+import os
 
 from glance.tests import functional
 from glance.tests import utils
 
 
-class HealthcheckMiddlewareTest(functional.FunctionalTest):
+class HealthcheckMiddlewareTest(functional.SynchronousAPIBase):
+    def setUp(self):
+        super().setUp()
+        self.disable_file = '/tmp/test_path'
+        self.addCleanup(self._remove_disable_file)
 
-    def request(self):
-        url = 'http://127.0.0.1:%s/healthcheck' % self.api_port
-        http = httplib2.Http()
-        return http.request(url, 'GET')
+    def _remove_disable_file(self):
+        # Delete the disable file so that it does not pollute future test runs.
+        try:
+            os.remove(self.disable_file)
+        except FileNotFoundError:
+            # Should the tests fail before the "disable file" has been created,
+            # this cleanup function will not be able to delete it. This should
+            # not raise an exception, though, so ignore it.
+            pass
 
+    # NOTE(cyril): as /tmp/test_path is hardcoded in the paste configuration
+    # for SynchronousAPIBase, if we were to add more tests, and since they
+    # would be run in parallel, we would run into issues because multiple tests
+    # would rely on the existence/absence of /tmp/test_path. Should we want to
+    # add tests in this class in the future, we would have to pass the path to
+    # our disable file at runtime and randomize it to avoid running into this
+    # issue.
     @utils.skip_if_disabled
-    def test_healthcheck_enabled(self):
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
+    def test_healthcheck(self):
+        # First, let's see what happens without /tmp/test_path
+        self.start_server(enable_cache=False)
+        response = self.api_get('/healthcheck')
+        self.assertEqual(b'OK', response.body)
+        self.assertEqual(http.client.OK, response.status_code)
 
-        response, content = self.request()
-        self.assertEqual(b'OK', content)
-        self.assertEqual(http.client.OK, response.status)
-
-        self.stop_servers()
-
-    def test_healthcheck_disabled(self):
-        with tempfile.NamedTemporaryFile() as test_disable_file:
-            self.cleanup()
-            self.api_server.disable_path = test_disable_file.name
-            self.start_servers(**self.__dict__.copy())
-
-            response, content = self.request()
-            self.assertEqual(b'DISABLED BY FILE', content)
-            self.assertEqual(http.client.SERVICE_UNAVAILABLE, response.status)
-
-            self.stop_servers()
+        # Then, let's check that healthcheck is disabled by file when
+        # /tmp/test_path exists
+        with open(self.disable_file, 'w'):
+            response = self.api_get('/healthcheck')
+            self.assertEqual(b'DISABLED BY FILE', response.body)
+            self.assertEqual('503 Service Unavailable', response.status)
