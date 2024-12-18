@@ -74,9 +74,9 @@ migrations:
    used to do the upgrade to Ocata, is
    `ocata01_add_visibility_remove_is_public.py`_.
 
-.. _`current directory`: https://opendev.org/openstack/glance/src/branch/stable/ocata/glance/db/sqlalchemy/migrate_repo/versions
-.. _`045_add_visibility.py`: https://opendev.org/openstack/glance/src/branch/stable/ocata/glance/db/sqlalchemy/migrate_repo/versions/045_add_visibility.py
-.. _`ocata01_add_visibility_remove_is_public.py`: https://opendev.org/openstack/glance/src/branch/stable/ocata/glance/db/sqlalchemy/alembic_migrations/versions/ocata01_add_visibility_remove_is_public.py
+.. _`current directory`: https://opendev.org/openstack/glance/src/tag/ocata-em/glance/db/sqlalchemy/migrate_repo/versions
+.. _`045_add_visibility.py`: https://opendev.org/openstack/glance/src/tag/ocata-em/glance/db/sqlalchemy/migrate_repo/versions/045_add_visibility.py
+.. _`ocata01_add_visibility_remove_is_public.py`: https://opendev.org/openstack/glance/src/tag/ocata-em/glance/db/sqlalchemy/alembic_migrations/versions/ocata01_add_visibility_remove_is_public.py
 
 Sync the Database
 -----------------
