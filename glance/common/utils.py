@@ -22,15 +22,12 @@ System-level utilities and helper functions.
 
 import errno
 
-try:
-    from eventlet import sleep
-except ImportError:
-    from time import sleep
 from eventlet.green import socket
 
 import functools
 import os
 import re
+from time import sleep
 import urllib
 
 import glance_store
