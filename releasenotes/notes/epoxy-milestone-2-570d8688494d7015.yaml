@@ -1,0 +1,10 @@
+---
+fixes:
+  - |
+    Bug 2081009_: oslo_config.cfg.NotInitializedError when switching default policy_file in oslo.policy
+  - |
+    Bug 2086675_: Suspected performance regression for RBD back end linked to location sorting
+
+    .. _2081009: https://code.launchpad.net/bugs/2081009
+    .. _2086675: https://code.launchpad.net/bugs/2086675
+
