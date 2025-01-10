@@ -192,7 +192,7 @@ class TestUtils(test_utils.BaseTestCase):
             'url': 'rbd://cccccccc/images/id',
             'metadata': {'store': 'rbd3'}
         }]
-        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        mp = "glance.common.utils.glance_store.get_store_weight"
         with mock.patch(mp) as mock_get_store:
             utils.sort_image_locations(locations)
 
@@ -218,10 +218,9 @@ class TestUtils(test_utils.BaseTestCase):
             'url': 'rbd://cccccccc/images/id',
             'metadata': {'store': 'rbd3'}
         }]
-        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        mp = "glance.common.utils.glance_store.get_store_weight"
         with mock.patch(mp) as mock_get_store:
-            mock_store = mock_get_store.return_value
-            mock_store.weight = 100
+            mock_get_store.return_value = 100
             utils.sort_image_locations(locations)
 
         # Since 3 stores are configured, internal method will be called 3 times
@@ -246,7 +245,7 @@ class TestUtils(test_utils.BaseTestCase):
             'url': 'rbd://cccccccc/images/id',
             'metadata': {}
         }]
-        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        mp = "glance.common.utils.glance_store.get_store_weight"
         with mock.patch(mp) as mock_get_store:
             utils.sort_image_locations(locations)
 
@@ -273,10 +272,9 @@ class TestUtils(test_utils.BaseTestCase):
             'url': 'rbd://cccccccc/images/id',
             'metadata': {}
         }]
-        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        mp = "glance.common.utils.glance_store.get_store_weight"
         with mock.patch(mp) as mock_get_store:
-            mock_store = mock_get_store.return_value
-            mock_store.weight = 100
+            mock_get_store.return_value = 100
             utils.sort_image_locations(locations)
 
         # Since 3 stores are configured, but only one location has
@@ -303,7 +301,7 @@ class TestUtils(test_utils.BaseTestCase):
             'url': 'rbd://cccccccc/images/id',
             'metadata': {'store': 'rbd3'}
         }]
-        mp = "glance.common.utils.glance_store.get_store_from_store_identifier"
+        mp = "glance.common.utils.glance_store.get_store_weight"
         with mock.patch(mp) as mock_get_store:
             mock_get_store.side_effect = store.UnknownScheme()
             sorted_locations = utils.sort_image_locations(locations)
