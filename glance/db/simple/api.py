@@ -23,7 +23,6 @@ from oslo_log import log as logging
 from oslo_utils import timeutils as oslo_timeutils
 
 from glance.common import exception
-from glance.common import timeutils
 from glance.common import utils
 from glance.db import utils as db_utils
 from glance.i18n import _, _LI, _LW
@@ -333,8 +332,8 @@ def _filter_images(images, filters, context,
             elif k in ['created_at', 'updated_at']:
                 attr_value = image.get(key)
                 operator, isotime = utils.split_filter_op(value)
-                parsed_time = timeutils.parse_isotime(isotime)
-                threshold = timeutils.normalize_time(parsed_time)
+                parsed_time = oslo_timeutils.parse_isotime(isotime)
+                threshold = oslo_timeutils.normalize_time(parsed_time)
                 to_add = utils.evaluate_filter_op(attr_value, operator,
                                                   threshold)
             elif k in ['name', 'id', 'status',

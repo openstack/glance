@@ -41,7 +41,6 @@ from sqlalchemy import sql
 import sqlalchemy.sql as sa_sql
 
 from glance.common import exception
-from glance.common import timeutils
 from glance.common import utils
 from glance.db.sqlalchemy.metadef_api import (resource_type
                                               as metadef_resource_type_api)
@@ -506,7 +505,8 @@ def _make_conditions_from_filters(filters, is_public=None):
     if 'changes-since' in filters:
         # normalize timestamp to UTC, as sqlalchemy doesn't appear to
         # respect timezone offsets
-        changes_since = timeutils.normalize_time(filters.pop('changes-since'))
+        changes_since = oslo_timeutils.normalize_time(
+            filters.pop('changes-since'))
         image_conditions.append(models.Image.updated_at > changes_since)
 
     if 'deleted' in filters:
@@ -549,8 +549,8 @@ def _make_conditions_from_filters(filters, is_public=None):
             attr_value = getattr(models.Image, key)
             operator, isotime = utils.split_filter_op(filters.pop(k))
             try:
-                parsed_time = timeutils.parse_isotime(isotime)
-                threshold = timeutils.normalize_time(parsed_time)
+                parsed_time = oslo_timeutils.parse_isotime(isotime)
+                threshold = oslo_timeutils.normalize_time(parsed_time)
             except ValueError:
                 msg = (_("Bad \"%s\" query filter format. "
                          "Use ISO 8601 DateTime notation.") % k)
