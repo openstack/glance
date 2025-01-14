@@ -81,6 +81,37 @@ class _ConvertImage(task.Task):
         with self.action_wrapper as action:
             return self._execute(action, file_path, **kwargs)
 
+    def _inspect_path(self, path):
+        """Return a FormatInspector for path.
+
+        This encapsulates the act of inspecting a file, running safety checks,
+        and raising/logging if anything goes wrong. If nothing fails, return
+        the FileInspector for the file.
+        """
+        # Use our own cautious inspector module (if we have one for this
+        # format) to make sure a file is the format the submitter claimed
+        # it is and that it passes some basic safety checks _before_ we run
+        # qemu-img on it.
+        # See https://bugs.launchpad.net/nova/+bug/2059809 for details.
+        try:
+            inspector = format_inspector.detect_file_format(path)
+            inspector.safety_check()
+        except format_inspector.SafetyCheckFailed as e:
+            nonfatal = set(CONF.image_format.gpt_safety_checks_nonfatal)
+            fatal = e.failures.keys() - nonfatal
+            if inspector.NAME == 'gpt' and not fatal:
+                LOG.warning('Non-fatal %s', e)
+            else:
+                LOG.error('%s %s', str(inspector), e)
+                raise RuntimeError('Image has disallowed configuration')
+        except format_inspector.ImageFormatError as e:
+            LOG.error('Image failed format inspection: %s', e)
+            raise RuntimeError('Image format detection failed')
+        except Exception as e:
+            LOG.exception('Unknown error inspecting image format: %s', e)
+            raise RuntimeError('Unable to inspect image')
+        return inspector
+
     def _execute(self, action, file_path, **kwargs):
 
         target_format = CONF.image_conversion.output_format
@@ -91,26 +122,7 @@ class _ConvertImage(task.Task):
                                              'target': target_format}
         self.dest_path = dest_path
         source_format = action.image_disk_format
-
-        # Use our own cautious inspector module (if we have one for this
-        # format) to make sure a file is the format the submitter claimed
-        # it is and that it passes some basic safety checks _before_ we run
-        # qemu-img on it.
-        # See https://bugs.launchpad.net/nova/+bug/2059809 for details.
-        try:
-            inspector = format_inspector.detect_file_format(self.src_path)
-            inspector.safety_check()
-        except format_inspector.SafetyCheckFailed:
-            LOG.error('Image failed %s safety check; aborting conversion',
-                      source_format)
-            raise RuntimeError('Image has disallowed configuration')
-        except format_inspector.ImageFormatError as e:
-            LOG.error('Image claimed to be %s format failed format '
-                      'inspection: %s', source_format, e)
-            raise RuntimeError('Image format detection failed')
-        except Exception as e:
-            LOG.exception('Unknown error inspecting image format: %s', e)
-            raise RuntimeError('Unable to inspect image')
+        inspector = self._inspect_path(self.src_path)
 
         detected_format = str(inspector)
         if detected_format == 'gpt':
@@ -213,6 +225,9 @@ class _ConvertImage(task.Task):
         if stderr:
             raise RuntimeError(stderr)
 
+        dest_inspector = self._inspect_path(dest_path)
+        # FIXME(danms): Assert that this is the expected format
+        LOG.info('Post-conversion image detected as %s', str(dest_inspector))
         action.set_image_attribute(disk_format=target_format,
                                    container_format='bare')
         new_size = os.stat(dest_path).st_size

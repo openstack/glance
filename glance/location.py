@@ -644,8 +644,15 @@ class ImageProxy(glance.domain.proxy.Image):
                             'unable to calculate virtual size',
                             self.image.disk_format)
         except format_inspector.SafetyCheckFailed as e:
-            LOG.warning('Image %s %s', format, e)
-            raise exception.InvalidImageData('Image failed safety checks')
+            nonfatal = set(CONF.image_format.gpt_safety_checks_nonfatal)
+            fatal = e.failures.keys() - nonfatal
+            if inspector.NAME == 'gpt' and not fatal:
+                # All the failures were non-fatal (per config) so log them and
+                # continue
+                LOG.warning('Non-fatal %s', e)
+            else:
+                LOG.warning('Image %s %s', format, e)
+                raise exception.InvalidImageData('Image failed safety checks')
         except Exception as e:
             LOG.error(_LE('Unable to determine stream format because: %s'), e)
             # FIXME(danms): Do this based on config

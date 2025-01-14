@@ -435,6 +435,56 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         image = self.img_repo.get.return_value
         self.assertEqual(123, image.virtual_size)
 
+    @mock.patch.object(os, 'stat')
+    @mock.patch.object(os, 'remove', new=mock.MagicMock())
+    def _test_image_convert_inspect_target_format(
+            self, mock_stat,
+            out_format='raw', src_format='qcow2', dst_format='raw',
+            dest_safe_fails=None):
+        self.config(output_format=out_format,
+                    group='image_conversion')
+        convert = self._setup_image_convert_info_fail()
+        mock_stat.return_value.st_size = 123
+        with mock.patch.object(processutils, 'execute') as exc_mock:
+            exc_mock.return_value = (
+                '{"format": "%s", "virtual-size": 123}' % src_format, '')
+            pre_inspector = mock.MagicMock()
+            post_inspector = mock.MagicMock()
+            self.detect_file_format_mock.side_effect = [
+                pre_inspector, post_inspector]
+            pre_inspector.__str__.return_value = pre_inspector.NAME = (
+                src_format)
+            post_inspector.__str__.return_value = post_inspector.NAME = (
+                dst_format)
+            if dest_safe_fails:
+                post_inspector.safety_check.side_effect = (
+                    format_inspector.SafetyCheckFailed(
+                        {r: 'fail' for r in dest_safe_fails}))
+            convert.execute('file:///test/path.%s' % src_format)
+
+    def test_image_convert_ignores_configured_gpt_safety(self):
+        # Conversion succeeds, finds the proper format, but fails safety check
+        self.config(gpt_safety_checks_nonfatal=['mbr'],
+                    group='image_format')
+
+        # GPT that fails only mbr should be allowed to proceed
+        self._test_image_convert_inspect_target_format(
+            out_format='raw', dst_format='gpt', dest_safe_fails=['mbr'])
+
+        # GPT that fails something not configured as non-fatal is rejected
+        self.assertRaisesRegex(
+            RuntimeError, 'disallowed configuration',
+            self._test_image_convert_inspect_target_format,
+            out_format='raw', dst_format='gpt', dest_safe_fails=['mbr',
+                                                                 'pmbr'])
+
+        # An non-GPT format that fails something configured as non-fatal for
+        # GPT-only is rejected
+        self.assertRaisesRegex(
+            RuntimeError, 'disallowed configuration',
+            self._test_image_convert_inspect_target_format,
+            out_format='vmdk', dst_format='vmdk', dest_safe_fails=['mbr'])
+
     def _set_image_conversion(self, mock_os_remove, stores=[]):
         mock_os_remove.return_value = None
         wrapper = mock.MagicMock()

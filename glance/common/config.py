@@ -120,6 +120,22 @@ image_format_opts = [
                        'this feature improves security and consistency by '
                        'ensuring that images claiming to be a given format '
                        'have content matching that format.')),
+    cfg.ListOpt('gpt_safety_checks_nonfatal',
+                default=['mbr'],
+                help=_('List of safety check names to consider non-fatal when '
+                       'validating disk_format=gpt images (or images detected '
+                       'as gpt). Since MBR is very loosely-defined and GPT '
+                       '(which is strictly defined) depends on the MBR '
+                       'structure, it is easy to craft a GPT disk image that '
+                       'works, but is not valid according to the spec. While '
+                       'not recommended, it is possible to disable MBR or '
+                       'GPT-specific safety checks if necessary for '
+                       'compatibility. This can include "mbr" and/or "gptmbr" '
+                       'to avoid failing format validation if those checks '
+                       'fail. Use this with caution as it makes glance relax '
+                       'its definition of what a valid GPT disk image looks '
+                       'like and prevents strict adherence '
+                       'to the GPT spec.')),
 ]
 task_opts = [
     cfg.IntOpt('task_time_to_live',

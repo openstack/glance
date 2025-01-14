@@ -377,6 +377,7 @@ class TestStoreImage(utils.BaseTestCase):
                           image.set_data, iter((data,)), 1024)
 
     def test_image_set_data_inspector_format_fails_safety_check(self):
+        self.config(gpt_safety_checks_nonfatal=[], group='image_format')
         context = glance.context.RequestContext(user=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'gpt'
@@ -393,6 +394,21 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertRaisesRegex(exception.InvalidImageData,
                                'safety checks',
                                image.set_data, iter((data,)), 1024)
+
+    def test_image_set_data_gpt_safety_ignored(self):
+        self.config(gpt_safety_checks_nonfatal=['mbr'], group='image_format')
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = 'gpt'
+        # We are going to pass an iterable data source, so use the
+        # FakeStoreAPIReader that actually reads from that data
+        data = self._get_stub_gpt()
+        # Zero out the partition table to make this unsafe
+        data[446:446 + 16] = b'\x00' * 16
+        store_api = unit_test_utils.FakeStoreAPIReader(max_size=2048)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        image.set_data(iter((data,)), 1024)
 
     def test_image_set_data_inspector_no_match_disabled(self):
         self.config(require_image_format_match=False, group='image_format')
