@@ -280,7 +280,7 @@ def _populate_metadata(meta, conn, metadata_path=None, merge=False,
 
         if db_namespace and overwrite:
             LOG.info(_LI("Overwriting namespace %s"), values['namespace'])
-            _clear_namespace_metadata(meta, db_namespace[0])
+            _clear_namespace_metadata(meta, conn, db_namespace[0])
             db_namespace = None
 
         if not db_namespace:
@@ -303,7 +303,7 @@ def _populate_metadata(meta, conn, metadata_path=None, merge=False,
             continue
         elif prefer_new:
             values.update({'updated_at': timeutils.utcnow()})
-            _update_data_in_db(namespaces_table, values,
+            _update_data_in_db(conn, namespaces_table, values,
                                namespaces_table.c.id, db_namespace[0])
 
         namespace_id = db_namespace[0]
@@ -321,7 +321,7 @@ def _populate_metadata(meta, conn, metadata_path=None, merge=False,
                     meta, conn, resource_type['name'])
             elif prefer_new:
                 val = {'updated_at': timeutils.utcnow()}
-                _update_data_in_db(resource_types_table, val,
+                _update_data_in_db(conn, resource_types_table, val,
                                    resource_types_table.c.id, rt_id)
 
             values = {
@@ -338,7 +338,7 @@ def _populate_metadata(meta, conn, metadata_path=None, merge=False,
                 _insert_data_to_db(conn, namespace_rt_table, values)
             elif prefer_new:
                 values.update({'updated_at': timeutils.utcnow()})
-                _update_rt_association(namespace_rt_table, values,
+                _update_rt_association(conn, namespace_rt_table, values,
                                        rt_id, namespace_id)
 
         for name, schema in metadata.get('properties', {}).items():
@@ -355,7 +355,7 @@ def _populate_metadata(meta, conn, metadata_path=None, merge=False,
                 _insert_data_to_db(conn, properties_table, values)
             elif prefer_new:
                 values.update({'updated_at': timeutils.utcnow()})
-                _update_data_in_db(properties_table, values,
+                _update_data_in_db(conn, properties_table, values,
                                    properties_table.c.id, property_id)
 
         for object in metadata.get('objects', []):
@@ -373,7 +373,7 @@ def _populate_metadata(meta, conn, metadata_path=None, merge=False,
                 _insert_data_to_db(conn, objects_table, values)
             elif prefer_new:
                 values.update({'updated_at': timeutils.utcnow()})
-                _update_data_in_db(objects_table, values,
+                _update_data_in_db(conn, objects_table, values,
                                    objects_table.c.id, object_id)
 
         for tag in metadata.get('tags', []):
@@ -388,7 +388,7 @@ def _populate_metadata(meta, conn, metadata_path=None, merge=False,
                 _insert_data_to_db(conn, tags_table, values)
             elif prefer_new:
                 values.update({'updated_at': timeutils.utcnow()})
-                _update_data_in_db(tags_table, values,
+                _update_data_in_db(conn, tags_table, values,
                                    tags_table.c.id, tag_id)
 
         LOG.info(_LI("File %s loaded to database."), file)
