@@ -41,13 +41,13 @@
       python_use_pyenv: True
 
 - job:
-    name: glance-tox-functional-py311-oslo-tips
+    name: glance-tox-functional-py313-oslo-tips
     parent: glance-tox-oslo-tips-base
     description: |
-      Glance py311 functional tests vs. oslo libraries masters
+      Glance py313 functional tests vs. oslo libraries masters
     vars:
-      python_version: 3.11
-      tox_envlist: functional-py311
+      python_version: 3.13
+      tox_envlist: functional-py313
 
 - job:
     name: glance-tox-keystone-tips-base
@@ -73,13 +73,13 @@
       python_use_pyenv: True
 
 - job:
-    name: glance-tox-py311-keystone-tips
+    name: glance-tox-py313-keystone-tips
     parent: glance-tox-keystone-tips-base
     description: |
-      Glance py311 unit tests vs. keystone masters
+      Glance py313 unit tests vs. keystone masters
     vars:
-      python_version: 3.11
-      tox_envlist: py311
+      python_version: 3.13
+      tox_envlist: py313
 
 - job:
     name: glance-tox-functional-py312-keystone-tips
@@ -93,13 +93,13 @@
       python_use_pyenv: True
 
 - job:
-    name: glance-tox-functional-py311-keystone-tips
+    name: glance-tox-functional-py313-keystone-tips
     parent: glance-tox-keystone-tips-base
     description: |
-      Glance py311 functional tests vs. keystone masters
+      Glance py313 functional tests vs. keystone masters
     vars:
-      python_version: 3.11
-      tox_envlist: functional-py311
+      python_version: 3.13
+      tox_envlist: functional-py313
 
 - job:
     name: glance-tox-glance_store-tips-base
@@ -123,13 +123,13 @@
       python_use_pyenv: True
 
 - job:
-    name: glance-tox-py311-glance_store-tips
+    name: glance-tox-py313-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     description: |
-      Glance py311 unit tests vs. glance_store master
+      Glance py313 unit tests vs. glance_store master
     vars:
-      python_version: 3.11
-      tox_envlist: py311
+      python_version: 3.13
+      tox_envlist: py313
 
 - job:
     name: glance-tox-functional-py312-glance_store-tips
@@ -143,13 +143,13 @@
       python_use_pyenv: True
 
 - job:
-    name: glance-tox-functional-py311-glance_store-tips
+    name: glance-tox-functional-py313-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     description: |
-      Glance py311 functional tests vs. glance_store master
+      Glance py313 functional tests vs. glance_store master
     vars:
-      python_version: 3.11
-      tox_envlist: functional-py311
+      python_version: 3.13
+      tox_envlist: functional-py313
 
 - job:
     name: glance-tox-cursive-tips-base
@@ -175,13 +175,13 @@
       python_use_pyenv: True
 
 - job:
-    name: glance-tox-py311-cursive-tips
+    name: glance-tox-py313-cursive-tips
     parent: glance-tox-cursive-tips-base
     description: |
-      Glance py311 unit tests vs. cursive (and related libs) master
+      Glance py313 unit tests vs. cursive (and related libs) master
     vars:
-      python_version: 3.11
-      tox_envlist: py311
+      python_version: 3.13
+      tox_envlist: py313
 
 - job:
     name: glance-tox-functional-py312-cursive-tips
@@ -195,13 +195,13 @@
       python_use_pyenv: True
 
 - job:
-    name: glance-tox-functional-py311-cursive-tips
+    name: glance-tox-functional-py313-cursive-tips
     parent: glance-tox-cursive-tips-base
     description: |
-      Glance py311 functional tests vs. cursive (and related libs) master
+      Glance py313 functional tests vs. cursive (and related libs) master
     vars:
-      python_version: 3.11
-      tox_envlist: functional-py311
+      python_version: 3.13
+      tox_envlist: functional-py313
 
 - job:
     name: tempest-integrated-storage-import
@@ -491,9 +491,9 @@
     experimental:
       jobs:
         - glance-tox-py312-glance_store-tips
-        - glance-tox-py311-glance_store-tips
+        - glance-tox-py313-glance_store-tips
         - glance-tox-functional-py312-glance_store-tips
-        - glance-tox-functional-py311-glance_store-tips
+        - glance-tox-functional-py313-glance_store-tips
         - barbican-tempest-plugin-simple-crypto
         - grenade-multinode
         - tempest-pg-full:
@@ -517,31 +517,31 @@
         # aren't doing that either.
         - glance-tox-functional-py312-oslo-tips:
             branches: master
-        - glance-tox-functional-py311-oslo-tips:
+        - glance-tox-functional-py313-oslo-tips:
             branches: master
         - glance-tox-py312-keystone-tips:
             branches: master
-        - glance-tox-py311-keystone-tips:
+        - glance-tox-py313-keystone-tips:
             branches: master
         - glance-tox-functional-py312-keystone-tips:
             branches: master
-        - glance-tox-functional-py311-keystone-tips:
+        - glance-tox-functional-py313-keystone-tips:
             branches: master
         - glance-tox-py312-glance_store-tips:
             branches: master
-        - glance-tox-py311-glance_store-tips:
+        - glance-tox-py313-glance_store-tips:
             branches: master
         - glance-tox-functional-py312-glance_store-tips:
             branches: master
-        - glance-tox-functional-py311-glance_store-tips:
+        - glance-tox-functional-py313-glance_store-tips:
             branches: master
         - glance-tox-py312-cursive-tips:
             branches: master
-        - glance-tox-py311-cursive-tips:
+        - glance-tox-py313-cursive-tips:
             branches: master
         - glance-tox-functional-py312-cursive-tips:
             branches: master
-        - glance-tox-functional-py311-cursive-tips:
+        - glance-tox-functional-py313-cursive-tips:
             branches: master
         - glance-multistore-cinder-import-fips:
             branches: master
