@@ -17,8 +17,6 @@
 Time related utilities and helper functions.
 """
 
-import datetime
-
 from oslo_utils import timeutils
 
 # ISO 8601 extended time format with microseconds
@@ -38,9 +36,3 @@ def isotime(at=None, subsecond=False):
     # Need to handle either iso8601 or python UTC format
     st += ('Z' if tz in ['UTC', 'UTC+00:00'] else tz)
     return st
-
-
-def iso8601_from_timestamp(timestamp, microsecond=False):
-    """Returns an iso8601 formatted date from timestamp."""
-    return isotime(datetime.datetime.fromtimestamp(
-        timestamp, tz=datetime.timezone.utc).replace(tzinfo=None), microsecond)
