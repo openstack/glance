@@ -728,7 +728,11 @@ def sort_image_locations(locations):
             return 0
 
     sorted_locations = sorted(locations, key=get_store_weight, reverse=True)
-    LOG.debug(('Sorted locations: %s'), sorted_locations)
+    scrubbed = []
+    for loc in sorted_locations:
+        scrubbed.append({'store_name': loc["metadata"].get("store")})
+
+    LOG.debug(('Sorted locations: %s'), scrubbed)
     return sorted_locations
 
 
