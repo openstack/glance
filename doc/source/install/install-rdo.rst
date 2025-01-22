@@ -182,7 +182,7 @@ Install and configure components
 
    .. code-block:: console
 
-      # yum install openstack-glance
+      # dnf install openstack-glance
 
    .. end
 
