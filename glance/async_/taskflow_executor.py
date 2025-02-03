@@ -17,7 +17,6 @@ import urllib
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from stevedore import driver
 from taskflow import engines
@@ -183,13 +182,12 @@ class TaskExecutor(glance.async_.TaskExecutor):
             with llistener.DynamicLoggingListener(engine, log=LOG):
                 engine.run()
         except exception.UploadException as exc:
-            task.fail(encodeutils.exception_to_unicode(exc))
+            task.fail(str(exc))
             self.task_repo.save(task)
         except Exception as exc:
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s'),
-                          {'task_id': task_id,
-                           'exc': encodeutils.exception_to_unicode(exc)})
+                          {'task_id': task_id, 'exc': exc})
                 # TODO(sabari): Check for specific exceptions and update the
                 # task failure message.
                 task.fail(_('Task failed due to Internal Error'))

@@ -25,7 +25,6 @@ import re
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import timeutils
 import sqlalchemy
 from sqlalchemy import and_
@@ -231,7 +230,7 @@ def _populate_metadata(meta, conn, metadata_path=None, merge=False,
                                  if isfile(join(metadata_path, f))
                                  and f.endswith('.json')]
     except OSError as e:
-        LOG.error(encodeutils.exception_to_unicode(e))
+        LOG.error(str(e))
         return
 
     if not json_schema_files:
@@ -253,9 +252,9 @@ def _populate_metadata(meta, conn, metadata_path=None, merge=False,
                 metadata = json.load(json_file)
         except Exception as e:
             LOG.error(_LE("Failed to parse json file %(file_path)s while "
-                          "populating metadata due to: %(error_msg)s"),
+                          "populating metadata due to: %(exc)s"),
                       {"file_path": file,
-                       "error_msg": encodeutils.exception_to_unicode(e)})
+                       "exc": e})
             continue
 
         values = {
@@ -512,7 +511,7 @@ def _export_data_to_file(meta, conn, path):
             with open(file_name, 'w') as json_file:
                 json_file.write(json.dumps(values))
         except Exception as e:
-            LOG.exception(encodeutils.exception_to_unicode(e))
+            LOG.exception(str(e))
         LOG.info(_LI("Namespace %(namespace)s saved in %(file)s"), {
             'namespace': namespace_file_name, 'file': file_name})
 

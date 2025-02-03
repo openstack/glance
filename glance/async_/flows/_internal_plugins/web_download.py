@@ -16,7 +16,6 @@
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from taskflow.patterns import linear_flow as lf
 
@@ -53,7 +52,7 @@ class _WebDownload(base_download.BaseDownload):
         except Exception as e:
             with excutils.save_and_reraise_exception():
                 LOG.error("Task %(task_id)s failed with exception %(error)s",
-                          {"error": encodeutils.exception_to_unicode(e),
+                          {"error": e,
                            "task_id": self.task_id})
 
         self._path, bytes_written = self.store.add(self.image_id, data, 0)[0:2]

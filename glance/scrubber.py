@@ -20,7 +20,6 @@ import time
 from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 
 from glance.common import crypt
 from glance.common import exception
@@ -331,8 +330,7 @@ class Scrubber(object):
         except Exception as err:
             # Note(dharinic): spawn_n, in Daemon mode will log the
             # exception raised. Otherwise, exit 1 will occur.
-            msg = (_LC("Can not get scrub jobs from queue: %s") %
-                   encodeutils.exception_to_unicode(err))
+            msg = _LC("Can not get scrub jobs from queue: %s") % err
             LOG.critical(msg)
             raise exception.FailedToGetScrubberJobs()
 
@@ -412,8 +410,7 @@ class Scrubber(object):
         except Exception as e:
             LOG.error(_LE("Unable to scrub image %(id)s from a location. "
                           "Reason: %(exc)s "),
-                      {'id': image_id,
-                       'exc': encodeutils.exception_to_unicode(e)})
+                      {'id': image_id, 'exc': e})
             raise
 
     def revert_image_status(self, image_id):

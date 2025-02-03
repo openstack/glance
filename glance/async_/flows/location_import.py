@@ -17,7 +17,6 @@ import hashlib
 import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from taskflow.patterns import linear_flow as lf
 from taskflow import retry
@@ -90,12 +89,10 @@ class _CalculateHash(task.Task):
                 self.image_repo.save(image)
             except _HashCalculationCanceled as e:
                 with excutils.save_and_reraise_exception():
-                    LOG.debug('Hash calculation cancelled: %s',
-                              encodeutils.exception_to_unicode(e))
+                    LOG.debug('Hash calculation cancelled: %s', e)
             except IOError as e:
                 LOG.debug('[%i/%i] Hash calculation failed due to %s',
-                          retries, CONF.http_retries,
-                          encodeutils.exception_to_unicode(e))
+                          retries, CONF.http_retries, str(e))
                 if retries == CONF.http_retries:
                     if image.status != 'active':
                         # NOTE(pdeore): The image location add operation

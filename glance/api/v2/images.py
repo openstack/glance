@@ -27,7 +27,6 @@ from glance_store import location
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils as json
-from oslo_utils import encodeutils
 from oslo_utils import timeutils as oslo_timeutils
 import requests
 import webob.exc
@@ -116,7 +115,7 @@ class ImagesController(object):
             LOG.debug("User not permitted to create image")
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.LimitExceeded as e:
-            LOG.warning(encodeutils.exception_to_unicode(e))
+            LOG.warning(str(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
         except exception.Duplicate as e:
@@ -124,7 +123,7 @@ class ImagesController(object):
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
         except TypeError as e:
-            LOG.debug(encodeutils.exception_to_unicode(e))
+            LOG.debug(str(e))
             raise webob.exc.HTTPBadRequest(explanation=e)
 
         return image
@@ -505,9 +504,9 @@ class ImagesController(object):
         except ValueError as e:
             LOG.debug("Cannot import data for image %(id)s: %(e)s",
                       {'id': image_id,
-                       'e': encodeutils.exception_to_unicode(e)})
+                       'e': e})
             raise webob.exc.HTTPBadRequest(
-                explanation=encodeutils.exception_to_unicode(e))
+                explanation=str(e))
 
         return image_id
 
@@ -634,12 +633,12 @@ class ImagesController(object):
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.StorageQuotaFull as e:
             msg = (_("Denying attempt to upload image because it exceeds the"
-                     " quota: %s") % encodeutils.exception_to_unicode(e))
+                     " quota: %s") % e)
             LOG.warning(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=msg, request=req, content_type='text/plain')
         except exception.LimitExceeded as e:
-            LOG.exception(encodeutils.exception_to_unicode(e))
+            LOG.exception(str(e))
             raise webob.exc.HTTPRequestEntityTooLarge(
                 explanation=e.msg, request=req, content_type='text/plain')
         except exception.NotAuthenticated as e:
@@ -806,7 +805,7 @@ class ImagesController(object):
             raise webob.exc.HTTPConflict(explanation=msg)
         except Exception as e:
             raise webob.exc.HTTPInternalServerError(
-                explanation=encodeutils.exception_to_unicode(e))
+                explanation=str(e))
 
         image_repo.save(image)
 
@@ -1073,8 +1072,7 @@ class ImagesController(object):
         except (exception.BadStoreUri, exception.DuplicateLocation) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except ValueError as ve:    # update image status failed.
-            raise webob.exc.HTTPBadRequest(
-                explanation=encodeutils.exception_to_unicode(ve))
+            raise webob.exc.HTTPBadRequest(explanation=str(ve))
 
     def _do_add_locations(self, image, path_pos, value, context):
         if CONF.show_multiple_locations == False:
@@ -1108,8 +1106,7 @@ class ImagesController(object):
         except (exception.BadStoreUri, exception.DuplicateLocation) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except ValueError as e:    # update image status failed.
-            raise webob.exc.HTTPBadRequest(
-                explanation=encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=str(e))
 
     def _do_remove_locations(self, image, path_pos):
         if CONF.show_multiple_locations == False:
@@ -1139,8 +1136,7 @@ class ImagesController(object):
         # TODO(jokke): Fix this, we should catch what store throws and
         # provide definitely something else than IternalServerError to user.
         except Exception as e:
-            raise webob.exc.HTTPInternalServerError(
-                explanation=encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPInternalServerError(explanation=str(e))
 
     def add_location(self, req, image_id, body):
         url = body.get('url')
@@ -1225,8 +1221,7 @@ class ImagesController(object):
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
         except ValueError as e:
-            raise webob.exc.HTTPBadRequest(
-                explanation=encodeutils.exception_to_unicode(e))
+            raise webob.exc.HTTPBadRequest(explanation=str(e))
 
         return image_id
 

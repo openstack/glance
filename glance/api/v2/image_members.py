@@ -20,7 +20,6 @@ import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-from oslo_utils import encodeutils
 import webob
 
 from glance.api import policy
@@ -179,7 +178,7 @@ class ImageMembersController(object):
         except exception.ImageMemberLimitExceeded as e:
             msg = (_("Image member limit exceeded for image %(id)s: %(e)s:")
                    % {"id": image_id,
-                      "e": encodeutils.exception_to_unicode(e)})
+                      "e": e})
             LOG.warning(msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg)
 
@@ -228,8 +227,7 @@ class ImageMembersController(object):
             LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
         except ValueError as e:
-            msg = (_("Incorrect request: %s")
-                   % encodeutils.exception_to_unicode(e))
+            msg = (_("Incorrect request: %s") % e)
             LOG.warning(msg)
             raise webob.exc.HTTPBadRequest(explanation=msg)
 

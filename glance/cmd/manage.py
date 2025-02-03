@@ -569,7 +569,7 @@ def main():
                          for arg in CONF.command.action_args]
             return CONF.command.action_fn(*func_args, **func_kwargs)
     except exception.GlanceException as e:
-        sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
+        sys.exit("ERROR: %s" % e)
 
 
 if __name__ == '__main__':

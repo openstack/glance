@@ -17,7 +17,6 @@ import urllib.request
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from taskflow.patterns import linear_flow as lf
 
@@ -71,7 +70,7 @@ class _DownloadGlanceImage(base_download.BaseDownload):
             with excutils.save_and_reraise_exception():
                 LOG.error(
                     _LE("Task %(task_id)s failed with exception %(error)s"), {
-                        "error": encodeutils.exception_to_unicode(e),
+                        "error": e,
                         "task_id": self.task_id
                     })
 

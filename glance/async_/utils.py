@@ -15,7 +15,6 @@
 
 from oslo_concurrency import processutils as putils
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import units
 from taskflow import task
 
@@ -74,8 +73,7 @@ class OptionalTask(task.Task):
                 return func(*args, **kwargs)
             except Exception as exc:
                 msg = (_LW("An optional task has failed, "
-                           "the failure was: %s") %
-                       encodeutils.exception_to_unicode(exc))
+                           "the failure was: %s") % exc)
                 LOG.warning(msg)
         return wrapper
 

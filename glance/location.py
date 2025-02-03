@@ -23,7 +23,6 @@ from cursive import signature_utils
 import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils.imageutils import format_inspector
 
@@ -694,8 +693,7 @@ class ImageProxy(glance.domain.proxy.Image):
             except Exception as e:
                 LOG.warning(_LW('Get image %(id)s data failed: '
                                 '%(err)s.'),
-                            {'id': self.image.image_id,
-                            'err': encodeutils.exception_to_unicode(e)})
+                            {'id': self.image.image_id, 'err': e})
                 err = e
         # tried all locations
         LOG.error(_LE('Glance tried all active locations to get data for '

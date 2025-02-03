@@ -20,7 +20,6 @@ import uuid
 
 from oslo_config import cfg
 from oslo_db import exception as db_exc
-from oslo_utils import encodeutils
 from oslo_utils.fixture import uuidsentinel as uuids
 from oslo_utils import timeutils
 from sqlalchemy import orm as sa_orm
@@ -380,7 +379,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         fake_uuid = str(uuid.uuid4())
         exc = self.assertRaises(exception.ImageNotFound, self.image_repo.get,
                                 fake_uuid)
-        self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
+        self.assertIn(fake_uuid, str(exc))
 
     def test_get_forbidden(self):
         self.assertRaises(exception.NotFound, self.image_repo.get, UUID4)
@@ -592,7 +591,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         image.image_id = fake_uuid
         exc = self.assertRaises(exception.ImageNotFound, self.image_repo.save,
                                 image)
-        self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
+        self.assertIn(fake_uuid, str(exc))
 
     def test_save_excludes_atomic_props(self):
         fake_uuid = str(uuid.uuid4())
@@ -645,7 +644,7 @@ class TestImageRepo(test_utils.BaseTestCase):
         image.image_id = fake_uuid
         exc = self.assertRaises(
             exception.ImageNotFound, self.image_repo.remove, image)
-        self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
+        self.assertIn(fake_uuid, str(exc))
 
     def test_restore_image_status(self):
         image_id = uuid.uuid4()
@@ -920,7 +919,7 @@ class TestImageMemberRepo(test_utils.BaseTestCase):
         exc = self.assertRaises(exception.NotFound,
                                 self.image_member_repo.remove,
                                 fake_member)
-        self.assertIn(fake_uuid, encodeutils.exception_to_unicode(exc))
+        self.assertIn(fake_uuid, str(exc))
 
 
 class TestTaskRepo(test_utils.BaseTestCase):

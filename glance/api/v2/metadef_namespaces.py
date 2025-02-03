@@ -19,7 +19,6 @@ import urllib.parse as urlparse
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-from oslo_utils import encodeutils
 import webob.exc
 from wsme.rest import json
 
@@ -214,8 +213,7 @@ class NamespaceController(object):
                         ))
                     prop_repo.add(new_property_type)
         except exception.Invalid as e:
-            msg = (_("Couldn't create metadata namespace: %s")
-                   % encodeutils.exception_to_unicode(e))
+            msg = (_("Couldn't create metadata namespace: %s") % e)
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             self._cleanup_namespace(ns_repo, namespace, namespace_created)
@@ -257,7 +255,7 @@ class NamespaceController(object):
                 msg = (_LE("Failed to delete namespace %(namespace)s."
                            "Exception: %(exception)s"),
                        {'namespace': namespace.namespace,
-                        'exception': encodeutils.exception_to_unicode(e)})
+                        'exception': str(e)})
                 LOG.error(msg)
 
     def show(self, req, namespace, filters=None):
@@ -373,8 +371,7 @@ class NamespaceController(object):
                 wsme_utils._get_value(user_ns.owner) or req.context.owner)
             updated_namespace = namespace_repo.save(ns_obj)
         except exception.Invalid as e:
-            msg = (_("Couldn't update metadata namespace: %s")
-                   % encodeutils.exception_to_unicode(e))
+            msg = (_("Couldn't update metadata namespace: %s") % e)
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update metadata namespace "

@@ -19,7 +19,6 @@ import os
 from oslo_concurrency import processutils as putils
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils.imageutils import format_inspector
 from taskflow.patterns import linear_flow as lf
@@ -157,10 +156,9 @@ class _ConvertImage(task.Task):
                                            log_errors=putils.LOG_ALL_ERRORS,)
         except OSError as exc:
             with excutils.save_and_reraise_exception():
-                exc_message = encodeutils.exception_to_unicode(exc)
                 msg = ("Failed to do introspection as part of image "
                        "conversion for %(iid)s: %(err)s")
-                LOG.error(msg, {'iid': self.image_id, 'err': exc_message})
+                LOG.error(msg, {'iid': self.image_id, 'err': exc})
 
         if stderr:
             raise RuntimeError(stderr)
@@ -218,9 +216,8 @@ class _ConvertImage(task.Task):
                                            log_errors=putils.LOG_ALL_ERRORS)
         except OSError as exc:
             with excutils.save_and_reraise_exception():
-                exc_message = encodeutils.exception_to_unicode(exc)
                 msg = "Failed to do image conversion for %(iid)s: %(err)s"
-                LOG.error(msg, {'iid': self.image_id, 'err': exc_message})
+                LOG.error(msg, {'iid': self.image_id, 'err': exc})
 
         if stderr:
             raise RuntimeError(stderr)
