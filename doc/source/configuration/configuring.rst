@@ -242,8 +242,8 @@ section.
   Required.
 
   A comma-separated list of "store_id:store_type" strings. The store ids can
-  be chosen by the user, whereas valid store types are (``filesystem``,
-  ``http``, ``rbd``, ``swift``, ``cinder``, ``vmware``).
+  be chosen by the user, whereas valid store types are (``file``,
+  ``http``, ``rbd``, ``swift``, ``cinder``, ``vmware``, ``s3``).
 
 The default backend must then be set in the ``[glance_store]`` section:
 
