@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import fixtures
 import json
 import os
 import sys
@@ -25,6 +26,7 @@ from oslo_config import cfg
 import glance.async_.flows.api_image_import as import_flow
 import glance.async_.flows.plugins.image_conversion as image_conversion
 from glance.async_ import utils as async_utils
+from glance.common import format_inspector
 from glance.common import utils
 from glance import domain
 from glance import gateway
@@ -91,6 +93,11 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                                                        self.image_id,
                                                        self.task.task_id)
 
+        self.inspector_mock = mock.MagicMock()
+        self.useFixture(fixtures.MockPatch('glance.common.format_inspector.'
+                                           'get_inspector',
+                                           self.inspector_mock))
+
     @mock.patch.object(os, 'stat')
     @mock.patch.object(os, 'remove')
     def test_image_convert_success(self, mock_os_remove, mock_os_stat):
@@ -105,7 +112,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         image = mock.MagicMock(image_id=self.image_id, virtual_size=None,
                                extra_properties={
                                    'os_glance_import_task': self.task.task_id},
-                               disk_format='qcow2')
+                               disk_format='raw')
         self.img_repo.get.return_value = image
 
         with mock.patch.object(processutils, 'execute') as exc_mock:
@@ -127,7 +134,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         self.assertEqual(456, image.virtual_size)
         self.assertEqual(123, image.size)
 
-    def _setup_image_convert_info_fail(self):
+    def _setup_image_convert_info_fail(self, disk_format='qcow2'):
         image_convert = image_conversion._ConvertImage(self.context,
                                                        self.task.task_id,
                                                        self.task_type,
@@ -137,7 +144,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         image = mock.MagicMock(image_id=self.image_id, virtual_size=None,
                                extra_properties={
                                    'os_glance_import_task': self.task.task_id},
-                               disk_format='qcow2')
+                               disk_format=disk_format)
         self.img_repo.get.return_value = image
         return image_convert
 
@@ -149,6 +156,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                               convert.execute, 'file:///test/path.raw')
             exc_mock.assert_called_once_with(
                 'qemu-img', 'info',
+                '-f', 'qcow2',
                 '--output=json',
                 '/test/path.raw',
                 prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
@@ -165,6 +173,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                               convert.execute, 'file:///test/path.raw')
             exc_mock.assert_called_once_with(
                 'qemu-img', 'info',
+                '-f', 'qcow2',
                 '--output=json',
                 '/test/path.raw',
                 prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
@@ -201,6 +210,36 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             self.assertEqual('QCOW images with data-file set are not allowed',
                              str(e))
 
+    def test_image_convert_no_inspector_match(self):
+        convert = self._setup_image_convert_info_fail()
+        self.inspector_mock.return_value = None
+        self.assertRaisesRegex(RuntimeError,
+                               'Unable to convert from format',
+                               convert.execute, 'file:///test/path.hpfs')
+
+    def test_image_convert_fails_inspection_safety_check(self):
+        convert = self._setup_image_convert_info_fail()
+        inspector = self.inspector_mock.return_value.from_file.return_value
+        inspector.safety_check.return_value = False
+        self.assertRaisesRegex(RuntimeError,
+                               'Image has disallowed configuration',
+                               convert.execute, 'file:///test/path.qcow')
+
+    def test_image_convert_fails_inspection_format_check(self):
+        convert = self._setup_image_convert_info_fail()
+        self.inspector_mock.return_value.from_file.side_effect = (
+            format_inspector.ImageFormatError())
+        self.assertRaisesRegex(RuntimeError,
+                               'Image format detection failed',
+                               convert.execute, 'file:///test/path.qcow')
+
+    def test_image_convert_fails_inspection_error(self):
+        convert = self._setup_image_convert_info_fail()
+        self.inspector_mock.return_value.from_file.side_effect = ValueError
+        self.assertRaisesRegex(RuntimeError,
+                               'Unable to inspect image',
+                               convert.execute, 'file:///test/path.qcow')
+
     def _test_image_convert_invalid_vmdk(self):
         data = {'format': 'vmdk',
                 'format-specific': {
@@ -208,7 +247,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                         'create-type': 'monolithicFlat',
                     }}}
 
-        convert = self._setup_image_convert_info_fail()
+        convert = self._setup_image_convert_info_fail(disk_format='vmdk')
         with mock.patch.object(processutils, 'execute') as exc_mock:
             exc_mock.return_value = json.dumps(data), ''
             convert.execute('file:///test/path.vmdk')
@@ -237,7 +276,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                               self._test_image_convert_invalid_vmdk)
 
     def test_image_convert_fails(self):
-        convert = self._setup_image_convert_info_fail()
+        convert = self._setup_image_convert_info_fail(disk_format='raw')
         with mock.patch.object(processutils, 'execute') as exc_mock:
             exc_mock.side_effect = [('{"format":"raw"}', ''),
                                     OSError('convert_fail')]
@@ -245,6 +284,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                               convert.execute, 'file:///test/path.raw')
             exc_mock.assert_has_calls(
                 [mock.call('qemu-img', 'info',
+                           '-f', 'raw',
                            '--output=json',
                            '/test/path.raw',
                            prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
@@ -257,7 +297,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         self.img_repo.save.assert_not_called()
 
     def test_image_convert_reports_fail(self):
-        convert = self._setup_image_convert_info_fail()
+        convert = self._setup_image_convert_info_fail(disk_format='raw')
         with mock.patch.object(processutils, 'execute') as exc_mock:
             exc_mock.side_effect = [('{"format":"raw"}', ''),
                                     ('', 'some error')]
@@ -265,6 +305,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                               convert.execute, 'file:///test/path.raw')
             exc_mock.assert_has_calls(
                 [mock.call('qemu-img', 'info',
+                           '-f', 'raw',
                            '--output=json',
                            '/test/path.raw',
                            prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
@@ -282,9 +323,10 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             exc_mock.return_value = ('{}', '')
             exc = self.assertRaises(RuntimeError,
                                     convert.execute, 'file:///test/path.raw')
-            self.assertIn('Source format not reported', str(exc))
+            self.assertIn('Image metadata disagrees about format', str(exc))
             exc_mock.assert_called_once_with(
                 'qemu-img', 'info',
+                '-f', 'qcow2',
                 '--output=json',
                 '/test/path.raw',
                 prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
@@ -302,6 +344,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             # Make sure we only called qemu-img for inspection, not conversion
             exc_mock.assert_called_once_with(
                 'qemu-img', 'info',
+                '-f', 'qcow2',
                 '--output=json',
                 '/test/path.qcow',
                 prlimit=async_utils.QEMU_IMG_PROC_LIMITS,

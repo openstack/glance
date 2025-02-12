@@ -208,6 +208,10 @@ class _ImportActions(object):
         return copy.deepcopy(self._image.locations)
 
     @property
+    def image_disk_format(self):
+        return self._image.disk_format
+
+    @property
     def image_status(self):
         return self._image.status
 
