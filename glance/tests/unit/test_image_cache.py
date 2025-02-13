@@ -16,6 +16,7 @@
 from contextlib import contextmanager
 import datetime
 import errno
+import hashlib
 import io
 import os
 import tempfile
@@ -26,7 +27,6 @@ import fixtures
 import glance_store as store
 from oslo_config import cfg
 from oslo_utils import fileutils
-from oslo_utils import secretutils
 from oslo_utils import units
 
 from glance import async_
@@ -474,7 +474,7 @@ class ImageCacheTestCase(object):
         image = b"12345678990abcdefghijklmnop"
         image_id = 123
 
-        md5 = secretutils.md5(usedforsecurity=False)
+        md5 = hashlib.md5(usedforsecurity=False)
         md5.update(image)
         checksum = md5.hexdigest()
 

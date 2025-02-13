@@ -18,7 +18,6 @@ import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
-from oslo_utils import secretutils
 from taskflow.patterns import linear_flow as lf
 from taskflow import retry
 from taskflow import task
@@ -60,7 +59,7 @@ class _CalculateHash(task.Task):
 
     def _calculate_hash(self, image):
         current_os_hash_value = hashlib.new(self.hashing_algo)
-        current_checksum = secretutils.md5(usedforsecurity=False)
+        current_checksum = hashlib.md5(usedforsecurity=False)
         for chunk in image.get_data():
             if chunk is None:
                 break
