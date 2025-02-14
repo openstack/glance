@@ -47,6 +47,9 @@ In addition to that, the following rules are to be followed:
 
   * For a documentation change any core can ninja approve the patch if
     everything is correct
+  * For a set of translations automatically imported from Zanata, any
+    core can ninja approve the patch, provided they have carefully read
+    this `document <https://docs.openstack.org/i18n/latest/reviewing-translation-import.html>`_.
   * For a patch which fixes a bug, the approver should ensure that:
 
     * Unit or Functional tests have been added/updated
