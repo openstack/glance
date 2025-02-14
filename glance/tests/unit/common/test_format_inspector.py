@@ -179,6 +179,12 @@ class TestFormatInspectors(test_utils.BaseTestCase):
         # a local file.
         self.assertLess(fmt.actual_size, file_size)
 
+    def test_qed_always_unsafe(self):
+        img = self._create_img('qed', 10 * units.Mi)
+        fmt = format_inspector.get_inspector('qed').from_file(img)
+        self.assertTrue(fmt.format_match)
+        self.assertFalse(fmt.safety_check())
+
     def _test_vmdk_bad_descriptor_offset(self, subformat=None):
         format_name = 'vmdk'
         image_size = 10 * units.Mi
