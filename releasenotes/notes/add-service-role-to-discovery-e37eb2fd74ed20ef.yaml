@@ -1,0 +1,11 @@
+---
+upgrade:
+  - |
+    The ``stores_info_detail`` policy has deprecated the rule
+    ``rule:context_is_admin`` in favor of ``rule:context_is_admin AND
+    service_roles:service`` to allow service to service interaction.
+deprecations:
+  - |
+    The ``stores_info_detail`` policy has deprecated the rule
+    ``rule:context_is_admin`` in favor of ``rule:context_is_admin AND
+    service_roles:service`` to allow service to service interaction.

@@ -20,13 +20,17 @@ from glance.policies import base
 discovery_policies = [
     policy.DocumentedRuleDefault(
         name="stores_info_detail",
-        check_str=base.ADMIN,
+        check_str=base.ADMIN_OR_SERVICE_ROLE,
         scope_types=['project'],
         description='Expose store specific information',
         operations=[
             {'path': '/v2/info/stores/detail',
              'method': 'GET'}
-        ]
+        ],
+        deprecated_rule=policy.DeprecatedRule(
+            name="stores_info_detail", check_str=base.ADMIN,
+            deprecated_reason="Stores info detail now supports service role.",
+            deprecated_since="2025.1"),
     ),
 ]
 
