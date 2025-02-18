@@ -278,7 +278,8 @@ Depending your needs on image properties you may configure addional properties
 to be copied from the remote image to the local image.
 
 You can do this by configuring options in the
-``[glance_download_opts]`` section of the **glance-image-import.conf** file.
+``[glance_download_properties]`` section of the **glance-image-import.conf**
+file.
 
 ``extra_properties`` options is a list of properties that should be copied from
 the remote image. The properties listed should be read as properties that
