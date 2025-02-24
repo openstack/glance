@@ -376,6 +376,24 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertRaises(exception.InvalidImageData,
                           image.set_data, iter((data,)), 1024)
 
+    def test_image_set_data_inspector_format_fails_safety_check(self):
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = 'gpt'
+        # We are going to pass an iterable data source, so use the
+        # FakeStoreAPIReader that actually reads from that data
+        data = self._get_stub_gpt()
+        # Zero out the partition table to make this unsafe
+        data[446:446 + 16] = b'\x00' * 16
+        store_api = unit_test_utils.FakeStoreAPIReader(max_size=2048)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        # Image was claimed to be AMI, which we cannot inspect, but we found
+        # a known format inside, which is invalid
+        self.assertRaisesRegex(exception.InvalidImageData,
+                               'safety checks',
+                               image.set_data, iter((data,)), 1024)
+
     def test_image_set_data_inspector_no_match_disabled(self):
         self.config(require_image_format_match=False, group='image_format')
         self.test_image_set_data_inspector_no_match()
