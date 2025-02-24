@@ -270,6 +270,12 @@ class ImageDataController(object):
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
                                                       request=req)
 
+        except exception.InvalidImageData as e:
+            LOG.error(str(e))
+            self._restore(image_repo, image)
+            raise webob.exc.HTTPUnsupportedMediaType(explanation=str(e),
+                                                     request=req)
+
         except glance_store.StorageWriteDenied as e:
             msg = _("Insufficient permissions on image "
                     "storage media: %s") % encodeutils.exception_to_unicode(e)

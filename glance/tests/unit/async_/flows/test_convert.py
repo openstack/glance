@@ -158,7 +158,7 @@ class TestImportTask(test_utils.BaseTestCase):
                     "virtual-size": 10737418240,
                     "filename": "/tmp/image.qcow2",
                     "cluster-size": 65536,
-                    "format": "qcow2",
+                    "format": "raw",
                     "actual-size": 373030912,
                     "format-specific": {
                         "type": "qcow2",
@@ -186,7 +186,7 @@ class TestImportTask(test_utils.BaseTestCase):
                 # NOTE(flaper87): Workdir should be empty after all
                 # the tasks have been executed.
                 self.assertEqual([], os.listdir(self.work_dir))
-                self.assertEqual('qcow2', image.disk_format)
+                self.assertEqual('raw', image.disk_format)
                 self.assertEqual(10737418240, image.virtual_size)
 
                 # NOTE(hemanthm): Asserting that the source format is passed

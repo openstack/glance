@@ -584,48 +584,70 @@ class ImageProxy(glance.domain.proxy.Image):
             # FIXME(danms): We do not pass an expected_format here because
             # we do not (currently) want to interrupt the data pipeline if
             # the format does not match.
-            data = format_inspector.InspectWrapper(data)
             LOG.debug('Enabling in-flight format inspection for %s',
                       self.image.disk_format)
-
-        self._upload_to_store(data, verifier, backend, size)
+            data = format_inspector.InspectWrapper(data)
+        else:
+            # FIXME(danms): Either warn here if we are unable to inspect non-
+            # bare images or maybe make this a hard fail
+            pass
 
         try:
-            data.close()
-        except AttributeError:
-            # We did not get a closeable or file-like object as data and/or
-            # did not wrap it because of container_format
-            pass
+            self._upload_to_store(data, verifier, backend, size)
+        except format_inspector.ImageFormatError as e:
+            raise exception.InvalidImageData(str(e))
+        finally:
+            try:
+                data.close()
+            except AttributeError:
+                # We did not get a closeable or file-like object as data and/or
+                # did not wrap it because of container_format
+                pass
 
         virtual_size = 0
         try:
             inspector = data.format
             format = str(inspector)
-            # format_inspector detects GPT, which we need to treat as raw for
-            # compatibility reasons
-            if format == 'gpt':
-                format = 'raw'
             if format == self.image.disk_format:
                 virtual_size = inspector.virtual_size
                 LOG.info('Image format matched and virtual size computed: %i',
                          virtual_size)
+            elif (format == 'raw' and
+                  self.image.disk_format not in format_inspector.ALL_FORMATS):
+                # Things like AMI are not inspectable, so as long as we did not
+                # recognize the format of the payload, allow it through.
+                LOG.info('Image format %s is not an inspectable type',
+                         self.image.disk_format)
+            elif self.image.disk_format == 'raw':
+                # This is something we can't inspect, so we allow it
+                LOG.warning('Image claims %r disk_format but is actually %r',
+                            data.format, format)
+                # If we are pretending this is really raw, don't use the
+                # detected rich format's virtual_size, but just use the
+                # actual size in bytes, as if we did not recognize the format.
+                virtual_size = inspector.actual_size
             else:
-                LOG.info('Image declared as %s but detected as %s, '
-                         'not updating virtual_size',
-                         self.image.disk_format, inspector)
+                raise format_inspector.ImageFormatError(
+                    _('Image disk_format %s does not match stream data %s' % (
+                        self.image.disk_format, format)))
         except AttributeError:
             # We must not have wrapped this for inspection because of
             # container_format
             pass
-        except format_inspector.ImageFormatError:
+        except format_inspector.ImageFormatError as e:
             # No format matched!
-            # FIXME(danms): This should be an error in the future for most
-            # cases
-            LOG.warning('Image format %s did not match; '
-                        'unable to calculate virtual size',
-                        self.image.disk_format)
+            if CONF.image_format.require_image_format_match:
+                raise exception.InvalidImageData(str(e))
+            else:
+                LOG.warning('Image format %s did not match; '
+                            'unable to calculate virtual size',
+                            self.image.disk_format)
         except Exception as e:
-            LOG.error(_LE('Unable to determine virtual_size because: %s'), e)
+            LOG.error(_LE('Unable to determine stream format because: %s'), e)
+            # FIXME(danms): Do this based on config
+            if CONF.image_format.require_image_format_match:
+                raise exception.InvalidImageData(
+                    _('Image format inspection failed'))
 
         if virtual_size:
             self.image.virtual_size = virtual_size

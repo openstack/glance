@@ -191,7 +191,8 @@ class FakeStoreUtils(object):
 
 
 class FakeStoreAPI(object):
-    def __init__(self, store_metadata=None):
+    def __init__(self, store_metadata=None, max_size=7):
+        self._max_size = max_size
         self.data = {
             '%s/%s' % (BASE_URI, UUID1): ('XXX', 3),
             '%s/fake_location' % (BASE_URI): ('YYY', 3)
@@ -233,7 +234,7 @@ class FakeStoreAPI(object):
 
     def add_to_backend(self, conf, image_id, data, size,
                        scheme=None, context=None, verifier=None):
-        store_max_size = 7
+        store_max_size = self._max_size
         current_store_size = 2
         for location in self.data.keys():
             if image_id in location:
@@ -256,7 +257,7 @@ class FakeStoreAPI(object):
     def add_to_backend_with_multihash(
             self, conf, image_id, data, size, hashing_algo,
             scheme=None, context=None, verifier=None):
-        store_max_size = 7
+        store_max_size = self._max_size
         current_store_size = 2
         for location in self.data.keys():
             if image_id in location:

@@ -18,6 +18,8 @@ from cryptography import exceptions as crypto_exception
 from cursive import exception as cursive_exception
 from cursive import signature_utils
 import glance_store
+from oslo_config import cfg
+import struct
 from unittest import mock
 
 from glance.common import exception
@@ -34,6 +36,7 @@ USER1 = '54492ba0-f4df-4e4e-be62-27f4d76b29cf'
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
 TENANT2 = '2c014f32-55eb-467d-8fcb-4bd706012f81'
 TENANT3 = '228c6da5-29cd-4d67-9457-ed632e083fc0'
+CONF = cfg.CONF
 
 
 class ImageRepoStub(object):
@@ -116,7 +119,7 @@ class TestStoreMultiBackends(utils.BaseTestCase):
         image_stub = ImageStub(UUID2, status='queued', locations=[],
                                extra_properties=extra_properties,
                                virtual_size=4)
-        image_stub.disk_format = 'iso'
+        image_stub.disk_format = 'raw'
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
         found_data = []
@@ -287,6 +290,27 @@ class TestStoreImage(utils.BaseTestCase):
         store_api = unit_test_utils.FakeStoreAPIReader()
         image = glance.location.ImageProxy(image_stub, context,
                                            store_api, self.store_utils)
+        if CONF.image_format.require_image_format_match:
+            self.assertRaises(exception.InvalidImageData,
+                              image.set_data, iter(['YYYY']), 4)
+        else:
+            image.set_data(iter(['YYYY']), 4)
+            self.assertEqual(4, image.size)
+            # NOTE(markwash): FakeStore returns image_id for location
+            self.assertEqual(UUID2, image.locations[0]['url'])
+            self.assertEqual('Z', image.checksum)
+            self.assertEqual('active', image.status)
+            self.assertEqual(0, image.virtual_size)
+
+    def test_image_set_data_inspector_unsupported_format(self):
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = 'ami'
+        # We are going to pass an iterable data source, so use the
+        # FakeStoreAPIReader that actually reads from that data
+        store_api = unit_test_utils.FakeStoreAPIReader()
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
         image.set_data(iter(['YYYY']), 4)
         self.assertEqual(4, image.size)
         # NOTE(markwash): FakeStore returns image_id for location
@@ -294,6 +318,67 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual('Z', image.checksum)
         self.assertEqual('active', image.status)
         self.assertEqual(0, image.virtual_size)
+
+    def _get_stub_gpt(self):
+        """Returns a valid, safe GPT-based image"""
+        data = bytearray(b'\x00' * 1024)
+        # The last two bytes of the first sector is the little-endian signature
+        # value 0xAA55
+        data[510:512] = b'\x55\xAA'
+
+        # This is one EFI Protective MBR partition in the first PTE slot,
+        # which is 16 bytes starting at offset 446.
+        data[446:446 + 16] = struct.pack('<BBBBBBBBII',
+                                         0x00,  # boot
+                                         0x00,  # start C
+                                         0x02,  # start H
+                                         0x00,  # start S
+                                         0xEE,  # OS type
+                                         0x00,  # end C
+                                         0x00,  # end H
+                                         0x00,  # end S
+                                         0x01,  # start LBA
+                                         0x00,  # size LBA
+                                         )
+        return data
+
+    def test_image_set_data_inspector_gpt_as_raw_compat(self):
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = 'raw'
+        # We are going to pass an iterable data source, so use the
+        # FakeStoreAPIReader that actually reads from that data
+
+        store_api = unit_test_utils.FakeStoreAPIReader(max_size=2048)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        data = self._get_stub_gpt()
+        image.set_data(iter((data,)), 1024)
+        self.assertEqual(1024, image.size)
+        # NOTE(markwash): FakeStore returns image_id for location
+        self.assertEqual(UUID2, image.locations[0]['url'])
+        self.assertEqual('Z', image.checksum)
+        self.assertEqual('active', image.status)
+        self.assertEqual(1024, image.virtual_size)
+
+    def test_image_set_data_inspector_format_unsupported_hiding(self):
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = 'ami'
+        # We are going to pass an iterable data source, so use the
+        # FakeStoreAPIReader that actually reads from that data
+        data = self._get_stub_gpt()
+        store_api = unit_test_utils.FakeStoreAPIReader(max_size=2048)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        # Image was claimed to be AMI, which we cannot inspect, but we found
+        # a known format inside, which is invalid
+        self.assertRaises(exception.InvalidImageData,
+                          image.set_data, iter((data,)), 1024)
+
+    def test_image_set_data_inspector_no_match_disabled(self):
+        self.config(require_image_format_match=False, group='image_format')
+        self.test_image_set_data_inspector_no_match()
 
     @mock.patch('oslo_utils.imageutils.format_inspector.QcowInspector.'
                 'virtual_size',
@@ -318,15 +403,23 @@ class TestStoreImage(utils.BaseTestCase):
         image = glance.location.ImageProxy(image_stub, context,
                                            store_api, self.store_utils)
 
-        # Make sure set_data proceeds even though the format clearly
-        # does not match
-        image.set_data(iter(['YYYY']), 4)
-        self.assertEqual(4, image.size)
-        # NOTE(markwash): FakeStore returns image_id for location
-        self.assertEqual(UUID2, image.locations[0]['url'])
-        self.assertEqual('Z', image.checksum)
-        self.assertEqual('active', image.status)
-        self.assertEqual(0, image.virtual_size)
+        if CONF.image_format.require_image_format_match:
+            self.assertRaises(exception.InvalidImageData,
+                              image.set_data, iter(['YYYY']), 4)
+        else:
+            # Make sure set_data proceeds even though the format clearly
+            # does not match
+            image.set_data(iter(['YYYY']), 4)
+            self.assertEqual(4, image.size)
+            # NOTE(markwash): FakeStore returns image_id for location
+            self.assertEqual(UUID2, image.locations[0]['url'])
+            self.assertEqual('Z', image.checksum)
+            self.assertEqual('active', image.status)
+            self.assertEqual(0, image.virtual_size)
+
+    def test_image_set_data_inspector_virtual_size_failure_disabled(self):
+        self.config(require_image_format_match=False, group='image_format')
+        self.test_image_set_data_inspector_virtual_size_failure()
 
     @mock.patch('oslo_utils.imageutils.format_inspector.InspectWrapper')
     def test_image_set_data_inspector_not_needed(self, mock_inspect):
@@ -378,17 +471,26 @@ class TestStoreImage(utils.BaseTestCase):
         image_stub.disk_format = 'iso'
         image = glance.location.ImageProxy(image_stub, context,
                                            self.store_api, self.store_utils)
-        image.set_data('YYYY', None)
-        self.assertEqual(4, image.size)
-        # NOTE(markwash): FakeStore returns image_id for location
-        self.assertEqual(UUID2, image.locations[0]['url'])
-        self.assertEqual('Z', image.checksum)
-        self.assertEqual('active', image.status)
-        image.delete()
-        self.assertEqual(image.status, 'deleted')
-        self.assertRaises(glance_store.NotFound,
-                          self.store_api.get_from_backend,
-                          image.locations[0]['url'], context={})
+
+        if CONF.image_format.require_image_format_match:
+            self.assertRaises(exception.InvalidImageData,
+                              image.set_data, 'YYYY', None)
+        else:
+            image.set_data('YYYY', None)
+            self.assertEqual(4, image.size)
+            # NOTE(markwash): FakeStore returns image_id for location
+            self.assertEqual(UUID2, image.locations[0]['url'])
+            self.assertEqual('Z', image.checksum)
+            self.assertEqual('active', image.status)
+            image.delete()
+            self.assertEqual(image.status, 'deleted')
+            self.assertRaises(glance_store.NotFound,
+                              self.store_api.get_from_backend,
+                              image.locations[0]['url'], context={})
+
+    def test_image_set_data_unknown_size_disabled(self):
+        self.config(require_image_format_match=False, group='image_format')
+        self.test_image_set_data_unknown_size()
 
     @mock.patch('glance.location.LOG')
     def test_image_set_data_valid_signature(self, mock_log):
