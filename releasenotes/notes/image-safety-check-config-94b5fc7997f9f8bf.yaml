@@ -1,0 +1,22 @@
+---
+features:
+  - |
+    Glance now inspects image content on upload and import, checking format
+    adherence with the declared `disk_format` and running safety checks on
+    content it recognizes. The new config knob
+    `[image_format]/require_image_format_match` controls whether or not images
+    are rejected when the format set on image create does not match the content
+    that is uploaded. Some images that are currently treated as `raw` may
+    trigger safety check failures when examining the MBR record (or what glance
+    thinks is an MBR). These may be legit failures (due to proliferation of
+    GPT images with invalid Protective MBR structures) as well as other content
+    that attempts to be PC-BIOS-Bootable and thus have a quasi-MBR structure
+    ahead of the payload which may not be fully compliant. Thus a new config
+    knob `[image_format]/gpt_safety_checks_nonfatal` is added to (by default)
+    allow these failures to be non-fatal.
+upgrade:
+  - |
+    Glance will check that uploaded content matches `disk_format` by default,
+    so operators should be on the lookout for any false positives and be
+    ready for reports of upload failures if users are currently not properly
+    representing their uploads.

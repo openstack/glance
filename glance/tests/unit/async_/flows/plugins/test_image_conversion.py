@@ -125,7 +125,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                 jloads_mock.return_value = {'format': 'raw',
                                             'virtual-size': 456}
                 inspector = self.detect_file_format_mock.return_value
-                inspector.__str__.return_value = 'raw'
+                inspector.__str__.side_effect = ['raw', 'qcow2']
                 image_convert.execute('file:///test/path.raw')
 
                 # NOTE(hemanthm): Asserting that the source format is passed
@@ -309,7 +309,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         convert = self._setup_image_convert_info_fail(disk_format='vmdk')
         with mock.patch.object(processutils, 'execute') as exc_mock:
             inspector = self.detect_file_format_mock.return_value
-            inspector.__str__.return_value = 'vmdk'
+            inspector.__str__.side_effect = ['vmdk', 'qcow2']
             exc_mock.return_value = json.dumps(data), ''
             convert.execute('file:///test/path.vmdk')
 
@@ -484,6 +484,21 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             RuntimeError, 'disallowed configuration',
             self._test_image_convert_inspect_target_format,
             out_format='vmdk', dst_format='vmdk', dest_safe_fails=['mbr'])
+
+    def test_image_convert_fails_target_format_raw(self):
+        # Uploaded a qcow with a vmdk inside it. Conversion expects a
+        # raw, but finds the wrong type and should abort
+        self.assertRaisesRegex(
+            RuntimeError, 'image in unexpected format',
+            self._test_image_convert_inspect_target_format,
+            dst_format='vmdk')
+
+    def test_image_convert_fails_target_format_unsafe(self):
+        # Conversion succeeds, finds the proper format, but fails safety check
+        self.assertRaisesRegex(
+            RuntimeError, 'disallowed configuration',
+            self._test_image_convert_inspect_target_format,
+            out_format='vmdk', dst_format='vmdk', dest_safe_fails=['header'])
 
     def _set_image_conversion(self, mock_os_remove, stores=[]):
         mock_os_remove.return_value = None

@@ -226,8 +226,17 @@ class _ConvertImage(task.Task):
             raise RuntimeError(stderr)
 
         dest_inspector = self._inspect_path(dest_path)
-        # FIXME(danms): Assert that this is the expected format
-        LOG.info('Post-conversion image detected as %s', str(dest_inspector))
+        dest_format = str(dest_inspector)
+        if dest_format == 'gpt':
+            # FIXME(danms): We need to consider GPT to be raw for compatibility
+            dest_format = 'raw'
+
+        if target_format != dest_format:
+            # If someone hid one format inside another, we should reject it
+            # as we could be about to embed a vmdk in a 'raw' or similar.
+            LOG.error('Image detected as %s after conversion to %s',
+                      dest_format, target_format)
+            raise RuntimeError('Converted image in unexpected format')
         action.set_image_attribute(disk_format=target_format,
                                    container_format='bare')
         new_size = os.stat(dest_path).st_size
