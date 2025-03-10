@@ -89,6 +89,9 @@ SERVICE_OR_PROJECT_MEMBER = (
 )
 
 SERVICE = 'rule:service_api'
+SERVICE_ROLE = 'service_roles:service'
+
+ADMIN_OR_SERVICE_ROLE = f'{ADMIN} or {SERVICE_ROLE}'
 
 rules = [
     policy.RuleDefault(name='default', check_str='',
