@@ -19,8 +19,6 @@ Time related utilities and helper functions.
 
 import datetime
 
-import iso8601
-from oslo_utils import encodeutils
 from oslo_utils import timeutils
 
 # ISO 8601 extended time format with microseconds
@@ -40,24 +38,6 @@ def isotime(at=None, subsecond=False):
     # Need to handle either iso8601 or python UTC format
     st += ('Z' if tz in ['UTC', 'UTC+00:00'] else tz)
     return st
-
-
-def parse_isotime(timestr):
-    """Parse time from ISO 8601 format."""
-    try:
-        return iso8601.parse_date(timestr)
-    except iso8601.ParseError as e:
-        raise ValueError(encodeutils.exception_to_unicode(e))
-    except TypeError as e:
-        raise ValueError(encodeutils.exception_to_unicode(e))
-
-
-def normalize_time(timestamp):
-    """Normalize time in arbitrary timezone to UTC naive object."""
-    offset = timestamp.utcoffset()
-    if offset is None:
-        return timestamp
-    return timestamp.replace(tzinfo=None) - offset
 
 
 def iso8601_from_timestamp(timestamp, microsecond=False):

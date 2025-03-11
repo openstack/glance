@@ -36,10 +36,10 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import netutils
 from oslo_utils import strutils
+from oslo_utils import timeutils as oslo_timeutils
 from webob import exc
 
 from glance.common import exception
-from glance.common import timeutils
 from glance.common import wsgi
 from glance.i18n import _, _LE, _LW
 
@@ -574,7 +574,7 @@ def split_filter_op(expression):
         # not be partitioned, and a default operator of eq should be
         # assumed.
         try:
-            timeutils.parse_isotime(expression)
+            oslo_timeutils.parse_isotime(expression)
             op = 'eq'
             threshold = expression
         except ValueError:
