@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -u
+
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 Version"
+    exit 1
+fi
+
+version=$1
+header=doc/source/cli/header.txt
+
+sed -i "s/:Version:.*/:Version: $version/" "$header"
+sed -i "s/:Date:.*/:Date: $(date +%F)/" "$header"
