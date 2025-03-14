@@ -55,7 +55,7 @@ operators to enable multiple stores support.
        refuse to start.
 
     The http store type is always treated by Glance as a read-only
-    store.  This is indicated in the response to the ``/v2/stores/info``
+    store.  This is indicated in the response to the ``/v2/info/stores``
     call, where an http type store will have the attribute ``read-only:
     True`` in addition to the usual ``id`` and ``description`` fields.
 
