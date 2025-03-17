@@ -16,25 +16,36 @@
 """Functional test cases for sqlite-specific logic"""
 
 
+import os
+
 from glance.tests import functional
 from glance.tests.utils import depends_on_exe
 from glance.tests.utils import execute
 from glance.tests.utils import skip_if_disabled
 
 
-class TestSqlite(functional.FunctionalTest):
+class TestSqlite(functional.SynchronousAPIBase):
     """Functional tests for sqlite-specific logic"""
 
     @depends_on_exe('sqlite3')
     @skip_if_disabled
     def test_big_int_mapping(self):
-        """Ensure BigInteger not mapped to BIGINT"""
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
+        """Ensure BigInteger not mapped to BIGINT, but to INTEGER"""
+        self.start_server()
 
-        cmd = 'sqlite3 tests.sqlite ".schema"'
-        exitcode, out, err = execute(cmd, raise_error=True)
+        db_file = os.path.join(self.test_dir, 'test.db')
+        self.assertTrue(os.path.exists(db_file))
 
-        self.assertNotIn('BIGINT', out)
-
-        self.stop_servers()
+        for (table, field) in [
+            ('images', 'size'),
+            ('images', 'virtual_size'),
+            ('node_reference', 'node_reference_id'),
+            ('cached_images', 'id'),
+            ('cached_images', 'node_reference_id'),
+        ]:
+            sql = f"SELECT type FROM pragma_table_info('{table}')"
+            sql = f"{sql} WHERE name='{field}'"
+            cmd = f'sqlite3 {db_file} "{sql}"'
+            exitcode, out, _ = execute(cmd, raise_error=True)
+            self.assertEqual(exitcode, 0)
+            self.assertEqual(out.decode().strip(), 'INTEGER')
