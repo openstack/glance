@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glance Release Notes\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-20 08:40+0000\n"
+"POT-Creation-Date: 2025-03-17 23:42+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -232,9 +232,6 @@ msgstr "28.0.1"
 
 msgid "28.1.0"
 msgstr "28.1.0"
-
-msgid "28.1.0-8"
-msgstr "28.1.0-8"
 
 msgid "29.0.0"
 msgstr "29.0.0"
