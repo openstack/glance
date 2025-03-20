@@ -465,6 +465,9 @@
             voting: false
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
+        - ironic-tempest-ipa-wholedisk-bios-agent_ipmitool-tinyipa:
+            voting: false
+            irrelevant-files: *tempest-irrelevant-files
 
     gate:
       jobs:
