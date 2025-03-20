@@ -172,8 +172,7 @@ the API servers, respectively.
   listen on the same port. Increasing this value may increase performance
   (especially if using SSL with compression enabled). Typically it is
   recommended to have one worker process per CPU. The value `0` will prevent
-  any new worker processes from being created. When ``data_api`` is set to
-  ``glance.db.simple.api``, ``workers`` MUST be set to either ``0`` or ``1``.
+  any new worker processes from being created.
 
   Optional. Default: The number of CPUs available will be used by default.
 
