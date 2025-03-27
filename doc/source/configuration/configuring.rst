@@ -791,7 +791,7 @@ documentation for more information.
     * ``cinder_store_auth_address``
 
 ``cinder_catalog_info=<service_type>:<service_name>:<endpoint_type>``
-  Optional. Default: ``volumev2::publicURL``
+  Optional. Default: ``volumev3::publicURL``
 
   Can only be specified in configuration files.
 
@@ -810,7 +810,7 @@ documentation for more information.
 
   Override service catalog lookup with template for cinder endpoint.
   ``%(...)s`` parts are replaced by the value in the request context.
-  e.g. http://localhost:8776/v2/%(tenant)s
+  e.g. http://localhost:8776/v3/%(tenant)s
 
 ``os_region_name=REGION_NAME``
   Optional. Default: ``None``
@@ -1106,7 +1106,7 @@ glance configuration should look like;::
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_volume_type = glance-fast
     description = LVM based cinder store
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1118,7 +1118,7 @@ glance configuration should look like;::
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_volume_type = glance-slow
     description = NFS based cinder store
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1148,7 +1148,7 @@ Example config before upgrade::
     cinder_store_user_name = glance
     cinder_store_password = admin
     cinder_store_project_name = service
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_volume_type = glance-old
 
 Example config after upgrade::
@@ -1164,7 +1164,7 @@ Example config after upgrade::
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_volume_type = glance-new
     description = LVM based cinder store
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1175,7 +1175,7 @@ Example config after upgrade::
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_volume_type = glance-old # as per old cinder.conf
     description = NFS based cinder store
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1205,7 +1205,7 @@ Example config before upgrade::
     cinder_store_password = admin
     cinder_store_project_name = service
     rootwrap_config = /etc/glance/rootwrap.conf
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
 
 Example config after upgrade::
 
@@ -1220,7 +1220,7 @@ Example config after upgrade::
     [old]
     rootwrap_config = /etc/glance/rootwrap.conf
     description = LVM based cinder store
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1231,7 +1231,7 @@ Example config after upgrade::
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_volume_type = glance-new
     description = NFS based cinder store
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1258,7 +1258,7 @@ Example config before upgrade::
     default_store = cinder
     cinder_state_transition_timeout = 300
     rootwrap_config = /etc/glance/rootwrap.conf
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1277,7 +1277,7 @@ Example config after upgrade::
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_volume_type = glance-old # as per old cinder.conf
     description = LVM based cinder store
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1288,7 +1288,7 @@ Example config after upgrade::
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_volume_type = glance-new
     description = NFS based cinder store
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1320,7 +1320,7 @@ Example config after upgrade::
     rootwrap_config = /etc/glance/rootwrap.conf
     cinder_volume_type = glance-new
     description = NFS based cinder store
-    cinder_catalog_info = volumev2::publicURL
+    cinder_catalog_info = volumev3::publicURL
     cinder_store_auth_address = http://localhost/identity/v3
     cinder_store_user_name = glance
     cinder_store_password = admin
@@ -1380,7 +1380,7 @@ to the new format.
         default_store = cinder
         cinder_state_transition_timeout = 300
         rootwrap_config = /etc/glance/rootwrap.conf
-        cinder_catalog_info = volumev2::publicURL
+        cinder_catalog_info = volumev3::publicURL
         cinder_store_auth_address = http://localhost/identity/v3
         cinder_store_user_name = glance
         cinder_store_password = admin
@@ -1401,7 +1401,7 @@ to the new format.
         rootwrap_config = /etc/glance/rootwrap.conf
         cinder_volume_type = glance-new
         description = NFS based cinder store
-        cinder_catalog_info = volumev2::publicURL
+        cinder_catalog_info = volumev3::publicURL
         cinder_store_auth_address = http://localhost/identity/v3
         cinder_store_user_name = glance
         cinder_store_password = admin
