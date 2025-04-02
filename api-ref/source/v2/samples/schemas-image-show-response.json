@@ -115,6 +115,31 @@
                     "url": {
                         "maxLength": 255,
                         "type": "string"
+                    },
+                    "validation_data": {
+                        "description": "Values to be used to populate the corresponding image properties. If the image status is not queued, values must exactly match those already contained in the image properties.",
+                        "type": "object",
+                        "writeOnly": true,
+                        "additionalProperties": false,
+                        "properties": {
+                            "checksum": {
+                                "type": "string",
+                                "minLength": 32,
+                                "maxLength": 32
+                            },
+                            "os_hash_algo": {
+                                "type": "string",
+                                "maxLength": 64
+                            },
+                            "os_hash_value": {
+                                "type": "string",
+                                "maxLength": 128
+                            }
+                        },
+                        "required": [
+                            "os_hash_algo",
+                            "os_hash_value"
+                        ]
                     }
                 },
                 "required": [
