@@ -791,7 +791,7 @@ class MetadefLoadUnloadTests:
         'OS::Glance::CommonImageProperties': 10,
         'OS::Compute::GuestShutdownBehavior': 1,
         'OS::Compute::VMwareFlavor': 2,
-        'OS::Compute::TPM': 1,
+        'OS::Compute::TPM': 2,
         'OS::Compute::GuestMemoryBacking': 1,
         'OS::Compute::LibvirtImage': 17,
         'OS::Compute::VMware': 6,
