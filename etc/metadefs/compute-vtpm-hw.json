@@ -17,14 +17,24 @@
     "properties": {
         "tpm_model": {
             "title": "TPM model",
-            "description": "TPM model to use. Option CRB is only valid for TPM version 2.0. Defaults to TIS.",
+            "description": "TPM model to use. Option tpm-crb is only valid for TPM version 2.0. Defaults to tpm-tis.",
             "operators": ["<or>"],
             "type": "string",
             "enum": [
-                "TIS",
-                "CRB"
+                "tpm-tis",
+                "tpm-crb"
             ],
-            "default": "TIS"
+            "default": "tpm-tis"
+        },
+        "tpm_version": {
+            "title": "TPM version",
+            "description": "TPM version to use. Required if requesting a vTPM. Model tpm-tis supports both, tpm-crb supports only 2.0.",
+            "operators": ["<or>"],
+            "type": "string",
+            "enum": [
+                "1.2",
+                "2.0"
+            ]
         }
     },
     "objects": []
