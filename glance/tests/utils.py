@@ -332,7 +332,8 @@ def execute(cmd,
             exec_env=None,
             expect_exit=True,
             expected_exitcode=0,
-            context=None):
+            context=None,
+            return_process=False):
     """
     Executes a command in a subprocess. Returns a tuple
     of (exitcode, out, err), where out is the string output
@@ -350,6 +351,7 @@ def execute(cmd,
     :param expect_exit: Optional flag true iff timely exit is expected
     :param expected_exitcode: expected exitcode from the launcher
     :param context: additional context for error message
+    :param return_process: return process to terminate explicitly
     """
 
     env = os.environ.copy()
@@ -402,6 +404,10 @@ def execute(cmd,
         if context:
             msg += "\n\nCONTEXT: %s" % context
         raise RuntimeError(msg)
+
+    if return_process:
+        return exitcode, out, err, process
+
     return exitcode, out, err
 
 

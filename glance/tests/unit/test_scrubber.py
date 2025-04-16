@@ -60,7 +60,7 @@ class TestScrubber(test_utils.BaseTestCase):
         scrub = scrubber.Scrubber(glance_store)
         with patch.object(glance_store,
                           "delete_from_backend"):
-            scrub._scrub_image(id, [(id, '-', uri)])
+            scrub._scrub_image((id, [(id, '-', uri)]))
 
     @mock.patch.object(db_api, "image_get")
     def test_store_delete_store_exceptions(self, mock_image_get):
@@ -76,7 +76,7 @@ class TestScrubber(test_utils.BaseTestCase):
         with patch.object(glance_store,
                           "delete_from_backend") as _mock_delete:
             _mock_delete.side_effect = ex
-            scrub._scrub_image(id, [(id, '-', uri)])
+            scrub._scrub_image((id, [(id, '-', uri)]))
 
     @mock.patch.object(db_api, "image_get")
     def test_store_delete_notfound_exception(self, mock_image_get):
@@ -90,7 +90,7 @@ class TestScrubber(test_utils.BaseTestCase):
         with patch.object(glance_store,
                           "delete_from_backend") as _mock_delete:
             _mock_delete.side_effect = ex
-            scrub._scrub_image(id, [(id, '-', uri)])
+            scrub._scrub_image((id, [(id, '-', uri)]))
 
     def test_scrubber_exits(self):
         # Checks for Scrubber exits when it is not able to fetch jobs from
