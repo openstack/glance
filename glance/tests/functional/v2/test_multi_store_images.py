@@ -347,8 +347,6 @@ class TestImagesMultipleBackend(functional.SynchronousAPIBase):
     def test_copy_image_lifecycle(self):
         self.config(allowed_ports=[], group='import_filtering_opts')
         self.start_server()
-        # Image list should be empty
-        self.start_server()
 
         # Image list should be empty
         self.api_methods.verify_empty_image_list()

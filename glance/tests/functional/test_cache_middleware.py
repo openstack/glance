@@ -22,13 +22,13 @@ to the backend store.
 
 import http.client as http_client
 import os
-import shutil
+from unittest import mock
 
-import httplib2
+import oslo_policy.policy
 from oslo_serialization import jsonutils
-from oslo_utils.fixture import uuidsentinel as uuids
 from oslo_utils import units
 
+from glance.api import policy
 from glance.tests import functional
 from glance.tests.utils import skip_if_disabled
 from glance.tests.utils import xattr_writes_supported
@@ -38,27 +38,12 @@ FIVE_KB = 5 * units.Ki
 
 class BaseCacheMiddlewareTest(object):
 
-    def _headers(self, extra=None):
-        headers = {
-            'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': uuids.tenant,
-            'X-Roles': 'reader,member',
-        }
-        if extra:
-            headers.update(extra)
-        return headers
-
     @skip_if_disabled
     def test_cache_middleware_transparent_v2(self):
         """Ensure the v2 API image transfer calls trigger caching"""
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
+        self.start_server()
         # Add an image and verify success
-        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
-        http = httplib2.Http()
+        path = '/v2/images'
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'admin'})
         image_entity = {
@@ -67,48 +52,37 @@ class BaseCacheMiddlewareTest(object):
             'container_format': 'bare',
             'disk_format': 'raw',
         }
-        response, content = http.request(path, 'POST',
-                                         headers=headers,
-                                         body=jsonutils.dumps(image_entity))
-        self.assertEqual(http_client.CREATED, response.status)
-        data = jsonutils.loads(content)
-        image_id = data['id']
+        response = self.api_post(path, headers=headers, json=image_entity)
+        self.assertEqual(http_client.CREATED, response.status_code)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
 
-        path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
-                                                   image_id)
-        headers = self._headers({'content-type': 'application/octet-stream'})
-        image_data = "*" * FIVE_KB
-        response, content = http.request(path, 'PUT',
-                                         headers=headers,
-                                         body=image_data)
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        # upload data
+        path = '/v2/images/%s/file' % image_id
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        image_data = b"*" * FIVE_KB
+        response = self.api_put(path, headers=headers, data=image_data)
+        self.assertEqual(http_client.NO_CONTENT, response.status_code)
 
         # Verify image not in cache
-        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+        cache_dir = self._store_dir('cache')
+        image_cached_path = os.path.join(cache_dir,
                                          image_id)
         self.assertFalse(os.path.exists(image_cached_path))
 
         # Grab the image
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(http_client.OK, response.status)
+        response = self.api_get('/v2/images/%s/file' % image_id)
+        self.assertEqual(http_client.OK, response.status_code)
+        self.assertEqual(image_data, response.text.encode('utf-8'))
 
         # Verify image now in cache
-        image_cached_path = os.path.join(self.api_server.image_cache_dir,
-                                         image_id)
         self.assertTrue(os.path.exists(image_cached_path))
 
         # Now, we delete the image from the server and verify that
         # the image cache no longer contains the deleted image
-        path = "http://%s:%d/v2/images/%s" % ("127.0.0.1", self.api_port,
-                                              image_id)
-        http = httplib2.Http()
-        response, content = http.request(path, 'DELETE', headers=headers)
-        self.assertEqual(http_client.NO_CONTENT, response.status)
-
+        response = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(http_client.NO_CONTENT, response.status_code)
         self.assertFalse(os.path.exists(image_cached_path))
-
-        self.stop_servers()
 
     @skip_if_disabled
     def test_partially_downloaded_images_are_not_cached_v2_api(self):
@@ -116,12 +90,9 @@ class BaseCacheMiddlewareTest(object):
         Verify that we do not cache images that were downloaded partially
         using v2 images API.
         """
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
+        self.start_server()
         # Add an image and verify success
-        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
-        http = httplib2.Http()
+        path = '/v2/images'
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'admin'})
         image_entity = {
@@ -130,35 +101,31 @@ class BaseCacheMiddlewareTest(object):
             'container_format': 'bare',
             'disk_format': 'raw',
         }
-        response, content = http.request(path, 'POST',
-                                         headers=headers,
-                                         body=jsonutils.dumps(image_entity))
-        self.assertEqual(http_client.CREATED, response.status)
-        data = jsonutils.loads(content)
-        image_id = data['id']
+        response = self.api_post(path, headers=headers, json=image_entity)
+        self.assertEqual(http_client.CREATED, response.status_code)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
 
-        path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
-                                                   image_id)
-        headers = self._headers({'content-type': 'application/octet-stream'})
+        path = '/v2/images/%s/file' % image_id
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
         image_data = b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        response, content = http.request(path, 'PUT',
-                                         headers=headers,
-                                         body=image_data)
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        response = self.api_put(path, headers=headers, data=image_data)
+        self.assertEqual(http_client.NO_CONTENT, response.status_code)
 
-        # Verify that this image is not in cache
-        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+        # Verify image not in cache
+        cache_dir = self._store_dir('cache')
+        image_cached_path = os.path.join(cache_dir,
                                          image_id)
         self.assertFalse(os.path.exists(image_cached_path))
 
-        # partially download this image and verify status 206
-        http = httplib2.Http()
         # range download request
         range_ = 'bytes=3-5'
         headers = self._headers({'Range': range_})
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
-        self.assertEqual(b'DEF', content)
+        # partially download this image and verify status 206
+        response = self.api_get('/v2/images/%s/file' % image_id,
+                                headers=headers)
+        self.assertEqual(http_client.PARTIAL_CONTENT, response.status_code)
+        self.assertEqual(b'DEF', response.text.encode('utf-8'))
 
         # content-range download request
         # NOTE(dharinic): Glance incorrectly supports Content-Range for partial
@@ -166,16 +133,13 @@ class BaseCacheMiddlewareTest(object):
         # we prevent regression.
         content_range = 'bytes 3-5/*'
         headers = self._headers({'Content-Range': content_range})
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
-        self.assertEqual(b'DEF', content)
+        response = self.api_get('/v2/images/%s/file' % image_id,
+                                headers=headers)
+        self.assertEqual(http_client.PARTIAL_CONTENT, response.status_code)
+        self.assertEqual(b'DEF', response.text.encode('utf-8'))
 
         # verify that we do not cache the partial image
-        image_cached_path = os.path.join(self.api_server.image_cache_dir,
-                                         image_id)
         self.assertFalse(os.path.exists(image_cached_path))
-
-        self.stop_servers()
 
     @skip_if_disabled
     def test_partial_download_of_cached_images_v2_api(self):
@@ -183,12 +147,9 @@ class BaseCacheMiddlewareTest(object):
         Verify that partial download requests for a fully cached image
         succeeds; we do not serve it from cache.
         """
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
+        self.start_server()
         # Add an image and verify success
-        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
-        http = httplib2.Http()
+        path = '/v2/images'
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'admin'})
         image_entity = {
@@ -197,36 +158,31 @@ class BaseCacheMiddlewareTest(object):
             'container_format': 'bare',
             'disk_format': 'raw',
         }
-        response, content = http.request(path, 'POST',
-                                         headers=headers,
-                                         body=jsonutils.dumps(image_entity))
-        self.assertEqual(http_client.CREATED, response.status)
-        data = jsonutils.loads(content)
-        image_id = data['id']
+        response = self.api_post(path, headers=headers, json=image_entity)
+        self.assertEqual(http_client.CREATED, response.status_code)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
 
-        path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
-                                                   image_id)
-        headers = self._headers({'content-type': 'application/octet-stream'})
+        path = '/v2/images/%s/file' % image_id
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
         image_data = b'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        response, content = http.request(path, 'PUT',
-                                         headers=headers,
-                                         body=image_data)
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        response = self.api_put(path, headers=headers, data=image_data)
+        self.assertEqual(http_client.NO_CONTENT, response.status_code)
 
         # Verify that this image is not in cache
-        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+        cache_dir = self._store_dir('cache')
+        image_cached_path = os.path.join(cache_dir,
                                          image_id)
         self.assertFalse(os.path.exists(image_cached_path))
 
         # Download the entire image
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(http_client.OK, response.status)
-        self.assertEqual(b'ABCDEFGHIJKLMNOPQRSTUVWXYZ', content)
+        response = self.api_get('/v2/images/%s/file' % image_id,
+                                headers=headers)
+        self.assertEqual(http_client.OK, response.status_code)
+        self.assertEqual(b'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                         response.text.encode('utf-8'))
 
         # Verify that the image is now in cache
-        image_cached_path = os.path.join(self.api_server.image_cache_dir,
-                                         image_id)
         self.assertTrue(os.path.exists(image_cached_path))
         # Modify the data in cache so we can verify the partially downloaded
         # content was not from cache indeed.
@@ -239,11 +195,12 @@ class BaseCacheMiddlewareTest(object):
         range_ = 'bytes=3-5'
         headers = self._headers({'Range': range_,
                                  'content-type': 'application/json'})
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
-        self.assertEqual(b'DEF', content)
-        self.assertNotEqual(b'345', content)
-        self.assertNotEqual(image_data, content)
+        response = self.api_get('/v2/images/%s/file' % image_id,
+                                headers=headers)
+        self.assertEqual(http_client.PARTIAL_CONTENT, response.status_code)
+        self.assertEqual(b'DEF', response.text.encode('utf-8'))
+        self.assertNotEqual(b'345', response.text.encode('utf-8'))
+        self.assertNotEqual(image_data, response.text.encode('utf-8'))
 
         # content-range download request
         # NOTE(dharinic): Glance incorrectly supports Content-Range for partial
@@ -252,13 +209,12 @@ class BaseCacheMiddlewareTest(object):
         content_range = 'bytes 3-5/*'
         headers = self._headers({'Content-Range': content_range,
                                  'content-type': 'application/json'})
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(http_client.PARTIAL_CONTENT, response.status)
-        self.assertEqual(b'DEF', content)
-        self.assertNotEqual(b'345', content)
-        self.assertNotEqual(image_data, content)
-
-        self.stop_servers()
+        response = self.api_get('/v2/images/%s/file' % image_id,
+                                headers=headers)
+        self.assertEqual(http_client.PARTIAL_CONTENT, response.status_code)
+        self.assertEqual(b'DEF', response.text.encode('utf-8'))
+        self.assertNotEqual(b'345', response.text.encode('utf-8'))
+        self.assertNotEqual(image_data, response.text.encode('utf-8'))
 
     @skip_if_disabled
     def test_cache_middleware_trans_v2_without_download_image_policy(self):
@@ -266,12 +222,9 @@ class BaseCacheMiddlewareTest(object):
         Ensure the image v2 API image transfer applied 'download_image'
         policy enforcement.
         """
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
+        self.start_server()
         # Add an image and verify success
-        path = "http://%s:%d/v2/images" % ("127.0.0.1", self.api_port)
-        http = httplib2.Http()
+        path = '/v2/images'
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'admin'})
         image_entity = {
@@ -280,24 +233,21 @@ class BaseCacheMiddlewareTest(object):
             'container_format': 'bare',
             'disk_format': 'raw',
         }
-        response, content = http.request(path, 'POST',
-                                         headers=headers,
-                                         body=jsonutils.dumps(image_entity))
-        self.assertEqual(http_client.CREATED, response.status)
-        data = jsonutils.loads(content)
-        image_id = data['id']
+        response = self.api_post(path, headers=headers, json=image_entity)
+        self.assertEqual(http_client.CREATED, response.status_code)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
 
-        path = "http://%s:%d/v2/images/%s/file" % ("127.0.0.1", self.api_port,
-                                                   image_id)
-        headers = self._headers({'content-type': 'application/octet-stream'})
-        image_data = "*" * FIVE_KB
-        response, content = http.request(path, 'PUT',
-                                         headers=headers,
-                                         body=image_data)
-        self.assertEqual(http_client.NO_CONTENT, response.status)
+        # upload data
+        path = '/v2/images/%s/file' % image_id
+        headers = self._headers({'Content-Type': 'application/octet-stream'})
+        image_data = b"*" * FIVE_KB
+        response = self.api_put(path, headers=headers, data=image_data)
+        self.assertEqual(http_client.NO_CONTENT, response.status_code)
 
         # Verify image not in cache
-        image_cached_path = os.path.join(self.api_server.image_cache_dir,
+        cache_dir = self._store_dir('cache')
+        image_cached_path = os.path.join(cache_dir,
                                          image_id)
         self.assertFalse(os.path.exists(image_cached_path))
 
@@ -306,24 +256,17 @@ class BaseCacheMiddlewareTest(object):
         self.set_policy_rules(rules)
 
         # Grab the image
-        http = httplib2.Http()
-        response, content = http.request(path, 'GET', headers=headers)
-        self.assertEqual(http_client.FORBIDDEN, response.status)
+        response = self.api_get('/v2/images/%s/file' % image_id)
+        self.assertEqual(http_client.FORBIDDEN, response.status_code)
 
         # Now, we delete the image from the server and verify that
         # the image cache no longer contains the deleted image
-        path = "http://%s:%d/v2/images/%s" % ("127.0.0.1", self.api_port,
-                                              image_id)
-        http = httplib2.Http()
-        response, content = http.request(path, 'DELETE', headers=headers)
-        self.assertEqual(http_client.NO_CONTENT, response.status)
-
+        response = self.api_delete('/v2/images/%s' % image_id)
+        self.assertEqual(http_client.NO_CONTENT, response.status_code)
         self.assertFalse(os.path.exists(image_cached_path))
 
-        self.stop_servers()
 
-
-class TestImageCacheXattr(functional.FunctionalTest,
+class TestImageCacheXattr(functional.SynchronousAPIBase,
                           BaseCacheMiddlewareTest):
 
     """Functional tests that exercise the image cache using the xattr driver"""
@@ -348,11 +291,10 @@ class TestImageCacheXattr(functional.FunctionalTest,
 
         self.inited = True
         self.disabled = False
-        self.image_cache_driver = "xattr"
 
         super(TestImageCacheXattr, self).setUp()
-
-        self.api_server.deployment_flavor = "caching"
+        self.config(image_cache_driver="xattr")
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
 
         if not xattr_writes_supported(self.test_dir):
             self.inited = True
@@ -360,13 +302,18 @@ class TestImageCacheXattr(functional.FunctionalTest,
             self.disabled_message = ("filesystem does not support xattr")
             raise self.skipException(self.disabled_message)
 
-    def tearDown(self):
-        super(TestImageCacheXattr, self).tearDown()
-        if os.path.exists(self.api_server.image_cache_dir):
-            shutil.rmtree(self.api_server.image_cache_dir)
+    def set_policy_rules(self, rules):
+        self.policy.set_rules(
+            oslo_policy.policy.Rules.from_dict(rules),
+            overwrite=True)
+
+    def start_server(self):
+        with mock.patch.object(policy, 'Enforcer') as mock_enf:
+            mock_enf.return_value = self.policy
+            super(TestImageCacheXattr, self).start_server()
 
 
-class TestImageCacheSqlite(functional.FunctionalTest,
+class TestImageCacheSqlite(functional.SynchronousAPIBase,
                            BaseCacheMiddlewareTest):
 
     """
@@ -396,10 +343,14 @@ class TestImageCacheSqlite(functional.FunctionalTest,
         self.disabled = False
 
         super(TestImageCacheSqlite, self).setUp()
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
 
-        self.api_server.deployment_flavor = "caching"
+    def set_policy_rules(self, rules):
+        self.policy.set_rules(
+            oslo_policy.policy.Rules.from_dict(rules),
+            overwrite=True)
 
-    def tearDown(self):
-        super(TestImageCacheSqlite, self).tearDown()
-        if os.path.exists(self.api_server.image_cache_dir):
-            shutil.rmtree(self.api_server.image_cache_dir)
+    def start_server(self):
+        with mock.patch.object(policy, 'Enforcer') as mock_enf:
+            mock_enf.return_value = self.policy
+            super(TestImageCacheSqlite, self).start_server()

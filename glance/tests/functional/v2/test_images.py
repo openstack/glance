@@ -3895,77 +3895,69 @@ class TestImageLocationSelectionStrategy(functional.SynchronousAPIBase):
         self.assertEqual(values[0]['url'], image['direct_url'])
 
 
-class TestQuotas(functional.FunctionalTest):
+class TestQuotas(functional.SynchronousAPIBase):
 
     def setUp(self):
         super(TestQuotas, self).setUp()
-        self.cleanup()
-        self.api_server.deployment_flavor = 'noauth'
         self.user_storage_quota = 100
-        self.start_servers(**self.__dict__.copy())
+        self.config(user_storage_quota=100)
+        self.start_server(enable_cache=False)
 
-    def _headers(self, custom_headers=None):
-        base_headers = {
-            'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': TENANT1,
-            'X-Roles': 'reader,member',
-        }
-        base_headers.update(custom_headers or {})
-        return base_headers
-
-    def _upload_image_test(self, data_src, expected_status):
+    def _upload_image_test(self, expected_status,
+                           data=None, body_file=None):
         # Image list should be empty
-        path = self._url('/v2/images')
-        response = requests.get(path, headers=self._headers())
+        path = '/v2/images'
+        response = self.api_get(path)
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
 
         # Create an image (with a deployer-defined property)
-        path = self._url('/v2/images')
+        path = '/v2/images'
         headers = self._headers({'content-type': 'application/json'})
-        data = jsonutils.dumps({'name': 'testimg',
-                                'type': 'kernel',
-                                'foo': 'bar',
-                                'disk_format': 'aki',
-                                'container_format': 'aki'})
-        response = requests.post(path, headers=headers, data=data)
+        json_data = {'name': 'testimg',
+                     'type': 'kernel',
+                     'foo': 'bar',
+                     'disk_format': 'aki',
+                     'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=json_data)
         self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
 
         # upload data
-        path = self._url('/v2/images/%s/file' % image_id)
+        path = '/v2/images/%s/file' % image_id
         headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data=data_src)
+
+        response = self.api_put(path, headers=headers, data=data,
+                                body_file=body_file)
         self.assertEqual(expected_status, response.status_code)
 
         # Deletion should work
-        path = self._url('/v2/images/%s' % image_id)
-        response = requests.delete(path, headers=self._headers())
+        path = '/v2/images/%s' % image_id
+        response = self.api_delete(path)
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
     def test_image_upload_under_quota(self):
         data = b'x' * (self.user_storage_quota - 1)
-        self._upload_image_test(data, http.NO_CONTENT)
+        self._upload_image_test(http.NO_CONTENT, data=data)
 
     def test_image_upload_exceed_quota(self):
         data = b'x' * (self.user_storage_quota + 1)
-        self._upload_image_test(data, http.REQUEST_ENTITY_TOO_LARGE)
+        self._upload_image_test(http.REQUEST_ENTITY_TOO_LARGE, data=data)
 
     def test_chunked_image_upload_under_quota(self):
         def data_gen():
             yield b'x' * (self.user_storage_quota - 1)
 
-        self._upload_image_test(data_gen(), http.NO_CONTENT)
+        self._upload_image_test(http.NO_CONTENT, body_file=data_gen())
 
     def test_chunked_image_upload_exceed_quota(self):
         def data_gen():
             yield b'x' * (self.user_storage_quota + 1)
 
-        self._upload_image_test(data_gen(), http.REQUEST_ENTITY_TOO_LARGE)
+        self._upload_image_test(http.REQUEST_ENTITY_TOO_LARGE,
+                                body_file=data_gen())
 
 
 class TestCopyImagePermissions(functional.SynchronousAPIBase):
