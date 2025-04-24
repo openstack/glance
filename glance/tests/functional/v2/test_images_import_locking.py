@@ -91,9 +91,17 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
 
         # Try a second copy-image import. If we are warping time,
         # expect the lock to be busted. If not, then we should get
-        # a 409 Conflict.
-        resp = self._import_copy(image_id, ['store3'])
-        time.sleep(0.1)
+        # a 409 Conflict. We should make sure to wait until it gets started
+        # before looking for the task id.
+        with mock.patch('glance.location.ImageProxy.set_data') as mock_sd:
+            mock_sd.side_effect = slow_fake_set_data
+            resp = self._import_copy(image_id, ['store3'])
+
+            # Wait to make sure the data stream gets started
+            for i in range(0, 10):
+                if 'running' in state:
+                    break
+                time.sleep(0.1)
 
         self.addDetail('Second import response',
                        ttc.text_content(str(resp)))
