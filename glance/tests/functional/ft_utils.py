@@ -38,8 +38,13 @@ def verify_image_hashes_and_status(
     :param os_hash_algo: Expected value of os_hash_algo; only checked when
                          os_hash_value is not None (default: 'sha512')
     """
-    path = test_obj._url('/v2/images/%s' % image_id)
-    response = requests.get(path, headers=test_obj._headers())
+    if hasattr(test_obj, '_url'):
+        path = test_obj._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=test_obj._headers())
+    else:
+        path = '/v2/images/%s' % image_id
+        response = test_obj.api_get(path, headers=test_obj._headers())
+
     test_obj.assertEqual(http.OK, response.status_code)
     image = jsonutils.loads(response.text)
     test_obj.assertEqual(checksum, image['checksum'])
@@ -78,7 +83,7 @@ def wait_for_status(test_obj, request_path, request_headers,
     if start_delay_sec:
         time.sleep(start_delay_sec)
     while time.time() <= done_time:
-        if multistore:
+        if multistore or not hasattr(test_obj, '_url'):
             resp = test_obj.api_get(request_path, headers=request_headers)
         else:
             resp = requests.get(request_path, headers=request_headers)
@@ -117,7 +122,7 @@ def wait_for_image_checksum_and_status(test_obj, image_id,
                             request (default: None)
     :multistore: Optional flag if multiple backends enabled
     """
-    if multistore:
+    if multistore or not hasattr(test_obj, '_url'):
         path = '/v2/images/%s' % image_id
     else:
         path = test_obj._url('/v2/images/%s' % image_id)
@@ -126,7 +131,7 @@ def wait_for_image_checksum_and_status(test_obj, image_id,
     if start_delay_sec:
         time.sleep(start_delay_sec)
     while time.time() <= done_time:
-        if multistore:
+        if multistore or not hasattr(test_obj, '_url'):
             resp = test_obj.api_get(path, headers=test_obj._headers())
         else:
             resp = requests.get(path, headers=test_obj._headers())

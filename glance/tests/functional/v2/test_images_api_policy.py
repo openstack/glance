@@ -42,10 +42,10 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         image_id = self._create_and_upload()
 
         # First make sure image update works with the default policy
-        resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'add',
-                               'path': '/mykey1',
-                               'value': 'foo'})
+        resp = self.api_patch(
+            '/v2/images/%s' % image_id,
+            [{'op': 'add', 'path': '/mykey1', 'value': 'foo'}]
+        )
         self.assertEqual(200, resp.status_code, resp.text)
         self.assertEqual(
             'foo',
@@ -57,29 +57,30 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
                                'modify_image': '!'})
 
         # Add should fail
-        resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'add',
-                               'path': '/mykey2',
-                               'value': 'foo'})
+        resp = self.api_patch(
+            '/v2/images/%s' % image_id,
+            [{'op': 'add', 'path': '/mykey2', 'value': 'foo'}]
+        )
         self.assertEqual(403, resp.status_code)
         self.assertNotIn(
             'mykey2',
             self.api_get('/v2/images/%s' % image_id).json)
 
         # Replace should fail, old value should persist
-        resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'replace',
-                               'path': '/mykey1',
-                               'value': 'bar'})
+        resp = self.api_patch(
+            '/v2/images/%s' % image_id,
+            [{'op': 'replace', 'path': '/mykey1', 'value': 'bar'}]
+        )
         self.assertEqual(403, resp.status_code)
         self.assertEqual(
             'foo',
             self.api_get('/v2/images/%s' % image_id).json['mykey1'])
 
         # Remove should fail, old value should persist
-        resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'remove',
-                               'path': '/mykey1'})
+        resp = self.api_patch(
+            '/v2/images/%s' % image_id,
+            [{'op': 'remove', 'path': '/mykey1'}]
+        )
         self.assertEqual(403, resp.status_code)
         self.assertEqual(
             'foo',
@@ -90,9 +91,10 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         # Remove should fail, old value should persist
         self.set_policy_rules({'get_image': '!',
                                'modify_image': '!'})
-        resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'remove',
-                               'path': '/mykey1'})
+        resp = self.api_patch(
+            '/v2/images/%s' % image_id,
+            [{'op': 'remove', 'path': '/mykey1'}]
+        )
         self.assertEqual(404, resp.status_code)
 
     @mock.patch('glance.location._check_image_location', new=lambda *a: 0)
@@ -103,11 +105,11 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         image_id = self._create_and_upload()
 
         # First make sure we can add and delete locations
-        resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'add',
-                               'path': '/locations/0',
-                               'value': {'url': 'http://foo.bar',
-                                         'metadata': {}}})
+        resp = self.api_patch(
+            '/v2/images/%s' % image_id,
+            [{'op': 'add', 'path': '/locations/0',
+              'value': {'url': 'http://foo.bar', 'metadata': {}}}]
+        )
         self.assertEqual(200, resp.status_code, resp.text)
         self.assertEqual(2,
                          len(self.api_get(
@@ -117,20 +119,21 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
             self.api_get(
                 '/v2/images/%s' % image_id).json['locations'][1]['url'])
 
-        resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'remove',
-                               'path': '/locations/0'})
+        resp = self.api_patch(
+            '/v2/images/%s' % image_id,
+            [{'op': 'remove', 'path': '/locations/0'}]
+        )
         self.assertEqual(200, resp.status_code, resp.text)
         self.assertEqual(1,
                          len(self.api_get(
                              '/v2/images/%s' % image_id).json['locations']))
 
         # Add another while we still can so we can try to delete it below
-        resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'add',
-                               'path': '/locations/0',
-                               'value': {'url': 'http://foo.baz',
-                                         'metadata': {}}})
+        resp = self.api_patch(
+            '/v2/images/%s' % image_id,
+            [{'op': 'add', 'path': '/locations/0',
+              'value': {'url': 'http://foo.baz', 'metadata': {}}}]
+        )
         self.assertEqual(200, resp.status_code, resp.text)
         self.assertEqual(2,
                          len(self.api_get(
@@ -145,18 +148,18 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
 
         # Make sure we cannot delete the above or add another
         resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'remove',
-                               'path': '/locations/0'})
+                              [{'op': 'remove',
+                               'path': '/locations/0'}])
         self.assertEqual(403, resp.status_code, resp.text)
         self.assertEqual(2,
                          len(self.api_get(
                              '/v2/images/%s' % image_id).json['locations']))
 
-        resp = self.api_patch('/v2/images/%s' % image_id,
-                              {'op': 'add',
-                               'path': '/locations/0',
-                               'value': {'url': 'http://foo.baz',
-                                         'metadata': {}}})
+        resp = self.api_patch(
+            '/v2/images/%s' % image_id,
+            [{'op': 'add', 'path': '/locations/0',
+              'value': {'url': 'http://foo.baz', 'metadata': {}}}]
+        )
         self.assertEqual(403, resp.status_code, resp.text)
         self.assertEqual(2,
                          len(self.api_get(
