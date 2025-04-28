@@ -430,7 +430,6 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - openstack-tox-functional-py39
         - openstack-tox-functional-py310
         - openstack-tox-functional-py312
         - glance-ceph-thin-provisioning:
@@ -478,7 +477,6 @@
 
     gate:
       jobs:
-        - openstack-tox-functional-py39
         - openstack-tox-functional-py310
         - openstack-tox-functional-py312
         - tempest-integrated-storage:
