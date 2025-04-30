@@ -1431,6 +1431,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             pipeline = context cache rootapp
             [pipeline:glance-api]
             pipeline = healthcheck context rootapp
+            [pipeline:glance-api-fake]
+            pipeline = fakeauth context rootapp
             [composite:rootapp]
             paste.composite_factory = glance.api:root_app_factory
             /v2: apiv2app
@@ -1487,8 +1489,9 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                                          reserved_stores=wsgi.RESERVED_STORES)
         glance_store.verify_store()
 
-    def setUp(self, single_store=False):
+    def setUp(self, single_store=False, bypass_headers=False):
         super(SynchronousAPIBase, self).setUp()
+        self.bypass_headers = bypass_headers
 
         self.setup_database()
         self.setup_simple_paste()
@@ -1514,7 +1517,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         dst_file_name = os.path.join(dst_dir, file_name)
         return dst_file_name
 
-    def start_server(self, enable_cache=True, set_worker_url=True):
+    def start_server(self, enable_cache=True, set_worker_url=True,
+                     use_fake_auth=False):
         """Builds and "starts" the API server.
 
         Note that this doesn't actually "start" anything like
@@ -1526,6 +1530,9 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         if enable_cache:
             root_app = 'glance-api-cachemanagement'
             self.config(image_cache_dir=self._store_dir('cache'))
+
+        if use_fake_auth:
+            root_app = 'glance-api-fake'
 
         if set_worker_url:
             self.config(worker_self_reference_url='http://workerx')
@@ -1588,7 +1595,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                           stream for the request (overrides @data)
         :returns: A webob.Response object
         """
-        headers = self._headers(headers)
+        if not self.bypass_headers:
+            headers = self._headers(headers)
         req = webob.Request.blank(url, method=method,
                                   headers=headers)
         if json and not data:
