@@ -3606,13 +3606,23 @@ class TestImagesIPv6(functional.FunctionalTest):
         self.assertEqual(0, len(images))
 
 
-class TestImageDirectURLVisibility(functional.FunctionalTest):
+class TestImageDirectURLVisibility(functional.SynchronousAPIBase):
 
     def setUp(self):
-        super(TestImageDirectURLVisibility, self).setUp()
-        self.cleanup()
-        self.include_scrubber = False
-        self.api_server.deployment_flavor = 'noauth'
+        super(TestImageDirectURLVisibility, self).setUp(single_store=True)
+        self.api_methods = ImageAPIHelper(self.api_get, self.api_post,
+                                          self.api_put, self.api_delete)
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
+
+    def set_policy_rules(self, rules):
+        self.policy.set_rules(
+            oslo_policy.policy.Rules.from_dict(rules),
+            overwrite=True)
+
+    def start_server(self):
+        with mock.patch.object(policy, 'Enforcer') as mock_enf:
+            mock_enf.return_value = self.policy
+            super().start_server()
 
     def _headers(self, custom_headers=None):
         base_headers = {
@@ -3626,109 +3636,99 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         return base_headers
 
     def test_image_direct_url_visible(self):
-
-        self.api_server.show_image_direct_url = True
-        self.start_servers(**self.__dict__.copy())
+        self.config(show_image_direct_url=True)
+        self.set_policy_rules({
+            'get_images': '',
+            'get_image': '',
+            'add_image': '',
+            'upload_image': '',
+            'publicize_image': '',
+        })
+        self.start_server()
 
         # Image list should be empty
-        path = self._url('/v2/images')
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(http.OK, response.status_code)
-        images = jsonutils.loads(response.text)['images']
-        self.assertEqual(0, len(images))
+        self.api_methods.verify_empty_image_list()
 
         # Create an image
-        path = self._url('/v2/images')
+        additional_properties = {
+            'visibility': 'public',
+            'foo': 'bar'
+        }
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'admin'})
-        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
-                                'foo': 'bar', 'disk_format': 'aki',
-                                'container_format': 'aki',
-                                'visibility': 'public'})
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(http.CREATED, response.status_code)
-
-        # Get the image id
-        image = jsonutils.loads(response.text)
-        image_id = image['id']
+        image_id = self.api_methods.create_and_verify_image(
+            'image-1', disk_format='aki', container_format='aki',
+            type='kernel',
+            additional_properties=additional_properties,
+            headers=headers
+        )
 
         # Image direct_url should not be visible before location is set
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.get(path, headers=headers)
+        response = self.api_get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertNotIn('direct_url', image)
 
         # Upload some image data, setting the image location
-        path = self._url('/v2/images/%s/file' % image_id)
-        headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(http.NO_CONTENT, response.status_code)
+        self.api_methods.upload_and_verify(image_id, b'ZZZZZ')
 
         # Image direct_url should be visible
-        path = self._url('/v2/images/%s' % image_id)
-        headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.get(path, headers=headers)
+        path = '/v2/images/%s' % image_id
+        response = self.api_get(path)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('direct_url', image)
 
         # Image direct_url should be visible to non-owner, non-admin user
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         headers = self._headers({'Content-Type': 'application/json',
                                  'X-Tenant-Id': TENANT2})
-        response = requests.get(path, headers=headers)
+        response = self.api_get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('direct_url', image)
 
         # Image direct_url should be visible in a list
-        path = self._url('/v2/images')
+        path = '/v2/images'
         headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.get(path, headers=headers)
+        response = self.api_get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)['images'][0]
         self.assertIn('direct_url', image)
 
-        self.stop_servers()
-
     def test_image_multiple_location_url_visible(self):
-        self.api_server.show_multiple_locations = True
-        self.start_servers(**self.__dict__.copy())
+        self.config(show_multiple_locations=True)
+        self.start_server()
 
         # Create an image
-        path = self._url('/v2/images')
-        headers = self._headers({'content-type': 'application/json'})
-        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
-                                'foo': 'bar', 'disk_format': 'aki',
-                                'container_format': 'aki'})
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(http.CREATED, response.status_code)
-
-        # Get the image id
-        image = jsonutils.loads(response.text)
-        image_id = image['id']
+        additional_properties = {
+            'foo': 'bar'
+        }
+        image_id = self.api_methods.create_and_verify_image(
+            'image-1', disk_format='aki', container_format='aki',
+            type='kernel',
+            additional_properties=additional_properties,
+            show_locations=True
+        )
 
         # Image locations should not be visible before location is set
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.get(path, headers=headers)
+        response = self.api_get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
         self.assertEqual([], image["locations"])
 
         # Upload some image data, setting the image location
-        path = self._url('/v2/images/%s/file' % image_id)
-        headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(http.NO_CONTENT, response.status_code)
+        self.api_methods.upload_and_verify(image_id, b'ZZZZZ')
 
         # Image locations should be visible
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.get(path, headers=headers)
+        response = self.api_get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
@@ -3738,79 +3738,64 @@ class TestImageDirectURLVisibility(functional.FunctionalTest):
         self.assertIn('url', loc)
         self.assertIn('metadata', loc)
 
-        self.stop_servers()
-
     def test_image_direct_url_not_visible(self):
-
-        self.api_server.show_image_direct_url = False
-        self.start_servers(**self.__dict__.copy())
+        self.start_server()
 
         # Image list should be empty
-        path = self._url('/v2/images')
-        response = requests.get(path, headers=self._headers())
-        self.assertEqual(http.OK, response.status_code)
-        images = jsonutils.loads(response.text)['images']
-        self.assertEqual(0, len(images))
+        self.api_methods.verify_empty_image_list()
 
         # Create an image
-        path = self._url('/v2/images')
-        headers = self._headers({'content-type': 'application/json'})
-        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
-                                'foo': 'bar', 'disk_format': 'aki',
-                                'container_format': 'aki'})
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(http.CREATED, response.status_code)
-
-        # Get the image id
-        image = jsonutils.loads(response.text)
-        image_id = image['id']
+        additional_properties = {
+            'foo': 'bar'
+        }
+        image_id = self.api_methods.create_and_verify_image(
+            'image-1', disk_format='aki', container_format='aki',
+            type='kernel',
+            additional_properties=additional_properties
+        )
 
         # Upload some image data, setting the image location
-        path = self._url('/v2/images/%s/file' % image_id)
-        headers = self._headers({'Content-Type': 'application/octet-stream'})
-        response = requests.put(path, headers=headers, data='ZZZZZ')
-        self.assertEqual(http.NO_CONTENT, response.status_code)
+        self.api_methods.upload_and_verify(image_id, b'ZZZZZ')
 
         # Image direct_url should not be visible
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.get(path, headers=headers)
+        response = self.api_get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertNotIn('direct_url', image)
 
         # Image direct_url should not be visible in a list
-        path = self._url('/v2/images')
+        path = '/v2/images'
         headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.get(path, headers=headers)
+        response = self.api_get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)['images'][0]
         self.assertNotIn('direct_url', image)
 
-        self.stop_servers()
 
-
-class TestImageLocationSelectionStrategy(functional.FunctionalTest):
+class TestImageLocationSelectionStrategy(functional.SynchronousAPIBase):
 
     def setUp(self):
-        super(TestImageLocationSelectionStrategy, self).setUp()
-        self.cleanup()
-        self.include_scrubber = False
-        self.api_server.deployment_flavor = 'noauth'
-        for i in range(3):
-            ret = test_utils.start_http_server("foo_image_id%d" % i,
-                                               "foo_image%d" % i)
-            setattr(self, 'http_server%d' % i, ret[1])
-            setattr(self, 'http_port%d' % i, ret[2])
+        super(TestImageLocationSelectionStrategy, self).setUp(
+            single_store=True)
+        self.api_methods = ImageAPIHelper(self.api_get, self.api_post,
+                                          self.api_put, self.api_delete)
+        self.http_servers = []
+        self.http_ports = []
 
-    def tearDown(self):
         for i in range(3):
-            httpd = getattr(self, 'http_server%d' % i, None)
-            if httpd:
-                httpd.shutdown()
-                httpd.server_close()
+            server_info = test_utils.start_http_server(
+                f"foo_image_id{i}", f"foo_image{i}")
+            self.http_servers.append(server_info[1])
+            self.http_ports.append(server_info[2])
 
-        super(TestImageLocationSelectionStrategy, self).tearDown()
+    def tearDown(self) -> None:
+        for server in self.http_servers:
+            if server:
+                server.shutdown()
+                server.server_close()
+        super().tearDown()
 
     def _headers(self, custom_headers=None):
         base_headers = {
@@ -3824,61 +3809,57 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         return base_headers
 
     def test_image_locations_with_order_strategy(self):
-        self.api_server.show_image_direct_url = True
-        self.api_server.show_multiple_locations = True
-        self.image_location_quota = 10
+        self.config(show_image_direct_url=True)
+        self.config(show_multiple_locations=True)
+        self.config(image_location_quota=10)
 
-        self.start_servers(**self.__dict__.copy())
+        self.start_server()
 
         # Create an image
-        path = self._url('/v2/images')
-        headers = self._headers({'content-type': 'application/json'})
-        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
-                                'foo': 'bar', 'disk_format': 'aki',
-                                'container_format': 'aki'})
-        response = requests.post(path, headers=headers, data=data)
-        self.assertEqual(http.CREATED, response.status_code)
-
-        # Get the image id
-        image = jsonutils.loads(response.text)
-        image_id = image['id']
+        additional_properties = {
+            'foo': 'bar'
+        }
+        image_id = self.api_methods.create_and_verify_image(
+            'image-1', disk_format='aki', container_format='aki',
+            type='kernel',
+            additional_properties=additional_properties,
+            show_locations=True
+        )
 
         # Image locations should not be visible before location is set
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.get(path, headers=headers)
+        response = self.api_get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
         self.assertEqual([], image["locations"])
 
         # Update image locations via PATCH
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         media_type = 'application/openstack-images-v2.1-json-patch'
         headers = self._headers({'content-type': media_type})
-        values = [{'url': 'http://127.0.0.1:%s/foo_image' % self.http_port0,
+        values = [{'url': 'http://127.0.0.1:%s/foo_image' % self.http_ports[0],
                    'metadata': {}},
-                  {'url': 'http://127.0.0.1:%s/foo_image' % self.http_port1,
+                  {'url': 'http://127.0.0.1:%s/foo_image' % self.http_ports[1],
                    'metadata': {}}]
         doc = [{'op': 'replace',
                 'path': '/locations',
                 'value': values}]
-        data = jsonutils.dumps(doc)
-        response = requests.patch(path, headers=headers, data=data)
+
+        response = self.api_patch(path, doc, headers=headers)
         self.assertEqual(http.OK, response.status_code)
 
         # Image locations should be visible
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         headers = self._headers({'Content-Type': 'application/json'})
-        response = requests.get(path, headers=headers)
+        response = self.api_get(path, headers=headers)
         self.assertEqual(http.OK, response.status_code)
         image = jsonutils.loads(response.text)
         self.assertIn('locations', image)
         self.assertEqual(values, image['locations'])
         self.assertIn('direct_url', image)
         self.assertEqual(values[0]['url'], image['direct_url'])
-
-        self.stop_servers()
 
 
 class TestImageMembers(functional.FunctionalTest):
@@ -6599,13 +6580,24 @@ class TestMultiStoreImageMembers(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
 
-class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
+class TestCopyImagePermissions(functional.SynchronousAPIBase):
 
     def setUp(self):
         super(TestCopyImagePermissions, self).setUp()
-        self.cleanup()
-        self.include_scrubber = False
-        self.api_server_multiple_backend.deployment_flavor = 'noauth'
+        self.api_methods = ImageAPIHelper(self.api_get, self.api_post,
+                                          self.api_put, self.api_delete)
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
+
+    def set_policy_rules(self, rules):
+        self.policy.set_rules(
+            oslo_policy.policy.Rules.from_dict(rules),
+            overwrite=True)
+
+    def start_server(self):
+        self.config(allowed_ports=[], group='import_filtering_opts')
+        with mock.patch.object(policy, 'Enforcer') as mock_enf:
+            mock_enf.return_value = self.policy
+            super().start_server()
 
     def _headers(self, custom_headers=None):
         base_headers = {
@@ -6620,38 +6612,35 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
 
     def _create_and_import_image_data(self):
         # Create a public image
-        path = self._url('/v2/images')
+        path = '/v2/images'
         headers = self._headers({'content-type': 'application/json'})
-        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
-                                'visibility': 'public',
-                                'disk_format': 'aki',
-                                'container_format': 'aki'})
-        response = requests.post(path, headers=headers, data=data)
+        data = {'name': 'image-1', 'type': 'kernel',
+                'visibility': 'public',
+                'disk_format': 'aki',
+                'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.CREATED, response.status_code)
 
         image = jsonutils.loads(response.text)
         image_id = image['id']
 
-        path = self._url('/v2/images/%s/import' % image_id)
+        path = '/v2/images/%s/import' % image_id
         headers = self._headers({
             'content-type': 'application/json',
             'X-Roles': 'admin'
         })
 
         # Start http server locally
-        thread, httpd, port = test_utils.start_standalone_http_server()
-
-        image_data_uri = 'http://localhost:%s/' % port
-        data = jsonutils.dumps(
-            {'method': {'name': 'web-download', 'uri': image_data_uri},
-             'stores': ['file1']})
-        response = requests.post(path, headers=headers, data=data)
+        image_data_uri = self.api_methods.start_http_server_and_get_uri()
+        data = {'method': {'name': 'web-download', 'uri': image_data_uri},
+                'stores': ['store1']}
+        response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.ACCEPTED, response.status_code)
 
         # Verify image is in active state and checksum is set
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         func_utils.wait_for_status(self, request_path=path,
                                    request_headers=self._headers(),
                                    status='active',
@@ -6670,34 +6659,32 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
                                                   status='active')
 
         # kill the local http server
-        httpd.shutdown()
-        httpd.server_close()
+        self.api_methods.httpd.shutdown()
+        self.api_methods.httpd.server_close()
 
         return image_id
 
     def _test_copy_public_image_as_non_admin(self):
-        self.start_servers(**self.__dict__.copy())
+        self.start_server()
 
         # Create a publicly-visible image as TENANT1
         image_id = self._create_and_import_image_data()
 
         # Ensure image is created in the one store
-        path = self._url('/v2/images/%s' % image_id)
-        response = requests.get(path, headers=self._headers())
+        path = '/v2/images/%s' % image_id
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
-        self.assertEqual('file1', jsonutils.loads(response.text)['stores'])
+        self.assertEqual('store1', jsonutils.loads(response.text)['stores'])
 
-        # Copy newly created image to file2 store as TENANT2
-        path = self._url('/v2/images/%s/import' % image_id)
+        # Copy newly created image to store2 store as TENANT2
+        path = '/v2/images/%s/import' % image_id
         headers = self._headers({
             'content-type': 'application/json',
         })
         headers = get_auth_header(TENANT2, TENANT2,
                                   role='reader,member', headers=headers)
-        data = jsonutils.dumps(
-            {'method': {'name': 'copy-image'},
-             'stores': ['file2']})
-        response = requests.post(path, headers=headers, data=data)
+        data = {'method': {'name': 'copy-image'}, 'stores': ['store2']}
+        response = self.api_post(path, headers=headers, json=data)
         return image_id, response
 
     def test_copy_public_image_as_non_admin(self):
@@ -6749,19 +6736,20 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
         # Verify image is copied
         # NOTE(abhishekk): As import is a async call we need to provide
         # some timelap to complete the call.
-        path = self._url('/v2/images/%s' % image_id)
+        path = '/v2/images/%s' % image_id
         func_utils.wait_for_copying(request_path=path,
                                     request_headers=self._headers(),
-                                    stores=['file2'],
+                                    stores=['store2'],
                                     max_sec=40,
                                     delay_sec=0.2,
-                                    start_delay_sec=1)
+                                    start_delay_sec=1,
+                                    api_get_method=self.api_get)
 
         # Ensure image is copied to the file2 and file3 store
-        path = self._url('/v2/images/%s' % image_id)
-        response = requests.get(path, headers=self._headers())
+        path = '/v2/images/%s' % image_id
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
-        self.assertIn('file2', jsonutils.loads(response.text)['stores'])
+        self.assertIn('store2', jsonutils.loads(response.text)['stores'])
 
 
 class TestImportProxy(functional.SynchronousAPIBase):
