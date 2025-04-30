@@ -34,6 +34,7 @@ import sys
 import tempfile
 from testtools import content as ttc
 import textwrap
+import threading
 import time
 from unittest import mock
 import urllib.parse as urlparse
@@ -50,6 +51,7 @@ from glance.common import config
 from glance.common import utils
 from glance.common import wsgi
 from glance.db.sqlalchemy import api as db_api
+from glance import housekeeping
 from glance import tests as glance_tests
 from glance.tests import utils as test_utils
 
@@ -1518,7 +1520,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         return dst_file_name
 
     def start_server(self, enable_cache=True, set_worker_url=True,
-                     use_fake_auth=False):
+                     use_fake_auth=False, run_staging_cleaner=False):
         """Builds and "starts" the API server.
 
         Note that this doesn't actually "start" anything like
@@ -1536,6 +1538,16 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
 
         if set_worker_url:
             self.config(worker_self_reference_url='http://workerx')
+
+        if run_staging_cleaner:
+            cleaner = housekeeping.StagingStoreCleaner(db_api)
+            # NOTE(danms): Start thread as a daemon. It is still a
+            # single-shot, but this will not block our shutdown if it is
+            # running.
+            cleanup_thread = threading.Thread(
+                target=cleaner.clean_orphaned_staging_residue,
+                daemon=True)
+            cleanup_thread.start()
 
         self.api = config.load_paste_app(root_app,
                                          conf_file=self.paste_config)
