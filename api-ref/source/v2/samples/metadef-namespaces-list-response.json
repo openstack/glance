@@ -3,7 +3,7 @@
     "namespaces": [
         {
             "created_at": "2014-08-28T17:13:06Z",
-            "description": "The libvirt compute driver options. These are properties specific to compute drivers.  For a list of all hypervisors, see here: https://wiki.openstack.org/wiki/HypervisorSupportMatrix.",
+            "description": "The libvirt compute driver options. These are properties specific to compute drivers.  For a list of all hypervisors, see here: https://docs.openstack.org/nova/latest/user/support-matrix.html",
             "display_name": "libvirt Driver Options",
             "namespace": "OS::Compute::Libvirt",
             "owner": "admin",

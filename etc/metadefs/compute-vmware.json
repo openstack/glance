@@ -1,7 +1,7 @@
 {
     "namespace": "OS::Compute::VMware",
     "display_name": "VMware Driver Options",
-    "description": "The VMware compute driver options.  \n\nThese are properties specific to VMWare compute drivers and will only have an effect if the VMWare compute driver is enabled in Nova.  For a list of all hypervisors, see here: https://wiki.openstack.org/wiki/HypervisorSupportMatrix.",
+    "description": "The VMware compute driver options.  \n\nThese are properties specific to VMWare compute drivers and will only have an effect if the VMWare compute driver is enabled in Nova.  For a list of all hypervisors, see here: https://docs.openstack.org/nova/latest/user/support-matrix.html",
     "visibility": "public",
     "protected": true,
     "resource_type_associations": [
