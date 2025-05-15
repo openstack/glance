@@ -22,9 +22,6 @@ Glance Scrub Service
 import os
 import sys
 
-import eventlet
-eventlet.patcher.monkey_patch()
-
 import subprocess
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that

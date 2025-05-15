@@ -1452,6 +1452,41 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             # we db_sync.
             test_utils.db_sync(engine=engine)
 
+    def setup_scrubber_conf(self, daemon=False, wakeup_time=300,
+                            scrub_pool_size=12):
+        self.scrubber_conf = os.path.join(
+            self.test_dir, 'glance-scrubber.conf')
+        db_file = 'sqlite:///%s/test.db' % self.test_dir
+        with open(self.scrubber_conf, 'w') as f:
+            f.write(textwrap.dedent("""
+            [DEFAULT]
+            enabled_backends=store1:file,store2:file,store3:file
+            daemon=%(daemon)s
+            wakeup_time=%(wakeup_time)s
+            scrub_pool_size=%(scrub_pool_size)s
+            [database]
+            connection=%(connection)s
+            [store1]
+            filesystem_store_datadir=%(store1)s
+            [store2]
+            filesystem_store_datadir=%(store2)s
+            [store3]
+            filesystem_store_datadir=%(store3)s
+            [os_glance_staging_dir]
+            filesystem_store_datadir=%(staging)s
+            [glance_store]
+            default_backend=store1
+            """) % {
+                "daemon": daemon,
+                "wakeup_time": wakeup_time,
+                "scrub_pool_size": scrub_pool_size,
+                "connection": db_file,
+                "store1": self._store_dir('store1'),
+                "store2": self._store_dir('store2'),
+                "store3": self._store_dir('store3'),
+                "staging": self._store_dir('staging'),
+            })
+
     def setup_simple_paste(self):
         """Setup a very simple no-auth paste pipeline.
 
@@ -1552,6 +1587,28 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                     group='oslo_policy')
         self.config(enforce_scope=True,
                     group='oslo_policy')
+
+    def start_scrubber(self, daemon=False, wakeup_time=300,
+                       restore=None, raise_error=True):
+        self.setup_scrubber_conf(daemon=daemon, wakeup_time=wakeup_time)
+        exe_cmd = f"{sys.executable} -m glance.cmd.scrubber"
+
+        # Modify command based on restore and daemon flags
+        if restore:
+            exe_cmd += f" --restore {restore}"
+        if daemon:
+            exe_cmd += " --daemon"
+
+        # Prepare the final command string with the config directory
+        cmd = f"{exe_cmd} --config-dir {self.test_dir}"
+
+        # Determine if we need to return the process object
+        expect_exit = not daemon
+        return_process = daemon
+
+        # Execute the command and return the result
+        return execute(cmd, raise_error=raise_error, expect_exit=expect_exit,
+                       return_process=return_process)
 
     def _headers(self, custom_headers=None):
         base_headers = {

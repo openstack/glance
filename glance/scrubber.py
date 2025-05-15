@@ -14,9 +14,9 @@
 #    under the License.
 
 import calendar
+from concurrent import futures
 import time
 
-import eventlet
 from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
@@ -318,25 +318,28 @@ class Daemon(object):
                      "threads=%(threads)s"),
                  {'wakeup_time': wakeup_time, 'threads': threads})
         self.wakeup_time = wakeup_time
-        self.event = eventlet.event.Event()
         # This pool is used for periodic instantiation of scrubber
-        self.daemon_pool = eventlet.greenpool.GreenPool(threads)
+        self.executor = futures.ThreadPoolExecutor(max_workers=threads)
 
     def start(self, application):
         self._run(application)
 
     def wait(self):
         try:
-            self.event.wait()
+            while True:
+                # Keep the daemon alive; can be replaced with more
+                # sophisticated handling.
+                time.sleep(1)
         except KeyboardInterrupt:
-            msg = _LI("Daemon Shutdown on KeyboardInterrupt")
-            LOG.info(msg)
+            LOG.info(_LI("Daemon Shutdown on KeyboardInterrupt"))
 
     def _run(self, application):
         LOG.debug("Running application")
-        self.daemon_pool.spawn_n(application.run, self.event)
-        eventlet.spawn_after(self.wakeup_time, self._run, application)
+        future: futures.Future = self.executor.submit(application.run)
+        # Schedule next run
         LOG.debug("Next run scheduled in %s seconds", self.wakeup_time)
+        time.sleep(self.wakeup_time)
+        future.add_done_callback(self._run(application))
 
 
 class Scrubber(object):
@@ -346,7 +349,8 @@ class Scrubber(object):
         self.store_api = store_api
         self.admin_context = context.get_admin_context(show_deleted=True)
         self.db_queue = get_scrub_queue()
-        self.pool = eventlet.greenpool.GreenPool(CONF.scrub_pool_size)
+        self.executor = futures.ThreadPoolExecutor(
+            max_workers=CONF.scrub_pool_size)
 
     def _get_delete_jobs(self):
         try:
@@ -378,31 +382,28 @@ class Scrubber(object):
         delete_jobs = self._get_delete_jobs()
 
         if delete_jobs:
-            list(self.pool.starmap(self._scrub_image, delete_jobs.items()))
+            self.executor.map(self._scrub_image, delete_jobs.items())
 
-    def _scrub_image(self, image_id, delete_jobs):
+    def _scrub_image(self, delete_jobs):
         if len(delete_jobs) == 0:
             return
 
+        image_id, loc_details = delete_jobs
         LOG.info(_LI("Scrubbing image %(id)s from %(count)d locations."),
                  {'id': image_id, 'count': len(delete_jobs)})
-
         success = True
-        if CONF.enabled_backends:
-            for img_id, loc_id, uri, backend in delete_jobs:
-                try:
-                    self._delete_image_location_from_backend(img_id, loc_id,
-                                                             uri,
-                                                             backend=backend)
-                except Exception:
-                    success = False
-        else:
-            for img_id, loc_id, uri in delete_jobs:
-                try:
-                    self._delete_image_location_from_backend(img_id, loc_id,
-                                                             uri)
-                except Exception:
-                    success = False
+        for item in loc_details:
+            try:
+                if CONF.enabled_backends:
+                    img_id, loc_id, uri, backend = item
+                    self._delete_image_location_from_backend(
+                        img_id, loc_id, uri, backend=backend)
+                else:
+                    img_id, loc_id, uri = item
+                    self._delete_image_location_from_backend(
+                        img_id, loc_id, uri)
+            except Exception:
+                success = False
 
         if success:
             image = db_api.get_api().image_get(self.admin_context, image_id)
@@ -420,7 +421,7 @@ class Scrubber(object):
         try:
             LOG.debug("Scrubbing image %s from a location.", image_id)
             try:
-                if CONF.enabled_backends:
+                if backend:
                     self.store_api.delete(uri, backend, self.admin_context)
                 else:
                     self.store_api.delete_from_backend(uri, self.admin_context)
