@@ -13,11 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import calendar
 import datetime
 from unittest import mock
-
-from oslo_utils import timeutils as oslo_timeutils
 
 from glance.common import timeutils
 from glance.tests import utils as test_utils
@@ -49,9 +46,3 @@ class TimeUtilsTest(test_utils.BaseTestCase):
             utcnow_mock.return_value = self.skynet_self_aware_ms_time
             dt = timeutils.isotime(subsecond=True)
             self.assertEqual(dt, self.skynet_self_aware_time_ms_str)
-
-    def test_iso8601_from_timestamp(self):
-        utcnow = oslo_timeutils.utcnow()
-        iso = timeutils.isotime(utcnow)
-        ts = calendar.timegm(utcnow.timetuple())
-        self.assertEqual(iso, timeutils.iso8601_from_timestamp(ts))
