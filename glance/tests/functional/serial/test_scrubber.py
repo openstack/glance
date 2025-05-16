@@ -19,6 +19,7 @@ import time
 
 from oslo_config import cfg
 from oslo_utils import units
+import psutil
 
 from glance import context
 import glance.db as db_api
@@ -36,6 +37,27 @@ class TestScrubber(functional.SynchronousAPIBase):
     def setUp(self):
         super(TestScrubber, self).setUp()
         self.admin_context = context.get_admin_context(show_deleted=True)
+
+    def tearDown(self):
+        self._kill_scrubber_if_running()
+        super(TestScrubber, self).tearDown()
+
+    @staticmethod
+    def _kill_scrubber_if_running():
+        """Kill all running glance.cmd.scrubber processes"""
+        for proc in psutil.process_iter(['pid', 'cmdline']):
+            cmdline = proc.info['cmdline']
+            if cmdline and 'glance.cmd.scrubber' in cmdline:
+                try:
+                    proc.terminate()
+                    try:
+                        proc.wait(timeout=5)
+                    except Exception:
+                        proc.kill()
+                        proc.wait()
+                except Exception:
+                    # Ignore errors if not running
+                    pass
 
     def _get_pending_delete_image(self, image_id):
         # In Glance V2, there is no way to get the 'pending_delete' image from
@@ -68,10 +90,6 @@ class TestScrubber(functional.SynchronousAPIBase):
 
         if self.scrubber:
             self.wait_for_scrub(image['id'])
-            self.scrubber.terminate()
-            self.scrubber.wait()
-            # Give the scrubber some time to stop.
-            time.sleep(5)
 
     def test_scrubber_app(self):
         """
@@ -131,6 +149,9 @@ class TestScrubber(functional.SynchronousAPIBase):
         self.wait_for_scrub(image['id'])
 
     def test_scrubber_restore_image(self):
+        # Ensure no scrubber process is running before test
+        self._kill_scrubber_if_running()
+
         self.config(delayed_delete=True)
         self.start_server()
 
@@ -211,13 +232,6 @@ class TestScrubber(functional.SynchronousAPIBase):
         exitcode, out, err = execute(cmd, raise_error=False)
         self.assertEqual(1, exitcode)
         self.assertIn('glance-scrubber is already running', str(err))
-
-        # terminate daemon process
-        if self.scrubber:
-            self.scrubber.terminate()
-            self.scrubber.wait()
-            # Give the scrubber some time to stop.
-            time.sleep(5)
 
     def wait_for_scrubber_shutdown(self, func):
         # NOTE(wangxiyuan, rosmaita): The image-restore functionality contains
