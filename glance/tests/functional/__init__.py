@@ -1529,6 +1529,23 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
     def _store_dir(self, store):
         return os.path.join(self.test_dir, store)
 
+    def setup_single_store(self):
+        """Configures single backend.
+
+        This configures the API with one file-backed store
+        as well as node_staging_uri for imports.
+
+        """
+        glance_store.register_opts(CONF)
+        self.config(filesystem_store_datadir=self._store_dir('store1'),
+                    group='glance_store')
+        node_staging_uri = 'file://%s' % os.path.join(
+            self.test_dir, 'staging')
+        self.config(node_staging_uri=node_staging_uri)
+        self.config(default_store='file', group='glance_store')
+        glance_store.create_stores(CONF)
+        glance_store.verify_default_store()
+
     def setup_stores(self):
         """Configures multiple backend stores.
 
@@ -1558,12 +1575,32 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                                          reserved_stores=wsgi.RESERVED_STORES)
         glance_store.verify_store()
 
-    def setUp(self):
+    def setUp(self, single_store=False):
         super(SynchronousAPIBase, self).setUp()
 
         self.setup_database()
         self.setup_simple_paste()
-        self.setup_stores()
+        if single_store:
+            self.setup_single_store()
+        else:
+            self.setup_stores()
+
+        conf_dir = os.path.join(self.test_dir, 'etc')
+        utils.safe_mkdirs(conf_dir)
+        self.copy_data_file('schema-image.json', conf_dir)
+        self.copy_data_file('property-protections.conf', conf_dir)
+        self.copy_data_file('property-protections-policies.conf', conf_dir)
+        self.property_file_roles = os.path.join(conf_dir,
+                                                'property-protections.conf')
+        property_policies = 'property-protections-policies.conf'
+        self.property_file_policies = os.path.join(conf_dir,
+                                                   property_policies)
+
+    def copy_data_file(self, file_name, dst_dir):
+        src_file_name = os.path.join('glance/tests/etc', file_name)
+        shutil.copy(src_file_name, dst_dir)
+        dst_file_name = os.path.join(dst_dir, file_name)
+        return dst_file_name
 
     def start_server(self, enable_cache=True, set_worker_url=True):
         """Builds and "starts" the API server.
@@ -1650,14 +1687,18 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             req.body_file = body_file
         return self.api(req)
 
-    def api_get(self, url, headers=None):
+    def api_get(self, url, headers=None, data=None, json=None):
         """Perform a GET request against the API.
 
         :param url: The *path* part of the URL to call (i.e. /v2/images)
         :param headers: Optional updates to the default set of headers
+        :param data: Optional bytes data payload to send (overrides @json)
+        :param json: Optional dict structure to be jsonified and sent as
+                     the payload (mutually exclusive with @data)
         :returns: A webob.Response object
         """
-        return self.api_request('GET', url, headers=headers)
+        return self.api_request('GET', url, headers=headers,
+                                data=data, json=json)
 
     def api_post(self, url, headers=None, data=None, json=None,
                  body_file=None):
@@ -1693,16 +1734,20 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                                 data=data, json=json,
                                 body_file=body_file)
 
-    def api_delete(self, url, headers=None):
+    def api_delete(self, url, headers=None, data=None, json=None):
         """Perform a DELETE request against the API.
 
         :param url: The *path* part of the URL to call (i.e. /v2/images)
         :param headers: Optional updates to the default set of headers
+        :param data: Optional bytes data payload to send (overrides @json)
+        :param json: Optional dict structure to be jsonified and sent as
+                     the payload (mutually exclusive with @data)
         :returns: A webob.Response object
         """
-        return self.api_request('DELETE', url, headers=headers)
+        return self.api_request('DELETE', url, headers=headers,
+                                data=data, json=json)
 
-    def api_patch(self, url, *patches, headers=None):
+    def api_patch(self, url, patches, headers=None):
         """Perform a PATCH request against the API.
 
         :param url: The *path* part of the URL to call (i.e. /v2/images)
@@ -1710,12 +1755,14 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         :param headers: Optional updates to the default set of headers
         :returns: A webob.Response object
         """
+        json = patches if isinstance(patches, list) else list(patches)
+
         if not headers:
             headers = {}
         headers['Content-Type'] = \
             'application/openstack-images-v2.1-json-patch'
         return self.api_request('PATCH', url, headers=headers,
-                                json=list(patches))
+                                json=json)
 
     def _import_copy(self, image_id, stores, headers=None):
         """Do an import of image_id to the given stores."""
