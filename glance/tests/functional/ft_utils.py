@@ -153,7 +153,7 @@ def wait_for_image_checksum_and_status(test_obj, image_id,
 
 def wait_for_copying(request_path, request_headers, stores=[],
                      max_sec=10, delay_sec=0.2, start_delay_sec=None,
-                     failure_scenario=False):
+                     failure_scenario=False, api_get_method=None):
     """
     Performs a time-bounded wait for the entity at the request_path to
     wait until image is copied to specified stores.
@@ -175,7 +175,10 @@ def wait_for_copying(request_path, request_headers, stores=[],
     if start_delay_sec:
         time.sleep(start_delay_sec)
     while time.time() <= done_time:
-        resp = requests.get(request_path, headers=request_headers)
+        if api_get_method:
+            resp = api_get_method(request_path, headers=request_headers)
+        else:
+            resp = requests.get(request_path, headers=request_headers)
         if resp.status_code != http.OK:
             raise Exception("Received {} response from server".format(
                 resp.status_code))
