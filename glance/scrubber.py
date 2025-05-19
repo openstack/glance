@@ -20,7 +20,6 @@ import time
 from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_log import versionutils
 from oslo_utils import encodeutils
 
 from glance.common import crypt
@@ -31,18 +30,9 @@ import glance.db as db_api
 from glance.i18n import _, _LC, _LE, _LI, _LW
 
 LOG = logging.getLogger(__name__)
-DEPRECATED_SUBSTRING = ('is scheduled to be removed during the 2024.2 '
-                        '(Dalmatian) development cycle.')
-DEPRECATED_SCRUBBER_MSG = ('The glance scrubber has been deprecated and '
-                           + DEPRECATED_SUBSTRING)
-DEPRECATED_OPTS_MSG = ('The entire glance scrubber, including this option, '
-                       + DEPRECATED_SUBSTRING)
 
 scrubber_opts = [
     cfg.IntOpt('scrub_time', default=0, min=0,
-               deprecated_for_removal=True,
-               deprecated_since='2024.1 (Caracal)',
-               deprecated_reason=DEPRECATED_OPTS_MSG,
                help=_("""
 The amount of time, in seconds, to delay image scrubbing.
 
@@ -65,9 +55,6 @@ Related options:
 
 """)),
     cfg.IntOpt('scrub_pool_size', default=1, min=1,
-               deprecated_for_removal=True,
-               deprecated_since='2024.1 (Caracal)',
-               deprecated_reason=DEPRECATED_OPTS_MSG,
                help=_("""
 The size of thread pool to be used for scrubbing images.
 
@@ -86,9 +73,6 @@ Related options:
 
 """)),
     cfg.BoolOpt('delayed_delete', default=False,
-                deprecated_for_removal=True,
-                deprecated_since='2024.1 (Caracal)',
-                deprecated_reason=DEPRECATED_OPTS_MSG,
                 help=_("""
 Turn on/off delayed delete.
 
@@ -120,9 +104,6 @@ Related options:
 
 scrubber_cmd_opts = [
     cfg.IntOpt('wakeup_time', default=300, min=0,
-               deprecated_for_removal=True,
-               deprecated_since='2024.1 (Caracal)',
-               deprecated_reason=DEPRECATED_OPTS_MSG,
                help=_("""
 Time interval, in seconds, between scrubber runs in daemon mode.
 
@@ -149,9 +130,6 @@ scrubber_cmd_cli_opts = [
     cfg.BoolOpt('daemon',
                 short='D',
                 default=False,
-                deprecated_for_removal=True,
-                deprecated_since='2024.1 (Caracal)',
-                deprecated_reason=DEPRECATED_OPTS_MSG,
                 help=_("""
 Run scrubber as a daemon.
 
@@ -175,9 +153,6 @@ Related options:
 """)),
     cfg.StrOpt('restore',
                metavar='<IMAGE_ID>',
-               deprecated_for_removal=True,
-               deprecated_since='2024.1 (Caracal)',
-               deprecated_reason=DEPRECATED_OPTS_MSG,
                help=_("""
 Restore the image status from 'pending_delete' to 'active'.
 
@@ -313,7 +288,6 @@ def get_scrub_queue():
 
 class Daemon(object):
     def __init__(self, wakeup_time=300, threads=100):
-        versionutils.report_deprecated_feature(LOG, DEPRECATED_SCRUBBER_MSG)
         LOG.info(_LI("Starting Daemon: wakeup_time=%(wakeup_time)s "
                      "threads=%(threads)s"),
                  {'wakeup_time': wakeup_time, 'threads': threads})
@@ -344,7 +318,6 @@ class Daemon(object):
 
 class Scrubber(object):
     def __init__(self, store_api):
-        versionutils.report_deprecated_feature(LOG, DEPRECATED_SCRUBBER_MSG)
         LOG.info(_LI("Initializing scrubber"))
         self.store_api = store_api
         self.admin_context = context.get_admin_context(show_deleted=True)
