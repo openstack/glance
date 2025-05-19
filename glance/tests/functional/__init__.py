@@ -317,7 +317,6 @@ class ApiServer(Server):
         self.image_size_cap = 1099511627776
         self.delayed_delete = delayed_delete
         self.workers = 0
-        self.scrub_time = 5
         self.image_cache_dir = os.path.join(self.test_dir,
                                             'cache')
         self.image_cache_driver = 'sqlite'
@@ -352,7 +351,6 @@ log_file = %(log_file)s
 image_size_cap = %(image_size_cap)d
 delayed_delete = %(delayed_delete)s
 workers = %(workers)s
-scrub_time = %(scrub_time)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
 show_image_direct_url = %(show_image_direct_url)s
@@ -502,7 +500,6 @@ class ApiServerForMultipleBackend(Server):
         self.image_size_cap = 1099511627776
         self.delayed_delete = delayed_delete
         self.workers = 0
-        self.scrub_time = 5
         self.image_cache_dir = os.path.join(self.test_dir,
                                             'cache')
         self.image_cache_driver = 'sqlite'
@@ -534,7 +531,6 @@ log_file = %(log_file)s
 image_size_cap = %(image_size_cap)d
 delayed_delete = %(delayed_delete)s
 workers = %(workers)s
-scrub_time = %(scrub_time)s
 image_cache_dir = %(image_cache_dir)s
 image_cache_driver = %(image_cache_driver)s
 show_image_direct_url = %(show_image_direct_url)s
@@ -666,58 +662,6 @@ allowed_origin=http://valid.example.com
 """
 
 
-class ScrubberDaemon(Server):
-    """
-    Server object that starts/stops/manages the Scrubber server
-    """
-
-    def __init__(self, test_dir, policy_file, daemon=False, **kwargs):
-        # NOTE(jkoelker): Set the port to 0 since we actually don't listen
-        super(ScrubberDaemon, self).__init__(test_dir, 0)
-        self.server_name = 'scrubber'
-        self.server_module = 'glance.cmd.%s' % self.server_name
-        self.daemon = daemon
-
-        self.image_dir = os.path.join(self.test_dir, "images")
-        self.scrub_time = 5
-        self.pid_file = os.path.join(self.test_dir, "scrubber.pid")
-        self.log_file = os.path.join(self.test_dir, "scrubber.log")
-        self.metadata_encryption_key = "012345678901234567890123456789ab"
-        self.lock_path = self.test_dir
-
-        default_sql_connection = SQLITE_CONN_TEMPLATE % self.test_dir
-        self.sql_connection = os.environ.get('GLANCE_TEST_SQL_CONNECTION',
-                                             default_sql_connection)
-        self.policy_file = policy_file
-        self.policy_default_rule = 'default'
-
-        self.conf_base = """[DEFAULT]
-debug = %(debug)s
-log_file = %(log_file)s
-daemon = %(daemon)s
-wakeup_time = 2
-scrub_time = %(scrub_time)s
-metadata_encryption_key = %(metadata_encryption_key)s
-lock_path = %(lock_path)s
-sql_idle_timeout = 3600
-[database]
-connection = %(sql_connection)s
-[glance_store]
-filesystem_store_datadir=%(image_dir)s
-[oslo_policy]
-policy_file = %(policy_file)s
-policy_default_rule = %(policy_default_rule)s
-"""
-
-    def start(self, expect_exit=True, expected_exitcode=0, **kwargs):
-        if 'daemon' in kwargs:
-            expect_exit = False
-        return super(ScrubberDaemon, self).start(
-            expect_exit=expect_exit,
-            expected_exitcode=expected_exitcode,
-            **kwargs)
-
-
 class FunctionalTest(test_utils.BaseTestCase):
 
     """
@@ -735,10 +679,6 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         self.api_protocol = 'http'
         self.api_port, api_sock = test_utils.get_unused_port_and_socket()
-        # NOTE: Scrubber is enabled by default for the functional tests.
-        # Please disable it by explicitly setting 'self.include_scrubber' to
-        # False in the test SetUps that do not require Scrubber to run.
-        self.include_scrubber = True
 
         # The clients will try to connect to this address. Let's make sure
         # we're not using the default '0.0.0.0'
@@ -763,10 +703,7 @@ class FunctionalTest(test_utils.BaseTestCase):
                                     self.policy_file,
                                     sock=api_sock)
 
-        self.scrubber_daemon = ScrubberDaemon(self.test_dir, self.policy_file)
-
-        self.pid_files = [self.api_server.pid_file,
-                          self.scrubber_daemon.pid_file]
+        self.pid_files = [self.api_server.pid_file]
         self.files_to_destroy = []
         self.launched_servers = []
         # Keep track of servers we've logged so we don't double-log them.
@@ -830,8 +767,7 @@ class FunctionalTest(test_utils.BaseTestCase):
         # server is dead.  This eliminates the possibility of a race
         # between a child process listening on a port actually dying
         # and a new process being started
-        servers = [self.api_server,
-                   self.scrubber_daemon]
+        servers = [self.api_server]
         for s in servers:
             try:
                 s.stop()
@@ -924,12 +860,6 @@ class FunctionalTest(test_utils.BaseTestCase):
         # Start up the API server
 
         self.start_with_retry(self.api_server, 'api_port', 3, **kwargs)
-
-        if self.include_scrubber:
-            exitcode, out, err = self.scrubber_daemon.start(**kwargs)
-            self.assertEqual(0, exitcode,
-                             "Failed to spin up the Scrubber daemon. "
-                             "Got: %s" % err)
 
     def ping_server(self, port):
         """
@@ -1044,8 +974,6 @@ class FunctionalTest(test_utils.BaseTestCase):
 
         # Spin down the API server
         self.stop_server(self.api_server)
-        if self.include_scrubber:
-            self.stop_server(self.scrubber_daemon)
 
     def copy_data_file(self, file_name, dst_dir):
         src_file_name = os.path.join('glance/tests/etc', file_name)
@@ -1081,10 +1009,6 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
 
         self.api_protocol = 'http'
         self.api_port, api_sock = test_utils.get_unused_port_and_socket()
-        # NOTE: Scrubber is enabled by default for the functional tests.
-        # Please disable it by explicitly setting 'self.include_scrubber' to
-        # False in the test SetUps that do not require Scrubber to run.
-        self.include_scrubber = True
 
         self.tracecmd = tracecmd_osmap.get(platform.system())
 
@@ -1103,10 +1027,7 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         self.api_server_multiple_backend = ApiServerForMultipleBackend(
             self.test_dir, self.api_port, self.policy_file, sock=api_sock)
 
-        self.scrubber_daemon = ScrubberDaemon(self.test_dir, self.policy_file)
-
-        self.pid_files = [self.api_server_multiple_backend.pid_file,
-                          self.scrubber_daemon.pid_file]
+        self.pid_files = [self.api_server_multiple_backend.pid_file]
         self.files_to_destroy = []
         self.launched_servers = []
         # Keep track of servers we've logged so we don't double-log them.
@@ -1172,8 +1093,7 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         # server is dead.  This eliminates the possibility of a race
         # between a child process listening on a port actually dying
         # and a new process being started
-        servers = [self.api_server_multiple_backend,
-                   self.scrubber_daemon]
+        servers = [self.api_server_multiple_backend]
         for s in servers:
             try:
                 s.stop()
@@ -1267,12 +1187,6 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
 
         self.start_with_retry(self.api_server_multiple_backend,
                               'api_port', 3, **kwargs)
-
-        if self.include_scrubber:
-            exitcode, out, err = self.scrubber_daemon.start(**kwargs)
-            self.assertEqual(0, exitcode,
-                             "Failed to spin up the Scrubber daemon. "
-                             "Got: %s" % err)
 
     def ping_server(self, port):
         """
@@ -1387,8 +1301,6 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
 
         # Spin down the API
         self.stop_server(self.api_server_multiple_backend)
-        if self.include_scrubber:
-            self.stop_server(self.scrubber_daemon)
 
     def copy_data_file(self, file_name, dst_dir):
         src_file_name = os.path.join('glance/tests/etc', file_name)

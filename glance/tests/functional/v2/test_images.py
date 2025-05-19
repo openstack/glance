@@ -2501,7 +2501,6 @@ class TestImages(functional.FunctionalTest):
     def setUp(self):
         super(TestImages, self).setUp()
         self.cleanup()
-        self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
@@ -3567,7 +3566,6 @@ class TestImagesIPv6(functional.FunctionalTest):
         # Setting up monkey patch (2), after object is ready...
         self.ping_server_ipv4 = self.ping_server
         self.ping_server = self.ping_server_ipv6
-        self.include_scrubber = False
 
     def tearDown(self):
         # Cleaning up monkey patch (2).
@@ -3867,7 +3865,6 @@ class TestImageMembers(functional.FunctionalTest):
     def setUp(self):
         super(TestImageMembers, self).setUp()
         self.cleanup()
-        self.include_scrubber = False
         self.api_server.deployment_flavor = 'fakeauth'
         self.start_servers(**self.__dict__.copy())
 
@@ -4244,7 +4241,6 @@ class TestQuotas(functional.FunctionalTest):
     def setUp(self):
         super(TestQuotas, self).setUp()
         self.cleanup()
-        self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
         self.user_storage_quota = 100
         self.start_servers(**self.__dict__.copy())
@@ -4318,7 +4314,6 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
     def setUp(self):
         super(TestImagesMultipleBackend, self).setUp()
         self.cleanup()
-        self.include_scrubber = False
         self.api_server_multiple_backend.deployment_flavor = 'noauth'
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
@@ -6173,7 +6168,6 @@ class TestMultiStoreImageMembers(functional.MultipleBackendFunctionalTest):
     def setUp(self):
         super(TestMultiStoreImageMembers, self).setUp()
         self.cleanup()
-        self.include_scrubber = False
         self.api_server_multiple_backend.deployment_flavor = 'noauth'
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,

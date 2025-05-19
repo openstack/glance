@@ -47,7 +47,6 @@ class TestReload(functional.FunctionalTest):
         super(TestReload, self).setUp()
         self.cleanup()
         self.workers = 1
-        self.include_scrubber = False
 
     def tearDown(self):
         if not self.disabled:
