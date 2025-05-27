@@ -196,13 +196,14 @@ def wait_for_copying(request_path, request_headers, stores=[],
 
 
 def poll_entity(url, headers, callback, max_sec=10, delay_sec=0.2,
-                require_success=True):
+                require_success=True, api_get_method=None):
     """Poll a given URL passing the parsed entity to a callback.
 
     This is a utility method that repeatedly GETs a URL, and calls
     a callback with the result. The callback determines if we should
     keep polling by returning True (up to the timeout).
 
+    :param api_get_method: GET call for the API
     :param url: The url to fetch
     :param headers: The request headers to use for the fetch
     :param callback: A function that takes the parsed entity and is expected
@@ -217,11 +218,16 @@ def poll_entity(url, headers, callback, max_sec=10, delay_sec=0.2,
     timer.start()
 
     while not timer.expired():
-        resp = requests.get(url, headers=headers)
+        if api_get_method:
+            resp = api_get_method(url, headers=headers)
+            entity = jsonutils.loads(resp.text)
+        else:
+            resp = requests.get(url, headers=headers)
+            entity = resp.json()
         if require_success and resp.status_code != http.OK:
             raise Exception(
                 'Received %i response from server' % resp.status_code)
-        entity = resp.json()
+
         keep_polling = callback(entity)
         if keep_polling is not True:
             return keep_polling
