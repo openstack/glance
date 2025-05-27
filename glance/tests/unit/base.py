@@ -87,11 +87,14 @@ class MultiStoreClearingUnitTest(test_utils.BaseTestCase):
                                       'readonly_store': 'http',
                                       'fast-cinder': 'cinder',
                                       'fast-rbd': 'rbd', 'reliable': 'swift'})
-        store.register_store_opts(CONF)
+        store.register_store_opts(
+            CONF, reserved_stores={'os_glance_tasks_store': 'file'})
 
         self.config(default_backend='fast',
                     group='glance_store')
 
+        self.config(filesystem_store_datadir=self.test_dir,
+                    group='os_glance_tasks_store')
         self.config(filesystem_store_datadir=self.test_dir,
                     filesystem_thin_provisioning=False,
                     filesystem_store_chunk_size=65536,
