@@ -32,6 +32,7 @@ from oslo_serialization import jsonutils
 from oslo_utils import units
 import requests
 
+from glance.common import utils
 from glance.common import wsgi
 from glance.quota import keystone as ks_quota
 from glance.tests import functional
@@ -72,6 +73,9 @@ class TestImages(functional.FunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
+        node_staging_uri = 'file://%s' % os.path.join(self.test_dir, 'staging')
+        utils.safe_mkdirs(node_staging_uri[7:])
+        self.config(node_staging_uri=node_staging_uri)
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
                                                "foo_image%d" % i)

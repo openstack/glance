@@ -38,6 +38,7 @@ from glance.common import store_utils
 from glance import domain
 import glance.notifier
 import glance.schema
+from glance import task_cancellation_tracker as tracker
 from glance.tests.unit import base
 from glance.tests.unit.keymgr import fake as fake_keymgr
 import glance.tests.unit.utils as unit_test_utils
@@ -3167,6 +3168,58 @@ class TestImagesController(base.IsolatedUnitTest):
         self.assertTrue(deleted_img['deleted'])
         self.assertEqual('deleted', deleted_img['status'])
         self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
+
+    def test_delete_cancels_operation(self):
+        request = unit_test_utils.get_fake_request()
+        # Set up an image with an import task operation id
+        operation_id = 'fake-operation-id'
+        hash_op_host = 'https://glance-worker1.openstack.org'
+        extra_props = {
+            'os_glance_import_task': operation_id,
+            'os_glance_hash_op_host': hash_op_host,
+        }
+        self.db.image_update(None, UUID1, {'properties': extra_props})
+        self.assertIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
+
+        with mock.patch.object(
+                self.controller, 'is_proxyable') as mock_is_proxyable:
+            mock_is_proxyable.return_value = False
+            with mock.patch.object(tracker, 'cancel_operation') as mock_cancel:
+                self.controller.delete(request, UUID1)
+                mock_cancel.assert_called_once_with(operation_id)
+
+        deleted_img = self.db.image_get(
+            request.context, UUID1, force_show_deleted=True)
+        self.assertTrue(deleted_img['deleted'])
+        self.assertEqual('deleted', deleted_img['status'])
+        self.assertNotIn('%s/%s' % (BASE_URI, UUID1), self.store.data)
+
+    @mock.patch('glance.context.get_ksa_client')
+    def test_image_delete_proxies_hash_op_host(self, mock_client):
+        # Make sure that we proxy to the remote side when we need to
+        self.config(
+            worker_self_reference_url='http://glance-worker2.openstack.org')
+        request = unit_test_utils.get_fake_request(
+            '/v2/images/%s' % UUID4, method='DELETE')
+        with mock.patch.object(
+                glance.notifier.ImageRepoProxy, 'get') as m_get:
+            m_get.return_value = FakeImage(status='uploading')
+            m_get.return_value.extra_properties['os_glance_hash_op_host'] = (
+                'https://glance-worker1.openstack.org')
+            remote_hdrs = {'x-openstack-request-id': 'remote-req'}
+            mock_resp = mock.MagicMock(location='/target',
+                                       status_code=202,
+                                       reason='Thanks',
+                                       headers=remote_hdrs)
+            mock_client.return_value.delete.return_value = mock_resp
+            self.controller.delete(request, UUID4)
+
+            # Make sure we called the expected remote URL and passed
+            # the body.
+            mock_client.return_value.delete.assert_called_once_with(
+                ('https://glance-worker1.openstack.org'
+                 '/v2/images/%s') % UUID4,
+                json=None, timeout=60)
 
     def test_delete_not_allowed_by_policy(self):
         request = unit_test_utils.get_fake_request()

@@ -24,6 +24,7 @@ from oslo_utils import units
 import glance.async_.flows.location_import as import_flow
 from glance.common import exception
 from glance import context
+from glance import task_cancellation_tracker as task_tracker
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
 
@@ -58,7 +59,10 @@ class TestCalculateHashTask(test_utils.BaseTestCase):
                                               project_id=TENANT1,
                                               overwrite=False)
 
-    def test_execute_calculate_hash(self):
+    @mock.patch.object(task_tracker, 'signal_finished')
+    @mock.patch.object(task_tracker, 'register_operation')
+    def test_execute_calculate_hash(self, mock_register_operation,
+                                    mock_signal_finished):
         self.loc_url = '%s/fake_location_1' % (BASE_URI)
         self.image.status = 'queued'
         hashing_algo = CONF.hashing_algorithm
@@ -85,7 +89,54 @@ class TestCalculateHashTask(test_utils.BaseTestCase):
         self.assertIsNotNone(self.image.os_hash_value)
         self.assertEqual('active', self.image.status)
 
-    def test_hash_calculation_retry_count(self):
+    @mock.patch.object(task_tracker, 'register_operation')
+    def test_execute_cancel_hash_op(self, mock_register_operation):
+        self.loc_url = '%s/fake_location_1' % (BASE_URI)
+        self.image.status = 'queued'
+        hashing_algo = CONF.hashing_algorithm
+
+        location_update = import_flow._UpdateLocationTask(
+            TASK_ID1, TASK_TYPE, self.image_repo, IMAGE_ID1, self.loc_url,
+            self.context)
+
+        location_update.execute()
+        self.assertEqual(1, self.image.locations.append.call_count)
+
+        set_image_active = import_flow._SetImageToActiveTask(
+            TASK_ID1, TASK_TYPE, self.image_repo, IMAGE_ID1)
+        set_image_active.execute()
+        self.assertEqual('active', self.image.status)
+
+        # Simulate cancellation
+        expected_size = 4 * units.Ki
+        expected_data = b"*" * expected_size
+        self.image.get_data.return_value = io.BytesIO(expected_data)
+        self.image.checksum = None
+        self.image.os_hash_value = None
+        hash_calculation = import_flow._CalculateHash(TASK_ID1, TASK_TYPE,
+                                                      self.image_repo,
+                                                      IMAGE_ID1,
+                                                      hashing_algo)
+
+        with mock.patch.object(
+                task_tracker, 'is_canceled') as mock_is_canceled:
+            mock_is_canceled.return_value = True
+            with mock.patch.object(
+                    import_flow.LOG, 'debug') as mock_debug:
+                self.assertRaises(import_flow._HashCalculationCanceled,
+                                  hash_calculation.execute)
+                mock_debug.assert_any_call('Hash calculation cancelled: %s',
+                                           mock.ANY)
+
+                mock_register_operation.assert_called()
+                self.assertIsNone(self.image.checksum)
+                self.assertIsNone(self.image.os_hash_value)
+                self.assertEqual('active', self.image.status)
+
+    @mock.patch.object(task_tracker, 'signal_finished')
+    @mock.patch.object(task_tracker, 'register_operation')
+    def test_hash_calculation_retry_count(self, mock_register_operation,
+                                          mock_signal_finished):
         hashing_algo = CONF.hashing_algorithm
         self.image.checksum = None
         self.image.os_hash_value = None
@@ -109,7 +160,10 @@ class TestCalculateHashTask(test_utils.BaseTestCase):
         hash_calculation.revert(None)
         self.assertIsNone(self.image.os_hash_algo)
 
-    def test_execute_hash_calculation_fails_without_validation_data(self):
+    @mock.patch.object(task_tracker, 'signal_finished')
+    @mock.patch.object(task_tracker, 'register_operation')
+    def test_execute_hash_calculation_fails_without_validation_data(
+            self, mock_register_operation, mock_signal_finished):
         self.loc_url = '%s/fake_location_1' % (BASE_URI)
         self.image.status = 'queued'
         self.hash_task_input.update(loc_url=self.loc_url)
@@ -173,7 +227,10 @@ class TestCalculateHashTask(test_utils.BaseTestCase):
         self.assertEqual('active', self.image.status)
         self.assertEqual(1, len(self.image.locations))
 
-    def test_execute_hash_calculation_fails_for_store_other_that_http(self):
+    @mock.patch.object(task_tracker, 'signal_finished')
+    @mock.patch.object(task_tracker, 'register_operation')
+    def test_execute_hash_calculation_fails_for_store_other_that_http(
+            self, mock_register_operation, mock_signal_finished):
         self.loc_url = "cinder://image/fake_location"
         self.hash_task_input.update(loc_url=self.loc_url)
         self.image.status = 'queued'
@@ -215,7 +272,10 @@ class TestCalculateHashTask(test_utils.BaseTestCase):
         self.assertEqual('queued', self.image.status)
         self.assertEqual(0, len(self.image.locations))
 
-    def test_execute_hash_calculation_fails_if_image_data_deleted(self):
+    @mock.patch.object(task_tracker, 'signal_finished')
+    @mock.patch.object(task_tracker, 'register_operation')
+    def test_execute_hash_calculation_fails_if_image_data_deleted(
+            self, mock_register_operation, mock_signal_finished):
         self.loc_url = '%s/fake_location_1' % (BASE_URI)
         self.image.status = 'queued'
         self.hash_task_input.update(loc_url=self.loc_url)
@@ -241,10 +301,6 @@ class TestCalculateHashTask(test_utils.BaseTestCase):
                                                       hashing_algo)
         self.image.get_data.side_effect = store.exceptions.NotFound
         hash_calculation.execute()
-        # Check if Image delete and image_repo.delete has been called
-        # if exception raised
-        self.image.delete.assert_called_once()
-        self.image_repo.remove.assert_called_once_with(self.image)
 
 
 class TestVerifyValidationDataTask(test_utils.BaseTestCase):
@@ -262,7 +318,13 @@ class TestVerifyValidationDataTask(test_utils.BaseTestCase):
         self.image.container_format = 'bare'
         self.config(do_secure_hash=True)
 
-    def test_execute_with_valid_validation_data(self):
+    @mock.patch.object(task_tracker, 'is_canceled')
+    @mock.patch.object(task_tracker, 'signal_finished')
+    @mock.patch.object(task_tracker, 'register_operation')
+    def test_execute_with_valid_validation_data(self, mock_register_operation,
+                                                mock_signal_finished,
+                                                mock_is_canceled):
+        mock_is_canceled.return_value = False
         url = '%s/fake_location_1' % BASE_URI
         self.image.status = 'queued'
         self.image.locations = {"url": url, "metadata": {"store": "foo"}}
@@ -302,7 +364,13 @@ class TestVerifyValidationDataTask(test_utils.BaseTestCase):
         set_image_active.execute()
         self.assertEqual('active', self.image.status)
 
-    def test_execute_with_os_hash_value_other_than_512(self):
+    @mock.patch.object(task_tracker, 'is_canceled')
+    @mock.patch.object(task_tracker, 'signal_finished')
+    @mock.patch.object(task_tracker, 'register_operation')
+    def test_execute_with_os_hash_value_other_than_512(
+            self, mock_register_operation, mock_signal_finished,
+            mock_is_canceled):
+        mock_is_canceled.return_value = False
         url = '%s/fake_location_1' % BASE_URI
         self.image.status = 'queued'
         self.image.locations = {"url": url, "metadata": {"store": "foo"}}
@@ -340,7 +408,10 @@ class TestVerifyValidationDataTask(test_utils.BaseTestCase):
         set_image_active.execute()
         self.assertEqual('active', self.image.status)
 
-    def test_execute_with_invalid_validation_data(self):
+    @mock.patch.object(task_tracker, 'signal_finished')
+    @mock.patch.object(task_tracker, 'register_operation')
+    def test_execute_with_invalid_validation_data(
+            self, mock_register_operation, mock_signal_finished):
         url = '%s/fake_location_1' % BASE_URI
         self.image.status = 'queued'
         self.image.locations = [{"url": url, "metadata": {"store": "foo"}}]

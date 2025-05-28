@@ -18,6 +18,7 @@ import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import encodeutils
+from oslo_utils import excutils
 from taskflow.patterns import linear_flow as lf
 from taskflow import retry
 from taskflow import task
@@ -26,6 +27,7 @@ import glance.async_.flows.api_image_import as image_import
 from glance.common import exception
 from glance.common import store_utils
 from glance.i18n import _, _LW
+from glance import task_cancellation_tracker as tracker
 
 
 LOG = logging.getLogger(__name__)
@@ -42,6 +44,12 @@ class _InvalidLocation(exception.GlanceException):
 
     def __init__(self, message):
         super(_InvalidLocation, self).__init__(message)
+
+
+class _HashCalculationCanceled(exception.GlanceException):
+
+    def __init__(self, message):
+        super(_HashCalculationCanceled, self).__init__(message)
 
 
 class _CalculateHash(task.Task):
@@ -61,6 +69,10 @@ class _CalculateHash(task.Task):
         current_os_hash_value = hashlib.new(self.hashing_algo)
         current_checksum = hashlib.md5(usedforsecurity=False)
         for chunk in image.get_data():
+            if tracker.is_canceled(self.task_id):
+                raise _HashCalculationCanceled(
+                    _('Hash calculation for image %s has been '
+                      'canceled') % self.image_id)
             if chunk is None:
                 break
             current_checksum.update(chunk)
@@ -69,12 +81,17 @@ class _CalculateHash(task.Task):
         image.os_hash_value = current_os_hash_value.hexdigest()
 
     def _set_checksum_and_hash(self, image):
+        tracker.register_operation(self.task_id)
         retries = 0
         while retries <= CONF.http_retries and image.os_hash_value is None:
             retries += 1
             try:
                 self._calculate_hash(image)
                 self.image_repo.save(image)
+            except _HashCalculationCanceled as e:
+                with excutils.save_and_reraise_exception():
+                    LOG.debug('Hash calculation cancelled: %s',
+                              encodeutils.exception_to_unicode(e))
             except IOError as e:
                 LOG.debug('[%i/%i] Hash calculation failed due to %s',
                           retries, CONF.http_retries,
@@ -92,26 +109,25 @@ class _CalculateHash(task.Task):
                                    "data") % self.image_id)
                         LOG.warning(msg)
             except store.exceptions.NotFound:
-                # NOTE(pdeore): This can happen if image delete attempted
-                # when hash calculation is in progress, which deletes the
-                # image data from backend(specially rbd) but image remains
-                # in 'active' state.
-                # see: https://bugs.launchpad.net/glance/+bug/2045769
-                # Once this ceph side issue is fixed, we'll keep only the
-                # warning message here and will remove the deletion part
-                # which is a temporary workaround.
                 LOG.debug(_('Failed to calculate checksum of %(image_id)s '
                             'as image data has been deleted from the '
                             'backend'), {'image_id': self.image_id})
-                image.delete()
-                self.image_repo.remove(image)
-                break
+            finally:
+                tracker.signal_finished(self.task_id)
+                image.extra_properties.pop('os_glance_hash_op_host', None)
+                self.image_repo.save(image)
 
     def execute(self):
         image = self.image_repo.get(self.image_id)
         if image.status == 'queued':
             image.status = self.image_status
         image.os_hash_algo = self.hashing_algo
+        # NOTE(abhishekk): Record this worker's
+        # worker_self_reference_url in the image metadata, so we
+        # know who is calculating the checksum and hash.
+        self_url = CONF.worker_self_reference_url or CONF.public_endpoint
+        if self_url:
+            image.extra_properties['os_glance_hash_op_host'] = self_url
         self.image_repo.save(image)
         self._set_checksum_and_hash(image)
 
@@ -121,6 +137,7 @@ class _CalculateHash(task.Task):
            state
         """
         try:
+            tracker.signal_finished(self.task_id)
             image = self.image_repo.get(self.image_id)
             if image.status == 'importing':
                 if not image.locations[0]['url'].startswith("http"):
