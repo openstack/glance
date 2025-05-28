@@ -1455,6 +1455,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                     group='glance_store')
         node_staging_uri = 'file://%s' % os.path.join(
             self.test_dir, 'staging')
+        utils.safe_mkdirs(node_staging_uri[7:])
         self.config(node_staging_uri=node_staging_uri)
         self.config(default_store='file', group='glance_store')
         glance_store.create_stores(CONF)

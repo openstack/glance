@@ -47,6 +47,7 @@ from glance.i18n import _, _LE, _LI, _LW
 import glance.notifier
 from glance.quota import keystone as ks_quota
 import glance.schema
+from glance import task_cancellation_tracker as tracker
 
 LOG = logging.getLogger(__name__)
 
@@ -56,6 +57,8 @@ CONF.import_opt('container_formats', 'glance.common.config',
                 group='image_format')
 CONF.import_opt('show_multiple_locations', 'glance.common.config')
 CONF.import_opt('hashing_algorithm', 'glance.common.config')
+
+PROXYABLE_HOSTS = ['os_glance_stage_host', 'os_glance_hash_op_host']
 
 
 def proxy_response_error(orig_code, orig_explanation):
@@ -237,12 +240,13 @@ class ImagesController(object):
                       {'image': image.image_id, 'task': task.task_id,
                        'keys': ','.join(changed)})
 
-    def _proxy_request_to_stage_host(self, image, req, body=None):
-        """Proxy a request to a staging host.
+    def _proxy_request_to_host(self, image, req, body=None):
+        """Proxy a request to a respected host.
 
-        When an image was staged on another worker, that worker may record its
-        worker_self_reference_url on the image, indicating that other workers
-        should proxy requests to it while the image is staged. This method
+        When an image was staged on another worker or Location add workflow
+        having hash calculation operation is in progress, that worker may
+        record its worker_self_reference_url on the image, indicating that
+        other workers should proxy requests to it. This method
         replays our current request against the remote host, returns the
         result, and performs any response error translation required.
 
@@ -258,13 +262,12 @@ class ImagesController(object):
                  remote host.
         """
 
-        stage_host = image.extra_properties['os_glance_stage_host']
+        host = self.is_proxyable(image)
         LOG.info(_LI('Proxying %s request to host %s '
-                     'which has image staged'),
-                 req.method, stage_host)
+                     'which has image.'),
+                 req.method, host)
         client = glance_context.get_ksa_client(req.context)
-        url = '%s%s' % (stage_host, req.path)
-        req_id_hdr = 'x-openstack-request-id'
+        url = '%s%s' % (host, req.path)
         request_method = getattr(client, req.method.lower())
         try:
             r = request_method(url, json=body, timeout=60)
@@ -294,17 +297,18 @@ class ImagesController(object):
         return CONF.worker_self_reference_url or CONF.public_endpoint
 
     def is_proxyable(self, image):
-        """Decide if an action is proxyable to a stage host.
-
-        If the image has a staging host recorded with a URL that does not match
-        ours, then we can proxy our request to that host.
+        """
+        Return the host from extra_properties for any key in PROXYABLE_HOSTS
+        if it is not a local host.
 
         :param image: The Image from the repo
-        :returns: bool indicating proxyable status
+        :returns: host string if proxyable, else None
         """
-        return (
-            'os_glance_stage_host' in image.extra_properties and
-            image.extra_properties['os_glance_stage_host'] != self.self_url)
+        for host_key in PROXYABLE_HOSTS:
+            host = image.extra_properties.get(host_key)
+            if host and host != self.self_url:
+                return host
+        return None
 
     @utils.mutating
     def import_image(self, req, image_id, body):
@@ -435,7 +439,7 @@ class ImagesController(object):
             # NOTE(danms): Image is staged on another worker; proxy the
             # import request to that worker with the user's token, as if
             # they had called it themselves.
-            return self._proxy_request_to_stage_host(image, req, body)
+            return self._proxy_request_to_host(image, req, body)
 
         task_input = {'image_id': image_id,
                       'import_req': body,
@@ -834,7 +838,7 @@ class ImagesController(object):
         :raises: webob.exc.HTTPClientError if so raised by the remote server.
         """
         try:
-            self._proxy_request_to_stage_host(image, req)
+            self._proxy_request_to_host(image, req)
         except webob.exc.HTTPServerError:
             # This means we would have raised a 50x error, indicating
             # we did not succeed with the request to the remote host.
@@ -866,6 +870,15 @@ class ImagesController(object):
                 if image is None:
                     # Delete was proxied, so we are done here.
                     return
+
+            # NOTE(abhishekk): Here we can cancel the hash calculation
+            # operation and signal exit to the worker that is performing
+            # the hash
+            operation_id = image.extra_properties.get('os_glance_import_task')
+            os_hashing_host = image.extra_properties.get(
+                'os_glance_hash_op_host')
+            if operation_id and os_hashing_host:
+                tracker.cancel_operation(operation_id)
 
             # NOTE(abhishekk): Delete the data from staging area
             if CONF.enabled_backends:
@@ -1697,7 +1710,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 class ResponseSerializer(wsgi.JSONResponseSerializer):
     # These properties will be filtered out from the response and not
     # exposed to the client
-    _hidden_properties = ['os_glance_stage_host']
+    _hidden_properties = ['os_glance_stage_host', 'os_glance_hash_op_host']
 
     def __init__(self, schema=None, location_schema=None):
         super(ResponseSerializer, self).__init__()
