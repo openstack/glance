@@ -20,13 +20,13 @@ from unittest.mock import patch
 import uuid
 
 from oslo_limit import exception as ol_exc
+from oslo_limit import fixture as ol_fixture
 from oslo_utils import units
 
 from glance.common import exception
 from glance.common import store_utils
 import glance.quota
 from glance.quota import keystone as ks_quota
-from glance.tests.unit import fixtures as glance_fixtures
 from glance.tests.unit import utils as unit_test_utils
 from glance.tests import utils as test_utils
 
@@ -760,11 +760,11 @@ class TestImageKeystoneQuota(test_utils.BaseTestCase):
     def setUp(self):
         super(TestImageKeystoneQuota, self).setUp()
 
-        default_limits = {
+        reglimits = {
             ks_quota.QUOTA_IMAGE_SIZE_TOTAL: 500,
             'another_limit': 2,
         }
-        ksqf = glance_fixtures.KeystoneQuotaFixture(**default_limits)
+        ksqf = ol_fixture.LimitFixture(reglimits, {})
 
         self.useFixture(ksqf)
 

@@ -19,7 +19,6 @@ import warnings
 
 import fixtures as pyfixtures
 from oslo_db import warning as oslo_db_warning
-from oslo_limit import fixture as ol_fixture
 from sqlalchemy import exc as sqla_exc
 
 _TRUE_VALUES = ('True', 'true', '1', 'yes')
@@ -186,8 +185,3 @@ class WarningsFixture(pyfixtures.Fixture):
 
     def _reset_warning_filters(self):
         warnings.filters[:] = self._original_warning_filters
-
-
-class KeystoneQuotaFixture(ol_fixture.LimitFixture):
-    def __init__(self, **defaults):
-        super(KeystoneQuotaFixture, self).__init__(defaults, {})
