@@ -619,26 +619,8 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
     """Tests image caching when SQLite is used in cache"""
 
     def setUp(self):
-        """
-        Test to see if the pre-requisites for the image cache
-        are working (python-sqlite3 installed)
-        """
         super(TestImageCacheSqlite, self).setUp()
 
-        if getattr(self, 'disable', False):
-            return
-
-        if not getattr(self, 'inited', False):
-            try:
-                import sqlite3  # noqa
-            except ImportError:
-                self.inited = True
-                self.disabled = True
-                self.disabled_message = ("python-sqlite3 not installed.")
-                return
-
-        self.inited = True
-        self.disabled = False
         self.cache_dir = self.useFixture(fixtures.TempDir()).path
         self.config(image_cache_dir=self.cache_dir,
                     image_cache_driver='sqlite',

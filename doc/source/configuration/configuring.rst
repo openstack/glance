@@ -1742,10 +1742,9 @@ One main configuration file option affects the image cache.
   be :ref:`migrated <sqlite-to-centralized_db-migration>` to
   central database on service restart during upgrade process.
 
-  The ``sqlite`` cache driver has no special dependencies, other
-  than the ``python-sqlite3`` library, which is installed on virtually
-  all operating systems with modern versions of Python. It stores
-  information about the cached files in a SQLite database.
+  The ``sqlite`` cache driver has no special dependencies, and uses
+  the built-in ``sqlite3`` module. It stores information about the cached
+  files in a SQLite database.
 
   **NOTE**
   In Caracal release ``sqlite`` cache driver has been deprecated and will
