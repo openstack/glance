@@ -22,7 +22,6 @@ import time
 
 from oslo_serialization import jsonutils
 from oslo_utils.fixture import uuidsentinel as uuids
-import requests
 
 from glance.common import wsgi
 from glance.tests import functional
@@ -79,28 +78,25 @@ class StagingCleanupBase:
         staging = os.path.join(self.test_dir, 'staging')
 
         # Start the server
-        self.start_servers(**self.__dict__.copy())
+        self.start_server()
 
         # Create an image
-        path = self._url('/v2/images')
+        path = '/v2/images'
         headers = self._headers({'content-type': 'application/json'})
-        data = jsonutils.dumps({'name': 'image-1', 'type': 'kernel',
-                                'disk_format': 'aki',
-                                'container_format': 'aki'})
-        response = requests.post(path, headers=headers, data=data)
+        data = {'name': 'image-1', 'type': 'kernel',
+                'disk_format': 'aki',
+                'container_format': 'aki'}
+        response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.CREATED, response.status_code)
         image = jsonutils.loads(response.text)
         image_id = image['id']
 
         # Stage data for the image
-        path = self._url('/v2/images/%s/stage' % image_id)
+        path = '/v2/images/%s/stage' % image_id
         headers = self._headers({'Content-Type': 'application/octet-stream'})
         image_data = b'ZZZZZ'
-        response = requests.put(path, headers=headers, data=image_data)
+        response = self.api_put(path, headers=headers, data=image_data)
         self.assertEqual(http.NO_CONTENT, response.status_code)
-
-        # Stop the server
-        self.my_api_server.stop()
 
         # Create more files in staging, one unrecognized one, and one
         # uuid that matches nothing in the database, and some residue
@@ -114,18 +110,13 @@ class StagingCleanupBase:
         open(converting_fn, 'w')
         open(decompressing_fn, 'w')
 
-        # Restart the server. We set "needs_database" to False here to avoid
-        # recreating the database during startup, thus causing the server to
-        # think there are no valid images and deleting everything.
-        self.my_api_server.needs_database = False
-        self.start_with_retry(self.my_api_server,
-                              'api_port', 3, **self.__dict__.copy())
+        self.start_server(run_staging_cleaner=True)
 
         # Poll to give it time to come up and do the work. Use the presence
         # of the extra files to determine if the cleanup has run yet.
         for i in range(0, 10):
             try:
-                requests.get(self._url('/v2/images'))
+                self.api_get('/v2/images')
             except Exception:
                 # Not even answering queries yet
                 pass
@@ -148,10 +139,8 @@ class StagingCleanupBase:
         # ... and the residue of the decompression.
         self.assertFalse(os.path.exists(decompressing_fn))
 
-        self.stop_servers()
 
-
-class TestStagingCleanupMultistore(functional.MultipleBackendFunctionalTest,
+class TestStagingCleanupMultistore(functional.SynchronousAPIBase,
                                    StagingCleanupBase):
     """Test for staging store cleanup on API server startup.
 
@@ -159,17 +148,13 @@ class TestStagingCleanupMultistore(functional.MultipleBackendFunctionalTest,
     """
     def setUp(self):
         super(TestStagingCleanupMultistore, self).setUp()
-        self.my_api_server = self.api_server_multiple_backend
-        self._configure_api_server()
 
 
-class TestStagingCleanupSingleStore(functional.FunctionalTest,
+class TestStagingCleanupSingleStore(functional.SynchronousAPIBase,
                                     StagingCleanupBase):
     """Test for staging store cleanup on API server startup.
 
     This tests the single store case.
     """
     def setUp(self):
-        super(TestStagingCleanupSingleStore, self).setUp()
-        self.my_api_server = self.api_server
-        self._configure_api_server()
+        super(TestStagingCleanupSingleStore, self).setUp(single_store=True)
