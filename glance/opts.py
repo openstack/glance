@@ -85,7 +85,7 @@ _image_import_opts = [
      glance.async_.flows.api_image_import.api_import_opts),
     ('import_filtering_opts',
      glance.async_.flows._internal_plugins.import_filtering_opts),
-    ('glance_download_opts',
+    ('glance_download_properties',
      glance.async_.flows.api_image_import.glance_download_opts)
 ]
 
