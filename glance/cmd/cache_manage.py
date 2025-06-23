@@ -133,7 +133,7 @@ def list_cached(args):
         pretty_table.add_row((
             image['image_id'],
             last_accessed,
-            datetime.datetime.utcfromtimestamp(
+            datetime.datetime.fromtimestamp(
                 image['last_modified'], tz=datetime.timezone.utc).replace(
                     tzinfo=None).isoformat(),
             image['size'],
