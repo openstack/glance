@@ -111,6 +111,62 @@ operators to enable multiple stores support.
        operator can add meaningful description about that store. This
        description is displayed in the GET /v2/info/stores response.
 
+Backend Defaults
+~~~~~~~~~~~~~~~~
+
+Glance offers a way to minimize the configuration when configuring a
+multi-store deployment with the help of ``[backend_defaults]`` section.
+We can add all the common configuration options in the ``[backend_defaults]``
+group which can reduce the configuration effort and make the backend
+sections more readable.
+
+Suppose we have two ceph clusters configured as two different backends in
+glance.
+
+  .. code-block:: ini
+
+        [fast]
+        store_description = "Fast rbd backend"
+        rbd_store_chunk_size = 8
+        rbd_store_pool = images
+        rbd_store_user = admin
+        rbd_store_ceph_conf = /etc/ceph/ceph.conf
+        rados_connect_timeout = 0
+
+        [cheap]
+        store_description = "Cheap rbd backend"
+        rbd_store_chunk_size = 8
+        rbd_store_pool = images
+        rbd_store_user = admin
+        rbd_store_ceph_conf = /etc/ceph/ceph1.conf
+        rados_connect_timeout = 0
+
+We can notice that most of the configuration options are repeated in both
+the backend groups and hence are redundant.
+By using the ``[backend_defaults]`` section, we can minimize the configuration
+file like following:
+
+  .. code-block:: ini
+
+        [backend_defaults]
+        rbd_store_chunk_size = 8
+        rbd_store_pool = images
+        rbd_store_user = admin
+        rados_connect_timeout = 0
+
+        [fast]
+        store_description = "Fast rbd backend"
+        rbd_store_ceph_conf = /etc/ceph/ceph.conf
+
+        [cheap]
+        store_description = "Cheap rbd backend"
+        rbd_store_ceph_conf = /etc/ceph/ceph1.conf
+
+We can notice that apart from making the configuration file more compact,
+the ``[backend_defaults]`` section also makes backend groups look cleaner
+to make the operator focus on just the relevant information for that
+particular backend.
+
 Store Configuration Issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
