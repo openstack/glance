@@ -453,10 +453,10 @@ class TestImportTask(test_utils.BaseTestCase):
                                               self.task_type)
 
         data = [b"test"]
-
+        image_size = len(b"test")
         store = glance_store.get_store_from_scheme('file')
         path = glance_store.store_add_to_backend(mock.sentinel.image_id, data,
-                                                 mock.sentinel.image_size,
+                                                 image_size,
                                                  store, context=None)[0]
 
         path_wo_scheme = path.split("file://")[1]
