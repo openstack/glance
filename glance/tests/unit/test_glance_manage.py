@@ -32,7 +32,7 @@ class DBCommandsTestCase(test_utils.BaseTestCase):
         super(DBCommandsTestCase, self).setUp()
         self.commands = manage.DbCommands()
         self.context = context.RequestContext(
-            user=USER1, tenant=TENANT1)
+            user_id=USER1, project_id=TENANT1)
 
     @mock.patch.object(db_api, 'purge_deleted_rows')
     @mock.patch.object(context, 'get_admin_context')

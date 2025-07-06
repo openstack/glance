@@ -113,8 +113,8 @@ class ContextMiddleware(BaseContextMiddleware):
 
     def _get_anonymous_context(self):
         kwargs = {
-            'user': None,
-            'tenant': None,
+            'user_id': None,
+            'project_id': None,
             'roles': [],
             'is_admin': False,
             'read_only': True,
@@ -161,8 +161,8 @@ class UnauthenticatedContextMiddleware(BaseContextMiddleware):
     def process_request(self, req):
         """Create a context without an authorized user."""
         kwargs = {
-            'user': None,
-            'tenant': None,
+            'user_id': None,
+            'project_id': None,
             'roles': [],
             'is_admin': True,
         }

@@ -128,8 +128,8 @@ class TestMetadefRepo(test_utils.BaseTestCase):
     def setUp(self):
         super(TestMetadefRepo, self).setUp()
         self.db = unit_test_utils.FakeDB(initialize=False)
-        self.context = glance.context.RequestContext(user=USER1,
-                                                     tenant=TENANT1)
+        self.context = glance.context.RequestContext(user_id=USER1,
+                                                     project_id=TENANT1)
         self.namespace_repo = glance.db.MetadefNamespaceRepo(self.context,
                                                              self.db)
         self.property_repo = glance.db.MetadefPropertyRepo(self.context,

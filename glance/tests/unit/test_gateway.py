@@ -104,14 +104,14 @@ class TestGateway(test_utils.BaseTestCase):
         gw = gateway.Gateway(db_api=db_api)
 
         # Get the UUID1 image as TENANT1
-        ctxt = context.RequestContext(tenant=unit_test_utils.TENANT1)
+        ctxt = context.RequestContext(project_id=unit_test_utils.TENANT1)
         repo = gw.get_repo(ctxt)
         image = repo.get(unit_test_utils.UUID1)
         # We own the image, so member is None
         self.assertIsNone(image.member)
 
         # Get the UUID1 image as TENANT2
-        ctxt = context.RequestContext(tenant=unit_test_utils.TENANT2)
+        ctxt = context.RequestContext(project_id=unit_test_utils.TENANT2)
         repo = gw.get_repo(ctxt)
         image = repo.get(unit_test_utils.UUID1)
         # We are a member, so member is our tenant id

@@ -579,21 +579,21 @@ class FakeAuthMiddleware(wsgi.Middleware):
 
     def process_request(self, req):
         auth_token = req.headers.get('X-Auth-Token')
-        user = None
-        tenant = None
+        user_id = None
+        project_id = None
         roles = []
         if auth_token:
-            user, tenant, role = auth_token.split(':')
-            if tenant.lower() == 'none':
-                tenant = None
+            user_id, project_id, role = auth_token.split(':')
+            if project_id.lower() == 'none':
+                project_id = None
             roles = [role]
-            req.headers['X-User-Id'] = user
-            req.headers['X-Tenant-Id'] = tenant
+            req.headers['X-User-Id'] = user_id
+            req.headers['X-Project-Id'] = project_id
             req.headers['X-Roles'] = role
             req.headers['X-Identity-Status'] = 'Confirmed'
         kwargs = {
-            'user': user,
-            'tenant': tenant,
+            'user_id': user_id,
+            'project_id': project_id,
             'roles': roles,
             'is_admin': self.is_admin,
             'auth_token': auth_token,
