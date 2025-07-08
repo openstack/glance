@@ -959,7 +959,7 @@ class TestImagesPolicy(functional.SynchronousAPIBase):
         path = '/v2/images/%s' % image_id
         response = self.api_get(path)
         image = response.json
-        self.assertItemsEqual(['Test_Tag_1', 'Test_Tag_2'], image['tags'])
+        self.assertCountEqual(['Test_Tag_1', 'Test_Tag_2'], image['tags'])
 
         # Now delete tag from image
         path = '/v2/images/%s/tags/Test_Tag_1' % image_id
