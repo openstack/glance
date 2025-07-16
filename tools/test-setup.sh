@@ -25,7 +25,7 @@ function set_conf_line {
             echo '$3' >> $1"
 }
 
-if $(egrep -q "^.*(centos:centos:|cloudlinux:cloudlinux:|redhat:enterprise_linux:)[78].*$" /etc/*release); then
+if $(grep -Eq "^.*(centos:centos:|cloudlinux:cloudlinux:|redhat:enterprise_linux:)[78].*$" /etc/*release); then
     # mysql needs to be started on centos/rhel
     sudo systemctl restart mariadb.service
 
