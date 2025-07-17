@@ -1421,6 +1421,9 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             [filter:fakeauth]
             paste.filter_factory = glance.tests.utils:\
                 FakeAuthMiddleware.factory
+            [filter:cors]
+            paste.filter_factory = oslo_middleware.cors:filter_factory
+            allowed_origin=http://valid.example.com
             [filter:cache]
             paste.filter_factory = glance.api.middleware.cache:\
             CacheFilter.factory
@@ -1429,6 +1432,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             CacheManageFilter.factory
             [pipeline:glance-api-cachemanagement]
             pipeline = context cache cachemanage rootapp
+            [pipeline:glance-api-cors]
+            pipeline = cors context rootapp
             [pipeline:glance-api-caching]
             pipeline = context cache rootapp
             [pipeline:glance-api]
@@ -1521,7 +1526,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         return dst_file_name
 
     def start_server(self, enable_cache=True, set_worker_url=True,
-                     use_fake_auth=False, run_staging_cleaner=False):
+                     use_fake_auth=False, run_staging_cleaner=False,
+                     enable_cors=False):
         """Builds and "starts" the API server.
 
         Note that this doesn't actually "start" anything like
@@ -1533,6 +1539,9 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         if enable_cache:
             root_app = 'glance-api-cachemanagement'
             self.config(image_cache_dir=self._store_dir('cache'))
+
+        if enable_cors:
+            root_app = 'glance-api-cors'
 
         if use_fake_auth:
             root_app = 'glance-api-fake'
