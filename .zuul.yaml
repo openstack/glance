@@ -246,6 +246,9 @@
           "$TEMPEST_CONFIG":
             image:
               image_caching_enabled: True
+            image-feature-enabled:
+              do_secure_hash: True
+              http_store_enabled: True
 
 - job:
     name: glance-grenade-centralized-cache
@@ -289,6 +292,11 @@
         # Glance RBAC new defaults are tested by default so we need to test
         # old defaults in some job.
         GLANCE_ENFORCE_SCOPE: false
+      devstack_local_conf:
+        test-config:
+          "$TEMPEST_CONFIG":
+            image-feature-enabled:
+              http_store_enabled: False
 
 - job:
     name: glance-s3-multistore
@@ -324,6 +332,11 @@
               filesystem_store_datadir: /opt/stack/data/glance/os_glance_staging_store/
             os_glance_tasks_store:
               filesystem_store_datadir: /opt/stack/data/glance/os_glance_tasks_store/
+        test-config:
+          "$TEMPEST_CONFIG":
+            image-feature-enabled:
+              http_store_enabled: True
+              do_secure_hash: True
 
 - job:
     name: glance-multistore-cinder-import-fips
