@@ -35,6 +35,8 @@ import requests
 
 from glance.api import policy
 from glance.common import wsgi
+from glance import context
+import glance.db as db_api
 from glance.quota import keystone as ks_quota
 from glance.tests import functional
 from glance.tests.functional import ft_utils as func_utils
@@ -4548,6 +4550,61 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
 
         # Make sure we can still import.
         self._create_and_import(stores=['store1'])
+
+    def test_image_count_total_with_delayed_delete(self):
+        self.config(delayed_delete=True)
+        self.set_limit({'image_size_total': 100,
+                        'image_stage_total': 10,
+                        'image_count_total': 1,
+                        'image_count_uploading': 10})
+        self.start_server()
+        # Create an image
+        image_id = self._create_and_upload()
+        # Make sure we can not create any more images.
+        resp = self._create()
+        self.assertEqual(413, resp.status_code)
+
+        # Delete one image, which should put us under quota
+        self.api_delete('/v2/images/%s' % image_id)
+
+        # Verify image is in pending_delete state
+        image = self._get_pending_delete_image(image_id)
+        self.assertEqual('pending_delete', image['status'])
+
+        # Now we can create that image
+        self._create()
+
+    def test_image_size_total_with_delayed_delete(self):
+        self.config(delayed_delete=True)
+        self.set_limit({'image_size_total': 6,
+                        'image_stage_total': 10,
+                        'image_count_total': 10,
+                        'image_count_uploading': 1})
+        self.start_server()
+        # Create an image
+        image_id = self._create_and_upload(
+            data_iter=test_utils.FakeData(8 * units.Mi))
+        # Make sure we can not upload any more images.
+        self._create_and_upload(expected_code=413)
+
+        # Delete one image, which should put us under quota
+        self.api_delete('/v2/images/%s' % image_id)
+
+        # Verify image is in pending_delete state
+        image = self._get_pending_delete_image(image_id)
+        self.assertEqual('pending_delete', image['status'])
+
+        # Now we can create that image
+        self._create_and_upload()
+
+    def _get_pending_delete_image(self, image_id):
+        # In Glance V2, there is no way to get the 'pending_delete' image from
+        # API. So we get the image from db here for testing.
+        # Clean the session cache first to avoid connecting to the old db data.
+        admin_context = context.get_admin_context(show_deleted=True)
+        db_api.get_api()._FACADE = None
+        image = db_api.get_api().image_get(admin_context, image_id)
+        return image
 
 
 class TestStoreWeight(functional.SynchronousAPIBase):
