@@ -264,7 +264,7 @@ class TestScrubber(functional.SynchronousAPIBase):
             time.sleep(check_every)
             image = db_api.get_api().image_get(self.admin_context, image_id)
             if (image['status'] == 'deleted' and
-                    image['deleted'] == True):
+                    image['deleted'] is True):
                 break
             else:
                 continue

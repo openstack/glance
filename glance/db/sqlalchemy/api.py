@@ -438,7 +438,7 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
                 default = _get_default_column_value(
                     model_attr.property.columns[0].type)
                 attr = sa_sql.expression.case(
-                    (model_attr != None, model_attr),
+                    (model_attr.is_not(None), model_attr),
                     else_=default)
                 crit_attrs.append((attr == marker_values[j]))
 
@@ -446,7 +446,7 @@ def _paginate_query(query, model, limit, sort_keys, marker=None,
             default = _get_default_column_value(
                 model_attr.property.columns[0].type)
             attr = sa_sql.expression.case(
-                (model_attr != None, model_attr),
+                (model_attr.is_not(None), model_attr),
                 else_=default)
             if sort_dirs[i] == 'desc':
                 crit_attrs.append((attr < marker_values[i]))
@@ -518,7 +518,7 @@ def _make_conditions_from_filters(filters, is_public=None):
         tags = filters.pop('tags')
         for tag in tags:
             alias = sa_orm.aliased(models.ImageTag)
-            tag_filters = [alias.deleted == False]
+            tag_filters = [alias.deleted == sql.false()]
             tag_filters.extend([alias.value == tag])
             tag_conditions.append((alias, tag_filters))
 
@@ -583,7 +583,7 @@ def _make_conditions_from_filters(filters, is_public=None):
 
 def _make_image_property_condition(key, value):
     alias = sa_orm.aliased(models.ImageProperty)
-    prop_filters = [alias.deleted == False]
+    prop_filters = [alias.deleted == sql.false()]
     prop_filters.extend([alias.name == key])
     prop_filters.extend([alias.value == value])
     return alias, prop_filters
@@ -598,7 +598,7 @@ def _select_images_query(context, session, image_conditions, admin_as_user,
     query_member = session.query(models.Image).join(
         models.Image.members).filter(img_conditional_clause)
     if regular_user:
-        member_filters = [models.ImageMember.deleted == False]
+        member_filters = [models.ImageMember.deleted == sql.false()]
         member_filters.extend([models.Image.visibility == 'shared'])
         if context.owner is not None:
             member_filters.extend([models.ImageMember.member == context.owner])
@@ -918,7 +918,7 @@ def image_set_property_atomic(image_id, name, value):
         result = connection.execute(table.update().where(
             sa_sql.and_(table.c.name == name,
                         table.c.image_id == image_id,
-                        table.c.deleted != False)).values(
+                        table.c.deleted != sql.false())).values(
                             value=value, deleted=False))
         if result.rowcount == 1:
             # Found and updated a deleted property, so we win
@@ -963,7 +963,7 @@ def image_delete_property_atomic(image_id, name, value):
             sa_sql.and_(table.c.name == name,
                         table.c.value == value,
                         table.c.image_id == image_id,
-                        table.c.deleted == False)))
+                        table.c.deleted == sql.false())))
         if result.rowcount == 1:
             return
 
@@ -1846,7 +1846,7 @@ def _tasks_get_by_image(context, session, image_id):
     ).filter_by(image_id=image_id)
 
     expires_at = models.Task.expires_at
-    query = query.filter(sa_sql.or_(expires_at == None,
+    query = query.filter(sa_sql.or_(expires_at.is_(None),
                                     expires_at >= oslo_timeutils.utcnow()))
     updated_at = models.Task.updated_at
     query.filter(

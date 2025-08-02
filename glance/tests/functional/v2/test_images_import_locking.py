@@ -50,7 +50,7 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
         def slow_fake_set_data(data_iter, size=None, backend=None,
                                set_active=True):
             me = str(uuid.uuid4())
-            while state['want_run'] == True:
+            while state['want_run'] is True:
                 LOG.info('fake_set_data running %s', me)
                 state['running'] = True
                 time.sleep(0.1)
