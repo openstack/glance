@@ -28,7 +28,6 @@ import sys
 import time
 import uuid
 
-from oslo_utils import encodeutils
 import prettytable
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
@@ -90,7 +89,7 @@ def catch_error(action):
                 if options.debug:
                     raise
                 print("Failed to %s. Got error:" % action)
-                pieces = encodeutils.exception_to_unicode(e).split('\n')
+                pieces = str(e).split('\n')
                 for piece in pieces:
                     print(piece)
                 return FAILURE

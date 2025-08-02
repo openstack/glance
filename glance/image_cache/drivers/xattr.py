@@ -58,7 +58,6 @@ import time
 
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import fileutils
 import xattr
@@ -279,13 +278,13 @@ class Driver(base.Driver):
                     self.get_image_filepath(image_id, 'queue'))
 
         def rollback(e):
-            set_attr('error', encodeutils.exception_to_unicode(e))
+            set_attr('error', str(e))
 
             invalid_path = self.get_image_filepath(image_id, 'invalid')
             LOG.debug("Fetch of cache file failed (%(e)s), rolling back by "
                       "moving '%(incomplete_path)s' to "
                       "'%(invalid_path)s'",
-                      {'e': encodeutils.exception_to_unicode(e),
+                      {'e': e,
                        'incomplete_path': incomplete_path,
                        'invalid_path': invalid_path})
             os.rename(incomplete_path, invalid_path)

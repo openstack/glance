@@ -21,7 +21,6 @@ from glance_store import backend
 from oslo_concurrency import processutils as putils
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from stevedore import named
 from taskflow.patterns import linear_flow as lf
@@ -167,10 +166,9 @@ class _ImportToFS(task.Task):
                                            log_errors=putils.LOG_ALL_ERRORS)
         except OSError as exc:
             with excutils.save_and_reraise_exception():
-                exc_message = encodeutils.exception_to_unicode(exc)
                 msg = _LE('Failed to execute security checks on the image '
                           '%(task_id)s: %(exc)s')
-                LOG.error(msg, {'task_id': self.task_id, 'exc': exc_message})
+                LOG.error(msg, {'task_id': self.task_id, 'exc': exc})
 
         metadata = json.loads(stdout)
 
@@ -336,9 +334,9 @@ class _ImportToStore(task.Task):
             image_import.set_image_data(image,
                                         file_path or self.uri, self.task_id,
                                         backend=self.backend)
-        except IOError as e:
+        except IOError as exc:
             msg = (_('Uploading the image failed due to: %(exc)s') %
-                   {'exc': encodeutils.exception_to_unicode(e)})
+                   {'exc': exc})
             LOG.error(msg)
             raise exception.UploadException(message=msg)
         # NOTE(flaper87): We need to save the image again after the locations
@@ -389,21 +387,20 @@ class _CompleteTask(task.Task):
             return
         try:
             task.succeed({'image_id': image_id})
-        except Exception as e:
+        except Exception as exc:
             # Note: The message string contains Error in it to indicate
             # in the task.message that it's a error message for the user.
 
             # TODO(nikhil): need to bring back save_and_reraise_exception when
             # necessary
             log_msg = _LE("Task ID %(task_id)s failed. Error: %(exc_type)s: "
-                          "%(e)s")
-            LOG.exception(log_msg, {'exc_type': str(type(e)),
-                                    'e': encodeutils.exception_to_unicode(e),
+                          "%(exc)s")
+            LOG.exception(log_msg, {'exc_type': str(type(exc)),
+                                    'exc': exc,
                                     'task_id': task.task_id})
 
-            err_msg = _("Error: %(exc_type)s: %(e)s")
-            task.fail(err_msg % {'exc_type': str(type(e)),
-                                 'e': encodeutils.exception_to_unicode(e)})
+            err_msg = _("Error: %(exc_type)s: %(exc)s")
+            task.fail(err_msg % {'exc_type': str(type(exc)), 'exc': exc})
         finally:
             self.task_repo.save(task)
 

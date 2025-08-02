@@ -20,7 +20,6 @@ import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_messaging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 import webob
 
@@ -443,57 +442,54 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
             self.repo.set_data(data, size, backend=backend,
                                set_active=set_active)
         except glance_store.StorageFull as e:
-            msg = (_("Image storage media is full: %s") %
-                   encodeutils.exception_to_unicode(e))
+            msg = _("Image storage media is full: %s") % e
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg)
         except glance_store.StorageWriteDenied as e:
-            msg = (_("Insufficient permissions on image storage media: %s")
-                   % encodeutils.exception_to_unicode(e))
+            msg = _("Insufficient permissions on image storage media: %s") % e
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg)
         except ValueError as e:
             msg = (_("Cannot save data for image %(image_id)s: %(error)s") %
                    {'image_id': self.repo.image_id,
-                    'error': encodeutils.exception_to_unicode(e)})
+                    'error': e})
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPBadRequest(
-                explanation=encodeutils.exception_to_unicode(e))
+                explanation=str(e))
         except exception.Duplicate as e:
             msg = (_("Unable to upload duplicate image data for image "
                      "%(image_id)s: %(error)s") %
                    {'image_id': self.repo.image_id,
-                    'error': encodeutils.exception_to_unicode(e)})
+                    'error': e})
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPConflict(explanation=msg)
         except exception.Forbidden as e:
             msg = (_("Not allowed to upload image data for image %(image_id)s:"
                      " %(error)s")
                    % {'image_id': self.repo.image_id,
-                      'error': encodeutils.exception_to_unicode(e)})
+                      'error': e})
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPForbidden(explanation=msg)
         except exception.NotFound as e:
-            exc_str = encodeutils.exception_to_unicode(e)
             msg = (_("Image %(image_id)s could not be found after upload."
                      " The image may have been deleted during the upload:"
                      " %(error)s") % {'image_id': self.repo.image_id,
-                                      'error': exc_str})
+                                      'error': e})
             _send_notification(notify_error, 'image.upload', msg)
-            raise webob.exc.HTTPNotFound(explanation=exc_str)
+            raise webob.exc.HTTPNotFound(explanation=str(e))
         except webob.exc.HTTPError as e:
             with excutils.save_and_reraise_exception():
                 msg = (_("Failed to upload image data for image %(image_id)s"
                          " due to HTTP error: %(error)s") %
                        {'image_id': self.repo.image_id,
-                        'error': encodeutils.exception_to_unicode(e)})
+                        'error': e})
                 _send_notification(notify_error, 'image.upload', msg)
         except Exception as e:
             with excutils.save_and_reraise_exception():
                 msg = (_("Failed to upload image data for image %(image_id)s "
                          "due to internal error: %(error)s") %
                        {'image_id': self.repo.image_id,
-                        'error': encodeutils.exception_to_unicode(e)})
+                        'error': e})
                 _send_notification(notify_error, 'image.upload', msg)
         else:
             extra_payload = self._format_import_properties()

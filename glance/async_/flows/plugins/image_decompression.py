@@ -19,7 +19,6 @@ import shutil
 import zipfile
 
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
 
@@ -60,9 +59,9 @@ def _zipfile(src_path, dest_path, image_id):
             else:
                 zfd.extract(content[0], dest_path)
     except Exception as e:
-        LOG.debug("ZIP: Error decompressing image %(iid)s: %(msg)s", {
+        LOG.debug("ZIP: Error decompressing image %(iid)s: %(exc)s", {
                   "iid": image_id,
-                  "msg": encodeutils.exception_to_unicode(e)})
+                  "exc": e})
         raise
 
 
@@ -77,9 +76,9 @@ def _lhafile(src_path, dest_path, image_id):
             else:
                 lfd.extract(content[0], dest_path)
     except Exception as e:
-        LOG.debug("LHA: Error decompressing image %(iid)s: %(msg)s", {
+        LOG.debug("LHA: Error decompressing image %(iid)s: %(exc)s", {
                   "iid": image_id,
-                  "msg": encodeutils.exception_to_unicode(e)})
+                  "exc": e})
         raise
 
 
@@ -90,13 +89,13 @@ def _gzipfile(src_path, dest_path, image_id):
                 shutil.copyfileobj(gzfd, fd)
     except gzip.BadGzipFile as e:
         LOG.debug("ZIP: Error decompressing image %(iid)s: Bad GZip file: "
-                  "%(msg)s", {"iid": image_id,
-                              "msg": encodeutils.exception_to_unicode(e)})
+                  "%(exc)s", {"iid": image_id,
+                              "exc": e})
         raise
     except Exception as e:
-        LOG.debug("GZIP: Error decompressing image %(iid)s: %(msg)s", {
+        LOG.debug("GZIP: Error decompressing image %(iid)s: %(exc)s", {
                   "iid": image_id,
-                  "msg": encodeutils.exception_to_unicode(e)})
+                  "exc": e})
         raise
 
 

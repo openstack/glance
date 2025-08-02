@@ -18,7 +18,6 @@ import urllib.parse as urlparse
 import glance_store as store_api
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 
 import glance.db as db_api
 from glance.i18n import _LE, _LW
@@ -72,7 +71,7 @@ def safe_delete_from_backend(context, image_id, location):
                "this." % {'iid': image_id})
         LOG.warning(msg)
     except store_api.StoreDeleteNotSupported as e:
-        LOG.warning(encodeutils.exception_to_unicode(e))
+        LOG.warning(str(e))
     except store_api.UnsupportedBackend:
         exc_type = sys.exc_info()[0].__name__
         msg = (_LE('Failed to delete image %(image_id)s from store: %(exc)s') %

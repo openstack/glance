@@ -20,7 +20,6 @@ from glance_store import backend
 from glance_store import location
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 import webob.exc
 
@@ -67,7 +66,7 @@ class ImageDataController(object):
         except Exception as e:
             msg = (_LE("Unable to restore image %(image_id)s: %(e)s") %
                    {'image_id': image.image_id,
-                    'e': encodeutils.exception_to_unicode(e)})
+                    'e': e})
             LOG.exception(msg)
 
     def _unstage(self, image_repo, image, staging_store):
@@ -154,7 +153,7 @@ class ImageDataController(object):
                 except Exception as e:
                     LOG.info(_LI("Unable to create trust: %s "
                                  "Use the existing user token."),
-                             encodeutils.exception_to_unicode(e))
+                             e)
 
                 image_repo.save(image, from_state='queued')
                 ks_quota.enforce_image_count_uploading(req.context,
@@ -176,9 +175,9 @@ class ImageDataController(object):
                     if refresher is not None:
                         refresher.release_resources()
                 except Exception as e:
-                    LOG.info(_LI("Unable to delete trust %(trust)s: %(msg)s"),
+                    LOG.info(_LI("Unable to delete trust %(trust)s: %(err)s"),
                              {"trust": refresher.trust_id,
-                              "msg": encodeutils.exception_to_unicode(e)})
+                              "err": e})
 
             except (glance_store.NotFound,
                     exception.ImageNotFound,
@@ -213,10 +212,10 @@ class ImageDataController(object):
         except ValueError as e:
             LOG.debug("Cannot save data for image %(id)s: %(e)s",
                       {'id': image_id,
-                       'e': encodeutils.exception_to_unicode(e)})
+                       'e': e})
             self._restore(image_repo, image)
             raise webob.exc.HTTPBadRequest(
-                explanation=encodeutils.exception_to_unicode(e))
+                explanation=str(e))
 
         except glance_store.StoreAddDisabled:
             msg = _("Error in store configuration. Adding images to store "
@@ -227,8 +226,7 @@ class ImageDataController(object):
                                      content_type='text/plain')
 
         except exception.InvalidImageStatusTransition as e:
-            msg = encodeutils.exception_to_unicode(e)
-            LOG.exception(msg)
+            LOG.exception(str(e))
             raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
 
         except exception.Forbidden:
@@ -241,24 +239,21 @@ class ImageDataController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         except glance_store.StorageFull as e:
-            msg = _("Image storage media "
-                    "is full: %s") % encodeutils.exception_to_unicode(e)
+            msg = _("Image storage media is full: %s") % e
             LOG.error(msg)
             self._restore(image_repo, image)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.StorageQuotaFull as e:
-            msg = _("Image exceeds the storage "
-                    "quota: %s") % encodeutils.exception_to_unicode(e)
+            msg = _("Image exceeds the storage quota: %s") % e
             LOG.error(msg)
             self._restore(image_repo, image)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.ImageSizeLimitExceeded as e:
-            msg = _("The incoming image is "
-                    "too large: %s") % encodeutils.exception_to_unicode(e)
+            msg = _("The incoming image is too large: %s") % e
             LOG.error(msg)
             self._restore(image_repo, image)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
@@ -277,8 +272,7 @@ class ImageDataController(object):
                                                      request=req)
 
         except glance_store.StorageWriteDenied as e:
-            msg = _("Insufficient permissions on image "
-                    "storage media: %s") % encodeutils.exception_to_unicode(e)
+            msg = _("Insufficient permissions on image storage media: %s") % e
             LOG.error(msg)
             self._restore(image_repo, image)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
@@ -286,8 +280,7 @@ class ImageDataController(object):
 
         except cursive_exception.SignatureVerificationError as e:
             msg = (_LE("Signature verification failed for image %(id)s: %(e)s")
-                   % {'id': image_id,
-                      'e': encodeutils.exception_to_unicode(e)})
+                   % {'id': image_id, 'e': e})
             LOG.error(msg)
             self._restore(image_repo, image)
             raise webob.exc.HTTPBadRequest(explanation=msg)
@@ -395,24 +388,21 @@ class ImageDataController(object):
             raise webob.exc.HTTPNotFound(explanation=e.msg)
 
         except glance_store.StorageFull as e:
-            msg = _("Image storage media "
-                    "is full: %s") % encodeutils.exception_to_unicode(e)
+            msg = _("Image storage media is full: %s") % e
             LOG.error(msg)
             self._unstage(image_repo, image, staging_store)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.StorageQuotaFull as e:
-            msg = _("Image exceeds the storage "
-                    "quota: %s") % encodeutils.exception_to_unicode(e)
+            msg = _("Image exceeds the storage quota: %s") % e
             LOG.debug(msg)
             self._unstage(image_repo, image, staging_store)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
 
         except exception.ImageSizeLimitExceeded as e:
-            msg = _("The incoming image is "
-                    "too large: %s") % encodeutils.exception_to_unicode(e)
+            msg = _("The incoming image is too large: %s") % e
             LOG.debug(msg)
             self._unstage(image_repo, image, staging_store)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
@@ -426,15 +416,14 @@ class ImageDataController(object):
 
         except glance_store.StorageWriteDenied as e:
             msg = _("Insufficient permissions on image "
-                    "storage media: %s") % encodeutils.exception_to_unicode(e)
+                    "storage media: %s") % e
             LOG.error(msg)
             self._unstage(image_repo, image, staging_store)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
 
         except exception.InvalidImageStatusTransition as e:
-            msg = encodeutils.exception_to_unicode(e)
-            LOG.debug(msg)
+            LOG.debug(str(e))
             raise webob.exc.HTTPConflict(explanation=e.msg, request=req)
 
         except Exception:

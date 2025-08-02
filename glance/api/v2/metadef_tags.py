@@ -17,7 +17,6 @@ import http.client as http
 
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-from oslo_utils import encodeutils
 from oslo_utils import strutils
 import webob.exc
 from wsme.rest import json
@@ -80,8 +79,7 @@ class TagsController(object):
                 **tag_name_as_dict)
             tag_repo.add(new_meta_tag)
         except exception.Invalid as e:
-            msg = (_("Couldn't create metadata tag: %s")
-                   % encodeutils.exception_to_unicode(e))
+            msg = (_("Couldn't create metadata tag: %s") % e)
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to create metadata tag within "
@@ -239,8 +237,7 @@ class TagsController(object):
                 metadata_tag.name)
             updated_metadata_tag = meta_repo.save(metadef_tag)
         except exception.Invalid as e:
-            msg = (_("Couldn't update metadata tag: %s")
-                   % encodeutils.exception_to_unicode(e))
+            msg = (_("Couldn't update metadata tag: %s") % e)
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update metadata tag '%s' "

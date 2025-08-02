@@ -17,7 +17,6 @@ import copy
 import glance_store as store
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 
 import glance.api.common
@@ -112,7 +111,7 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
         if attempted > maximum:
             kwargs = {'attempted': attempted, 'maximum': maximum}
             exc = exception.ImagePropertyLimitExceeded(**kwargs)
-            LOG.debug(encodeutils.exception_to_unicode(exc))
+            LOG.debug(str(exc))
             raise exc
 
     def save(self, image, from_state=None):

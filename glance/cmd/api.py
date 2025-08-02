@@ -28,7 +28,6 @@ import eventlet
 eventlet.patcher.monkey_patch()
 
 from oslo_reports import guru_meditation_report as gmr
-from oslo_utils import encodeutils
 
 # If ../glance/__init__.py exists, add ../ to Python search path, so that
 # it will override what happens to be installed in /usr/(local/)lib/python...
@@ -65,7 +64,7 @@ ERROR_CODE_MAP = {RuntimeError: 1,
 
 
 def fail(e):
-    sys.stderr.write("ERROR: %s\n" % encodeutils.exception_to_unicode(e))
+    sys.stderr.write("ERROR: %s\n" % e)
     return_code = ERROR_CODE_MAP.get(type(e), 99)
     sys.exit(return_code)
 

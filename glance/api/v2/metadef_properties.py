@@ -17,7 +17,6 @@ import http.client as http
 
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-from oslo_utils import encodeutils
 import webob.exc
 from wsme.rest import json
 
@@ -175,8 +174,7 @@ class NamespacePropertiesController(object):
                       "'%s' namespace", namespace)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
         except exception.Invalid as e:
-            msg = (_("Couldn't create metadata property: %s")
-                   % encodeutils.exception_to_unicode(e))
+            msg = (_("Couldn't create metadata property: %s") % e)
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.msg)
@@ -210,8 +208,7 @@ class NamespacePropertiesController(object):
             db_property_type.schema = (self._to_dict(property_type))['schema']
             updated_property_type = prop_repo.save(db_property_type)
         except exception.Invalid as e:
-            msg = (_("Couldn't update metadata property: %s")
-                   % encodeutils.exception_to_unicode(e))
+            msg = (_("Couldn't update metadata property: %s") % e)
             raise webob.exc.HTTPBadRequest(explanation=msg)
         except exception.Forbidden as e:
             LOG.debug("User not permitted to update metadata property '%s' "

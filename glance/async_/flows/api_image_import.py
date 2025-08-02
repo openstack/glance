@@ -23,7 +23,6 @@ from glance_store import backend
 from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import encodeutils
 from oslo_utils import excutils
 from oslo_utils import timeutils
 from oslo_utils import units
@@ -748,12 +747,11 @@ class _CompleteTask(task.Task):
             log_msg = _LE("Task ID %(task_id)s failed. Error: %(exc_type)s: "
                           "%(e)s")
             LOG.exception(log_msg, {'exc_type': str(type(e)),
-                                    'e': encodeutils.exception_to_unicode(e),
+                                    'e': e,
                                     'task_id': task.task_id})
 
             err_msg = _("Error: %(exc_type)s: %(e)s")
-            task.fail(err_msg % {'exc_type': str(type(e)),
-                                 'e': encodeutils.exception_to_unicode(e)})
+            task.fail(err_msg % {'exc_type': str(type(e)), 'e': e})
         finally:
             self.task_repo.save(task)
 
@@ -854,7 +852,7 @@ class _ImportMetadata(task.Task):
             with excutils.save_and_reraise_exception():
                 LOG.error(
                     "Task %(task_id)s failed with exception %(error)s", {
-                        "error": encodeutils.exception_to_unicode(e),
+                        "error": e,
                         "task_id": self.task_id
                     })
 

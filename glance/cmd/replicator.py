@@ -24,7 +24,6 @@ import urllib.parse as urlparse
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
-from oslo_utils import encodeutils
 from oslo_utils import uuidutils
 from webob import exc
 
@@ -735,7 +734,7 @@ def main():
     try:
         config.parse_args()
     except RuntimeError as e:
-        sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
+        sys.exit("ERROR: %s" % e)
     except SystemExit:
         sys.exit("Please specify one command")
 
@@ -752,10 +751,10 @@ def main():
         command(CONF, CONF.args)
     except TypeError as e:
         LOG.error(_LE(command.__doc__) % {'prog': command.__name__})  # noqa
-        sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
+        sys.exit("ERROR: %s" % e)
     except ValueError as e:
         LOG.error(_LE(command.__doc__) % {'prog': command.__name__})  # noqa
-        sys.exit("ERROR: %s" % encodeutils.exception_to_unicode(e))
+        sys.exit("ERROR: %s" % e)
 
 
 if __name__ == '__main__':

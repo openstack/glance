@@ -20,7 +20,6 @@ from unittest.mock import patch
 import uuid
 
 from oslo_limit import exception as ol_exc
-from oslo_utils import encodeutils
 from oslo_utils import units
 
 from glance.common import exception
@@ -405,8 +404,7 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.image.extra_properties = {'foo': 'bar', 'foo2': 'bar2'}
         exc = self.assertRaises(exception.ImagePropertyLimitExceeded,
                                 self.image_repo_proxy.save, self.image)
-        self.assertIn("Attempted: 2, Maximum: 1",
-                      encodeutils.exception_to_unicode(exc))
+        self.assertIn("Attempted: 2, Maximum: 1", str(exc))
 
     def test_save_image_unlimited_image_properties(self):
         self.config(image_property_quota=-1)
@@ -431,8 +429,7 @@ class TestImagePropertyQuotas(test_utils.BaseTestCase):
         self.image.extra_properties = {'foo': 'bar', 'foo2': 'bar2'}
         exc = self.assertRaises(exception.ImagePropertyLimitExceeded,
                                 self.image_repo_proxy.add, self.image)
-        self.assertIn("Attempted: 2, Maximum: 1",
-                      encodeutils.exception_to_unicode(exc))
+        self.assertIn("Attempted: 2, Maximum: 1", str(exc))
 
     def test_add_image_unlimited_image_properties(self):
         self.config(image_property_quota=-1)
@@ -543,8 +540,7 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
 
         exc = self.assertRaises(exception.ImageTagLimitExceeded,
                                 setattr, self.image, 'tags', ['foo', 'bar'])
-        self.assertIn('Attempted: 2, Maximum: 0',
-                      encodeutils.exception_to_unicode(exc))
+        self.assertIn('Attempted: 2, Maximum: 0', str(exc))
         self.assertEqual(0, len(self.image.tags))
 
     def test_replace_unlimited_image_tags(self):
@@ -562,8 +558,7 @@ class TestImageTagQuotas(test_utils.BaseTestCase):
         self.image.tags.add('foo')
         exc = self.assertRaises(exception.ImageTagLimitExceeded,
                                 self.image.tags.add, 'bar')
-        self.assertIn('Attempted: 2, Maximum: 1',
-                      encodeutils.exception_to_unicode(exc))
+        self.assertIn('Attempted: 2, Maximum: 1', str(exc))
 
     def test_add_unlimited_image_tags(self):
         self.config(image_tag_quota=-1)
@@ -594,8 +589,7 @@ class TestQuotaImageTagsProxy(test_utils.BaseTestCase):
         proxy = glance.quota.QuotaImageTagsProxy(set([]))
         exc = self.assertRaises(exception.ImageTagLimitExceeded,
                                 proxy.add, 'bar')
-        self.assertIn('Attempted: 1, Maximum: 0',
-                      encodeutils.exception_to_unicode(exc))
+        self.assertIn('Attempted: 1, Maximum: 0', str(exc))
 
     def test_equals(self):
         proxy = glance.quota.QuotaImageTagsProxy(set([]))
@@ -721,8 +715,7 @@ class TestImageLocationQuotas(test_utils.BaseTestCase):
         ]
         exc = self.assertRaises(exception.ImageLocationLimitExceeded,
                                 setattr, self.image, 'locations', locations)
-        self.assertIn('Attempted: 3, Maximum: 1',
-                      encodeutils.exception_to_unicode(exc))
+        self.assertIn('Attempted: 3, Maximum: 1', str(exc))
         self.assertEqual(1, len(self.image.locations))
 
     def test_replace_unlimited_image_locations(self):
@@ -745,8 +738,7 @@ class TestImageLocationQuotas(test_utils.BaseTestCase):
         location2 = {"url": "file:///fake2.img.tar.gz", "metadata": {}}
         exc = self.assertRaises(exception.ImageLocationLimitExceeded,
                                 self.image.locations.append, location2)
-        self.assertIn('Attempted: 2, Maximum: 1',
-                      encodeutils.exception_to_unicode(exc))
+        self.assertIn('Attempted: 2, Maximum: 1', str(exc))
 
     def test_add_unlimited_image_locations(self):
         self.config(image_location_quota=-1)
