@@ -97,6 +97,16 @@ stores-header:
   in: header
   required: false
   type: string
+x-openstack-image-size:
+  description: |
+    The expected size of the image data in bytes. When present, the server
+    will validate that the uploaded data size matches this value. If the
+    actual size does not match the expected size, a 400 (Bad Request)
+    response is returned. When not present, the server will calculate the
+    image size based on the actual request body size.
+  in: header
+  required: false
+  type: string
 
 # variables in path
 image_id-in-path:

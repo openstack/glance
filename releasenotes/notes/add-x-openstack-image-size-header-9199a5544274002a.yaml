@@ -1,0 +1,17 @@
+---
+features:
+  - |
+    Added support for the optional ``x-openstack-image-size`` header in image
+    upload endpoints. This header allows clients to specify the expected size
+    of image data in bytes when uploading images via the PUT
+    ``/v2/images/{image_id}/file`` and PUT ``/v2/images/{image_id}/stage``
+    endpoints.
+
+    When the header is present, the server validates that the uploaded data
+    size matches the specified value. If the actual size does not match the
+    expected size, a 400 (Bad Request) response is returned. When the header
+    is not present, the server calculates the image size based on the actual
+    request body size.
+
+    This feature improves data integrity validation during image uploads and
+    helps prevent incomplete or corrupted uploads.
