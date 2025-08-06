@@ -80,6 +80,10 @@ class FakeImage(object):
 
     def set_data(self, data, size=None, backend=None, set_active=True):
         self.data = ''.join(data)
+        if not size:
+            size = len(self.data)
+        if size != len(self.data):
+            raise webob.exc.HTTPBadRequest()
         self.size = size
         self.status = 'modified-by-fake'
 
@@ -97,6 +101,9 @@ class FakeImageRepo(object):
 
     def save(self, image, from_state=None):
         self.saved_image = image
+
+    def list(self):
+        return []
 
 
 class FakeGateway(object):
@@ -239,7 +246,21 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.image_repo.result = image
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
         self.assertEqual('YYYY', image.data)
-        self.assertIsNone(image.size)
+        self.assertEqual(4, image.size)
+
+    def test_upload_size_more_than_data(self):
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
+                          request, unit_test_utils.UUID2, 'YYYY', 5)
+
+    def test_upload_size_less_than_data(self):
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
+                          request, unit_test_utils.UUID2, 'YYYY', 2)
 
     @mock.patch.object(glance.api.policy.Enforcer, 'enforce')
     def test_upload_image_forbidden(self, mock_enforce):
@@ -520,6 +541,35 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual('uploading', image.status)
         self.assertEqual(4, image.size)
 
+    def test_stage_no_size(self):
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        with mock.patch.object(filesystem.Store, 'add') as mock_add:
+            mock_add.return_value = ('foo://bar', 4, 'ident', {})
+            self.controller.stage(request, image_id, 'YYYY', None)
+        self.assertEqual('uploading', image.status)
+        self.assertEqual(4, image.size)
+
+    def test_stage_size_more_than_data(self):
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        with mock.patch.object(filesystem.Store, 'add') as mock_add:
+            mock_add.side_effect = glance_store.Invalid()
+            self.assertRaises(webob.exc.HTTPBadRequest, self.controller.stage,
+                              request, unit_test_utils.UUID2, 'YYYY', 5)
+
+    def test_stage_size_less_than_data(self):
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        with mock.patch.object(filesystem.Store, 'add') as mock_add:
+            mock_add.side_effect = glance_store.Invalid()
+            self.assertRaises(webob.exc.HTTPBadRequest, self.controller.stage,
+                              request, unit_test_utils.UUID2, 'YYYY', 2)
+
     def test_image_already_on_staging(self):
         image_id = str(uuid.uuid4())
         request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
@@ -759,6 +809,57 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
                           self.deserializer.stage,
                           req)
+
+    def test_with_size_header(self):
+        for method in ('upload', 'stage'):
+            with self.subTest(method=method):
+                request = unit_test_utils.get_fake_request()
+                request.headers['Content-Type'] = 'application/octet-stream'
+                request.headers['x-openstack-image-size'] = 4
+                request.body = b'YYYY'
+                func = getattr(self.deserializer, method)
+                output = func(request)
+                data = output.pop('data')
+                self.assertEqual(b'YYYY', data.read())
+                expected = {'size': 4}
+                self.assertEqual(expected, output)
+
+    def test_without_size_header_and_content_length(self):
+        for method in ('upload', 'stage'):
+            with self.subTest(method=method):
+                request = unit_test_utils.get_fake_request()
+                request.headers['Content-Type'] = 'application/octet-stream'
+                request.body_file = io.StringIO('YYYY')
+                func = getattr(self.deserializer, method)
+                output = func(request)
+                data = output.pop('data')
+                self.assertEqual('YYYY', data.read())
+                expected = {'size': None}
+                self.assertEqual(expected, output)
+
+    def test_size_header_raising_type_error(self):
+        for method in ('upload', 'stage'):
+            with self.subTest(method=method):
+                request = unit_test_utils.get_fake_request()
+                request.headers['Content-Type'] = 'application/octet-stream'
+                request.headers['x-openstack-image-size'] = [4]
+                request.body = b'YYYY'
+                func = getattr(self.deserializer, method)
+                self.assertRaisesRegex(
+                    webob.exc.HTTPBadRequest, "Invalid or missing image size",
+                    func, request)
+
+    def test_with_invalid_size_header(self):
+        for method in ('upload', 'stage'):
+            with self.subTest(method=method):
+                request = unit_test_utils.get_fake_request()
+                request.headers['Content-Type'] = 'application/octet-stream'
+                request.headers['x-openstack-image-size'] = 'foobar'
+                request.body = b'YYYY'
+                func = getattr(self.deserializer, method)
+                self.assertRaisesRegex(
+                    webob.exc.HTTPBadRequest, "Invalid or missing image size",
+                    func, request)
 
 
 class TestImageDataSerializer(test_utils.BaseTestCase):

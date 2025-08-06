@@ -278,6 +278,13 @@ class ImageDataController(object):
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
 
+        except glance_store.Invalid as e:
+            LOG.error(e.message)
+            if image.status not in ('queued', 'deleted'):
+                self._restore(image_repo, image)
+            raise webob.exc.HTTPBadRequest(
+                explanation=str(e))
+
         except cursive_exception.SignatureVerificationError as e:
             msg = (_LE("Signature verification failed for image %(id)s: %(e)s")
                    % {'id': image_id, 'e': e})
@@ -302,6 +309,8 @@ class ImageDataController(object):
 
     @utils.mutating
     def stage(self, req, image_id, data, size):
+        if size is None:
+            size = 0
         try:
             ks_quota.enforce_image_staging_total(req.context,
                                                  req.context.owner)
@@ -368,10 +377,11 @@ class ImageDataController(object):
             ks_quota.enforce_image_count_uploading(req.context,
                                                    req.context.owner)
             try:
-                uri, size, id, store_info = staging_store.add(
+                uri, image_size, id, store_info = staging_store.add(
                     image_id, utils.LimitingReader(
-                        utils.CooperativeReader(data), CONF.image_size_cap), 0)
-                image.size = size
+                        utils.CooperativeReader(data), CONF.image_size_cap),
+                    size)
+                image.size = image_size
             except glance_store.Duplicate:
                 msg = _("The image %s has data on staging") % image_id
                 raise webob.exc.HTTPConflict(explanation=msg)
@@ -393,6 +403,13 @@ class ImageDataController(object):
             self._unstage(image_repo, image, staging_store)
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=msg,
                                                       request=req)
+
+        except glance_store.Invalid as e:
+            LOG.error(e.message)
+            if image.status not in ('queued', 'deleted'):
+                self._restore(image_repo, image)
+            raise webob.exc.HTTPBadRequest(
+                explanation=str(e))
 
         except exception.StorageQuotaFull as e:
             msg = _("Image exceeds the storage quota: %s") % e
@@ -456,6 +473,20 @@ class ImageDataController(object):
 
 class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
+    def _get_image_size(self, request):
+        try:
+            size = request.headers.get('x-openstack-image-size')
+            if size is not None:
+                image_size = int(size)
+            else:
+                # If header is missing, fall back to content_length or None
+                image_size = request.content_length or None
+        except (ValueError, TypeError):
+            # Raised if conversion to int fails or value is None
+            raise webob.exc.HTTPBadRequest(explanation=_(
+                "Invalid or missing image size in request headers."))
+        return image_size
+
     def upload(self, request):
         try:
             request.get_content_type(('application/octet-stream',))
@@ -465,8 +496,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if self.is_valid_encoding(request) and self.is_valid_method(request):
             request.is_body_readable = True
 
-        image_size = request.content_length or None
-        return {'size': image_size, 'data': request.body_file}
+        return {'size': self._get_image_size(request),
+                'data': request.body_file}
 
     def stage(self, request):
         if "glance-direct" not in CONF.enabled_import_methods:
@@ -480,8 +511,8 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if self.is_valid_encoding(request) and self.is_valid_method(request):
             request.is_body_readable = True
 
-        image_size = request.content_length or None
-        return {'size': image_size, 'data': request.body_file}
+        return {'size': self._get_image_size(request),
+                'data': request.body_file}
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):
