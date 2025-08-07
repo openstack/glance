@@ -16,7 +16,6 @@
 import http.client as http
 
 from oslo_serialization import jsonutils
-import requests
 
 from glance.tests.functional.v2 import metadef_base
 
@@ -25,52 +24,49 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
 
     def setUp(self):
         super(TestMetadefTags, self).setUp()
-        self.cleanup()
-        self.api_server.deployment_flavor = 'noauth'
-        self.start_servers(**self.__dict__.copy())
+        self.start_server(enable_cache=False)
 
     def test_metadata_tags_lifecycle(self):
         # Namespace should not exist
-        path = self._url('/v2/metadefs/namespaces/MyNamespace')
-        response = requests.get(path, headers=self._headers())
+        path = '/v2/metadefs/namespaces/MyNamespace'
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create a namespace
-        path = self._url('/v2/metadefs/namespaces')
+        path = '/v2/metadefs/namespaces'
         headers = self._headers({'content-type': 'application/json'})
         namespace_name = 'MyNamespace'
-        data = jsonutils.dumps({
+        data = {
             "namespace": namespace_name,
             "display_name": "My User Friendly Namespace",
             "description": "My description",
             "visibility": "public",
             "protected": False,
-            "owner": "The Test Owner"}
-        )
-        response = requests.post(path, headers=headers, data=data)
+            "owner": "The Test Owner"
+        }
+        response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.CREATED, response.status_code)
 
         # Metadata tag should not exist
         metadata_tag_name = "tag1"
-        path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                         (namespace_name, metadata_tag_name))
-        response = requests.get(path, headers=self._headers())
+        path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+            namespace_name, metadata_tag_name)
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create the metadata tag
         headers = self._headers({'content-type': 'application/json'})
-        response = requests.post(path, headers=headers)
+        response = self.api_post(path, headers=headers)
         self.assertEqual(http.CREATED, response.status_code)
 
         # Get the metadata tag created above
-        response = requests.get(path,
+        response = self.api_get(path,
                                 headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
         metadata_tag = jsonutils.loads(response.text)
         self.assertEqual(metadata_tag_name, metadata_tag['name'])
 
         # Returned tag should match the created tag
-        metadata_tag = jsonutils.loads(response.text)
         checked_keys = set([
             'name',
             'created_at',
@@ -91,21 +87,19 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
 
         # Try to create a duplicate metadata tag
         headers = self._headers({'content-type': 'application/json'})
-        response = requests.post(path, headers=headers)
+        response = self.api_post(path, headers=headers)
         self.assertEqual(http.CONFLICT, response.status_code)
 
         # The metadata_tag should be mutable
-        path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                         (namespace_name, metadata_tag_name))
+        path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+            namespace_name, metadata_tag_name)
         media_type = 'application/json'
         headers = self._headers({'content-type': media_type})
         metadata_tag_name = "tag1-UPDATED"
-        data = jsonutils.dumps(
-            {
-                "name": metadata_tag_name
-            }
-        )
-        response = requests.put(path, headers=headers, data=data)
+        data = {
+            "name": metadata_tag_name
+        }
+        response = self.api_put(path, headers=headers, json=data)
         self.assertEqual(http.OK, response.status_code, response.text)
 
         # Returned metadata_tag should reflect the changes
@@ -113,79 +107,93 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
         self.assertEqual('tag1-UPDATED', metadata_tag['name'])
 
         # Updates should persist across requests
-        path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                         (namespace_name, metadata_tag_name))
-        response = requests.get(path, headers=self._headers())
+        path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+            namespace_name, metadata_tag_name)
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
         self.assertEqual('tag1-UPDATED', metadata_tag['name'])
 
         # Deletion of metadata_tag_name
-        path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                         (namespace_name, metadata_tag_name))
-        response = requests.delete(path, headers=self._headers())
+        path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+            namespace_name, metadata_tag_name)
+        response = self.api_delete(path, headers=self._headers())
         self.assertEqual(http.NO_CONTENT, response.status_code)
 
         # metadata_tag_name should not exist
-        path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                         (namespace_name, metadata_tag_name))
-        response = requests.get(path, headers=self._headers())
+        path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+            namespace_name, metadata_tag_name)
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create multiple tags.
-        path = self._url('/v2/metadefs/namespaces/%s/tags' %
-                         (namespace_name))
+        path = '/v2/metadefs/namespaces/%s/tags' % namespace_name
         headers = self._headers({'content-type': 'application/json'})
-        data = jsonutils.dumps(
-            {"tags": [{"name": "tag1"}, {"name": "tag2"}, {"name": "tag3"}]}
-        )
-        response = requests.post(path, headers=headers, data=data)
+        data = {
+            "tags": [
+                {"name": "tag1"},
+                {"name": "tag2"},
+                {"name": "tag3"}
+            ]
+        }
+        response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.CREATED, response.status_code)
 
         # List out the three new tags.
-        response = requests.get(path, headers=self._headers())
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(3, len(tags))
 
         # Attempt to create bogus duplicate tag4
-        data = jsonutils.dumps(
-            {"tags": [{"name": "tag4"}, {"name": "tag5"}, {"name": "tag4"}]}
-        )
-        response = requests.post(path, headers=headers, data=data)
+        data = {
+            "tags": [
+                {"name": "tag4"},
+                {"name": "tag5"},
+                {"name": "tag4"}
+            ]
+        }
+        response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.CONFLICT, response.status_code)
 
         # Verify the previous 3 still exist
-        response = requests.get(path, headers=self._headers())
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(3, len(tags))
 
         # Create new tags and append to existing tags.
-        path = self._url('/v2/metadefs/namespaces/%s/tags' %
-                         (namespace_name))
+        path = '/v2/metadefs/namespaces/%s/tags' % namespace_name
         headers = self._headers({'content-type': 'application/json',
                                  'X-Openstack-Append': 'True'})
-        data = jsonutils.dumps(
-            {"tags": [{"name": "tag4"}, {"name": "tag5"}, {"name": "tag6"}]}
-        )
-        response = requests.post(path, headers=headers, data=data)
+        data = {
+            "tags": [
+                {"name": "tag4"},
+                {"name": "tag5"},
+                {"name": "tag6"}
+            ]
+        }
+        response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.CREATED, response.status_code)
 
         # List out all six tags.
-        response = requests.get(path, headers=self._headers())
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(6, len(tags))
 
         # Attempt to create duplicate existing tag6
-        data = jsonutils.dumps(
-            {"tags": [{"name": "tag6"}, {"name": "tag7"}, {"name": "tag8"}]}
-        )
-        response = requests.post(path, headers=headers, data=data)
+        data = {
+            "tags": [
+                {"name": "tag6"},
+                {"name": "tag7"},
+                {"name": "tag8"}
+            ]
+        }
+        response = self.api_post(path, headers=headers, json=data)
         self.assertEqual(http.CONFLICT, response.status_code)
 
         # Verify the previous 6 still exist
-        response = requests.get(path, headers=self._headers())
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
         tags = jsonutils.loads(response.text)['tags']
         self.assertEqual(6, len(tags))
@@ -195,11 +203,11 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
         for namespace in namespaces:
             headers = self._headers({'X-Tenant-Id': namespace['owner']})
             tag_name = "tag_of_%s" % (namespace['namespace'])
-            path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                             (namespace['namespace'], tag_name))
-            response = requests.post(path, headers=headers)
+            path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+                namespace['namespace'], tag_name)
+            response = self.api_post(path, headers=headers)
             self.assertEqual(http.CREATED, response.status_code)
-            tag_metadata = response.json()
+            tag_metadata = jsonutils.loads(response.text)
             metadef_tags = dict()
             metadef_tags[namespace['namespace']] = tag_metadata['name']
             tags.append(metadef_tags)
@@ -208,20 +216,20 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
 
     def _update_tags(self, path, headers, data):
         # The tag should be mutable
-        response = requests.put(path, headers=headers, json=data)
+        response = self.api_put(path, headers=headers, json=data)
         self.assertEqual(http.OK, response.status_code, response.text)
         # Returned metadata_tag should reflect the changes
-        metadata_tag = response.json()
+        metadata_tag = jsonutils.loads(response.text)
         self.assertEqual(data['name'], metadata_tag['name'])
 
         # Updates should persist across requests
-        response = requests.get(path, headers=self._headers())
+        response = self.api_get(path, headers=self._headers())
         self.assertEqual(http.OK, response.status_code)
         self.assertEqual(data['name'], metadata_tag['name'])
 
     def test_role_base_metadata_tags_lifecycle(self):
         # Create public and private namespaces for tenant1 and tenant2
-        path = self._url('/v2/metadefs/namespaces')
+        path = '/v2/metadefs/namespaces'
         headers = self._headers({'content-type': 'application/json'})
         tenant1_namespaces = []
         tenant2_namespaces = []
@@ -237,6 +245,7 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
                 }
                 namespace = self.create_namespace(path, headers,
                                                   namespace_data)
+                namespace = jsonutils.loads(namespace.text)
                 self.assertNamespacesEqual(namespace, namespace_data)
                 if tenant == self.tenant1:
                     tenant1_namespaces.append(namespace)
@@ -253,9 +262,9 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
                                      'X-Roles': 'reader,member'})
             for tag in tags:
                 for namespace, tag_name in tag.items():
-                    path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                                     (namespace, tag_name))
-                    response = requests.get(path, headers=headers)
+                    path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+                        namespace, tag_name)
+                    response = self.api_get(path, headers=headers)
                     if namespace.split('_')[1] == 'public':
                         expected = http.OK
                     else:
@@ -266,12 +275,11 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
                     self.assertEqual(expected, response.status_code)
 
                     # Make sure the same holds for listing
-                    path = self._url(
-                        '/v2/metadefs/namespaces/%s/tags' % namespace)
-                    response = requests.get(path, headers=headers)
+                    path = '/v2/metadefs/namespaces/%s/tags' % namespace
+                    response = self.api_get(path, headers=headers)
                     self.assertEqual(expected, response.status_code)
                     if expected == http.OK:
-                        resp_props = response.json()['tags']
+                        resp_props = jsonutils.loads(response.text)['tags']
                         self.assertEqual(
                             sorted(tag.values()),
                             sorted([x['name']
@@ -291,12 +299,12 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
             for namespace, tag_name in tag.items():
                 data = {
                     "name": tag_name}
-                path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                                 (namespace, tag_name))
+                path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+                    namespace, tag_name)
 
                 # Update tag should fail with non admin role
                 headers['X-Roles'] = "reader,member"
-                response = requests.put(path, headers=headers, json=data)
+                response = self.api_put(path, headers=headers, json=data)
                 self.assertEqual(http.FORBIDDEN, response.status_code)
 
                 # Should work with admin role
@@ -307,9 +315,9 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
         # Delete tags should not be allowed to non admin role
         for tag in total_tags:
             for namespace, tag_name in tag.items():
-                path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                                 (namespace, tag_name))
-                response = requests.delete(
+                path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+                    namespace, tag_name)
+                response = self.api_delete(
                     path, headers=self._headers({
                         'X-Roles': 'reader,member',
                         'X-Tenant-Id': namespace.split('_')[0]
@@ -320,13 +328,13 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
         headers = self._headers()
         for tag in total_tags:
             for namespace, tag_name in tag.items():
-                path = self._url('/v2/metadefs/namespaces/%s/tags/%s' %
-                                 (namespace, tag_name))
-                response = requests.delete(path, headers=headers)
+                path = '/v2/metadefs/namespaces/%s/tags/%s' % (
+                    namespace, tag_name)
+                response = self.api_delete(path, headers=headers)
                 self.assertEqual(http.NO_CONTENT, response.status_code)
 
-                # Deleted tags should not be exist
-                response = requests.get(path, headers=headers)
+                # Deleted tags should not exist
+                response = self.api_get(path, headers=headers)
                 self.assertEqual(http.NOT_FOUND, response.status_code)
 
         # Create multiple tags should not be allowed to non admin role
@@ -336,32 +344,29 @@ class TestMetadefTags(metadef_base.MetadefFunctionalTestBase):
             "tags": [{"name": "tag1"}, {"name": "tag2"}, {"name": "tag3"}]
         }
         for namespace in tenant1_namespaces:
-            path = self._url('/v2/metadefs/namespaces/%s/tags' %
-                             (namespace['namespace']))
-            response = requests.post(path, headers=headers, json=data)
+            path = '/v2/metadefs/namespaces/%s/tags' % (
+                namespace['namespace'])
+            response = self.api_post(path, headers=headers, json=data)
             self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Create multiple tags.
         headers = self._headers({'content-type': 'application/json'})
         for namespace in tenant1_namespaces:
-            path = self._url('/v2/metadefs/namespaces/%s/tags' %
-                             (namespace['namespace']))
-            response = requests.post(path, headers=headers, json=data)
+            path = '/v2/metadefs/namespaces/%s/tags' % (namespace['namespace'])
+            response = self.api_post(path, headers=headers, json=data)
             self.assertEqual(http.CREATED, response.status_code)
 
         # Delete multiple tags should not be allowed with non admin role
         headers = self._headers({'content-type': 'application/json',
                                  'X-Roles': 'reader,member'})
         for namespace in tenant1_namespaces:
-            path = self._url('/v2/metadefs/namespaces/%s/tags' %
-                             (namespace['namespace']))
-            response = requests.delete(path, headers=headers)
+            path = '/v2/metadefs/namespaces/%s/tags' % (namespace['namespace'])
+            response = self.api_delete(path, headers=headers)
             self.assertEqual(http.FORBIDDEN, response.status_code)
 
         # Delete multiple tags created above created tags
         headers = self._headers()
         for namespace in tenant1_namespaces:
-            path = self._url('/v2/metadefs/namespaces/%s/tags' %
-                             (namespace['namespace']))
-            response = requests.delete(path, headers=headers)
+            path = '/v2/metadefs/namespaces/%s/tags' % (namespace['namespace'])
+            response = self.api_delete(path, headers=headers)
             self.assertEqual(http.NO_CONTENT, response.status_code)

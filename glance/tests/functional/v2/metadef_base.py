@@ -12,12 +12,11 @@
 # limitations under the License.
 
 from oslo_utils.fixture import uuidsentinel as uuids
-import requests
 
 from glance.tests import functional
 
 
-class MetadefFunctionalTestBase(functional.FunctionalTest):
+class MetadefFunctionalTestBase(functional.SynchronousAPIBase):
     """A basic set of assertions and utilities for testing the metadef API."""
 
     def setUp(self):
@@ -61,4 +60,5 @@ class MetadefFunctionalTestBase(functional.FunctionalTest):
 
         :returns: a dictionary of the namespace in the response
         """
-        return requests.post(path, headers=headers, json=namespace).json()
+
+        return self.api_post(path, headers, json=namespace)
