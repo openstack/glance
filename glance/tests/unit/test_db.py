@@ -19,7 +19,6 @@ from unittest import mock
 import uuid
 
 from oslo_config import cfg
-from oslo_db import exception as db_exc
 from oslo_utils.fixture import uuidsentinel as uuids
 from oslo_utils import timeutils
 from sqlalchemy import orm as sa_orm
@@ -1064,52 +1063,17 @@ class TestTaskRepo(test_utils.BaseTestCase):
                           task.task_id)
 
 
-class RetryOnDeadlockTestCase(test_utils.BaseTestCase):
-
-    def test_raise_deadlock(self):
-
-        class TestException(Exception):
-            pass
-
-        self.attempts = 3
-
-        def _mock_get_session():
-            def _raise_exceptions():
-                self.attempts -= 1
-                if self.attempts <= 0:
-                    raise TestException("Exit")
-                raise db_exc.DBDeadlock("Fake Exception")
-            return _raise_exceptions
-
-        with mock.patch.object(api, 'get_session') as sess:
-            sess.side_effect = _mock_get_session()
-
-            try:
-                api.image_update(None, 'fake-id', {})
-            except TestException:
-                self.assertEqual(3, sess.call_count)
-
-        # Test retry on image destroy if db deadlock occurs
-        self.attempts = 3
-        with mock.patch.object(api, 'get_session') as sess:
-            sess.side_effect = _mock_get_session()
-
-            try:
-                api.image_destroy(None, 'fake-id')
-            except TestException:
-                self.assertEqual(3, sess.call_count)
-
-
 class TestImageDeleteRace(test_utils.BaseTestCase):
 
-    @mock.patch.object(api, 'get_session')
+    @mock.patch.object(api, 'session_for_write')
     @mock.patch.object(api, 'LOG')
     def test_image_property_delete_stale_data(
-        self, mock_LOG, mock_get_session,
+        self, mock_LOG, mock_session_for,
     ):
         mock_context = mock.MagicMock()
-        mock_session = mock_get_session.return_value
-        mock_result = (mock_session.query.return_value.
+        mock_session = mock_session_for.return_value
+        mock_result = (mock_session.__enter__.return_value.
+                       query.return_value.
                        filter_by.return_value.
                        one.return_value)
         mock_result.delete.side_effect = sa_orm.exc.StaleDataError('myerror')
@@ -1124,11 +1088,12 @@ class TestImageDeleteRace(test_utils.BaseTestCase):
             '%(err)s', {'prop': 'myprop', 'image': 'myimage',
                         'err': 'myerror'})
 
-    @mock.patch.object(api, 'get_session')
-    def test_image_property_delete_exception(self, mock_get_session):
+    @mock.patch.object(api, 'session_for_write')
+    def test_image_property_delete_exception(self, mock_session_for):
         mock_context = mock.MagicMock()
-        mock_session = mock_get_session.return_value
-        mock_result = (mock_session.query.return_value.
+        mock_session = mock_session_for.return_value
+        mock_result = (mock_session.__enter__.return_value.
+                       query.return_value.
                        filter_by.return_value.
                        one.return_value)
         mock_result.delete.side_effect = RuntimeError

@@ -26,13 +26,13 @@ import itertools
 import threading
 
 from oslo_config import cfg
+from oslo_db import api as db_api
 from oslo_db import exception as db_exception
-from oslo_db.sqlalchemy import session as oslo_db_session
+from oslo_db.sqlalchemy import enginefacade
 from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import timeutils as oslo_timeutils
 import osprofiler.sqlalchemy
-from retrying import retry
 import sqlalchemy
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy import MetaData, Table
@@ -64,45 +64,48 @@ STATUSES = ['active', 'saving', 'queued', 'killed', 'pending_delete',
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
 
-_FACADE = None
-_LOCK = threading.Lock()
+_main_context_lock = threading.Lock()
+_main_context_manager = None
+_context = None
 
 
-def _retry_on_deadlock(exc):
-    """Decorator to retry a DB API call if Deadlock was received."""
-
-    if isinstance(exc, db_exception.DBDeadlock):
-        LOG.warning(_LW("Deadlock detected. Retrying..."))
-        return True
-    return False
+def _get_context():
+    global _context
+    if _context is None:
+        _context = threading.local()
+    return _context
 
 
-def _create_facade_lazily():
-    global _LOCK, _FACADE
-    if _FACADE is None:
-        with _LOCK:
-            if _FACADE is None:
-                _FACADE = oslo_db_session.EngineFacade.from_config(
-                    CONF,
-                    sqlite_fk=True,
-                )
+def _get_main_context_manager():
+    global _main_context_lock
+    global _main_context_manager
 
-                if CONF.profiler.enabled and CONF.profiler.trace_sqlalchemy:
-                    osprofiler.sqlalchemy.add_tracing(sqlalchemy,
-                                                      _FACADE.get_engine(),
-                                                      "db")
-    return _FACADE
+    with _main_context_lock:
+        if not _main_context_manager:
+            _main_context_manager = enginefacade.transaction_context()
+            _main_context_manager.configure(sqlite_fk=True)
+
+    return _main_context_manager
+
+
+def _wrap_session(sess):
+    if CONF.profiler.enabled and CONF.profiler.trace_sqlalchemy:
+        sess = osprofiler.sqlalchemy.wrap_session(sql, sess)
+    return sess
+
+
+def session_for_read():
+    reader = _get_main_context_manager().reader
+    return _wrap_session(reader.using(_get_context()))
+
+
+def session_for_write():
+    writer = _get_main_context_manager().writer
+    return _wrap_session(writer.using(_get_context()))
 
 
 def get_engine():
-    facade = _create_facade_lazily()
-    return facade.get_engine()
-
-
-def get_session(expire_on_commit=False):
-    facade = _create_facade_lazily()
-    return facade.get_session(autocommit=False,
-                              expire_on_commit=expire_on_commit)
+    return _get_main_context_manager().writer.get_engine()
 
 
 def _validate_db_int(**kwargs):
@@ -126,8 +129,11 @@ def clear_db_env():
     """
     Unset global configuration variables for database.
     """
-    global _FACADE
-    _FACADE = None
+    global _main_context_lock
+    global _main_context_manager
+
+    with _main_context_lock:
+        _main_context_manager = None
 
 
 def _check_mutate_authorization(context, image_ref):
@@ -143,18 +149,15 @@ def _check_mutate_authorization(context, image_ref):
         raise exc_class(msg)
 
 
-@retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
-       stop_max_attempt_number=50)
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def image_create(context, values, v1_mode=False):
     """Create an image from the values dictionary."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         image_ref = _image_update(
             context, session, None, values, purge_props=False)
 
-    session.expire_all()
-
-    with session.begin():
+    with session_for_read() as session:
         image = _image_get(context, session, image_ref.id)
         image = _normalize_locations(context, image.to_dict())
 
@@ -163,8 +166,8 @@ def image_create(context, values, v1_mode=False):
     return image
 
 
-@retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
-       stop_max_attempt_number=50)
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def image_update(context, image_id, values, purge_props=False,
                  from_state=None, v1_mode=False, atomic_props=None):
     """
@@ -172,15 +175,12 @@ def image_update(context, image_id, values, purge_props=False,
 
     :raises: ImageNotFound if image does not exist.
     """
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         image_ref = _image_update(
             context, session, image_id, values, purge_props,
             from_state=from_state, atomic_props=atomic_props)
 
-    session.expire_all()
-
-    with session.begin():
+    with session_for_read() as session:
         image = _image_get(context, session, image_ref.id)
 
     image = _normalize_locations(context, image.to_dict())
@@ -192,8 +192,7 @@ def image_update(context, image_id, values, purge_props=False,
 
 def image_restore(context, image_id):
     """Restore the pending-delete image to active."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         image_ref = _image_get(context, session, image_id)
         if image_ref.status != 'pending_delete':
             msg = (_('cannot restore the image from %s to active (wanted '
@@ -205,12 +204,11 @@ def image_restore(context, image_id):
         query.update(values, synchronize_session='fetch')
 
 
-@retry(retry_on_exception=_retry_on_deadlock, wait_fixed=500,
-       stop_max_attempt_number=50)
+@db_api.wrap_db_retry(max_retries=50, retry_interval=0.5,
+                      inc_retry_interval=False, retry_on_deadlock=True)
 def image_destroy(context, image_id):
     """Destroy the image or raise if it does not exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         image_ref = _image_get(context, session, image_id)
 
         # Perform authorization check
@@ -262,8 +260,7 @@ def _normalize_tags(image):
 
 
 def image_get(context, image_id, force_show_deleted=False, v1_mode=False):
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         image = _image_get(context, session, image_id,
                            force_show_deleted=force_show_deleted)
     image = _normalize_locations(context, image.to_dict(),
@@ -661,9 +658,7 @@ def image_get_all(
     :param v1_mode: If true, mutates the 'visibility' value of each image
                     into the v1-compatible field 'is_public'
     """
-    session = get_session()
-
-    with session.begin():
+    with session_for_read() as session:
         return _image_get_all(
             context, session, filters=filters, marker=marker, limit=limit,
             sort_key=sort_key, sort_dir=sort_dir,
@@ -913,8 +908,7 @@ def image_set_property_atomic(image_id, name, value):
     :param value: The value to set for the property
     :raises Duplicate: If the property already exists
     """
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         connection = session.connection()
         table = models.ImageProperty.__table__
 
@@ -961,8 +955,7 @@ def image_delete_property_atomic(image_id, name, value):
     :param value: The value the property is expected to be set to
     :raises NotFound: If the property does not exist
     """
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         connection = session.connection()
         table = models.ImageProperty.__table__
 
@@ -1089,8 +1082,7 @@ def _image_update(context, session, image_id, values, purge_props=False,
 
 
 def image_location_add(context, image_id, location):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         _image_location_add(context, session, image_id, location)
 
 
@@ -1108,8 +1100,7 @@ def _image_location_add(context, session, image_id, location):
 
 
 def image_location_update(context, image_id, location):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         _image_location_update(context, session, image_id, location)
 
 
@@ -1144,8 +1135,7 @@ def _image_location_update(context, session, image_id, location):
 
 def image_location_delete(context, image_id, location_id, status,
                           delete_time=None):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         _image_location_delete(
             context, session, image_id, location_id, status, delete_time=None,
         )
@@ -1289,8 +1279,7 @@ def _image_child_entry_delete_all(
 
 def image_property_create(context, values):
     """Create an ImageProperty object."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return _image_property_create(context, session, values)
 
 
@@ -1312,8 +1301,7 @@ def _image_property_update(context, session, prop_ref, values):
 
 
 def image_property_delete(context, prop_ref, image_ref):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return _image_property_delete(context, session, prop_ref, image_ref)
 
 
@@ -1349,8 +1337,7 @@ def _image_property_delete_all(context, session, image_id, delete_time=None):
 @utils.no_4byte_params
 def image_member_create(context, values):
     """Create an ImageMember object."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         memb_ref = models.ImageMember()
         _image_member_update(context, session, memb_ref, values)
         return _image_member_format(memb_ref)
@@ -1372,8 +1359,7 @@ def _image_member_format(member_ref):
 
 def image_member_update(context, memb_id, values):
     """Update an ImageMember object."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         memb_ref = _image_member_get(context, session, memb_id)
         _image_member_update(context, session, memb_ref, values)
         return _image_member_format(memb_ref)
@@ -1391,8 +1377,7 @@ def _image_member_update(context, session, memb_ref, values):
 
 def image_member_delete(context, memb_id):
     """Delete an ImageMember object."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         member_ref = _image_member_get(context, session, memb_id)
         _image_member_delete(context, session, member_ref)
 
@@ -1433,8 +1418,7 @@ def image_member_find(context, image_id=None, member=None,
     :include_deleted: A boolean indicating whether the result should include
                       the deleted record of image member
     """
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         members = _image_member_find(context, session, image_id,
                                      member, status, include_deleted)
         return [_image_member_format(m) for m in members]
@@ -1469,13 +1453,11 @@ def image_member_count(context, image_id):
 
     :param image_id: identifier of image entity
     """
-    session = get_session()
-
     if not image_id:
         msg = _("Image id is required.")
         raise exception.Invalid(msg)
 
-    with session.begin():
+    with session_for_read() as session:
         query = session.query(models.ImageMember)
         query = query.filter_by(deleted=False)
         query = query.filter(models.ImageMember.image_id == str(image_id))
@@ -1486,9 +1468,7 @@ def image_member_count(context, image_id):
 def image_tag_set_all(context, image_id, tags):
     # NOTE(kragniz): tag ordering should match exactly what was provided, so a
     # subsequent call to image_tag_get_all returns them in the correct order
-
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         existing_tags = _image_tag_get_all(context, session, image_id)
 
         tags_created = []
@@ -1503,8 +1483,7 @@ def image_tag_set_all(context, image_id, tags):
 
 
 def image_tag_create(context, image_id, value):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return _image_tag_create(context, session, image_id, value)
 
 
@@ -1517,8 +1496,7 @@ def _image_tag_create(context, session, image_id, value):
 
 
 def image_tag_delete(context, image_id, value):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         _image_tag_delete(context, session, image_id, value)
 
 
@@ -1548,8 +1526,7 @@ def _image_tag_delete_all(context, session, image_id, delete_time=None):
 
 
 def image_tag_get_all(context, image_id):
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return _image_tag_get_all(context, session, image_id)
 
 
@@ -1590,7 +1567,6 @@ def purge_deleted_rows(context, age_in_days, max_rows):
     # check max_rows for its maximum limit
     _validate_db_int(max_rows=max_rows)
 
-    session = get_session()
     metadata = MetaData()
     engine = get_engine()
     deleted_age = oslo_timeutils.utcnow() - datetime.timedelta(
@@ -1622,7 +1598,7 @@ def purge_deleted_rows(context, age_in_days, max_rows):
                  'from table %(tbl)s'),
              {'age_in_days': age_in_days, 'tbl': ti})
     try:
-        with session.begin():
+        with session_for_write() as session:
             result = session.execute(delete_statement)
     except (db_exception.DBError, db_exception.DBReferenceError) as ex:
         LOG.exception(_LE('DBError detected when force purging '
@@ -1668,7 +1644,7 @@ def purge_deleted_rows(context, age_in_days, max_rows):
         delete_statement = DeleteFromSelect(tab, query_delete, column)
 
         try:
-            with session.begin():
+            with session_for_write() as session:
                 result = session.execute(delete_statement)
         except db_exception.DBReferenceError as ex:
             with excutils.save_and_reraise_exception():
@@ -1690,7 +1666,6 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows):
     # check max_rows for its maximum limit
     _validate_db_int(max_rows=max_rows)
 
-    session = get_session()
     metadata = MetaData()
     engine = get_engine()
     deleted_age = oslo_timeutils.utcnow() - datetime.timedelta(
@@ -1716,7 +1691,7 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows):
     delete_statement = DeleteFromSelect(tab, query_delete, column)
 
     try:
-        with session.begin():
+        with session_for_write() as session:
             result = session.execute(delete_statement)
     except db_exception.DBReferenceError as ex:
         with excutils.save_and_reraise_exception():
@@ -1731,28 +1706,24 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows):
 
 def user_get_storage_usage(context, owner_id, image_id=None):
     _check_image_id(image_id)
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         total_size = _image_get_disk_usage_by_owner(
             context, session, owner_id, image_id=image_id)
     return total_size
 
 
 def user_get_staging_usage(context, owner_id):
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return _image_get_staging_usage_by_owner(context, session, owner_id)
 
 
 def user_get_image_count(context, owner_id):
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return _image_get_count_by_owner(context, session, owner_id)
 
 
 def user_get_uploading_count(context, owner_id):
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return _image_get_uploading_count_by_owner(context, session, owner_id)
 
 
@@ -1803,8 +1774,7 @@ def _task_info_get(context, session, task_id):
 def task_create(context, values):
     """Create a task object"""
     values = values.copy()
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         task_info_values = _pop_task_info_values(values)
 
         task_ref = models.Task()
@@ -1815,7 +1785,7 @@ def task_create(context, values):
                           task_ref.id,
                           task_info_values)
 
-    with session.begin():
+    with session_for_read() as session:
         task_ref = _task_get(context, session, task_ref.id)
         return _task_format(task_ref, task_ref.info)
 
@@ -1832,8 +1802,7 @@ def _pop_task_info_values(values):
 
 def task_update(context, task_id, values):
     """Update a task object"""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         task_info_values = _pop_task_info_values(values)
 
         task_ref = _task_get(context, session, task_id)
@@ -1849,15 +1818,14 @@ def task_update(context, task_id, values):
                               task_id,
                               task_info_values)
 
-    with session.begin():
+    with session_for_read() as session:
         task_ref = _task_get(context, session, task_id)
         return _task_format(task_ref, task_ref.info)
 
 
 def task_get(context, task_id, force_show_deleted=False):
     """Fetch a task entity by id"""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         task_ref = _task_get(context, session, task_id,
                              force_show_deleted=force_show_deleted)
         return _task_format(task_ref, task_ref.info)
@@ -1865,8 +1833,7 @@ def task_get(context, task_id, force_show_deleted=False):
 
 def tasks_get_by_image(context, image_id):
     """Fetch all tasks associated with image_id"""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return _tasks_get_by_image(context, session, image_id)
 
 
@@ -1908,8 +1875,7 @@ def _tasks_get_by_image(context, session, image_id):
 
 def task_delete(context, task_id):
     """Delete a task"""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         task_ref = _task_get(context, session, task_id)
         task_ref.delete(session=session)
         return _task_format(task_ref, task_ref.info)
@@ -1943,9 +1909,7 @@ def task_get_all(context, filters=None, marker=None, limit=None,
                       if it were a regular user
     :returns: tasks set
     """
-    session = get_session()
-
-    with session.begin():
+    with session_for_write() as session:
         return _task_get_all(
             context, session, filters=filters, marker=marker, limit=limit,
             sort_key=sort_key, sort_dir=sort_dir, admin_as_user=admin_as_user,
@@ -2084,16 +2048,14 @@ def metadef_namespace_get_all(
     sort_dir='desc', filters=None,
 ):
     """List all available namespaces."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_namespace_api.get_all(
             context, session, marker, limit, sort_key, sort_dir, filters)
 
 
 def metadef_namespace_get(context, namespace_name):
     """Get a namespace or raise if it does not exist or is not visible."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_namespace_api.get(
             context, session, namespace_name)
 
@@ -2101,40 +2063,35 @@ def metadef_namespace_get(context, namespace_name):
 @utils.no_4byte_params
 def metadef_namespace_create(context, values):
     """Create a namespace or raise if it already exists."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_namespace_api.create(context, session, values)
 
 
 @utils.no_4byte_params
 def metadef_namespace_update(context, namespace_id, namespace_dict):
     """Update a namespace or raise if it does not exist or not visible"""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_namespace_api.update(
             context, session, namespace_id, namespace_dict)
 
 
 def metadef_namespace_delete(context, namespace_name):
     """Delete the namespace and all foreign references"""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_namespace_api.delete_cascade(
             context, session, namespace_name)
 
 
 def metadef_object_get_all(context, namespace_name):
     """Get a metadata-schema object or raise if it does not exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_object_api.get_all(
             context, session, namespace_name)
 
 
 def metadef_object_get(context, namespace_name, object_name):
     """Get a metadata-schema object or raise if it does not exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_object_api.get(
             context, session, namespace_name, object_name)
 
@@ -2142,8 +2099,7 @@ def metadef_object_get(context, namespace_name, object_name):
 @utils.no_4byte_params
 def metadef_object_create(context, namespace_name, object_dict):
     """Create a metadata-schema object or raise if it already exists."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_object_api.create(
             context, session, namespace_name, object_dict)
 
@@ -2151,46 +2107,40 @@ def metadef_object_create(context, namespace_name, object_dict):
 @utils.no_4byte_params
 def metadef_object_update(context, namespace_name, object_id, object_dict):
     """Update an object or raise if it does not exist or not visible."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_object_api.update(
             context, session, namespace_name, object_id, object_dict)
 
 
 def metadef_object_delete(context, namespace_name, object_name):
     """Delete an object or raise if namespace or object doesn't exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_object_api.delete(
             context, session, namespace_name, object_name)
 
 
 def metadef_object_delete_namespace_content(context, namespace_name):
     """Delete an object or raise if namespace or object doesn't exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_object_api.delete_by_namespace_name(
             context, session, namespace_name)
 
 
 def metadef_object_count(context, namespace_name):
     """Get count of properties for a namespace, raise if ns doesn't exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_object_api.count(context, session, namespace_name)
 
 
 def metadef_property_get_all(context, namespace_name):
     """Get a metadef property or raise if it does not exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_property_api.get_all(context, session, namespace_name)
 
 
 def metadef_property_get(context, namespace_name, property_name):
     """Get a metadef property or raise if it does not exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_property_api.get(
             context, session, namespace_name, property_name)
 
@@ -2198,8 +2148,7 @@ def metadef_property_get(context, namespace_name, property_name):
 @utils.no_4byte_params
 def metadef_property_create(context, namespace_name, property_dict):
     """Create a metadef property or raise if it already exists."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_property_api.create(
             context, session, namespace_name, property_dict)
 
@@ -2208,62 +2157,54 @@ def metadef_property_create(context, namespace_name, property_dict):
 def metadef_property_update(context, namespace_name, property_id,
                             property_dict):
     """Update an object or raise if it does not exist or not visible."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_property_api.update(
             context, session, namespace_name, property_id, property_dict)
 
 
 def metadef_property_delete(context, namespace_name, property_name):
     """Delete a property or raise if it or namespace doesn't exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_property_api.delete(
             context, session, namespace_name, property_name)
 
 
 def metadef_property_delete_namespace_content(context, namespace_name):
     """Delete a property or raise if it or namespace doesn't exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_property_api.delete_by_namespace_name(
             context, session, namespace_name)
 
 
 def metadef_property_count(context, namespace_name):
     """Get count of properties for a namespace, raise if ns doesn't exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_property_api.count(context, session, namespace_name)
 
 
 def metadef_resource_type_create(context, values):
     """Create a resource_type"""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_resource_type_api.create(
             context, session, values)
 
 
 def metadef_resource_type_get(context, resource_type_name):
     """Get a resource_type"""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_resource_type_api.get(
             context, session, resource_type_name)
 
 
 def metadef_resource_type_get_all(context):
     """list all resource_types"""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_resource_type_api.get_all(context, session)
 
 
 def metadef_resource_type_delete(context, resource_type_name):
     """Get a resource_type"""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_resource_type_api.delete(
             context, session, resource_type_name)
 
@@ -2271,8 +2212,7 @@ def metadef_resource_type_delete(context, resource_type_name):
 def metadef_resource_type_association_get(
     context, namespace_name, resource_type_name,
 ):
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_association_api.get(
             context, session, namespace_name, resource_type_name)
 
@@ -2280,8 +2220,7 @@ def metadef_resource_type_association_get(
 def metadef_resource_type_association_create(
     context, namespace_name, values,
 ):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_association_api.create(
             context, session, namespace_name, values)
 
@@ -2289,8 +2228,7 @@ def metadef_resource_type_association_create(
 def metadef_resource_type_association_delete(
     context, namespace_name, resource_type_name,
 ):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_association_api.delete(
             context, session, namespace_name, resource_type_name)
 
@@ -2298,8 +2236,7 @@ def metadef_resource_type_association_delete(
 def metadef_resource_type_association_get_all_by_namespace(
     context, namespace_name,
 ):
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_association_api.get_all_by_namespace(
             context, session, namespace_name)
 
@@ -2309,8 +2246,7 @@ def metadef_tag_get_all(
     sort_key='created_at', sort_dir='desc',
 ):
     """Get metadata-schema tags or raise if none exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_tag_api.get_all(
             context, session, namespace_name,
             filters, marker, limit, sort_key, sort_dir)
@@ -2318,8 +2254,7 @@ def metadef_tag_get_all(
 
 def metadef_tag_get(context, namespace_name, name):
     """Get a metadata-schema tag or raise if it does not exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_tag_api.get(
             context, session, namespace_name, name)
 
@@ -2327,8 +2262,7 @@ def metadef_tag_get(context, namespace_name, name):
 @utils.no_4byte_params
 def metadef_tag_create(context, namespace_name, tag_dict):
     """Create a metadata-schema tag or raise if it already exists."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_tag_api.create(
             context, session, namespace_name, tag_dict)
 
@@ -2336,8 +2270,7 @@ def metadef_tag_create(context, namespace_name, tag_dict):
 def metadef_tag_create_tags(context, namespace_name, tag_list,
                             can_append=False):
     """Create a metadata-schema tag or raise if it already exists."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_tag_api.create_tags(
             context, session, namespace_name, tag_list, can_append)
 
@@ -2345,32 +2278,28 @@ def metadef_tag_create_tags(context, namespace_name, tag_list,
 @utils.no_4byte_params
 def metadef_tag_update(context, namespace_name, id, tag_dict):
     """Update an tag or raise if it does not exist or not visible."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_tag_api.update(
             context, session, namespace_name, id, tag_dict)
 
 
 def metadef_tag_delete(context, namespace_name, name):
     """Delete an tag or raise if namespace or tag doesn't exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_tag_api.delete(
             context, session, namespace_name, name)
 
 
 def metadef_tag_delete_namespace_content(context, namespace_name):
     """Delete an tag or raise if namespace or tag doesn't exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         return metadef_tag_api.delete_by_namespace_name(
             context, session, namespace_name)
 
 
 def metadef_tag_count(context, namespace_name):
     """Get count of tags for a namespace, raise if ns doesn't exist."""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         return metadef_tag_api.count(context, session, namespace_name)
 
 
@@ -2391,8 +2320,7 @@ def _cached_image_format(cached_image):
 
 def node_reference_get_by_url(context, node_reference_url):
     """Get a node reference by node reference url"""
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         try:
             query = session.query(models.NodeReference)
             query = query.filter_by(node_reference_url=node_reference_url)
@@ -2407,10 +2335,9 @@ def node_reference_get_by_url(context, node_reference_url):
 @utils.no_4byte_params
 def node_reference_create(context, node_reference_url):
     """Create a node_reference  or raise if it already exists."""
-    session = get_session()
     values = {'node_reference_url': node_reference_url}
 
-    with session.begin():
+    with session_for_write() as session:
         node_reference = models.NodeReference()
         node_reference.update(values.copy())
         try:
@@ -2422,13 +2349,12 @@ def node_reference_create(context, node_reference_url):
 
 
 def get_hit_count(context, image_id, node_reference_url):
-    session = get_session()
     node_id = models.NodeReference.node_reference_id
     filters = [
         models.CachedImages.image_id == image_id,
         models.NodeReference.node_reference_url == node_reference_url,
     ]
-    with session.begin():
+    with session_for_read() as session:
         try:
             query = session.query(
                 models.CachedImages.hits).join(
@@ -2447,8 +2373,7 @@ def get_hit_count(context, image_id, node_reference_url):
 
 def get_cached_images(context, node_reference_url):
     node_id = models.NodeReference.node_reference_id
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         query = session.query(
             models.CachedImages).join(
             models.NodeReference,
@@ -2464,8 +2389,7 @@ def get_cached_images(context, node_reference_url):
 
 @utils.no_4byte_params
 def delete_all_cached_images(context, node_reference_url):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         node_id = session.query(models.NodeReference.node_reference_id).filter(
             models.NodeReference.node_reference_url == node_reference_url
         ).scalar_subquery()
@@ -2477,8 +2401,7 @@ def delete_all_cached_images(context, node_reference_url):
 
 
 def delete_cached_image(context, image_id, node_reference_url):
-    session = get_session()
-    with session.begin():
+    with session_for_write() as session:
         node_id = session.query(models.NodeReference.node_reference_id).filter(
             models.NodeReference.node_reference_url == node_reference_url
         ).scalar_subquery()
@@ -2493,8 +2416,7 @@ def delete_cached_image(context, image_id, node_reference_url):
 
 def get_least_recently_accessed(context, node_reference_url):
     node_id = models.NodeReference.node_reference_id
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         query = session.query(
             models.CachedImages.image_id).join(
             models.NodeReference,
@@ -2517,8 +2439,7 @@ def is_image_cached_for_node(context, node_reference_url, image_id):
         models.CachedImages.image_id == image_id,
         models.NodeReference.node_reference_url == node_reference_url,
     ]
-    session = get_session()
-    with session.begin():
+    with session_for_read() as session:
         try:
             query = session.query(
                 models.CachedImages.id).join(
@@ -2539,7 +2460,6 @@ def insert_cache_details(context, node_reference_url, image_id,
                          filesize, checksum=None, last_accessed=None,
                          last_modified=None, hits=None):
     node_reference = node_reference_get_by_url(context, node_reference_url)
-    session = get_session()
     accessed = last_accessed or oslo_timeutils.utcnow()
     modified = last_modified or oslo_timeutils.utcnow()
 
@@ -2553,7 +2473,7 @@ def insert_cache_details(context, node_reference_url, image_id,
         'node_reference_id': node_reference['node_reference_id']
     }
 
-    with session.begin():
+    with session_for_write() as session:
         cached_image = models.CachedImages()
         cached_image.update(values.copy())
         try:
@@ -2566,10 +2486,9 @@ def insert_cache_details(context, node_reference_url, image_id,
 
 @utils.no_4byte_params
 def update_hit_count(context, image_id, node_reference_url):
-    session = get_session()
     last_accessed = oslo_timeutils.utcnow()
 
-    with session.begin():
+    with session_for_write() as session:
         node_id = session.query(models.NodeReference.node_reference_id).filter(
             models.NodeReference.node_reference_url == node_reference_url
         ).scalar_subquery()
