@@ -2465,7 +2465,7 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         )
 
         # Get locations of `queued` image
-        headers = self._headers({'X-Roles': 'service'})
+        headers = self._headers({'X-Service-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
@@ -2500,7 +2500,7 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
         # Get Locations allowed only for service user
-        headers = self._headers({'X-Roles': 'service'})
+        headers = self._headers({'X-Service-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
@@ -2523,7 +2523,7 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
         # Get Locations allowed only for service user
-        headers = self._headers({'X-Roles': 'service'})
+        headers = self._headers({'X-Service-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
@@ -4918,7 +4918,7 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         self.assertEqual('queued', image['status'])
 
         # Get location of `queued` image
-        headers = self._headers({'X-Roles': 'service'})
+        headers = self._headers({'X-Service-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
@@ -4953,7 +4953,7 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
         # Get Locations allowed only for service user
-        headers = self._headers({'X-Roles': 'service'})
+        headers = self._headers({'X-Service-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
