@@ -89,9 +89,8 @@ SERVICE_OR_PROJECT_MEMBER = (
 )
 
 SERVICE = 'rule:service_api'
-SERVICE_ROLE = 'service_roles:service'
 
-ADMIN_OR_SERVICE_ROLE = f'{ADMIN} or {SERVICE_ROLE}'
+ADMIN_OR_SERVICE_ROLE = f'{ADMIN} or {SERVICE}'
 
 rules = [
     policy.RuleDefault(name='default', check_str='',
@@ -114,7 +113,7 @@ rules = [
     policy.RuleDefault(name='context_is_admin', check_str='role:admin',
                        description='Defines the rule for the is_admin:True '
                                    'check.'),
-    policy.RuleDefault(name='service_api', check_str='role:service',
+    policy.RuleDefault(name='service_api', check_str='service_roles:service',
                        description='Default rule for the service-to-service '
                        'API.'),
 ]
