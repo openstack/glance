@@ -90,7 +90,7 @@ def _get_main_context_manager():
 
 def _wrap_session(sess):
     if CONF.profiler.enabled and CONF.profiler.trace_sqlalchemy:
-        sess = osprofiler.sqlalchemy.wrap_session(sql, sess)
+        sess = osprofiler.sqlalchemy.wrap_session(sqlalchemy, sess)
     return sess
 
 
