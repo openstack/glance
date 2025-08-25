@@ -118,12 +118,19 @@ the :ref:`Image Import <image-import-call>` call is made.
 
 Set the ``Content-Type`` request header to ``application/octet-stream``.
 
+An optional ``x-openstack-image-size`` header may be added to the request.
+When present, the server will validate that the uploaded data size matches
+this value. If the actual size does not match the expected size, a 400
+(Bad Request) response is returned. When not present, the server will
+calculate the image size based on the actual request body size.
+
 Example call:
 
 ::
 
    curl -i -X PUT -H "X-Auth-Token: $token" \
       -H "Content-Type: application/octet-stream" \
+      -H "x-openstack-image-size: 5368709120" \
       -d @/home/glance/my.to-import.qcow2 \
       $image_url/v2/images/{image_id}/stage
 
@@ -170,6 +177,7 @@ Request
 .. rest_parameters:: images-parameters.yaml
 
    - Content-type: Content-Type-data
+   - x-openstack-image-size: x-openstack-image-size
    - image_id: image_id-in-path
 
 

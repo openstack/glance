@@ -31,6 +31,12 @@ header.  If the store identifier specified is not recognized, a 400 (Bad
 Request) response is returned.  When the header is not present, the image
 data is placed into the default backing store.
 
+An optional ``x-openstack-image-size`` header may be added to the request.
+When present, the server will validate that the uploaded data size matches
+this value. If the actual size does not match the expected size, a 400
+(Bad Request) response is returned. When not present, the server will
+calculate the image size based on the actual request body size.
+
 * Store identifiers are site-specific.  Use the :ref:`Store
   Discovery <store-discovery-call>` call to determine what
   stores are available in a particular cloud.
@@ -49,6 +55,7 @@ Example call:
    curl -i -X PUT -H "X-Auth-Token: $token" \
       -H "X-Image-Meta-Store: {store_identifier}" \
       -H "Content-Type: application/octet-stream" \
+      -H "x-openstack-image-size: 5368709120" \
       -d @/home/glance/ubuntu-12.10.qcow2 \
       $image_url/v2/images/{image_id}/file
 
@@ -98,6 +105,7 @@ Request
 
    - Content-type: Content-Type-data
    - X-Image-Meta-Store: store-header
+   - x-openstack-image-size: x-openstack-image-size
    - image_id: image_id-in-path
 
 
