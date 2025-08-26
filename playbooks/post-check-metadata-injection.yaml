@@ -19,6 +19,6 @@
               glance image-list --property-filter 'glance_devstack_test=doyouseeme?' | grep $image
 
               echo "Checking that the cirros image was converted to raw on import..."
-              glance image-show $image | egrep -e 'disk_format.*raw'
+              glance image-show $image | grep 'disk_format.*raw'
           done
       environment: '{{ zuul | zuul_legacy_vars }}'
