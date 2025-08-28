@@ -2465,7 +2465,7 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         )
 
         # Get locations of `queued` image
-        headers = self._headers({'X-Service-Roles': 'service'})
+        headers = self._headers({'X-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
@@ -2493,14 +2493,28 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
                                    delay_sec=0.2,
                                    start_delay_sec=1)
 
-        # Get Locations not allowed for any other user
-        headers = self._headers({'X-Roles': 'admin,member'})
+        self.set_policy_rules({
+            'get_image': 'role:member',
+            'fetch_image_location': 'role:service or role:admin',
+        })
+
+        # Get Locations not allowed for any non-admin or non-service user
+        headers = self._headers({'X-Roles': 'member'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
-        # Get Locations allowed only for service user
-        headers = self._headers({'X-Service-Roles': 'service'})
+        # TODO(gmaan): For backward compatibility, we are allowing admin
+        # user to access service only rules, but once we remove that
+        # access, we need to assert here that the admin cannot access the
+        # service only rules.
+        headers = self._headers({'X-Roles': 'admin'})
+        path = '/v2/images/%s/locations' % image_id
+        response = self.api_get(path, headers=headers)
+        self.assertEqual(200, response.status_code, response.text)
+
+        # Get Locations allowed for service user
+        headers = self._headers({'X-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
@@ -2515,15 +2529,30 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         # Upload some image data
         image_data = b'ZZZZZ'
         self.api_methods.upload_and_verify(image_id, image_data)
+        self.set_policy_rules({
+            'get_image': 'role:member',
+            'fetch_image_location': 'role:service or role:admin',
+        })
 
-        # Get Locations not allowed for any other user
-        headers = self._headers({'X-Roles': 'admin,member'})
+        # Get Locations not allowed for any non-admin or non-service user
+        headers = self._headers({'X-Roles': 'member'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
+        # TODO(gmaan): For backward compatibility, we are allowing admin
+        # user to access service only rules, but once we remove that
+        # access, we need to assert here that the admin cannot access the
+        # service only rules.
+        headers = self._headers({'X-Roles': 'admin'})
+        path = '/v2/images/%s/locations' % image_id
+        response = self.api_get(path, headers=headers)
+        self.assertEqual(200, response.status_code, response.text)
+        output = jsonutils.loads(response.text)
+        self.assertTrue(output[0]['url'])
+
         # Get Locations allowed only for service user
-        headers = self._headers({'X-Service-Roles': 'service'})
+        headers = self._headers({'X-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
@@ -4588,12 +4617,19 @@ class TestStoreWeight(functional.SynchronousAPIBase):
 class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
     def setUp(self):
         super(TestMultipleBackendsLocationApi, self).setUp()
-        self.start_server()
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
                                                "foo_image%d" % i)
             setattr(self, 'http_server%d' % i, ret[1])
             setattr(self, 'http_port%d' % i, ret[2])
+
+        self.policy = policy.Enforcer(suppress_deprecation_warnings=True)
+        self.start_server()
+
+    def start_server(self):
+        with mock.patch.object(policy, 'Enforcer') as mock_enf:
+            mock_enf.return_value = self.policy
+            super(TestMultipleBackendsLocationApi, self).start_server()
 
     def setup_stores(self):
         pass
@@ -4918,7 +4954,7 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         self.assertEqual('queued', image['status'])
 
         # Get location of `queued` image
-        headers = self._headers({'X-Service-Roles': 'service'})
+        headers = self._headers({'X-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
@@ -4946,14 +4982,31 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
                                    delay_sec=0.2,
                                    start_delay_sec=1, multistore=True)
 
-        # Get Locations not allowed for any other user
-        headers = self._headers({'X-Roles': 'admin,member'})
+        self.policy.set_rules(
+            oslo_policy.policy.Rules.from_dict({
+                'get_image': 'role:member',
+                'fetch_image_location': 'role:service or role:admin'}),
+            overwrite=True)
+
+        # Get Locations not allowed for any non-admin or non-service user
+        headers = self._headers({'X-Roles': 'member'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(http.FORBIDDEN, response.status_code, response.text)
 
-        # Get Locations allowed only for service user
-        headers = self._headers({'X-Service-Roles': 'service'})
+        # TODO(gmaan): For backward compatibility, we are allowing admin
+        # user to access service only rules, but once we remove that
+        # access, we need to assert here that the admin cannot access the
+        # service only rules.
+        headers = self._headers({'X-Roles': 'admin'})
+        path = '/v2/images/%s/locations' % image_id
+        response = self.api_get(path, headers=headers)
+        self.assertEqual(200, response.status_code, response.text)
+        output = jsonutils.loads(response.text)
+        self.assertTrue(output[0]['url'])
+
+        # Get Locations allowed for service user
+        headers = self._headers({'X-Roles': 'service'})
         path = '/v2/images/%s/locations' % image_id
         response = self.api_get(path, headers=headers)
         self.assertEqual(200, response.status_code, response.text)
