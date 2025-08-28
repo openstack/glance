@@ -113,7 +113,12 @@ rules = [
     policy.RuleDefault(name='context_is_admin', check_str='role:admin',
                        description='Defines the rule for the is_admin:True '
                                    'check.'),
-    policy.RuleDefault(name='service_api', check_str='service_roles:service',
+    # TODO(gmaan): The admin role access is added for backward compatibility
+    # because some services does not send the service role token to glance.
+    # Remove the admin role access from service rule in 2026.2 or later(after
+    # 2026.1 SLURP release).
+    policy.RuleDefault(name='service_api',
+                       check_str='role:service or role:admin',
                        description='Default rule for the service-to-service '
                        'API.'),
 ]
