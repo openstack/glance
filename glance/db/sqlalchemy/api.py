@@ -777,7 +777,8 @@ def _image_get_disk_usage_by_owner(context, session, owner, image_id=None):
     if image_id is not None:
         query = query.filter(models.Image.id != image_id)
     query = query.filter(models.Image.size > 0)
-    query = query.filter(~models.Image.status.in_(['killed', 'deleted']))
+    query = query.filter(~models.Image.status.in_([
+        'killed', 'deleted', 'pending_delete']))
     images = query.all()
 
     total = 0
@@ -815,7 +816,8 @@ def _image_get_staging_usage_by_owner(context, session, owner):
     query = query.filter(~models.Image.status.in_(('uploading',
                                                    'importing',
                                                    'killed',
-                                                   'deleted')))
+                                                   'deleted',
+                                                   'pending_delete')))
     copying_images = query.all()
 
     return sum(i.size for i in itertools.chain(importing_images,
@@ -825,7 +827,8 @@ def _image_get_staging_usage_by_owner(context, session, owner):
 def _image_get_count_by_owner(context, session, owner):
     query = session.query(models.Image)
     query = query.filter(models.Image.owner == owner)
-    query = query.filter(~models.Image.status.in_(['killed', 'deleted']))
+    query = query.filter(~models.Image.status.in_([
+        'killed', 'pending_delete', 'deleted']))
     return query.count()
 
 
@@ -850,7 +853,8 @@ def _image_get_uploading_count_by_owner(context, session, owner):
     query = query.join(props, props.c.image_id == models.Image.id)
     query = query.filter(models.Image.owner == owner)
     query = query.filter(~models.Image.status.in_(importing_statuses +
-                                                  ('killed', 'deleted')))
+                                                  ('killed', 'deleted',
+                                                   'pending_delete')))
     copying = query.count()
 
     return uploading + copying
