@@ -382,7 +382,6 @@
 - job:
     name: tempest-integrated-storage-enforce-scope-new-defaults
     parent: tempest-integrated-storage
-    nodeset: openstack-single-node-jammy
     description: |
       This job runs the Tempest tests with scope and new defaults enabled
       Glance services.
