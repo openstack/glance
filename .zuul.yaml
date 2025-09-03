@@ -344,7 +344,7 @@
     description: |
       The regular import workflow job to test with multiple cinder stores with
       fips enabled
-    nodeset: devstack-single-node-centos-9-stream
+    nodeset: devstack-single-node-centos-10-stream
     pre-run: playbooks/enable-fips.yaml
     vars:
       configure_swap_size: 4096
