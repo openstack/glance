@@ -444,11 +444,27 @@ Here is a list of useful image properties and the values they expect.
 
   Enables encryption of guest memory at the hardware level, if
   there are compute hosts available which support this. See
-  `nova's documentation on configuration of the KVM hypervisor
-  <https://docs.openstack.org/nova/latest/admin/configuration/hypervisor-kvm.html#amd-sev-secure-encrypted-virtualization>`_
+  `nova's documentation on configuration of AMD SEV
+  <https://docs.openstack.org/nova/latest/admin/sev.html>`_
   for more details.
 
-  Only supported by the libvirt driver.
+  Only supported by the libvirt driver with the KVM/QEMU hypervisor.
+
+``hw_mem_encryption_model``
+  :Type: str
+
+  The hardware feature name to encrypt guest memory, if there are compute hosts
+  available which support this. See
+  `nova's documentation on configuration of AMD SEV
+  <https://docs.openstack.org/nova/latest/admin/sev.html>`_
+  for more details.
+
+  Only supported by the libvirt driver with the KVM/QEMU hypervisor.
+
+  One of:
+
+  - ``amd-sev``
+  - ``amd-sev-es``
 
 ``hw_virtio_packed_ring``
   :Type: bool

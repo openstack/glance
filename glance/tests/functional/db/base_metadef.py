@@ -773,7 +773,7 @@ class MetadefLoadUnloadTests:
         'CIM::VirtualSystemSettingData': 17,
         'OS::Compute::XenAPI': 1,
         'OS::Compute::InstanceData': 2,
-        'OS::Compute::Libvirt': 4,
+        'OS::Compute::Libvirt': 5,
         'OS::Compute::VMwareQuotaFlavor': 2,
         'OS::Cinder::Volumetype': 1,
         'OS::Glance::Signatures': 4,

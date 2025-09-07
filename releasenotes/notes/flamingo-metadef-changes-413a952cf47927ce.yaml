@@ -1,0 +1,12 @@
+---
+upgrade:
+  - |
+    The following metadata definitions have been modified in the Flamingo
+    release:
+
+    * Added ``hw_memory_encryption_model`` enumerations in
+      the ``OS::Compute::Libvirt`` namespace.
+
+    You may upgrade these definitions using:
+
+    ``glance-manage db load_metadefs [--path <path>] [--merge] [--prefer_new]``
