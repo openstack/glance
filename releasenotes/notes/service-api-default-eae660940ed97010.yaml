@@ -1,0 +1,6 @@
+---
+deprecations:
+  - |
+    The ``add_image_location`` and ``fetch_image_location`` APIs policy rule
+    default value ``role:admin or role:service`` is deprecated and will be
+    changed to ``role:service`` in future release.
