@@ -245,13 +245,3 @@ of an *Image* object.
 
 
 .. centered:: Image 1. Glance images DB schema
-
-
-Glance Database Backends
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-Metadata Backends
------------------
-
-.. list-plugins:: glance.database.metadata_backend
-   :detailed:
