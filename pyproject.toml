@@ -1,3 +1,101 @@
 [build-system]
 requires = ["pbr>=6.1.1"]
 build-backend = "pbr.build"
+
+[project]
+name = "glance"
+description = "OpenStack Image Service"
+authors = [
+    {name = "OpenStack", email = "openstack-discuss@lists.openstack.org"},
+]
+readme = {file = "README.rst", content-type = "text/x-rst"}
+license = {text = "Apache-2.0"}
+dynamic = ["version", "dependencies"]
+requires-python = ">=3.10"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+
+[project.urls]
+Homepage = "https://docs.openstack.org/glance"
+Repository = "https://opendev.org/openstack/glance"
+
+[project.entry-points."oslo.config.opts"]
+"glance.api"  = "glance.opts:list_api_opts"
+"glance.scrubber" = "glance.opts:list_scrubber_opts"
+"glance.cache" = "glance.opts:list_cache_opts"
+"glance.manage" = "glance.opts:list_manage_opts"
+"glance" = "glance.opts:list_image_import_opts"
+
+[project.entry-points."oslo.config.opts.defaults"]
+"glance.api" = "glance.common.config:set_config_defaults"
+
+[project.entry-points."oslo.policy.enforcer"]
+glance = "glance.api.policy:get_enforcer"
+
+[project.entry-points."oslo.policy.policies"]
+glance = "glance.policies:list_rules"
+
+# TODO(stephenfin): Remove this entrypoint. There are no other backends
+[project.entry-points."glance.database.metadata_backend"]
+sqlalchemy = "glance.db.sqlalchemy.metadata"
+
+[project.entry-points."glance.flows"]
+api_image_import = "glance.async_.flows.api_image_import:get_flow"
+import = "glance.async_.flows.base_import:get_flow"
+location_import = "glance.async_.flows.location_import:get_flow"
+
+[project.entry-points."glance.flows.import"]
+convert = "glance.async_.flows.convert:get_flow"
+introspect = "glance.async_.flows.introspect:get_flow"
+ovf_process = "glance.async_.flows.ovf_process:get_flow"
+
+[project.entry-points."glance.image_import.plugins"]
+no_op = "glance.async_.flows.plugins.no_op:get_flow"
+inject_image_metadata = "glance.async_.flows.plugins.inject_image_metadata:get_flow"
+image_conversion = "glance.async_.flows.plugins.image_conversion:get_flow"
+image_decompression = "glance.async_.flows.plugins.image_decompression:get_flow"
+
+[project.entry-points."glance.image_import.internal_plugins"]
+web_download = "glance.async_.flows._internal_plugins.web_download:get_flow"
+copy_image = "glance.async_.flows._internal_plugins.copy_image:get_flow"
+glance_download = "glance.async_.flows._internal_plugins.glance_download:get_flow"
+
+[project.scripts]
+glance-api = "glance.cmd.api:main"
+glance-cache-prefetcher = "glance.cmd.cache_prefetcher:main"
+glance-cache-pruner = "glance.cmd.cache_pruner:main"
+glance-cache-manage = "glance.cmd.cache_manage:main"
+glance-cache-cleaner = "glance.cmd.cache_cleaner:main"
+glance-control = "glance.cmd.control:main"
+glance-manage = "glance.cmd.manage:main"
+glance-replicator = "glance.cmd.replicator:main"
+glance-scrubber = "glance.cmd.scrubber:main"
+glance-status = "glance.cmd.status:main"
+
+[tool.setuptools.data-files]
+"etc/glance" = [
+    "etc/glance-api.conf",
+    "etc/glance-cache.conf",
+    "etc/glance-manage.conf",
+    "etc/glance-scrubber.conf",
+    "etc/glance-api-paste.ini",
+]
+"etc/glance/metadefs" = [
+    "etc/metadefs/*",
+]
+
+[tool.setuptools]
+packages = [
+    "glance"
+]
