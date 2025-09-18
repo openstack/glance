@@ -18,7 +18,6 @@ import os
 import warnings
 
 import fixtures as pyfixtures
-from oslo_db import warning as oslo_db_warning
 from sqlalchemy import exc as sqla_exc
 
 _TRUE_VALUES = ('True', 'true', '1', 'yes')
@@ -145,16 +144,6 @@ class WarningsFixture(pyfixtures.Fixture):
             'ignore',
             module='glance',
             category=DeprecationWarning,
-        )
-
-        # Disable deprecation warning for oslo.db's EngineFacade. We *really*
-        # need to get off this but it's not happening while sqlalchemy 2.0
-        # stuff is ongoing
-
-        warnings.filterwarnings(
-            'ignore',
-            category=oslo_db_warning.OsloDBDeprecationWarning,
-            message='EngineFacade is deprecated',
         )
 
         # Enable deprecation warnings for glance itself to capture upcoming
