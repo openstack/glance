@@ -488,12 +488,11 @@ Configuring the Swift Storage Backend
 ``swift_store_auth_version``
   Can only be specified in configuration files.
 
-  Deprecated. Use ``auth_version`` in the Swift back-end configuration
-  file instead.
+  Deprecated. This option will be removed in a future release.
 
   `This option is specific to the Swift storage backend.`
 
-  Optional. Default: ``2``
+  Optional. Default: ``3``
 
   A string indicating which version of Swift OpenStack authentication
   to use. See the project
@@ -507,8 +506,7 @@ Configuring the Swift Storage Backend
 
   Optional. Default: ``object-store``
 
-  A string giving the service type of the swift service to use. This
-  setting is only used if swift_store_auth_version is ``2``.
+  A string giving the service type of the swift service to use.
 
 ``swift_store_region``
   Can only be specified in configuration files.
@@ -517,9 +515,8 @@ Configuring the Swift Storage Backend
 
   Optional. Default: Not set.
 
-  A string giving the region of the swift service endpoint to use. This
-  setting is only used if swift_store_auth_version is ``2``. This
-  setting is especially useful for disambiguation if multiple swift
+  A string giving the region of the swift service endpoint to use.
+  This setting is especially useful for disambiguation if multiple swift
   services might appear in a service catalog during authentication.
 
 ``swift_store_endpoint_type``
@@ -530,7 +527,7 @@ Configuring the Swift Storage Backend
   Optional. Default: ``publicURL``
 
   A string giving the endpoint type of the swift service endpoint to
-  use. This setting is only used if swift_store_auth_version is ``2``.
+  use.
 
 ``swift_store_ssl_compression``
   Can only be specified in configuration files.
@@ -609,17 +606,17 @@ The file contains a set of references like:
 .. code-block:: ini
 
     [ref1]
-    user = tenant:user1
+    user = project_name1:user_name1
     key = key1
-    auth_version = 2
-    auth_address = http://localhost:5000/v2.0
+    user_domain_id = default
+    project_domain_id = default
+    auth_address = http://localhost:5000/v3
 
     [ref2]
-    user = project_name:user_name2
+    user = project_name2:user_name2
     key = key2
     user_domain_id = default
     project_domain_id = default
-    auth_version = 3
     auth_address = http://localhost:5000/v3
 
 A default reference must be configured. Its parameters will be used when
@@ -645,11 +642,11 @@ In the reference, a user can specify the following parameters:
   An address where the Swift authentication service is located.
 
 ``auth_version``
-  A version of the authentication service to use.
-  Valid versions are ``2`` and ``3`` for Keystone and ``1``
-  (deprecated) for Swauth and Rackspace.
+  A version of the authentication service to use. Valid version is ``3``.
 
-  Optional. Default: ``2``
+  Deprecated. This option will be removed in a future release.
+
+  Optional. Default: ``3``
 
 ``project_domain_id``
   A domain ID of the project which is the requested project-level
@@ -657,15 +654,11 @@ In the reference, a user can specify the following parameters:
 
   Optional. Default: ``None``
 
-  `This option can be specified if ``auth_version`` is ``3`` .`
-
 ``project_domain_name``
   A domain name of the project which is the requested project-level
   authorization scope.
 
   Optional. Default: ``None``
-
-  `This option can be specified if ``auth_version`` is ``3`` .`
 
 ``user_domain_id``
   A domain ID of the user which is the requested domain-level
@@ -673,15 +666,11 @@ In the reference, a user can specify the following parameters:
 
   Optional. Default: ``None``
 
-  `This option can be specified if ``auth_version`` is ``3`` .`
-
 ``user_domain_name``
   A domain name of the user which is the requested domain-level
   authorization scope.
 
   Optional. Default: ``None``
-
-  `This option can be specified if ``auth_version`` is ``3``. `
 
 Configuring the RBD Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
