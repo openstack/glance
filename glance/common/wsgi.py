@@ -38,6 +38,7 @@ from oslo_log import log as logging
 from oslo_serialization import jsonutils
 from oslo_utils import encodeutils
 from oslo_utils import strutils
+from oslo_utils import units
 from osprofiler import opts as profiler_opts
 import routes.middleware
 import webob.dec
@@ -894,28 +895,40 @@ class Router(object):
 
 
 class _UWSGIChunkFile(object):
+    """
+    A file-like object for reading uWSGI chunked requests, with internal
+    buffering/caching of excess data for subsequent reads.
+    """
+
+    def __init__(self):
+        # Buffer to cache data read in excess of the requested length
+        self._buffer = b""
 
     def read(self, length=None):
-        position = 0
+        """
+        Reads up to 'length' bytes from the chunked request stream.
+        Caches any excess data internally.
+        """
         if length == 0:
             return b""
 
+        # If length is negative, treat it as reading until the end of the file.
         if length and length < 0:
             length = None
 
-        response = []
-        while True:
+        # If no length is provided, choose some sane minimum default
+        length = length if length is not None else 1 * units.Mi
+
+        while len(self._buffer) < length:
             data = uwsgi.chunked_read()
-            # Return everything if we reached the end of the file
             if not data:
                 break
-            response.append(data)
-            # Return the data if we've reached the length
-            if length is not None:
-                position += len(data)
-                if position >= length:
-                    break
-        return b''.join(response)
+            # append the buffer
+            self._buffer += data
+
+        chunk = self._buffer[:length]
+        self._buffer = self._buffer[length:]
+        return chunk
 
 
 class Request(webob.Request):
