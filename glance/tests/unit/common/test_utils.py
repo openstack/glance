@@ -17,6 +17,7 @@
 import io
 import tempfile
 from unittest import mock
+from urllib.parse import urlparse
 
 import glance_store as store
 from glance_store._drivers import cinder
@@ -1013,3 +1014,514 @@ class ImportURITestCase(test_utils.BaseTestCase):
                         group='import_filtering_opts')
             self.assertTrue(utils.validate_import_uri("ftp://foo.com:8484"))
             mock_run.assert_called_once()
+
+
+class S3CredentialUpdateTestCase(test_utils.BaseTestCase):
+
+    def setUp(self):
+        super(S3CredentialUpdateTestCase, self).setUp()
+        self.context = mock.Mock()
+        self.image_repo = mock.Mock()
+        self.image = mock.Mock()
+        self.image.locations = []
+        self.image.image_id = 'test-image-id'
+
+    def _create_s3_location(self, url, store_name=None):
+        location = {
+            'url': url,
+            'metadata': {}
+        }
+        if store_name:
+            location['metadata']['store'] = store_name
+        return location
+
+    def _mock_store_config(self, stores):
+        scheme_map = {}
+        for store_name, credentials in stores.items():
+            store_instance = mock.Mock()
+            store_instance.access_key = credentials['access_key']
+            store_instance.secret_key = credentials['secret_key']
+            # Add bucket and s3_host for URL matching
+            store_instance.bucket = credentials.get('bucket', 'test-bucket')
+            store_instance.s3_host = credentials.get(
+                's3_host', 's3.amazonaws.com')
+            # Add url_prefix for _get_store_id_from_uri
+            store_instance.url_prefix = credentials.get('url_prefix', '')
+            scheme_map[store_name] = {'store': store_instance}
+        return scheme_map
+
+    @mock.patch('glance.common.store_utils._get_store_id_from_uri')
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_update_s3_credentials_with_store_metadata_match(
+            self, mock_conf, mock_store_api, mock_get_store_id):
+        """Test when store exists and credentials already match."""
+        mock_conf.enabled_backends = ['s3_store']
+        stores = {
+            's3_store': {
+                'access_key': 'old_key',
+                'secret_key': 'old_secret',
+                'bucket': 'bucket',
+                's3_host': 's3.amazonaws.com'
+            }
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+
+        location = self._create_s3_location(
+            's3://old_key:old_secret@s3.amazonaws.com/bucket/object',
+            's3_store')
+        self.image.locations = [location]
+        original_url = location['url']
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+
+        # Should not save since no update was needed
+        self.image_repo.save.assert_not_called()
+        # URL should remain unchanged since credentials already match
+        self.assertEqual(location['url'], original_url)
+
+    @mock.patch('glance.common.store_utils._get_store_id_from_uri')
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_update_s3_credentials_with_store_metadata_no_match(
+            self, mock_conf, mock_store_api, mock_get_store_id):
+        """Test when store exists but credentials don't match."""
+        mock_conf.enabled_backends = ['s3_store']
+        stores = {
+            's3_store': {
+                'access_key': 'new_key',
+                'secret_key': 'new_secret',
+            }
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+
+        location = self._create_s3_location(
+            's3://old_key:old_secret@bucket/object', 's3_store')
+        self.image.locations = [location]
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+
+        # Verify - credentials should be updated
+        expected_url = 's3://new_key:new_secret@bucket/object'
+        self.assertEqual(location['url'], expected_url)
+
+    @mock.patch('glance.common.store_utils._get_store_id_from_uri')
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_update_s3_credentials_multi_store_no_match(
+            self, mock_conf, mock_store_api, mock_get_store_id):
+        """Test multi-store scenario when no URL matches."""
+        mock_get_store_id.return_value = None
+        mock_conf.enabled_backends = ['store1', 'store2']
+        stores = {
+            'store1': {
+                'access_key': 'key1',
+                'secret_key': 'secret1',
+                'bucket': 'bucket1',
+                's3_host': 's3.amazonaws.com'
+            },
+            'store2': {
+                'access_key': 'key2',
+                'secret_key': 'secret2',
+                'bucket': 'bucket2',
+                's3_host': 's3.amazonaws.com'
+            },
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+        # Create URL that doesn't match any store's bucket
+        location = self._create_s3_location(
+            's3://unknown_key:unknown_secret@s3.amazonaws.com/'
+            'unknown-bucket/object')
+        self.image.locations = [location]
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+        # Verify - no store should be added since no match found
+        self.assertNotIn('store', location['metadata'])
+
+    @mock.patch('glance.common.store_utils._get_store_id_from_uri')
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_update_s3_credentials_same_credentials_different_buckets(
+            self, mock_conf, mock_store_api, mock_get_store_id):
+        """Test multi-store with same credentials but different buckets."""
+        mock_get_store_id.return_value = None
+        mock_conf.enabled_backends = ['store1', 'store2']
+        stores = {
+            'store1': {
+                'access_key': 'same_key',
+                'secret_key': 'same_secret',
+                'bucket': 'bucket1',
+                's3_host': 's3.amazonaws.com'
+            },
+            'store2': {
+                'access_key': 'same_key',
+                'secret_key': 'same_secret',
+                'bucket': 'bucket2',
+                's3_host': 's3.amazonaws.com'
+            },
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+        # Create URLs for both stores with old credentials
+        location1 = self._create_s3_location(
+            's3://old_key:old_secret@s3.amazonaws.com/bucket1/object1',
+            'store1')
+        location2 = self._create_s3_location(
+            's3://old_key:old_secret@s3.amazonaws.com/bucket2/object2',
+            'store2')
+        self.image.locations = [location1, location2]
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+        # Both URLs should be updated with new credentials
+        expected_url1 = (
+            's3://same_key:same_secret@s3.amazonaws.com/bucket1/object1')
+        expected_url2 = (
+            's3://same_key:same_secret@s3.amazonaws.com/bucket2/object2')
+        self.assertEqual(location1['url'], expected_url1)
+        self.assertEqual(location2['url'], expected_url2)
+
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    @mock.patch('glance.common.store_utils.LOG')
+    def test_update_s3_credentials_unknown_scheme(
+            self, mock_log, mock_conf, mock_store_api):
+        """Test with unknown scheme - S3 URL but no S3 stores configured."""
+        # Empty location map means no stores are configured
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {}
+
+        location = self._create_s3_location(
+            's3://key:secret@bucket/object', 's3_store')
+        self.image.locations = [location]
+        original_url = location['url']
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+        # URL should remain unchanged
+        self.assertEqual(location['url'], original_url)
+        # Verify that the debug log was called for unknown scheme
+        mock_log.debug.assert_called_once_with(
+            "Unknown scheme '%(scheme)s' found in uri '%(uri)s'",
+            {'scheme': 's3', 'uri': 's3://key:secret@bucket/object'})
+
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    @mock.patch('glance.common.store_utils.LOG')
+    def test_update_s3_credentials_no_matching_store(
+            self, mock_log, mock_conf, mock_store_api):
+        """Test when no S3 store matches the bucket."""
+        # Configure stores but with different buckets
+        stores = {
+            'store1': {
+                'access_key': 'key1',
+                'secret_key': 'secret1',
+                'bucket': 'bucket1',
+                's3_host': 's3.amazonaws.com'
+            },
+            'store2': {
+                'access_key': 'key2',
+                'secret_key': 'secret2',
+                'bucket': 'bucket2',
+                's3_host': 's3.amazonaws.com'
+            },
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+
+        # Test with bucket that doesn't match any store
+        location = self._create_s3_location(
+            's3://old_key:old_secret@s3.amazonaws.com/unknown-bucket/object')
+        self.image.locations = [location]
+        original_url = location['url']
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+        # URL should remain unchanged
+        self.assertEqual(location['url'], original_url)
+        expected_calls = [
+            mock.call("Invalid location uri %s",
+                      's3://old_key:old_secret@s3.amazonaws.com/'
+                      'unknown-bucket/object'),
+            mock.call("No S3 store found for image %(image_id)s",
+                      {'image_id': 'object'})
+        ]
+        mock_log.warning.assert_has_calls(expected_calls)
+
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_update_s3_credentials_multiple_locations(
+            self, mock_conf, mock_store_api):
+        """Test credential update with multiple S3 locations."""
+        mock_conf.enabled_backends = ['s3_store']
+        stores = {
+            's3_store': {
+                'access_key': 'new_key',
+                'secret_key': 'new_secret',
+            }
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+        location1 = self._create_s3_location(
+            's3://old_key1:old_secret1@bucket1/object1', 's3_store')
+        location2 = self._create_s3_location(
+            's3://old_key2:old_secret2@bucket2/object2', 's3_store')
+        self.image.locations = [location1, location2]
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+
+        # both locations should be updated
+        expected_url1 = 's3://new_key:new_secret@bucket1/object1'
+        expected_url2 = 's3://new_key:new_secret@bucket2/object2'
+        self.assertEqual(location1['url'], expected_url1)
+        self.assertEqual(location2['url'], expected_url2)
+
+    def test_update_s3_url_helper_function(self):
+        """Test the _update_s3_url helper function directly."""
+        # Test basic URL update
+        parsed = urlparse('s3://old_key:old_secret@bucket/object')
+        result = store_utils._update_s3_url(parsed, 'new_key', 'new_secret')
+        expected = 's3://new_key:new_secret@bucket/object'
+        self.assertEqual(result, expected)
+
+        # Test URL without existing credentials
+        parsed = urlparse('s3://bucket/object')
+        result = store_utils._update_s3_url(parsed, 'new_key', 'new_secret')
+        expected = 's3://new_key:new_secret@bucket/object'
+        self.assertEqual(result, expected)
+
+        # Test with s3+https scheme
+        parsed = urlparse('s3+https://old_key:old_secret@bucket/object')
+        result = store_utils._update_s3_url(parsed, 'new_key', 'new_secret')
+        expected = 's3+https://new_key:new_secret@bucket/object'
+        self.assertEqual(result, expected)
+
+    def test_construct_s3_url(self):
+        """Test _construct_s3_url with all attributes present."""
+        store_instance = mock.Mock()
+        store_instance.access_key = 'key'
+        store_instance.secret_key = 'secret'
+        store_instance.s3_host = 's3.amazonaws.com'
+        store_instance.bucket = 'bucket'
+
+        result = store_utils._construct_s3_url(
+            store_instance, 's3', '/object/path')
+        expected = 's3://key:secret@s3.amazonaws.com/bucket/object/path'
+        self.assertEqual(result, expected)
+
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_update_s3_credentials_different_object_path(
+            self, mock_conf, mock_store_api):
+        """Test that URLs with different object paths are updated."""
+        mock_conf.enabled_backends = ['s3_store']
+        stores = {
+            's3_store': {
+                'access_key': 'new_key',
+                'secret_key': 'new_secret',
+                's3_host': 's3.amazonaws.com',
+                'bucket': 'bucket'
+            }
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+        location = self._create_s3_location(
+            's3://old_key:old_secret@s3.amazonaws.com/bucket/old-object',
+            's3_store')
+        self.image.locations = [location]
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+        expected_url = (
+            's3://new_key:new_secret@s3.amazonaws.com/bucket/old-object')
+        self.assertEqual(location['url'], expected_url)
+
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_update_s3_credentials_mixed_schemes(
+            self, mock_conf, mock_store_api):
+        """Test with mixed URL schemes - only S3 should be processed."""
+        mock_conf.enabled_backends = ['s3_store']
+        stores = {
+            's3_store': {
+                'access_key': 'new_key',
+                'secret_key': 'new_secret',
+                's3_host': 's3.amazonaws.com',
+                'bucket': 'bucket'
+            }
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+
+        s3_location = self._create_s3_location(
+            's3://old_key:old_secret@s3.amazonaws.com/bucket/object',
+            's3_store')
+        http_location = self._create_s3_location('http://example.com/image')
+        self.image.locations = [s3_location, http_location]
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+        # only S3 location should be updated
+        expected_s3_url = (
+            's3://new_key:new_secret@s3.amazonaws.com/bucket/object')
+        self.assertEqual(s3_location['url'], expected_s3_url)
+        self.assertEqual(http_location['url'], 'http://example.com/image')
+
+    @mock.patch('glance.common.store_utils._get_store_id_from_uri')
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_find_store_by_bucket_legacy_single_store(
+            self, mock_conf, mock_store_api, mock_get_store_id):
+        """Test finding store by bucket for legacy single-store images."""
+        mock_conf.enabled_backends = ['store1', 'store2']
+        mock_get_store_id.return_value = None  # No store found by URI
+        stores = {
+            'store1': {
+                'access_key': 'key1',
+                'secret_key': 'secret1',
+                'bucket': 'bucket1',
+                's3_host': 's3.amazonaws.com'
+            },
+            'store2': {
+                'access_key': 'key2',
+                'secret_key': 'secret2',
+                'bucket': 'bucket2',
+                's3_host': 's3.amazonaws.com'
+            },
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+
+        # Test legacy image without store metadata
+        location = self._create_s3_location(
+            's3://old_key:old_secret@s3.amazonaws.com/bucket1/object')
+        self.image.locations = [location]
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+
+        self.assertEqual(location['metadata']['store'], 'store1')
+        expected_url = 's3://key1:secret1@s3.amazonaws.com/bucket1/object'
+        self.assertEqual(location['url'], expected_url)
+
+    @mock.patch('glance.common.store_utils._get_store_id_from_uri')
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_find_store_by_bucket_no_match(
+            self, mock_conf, mock_store_api, mock_get_store_id):
+        """Test when no store matches the bucket."""
+        mock_conf.enabled_backends = ['store1', 'store2']
+        mock_get_store_id.return_value = None  # No store found by URI
+        stores = {
+            'store1': {
+                'access_key': 'key1',
+                'secret_key': 'secret1',
+                'bucket': 'bucket1',
+                's3_host': 's3.amazonaws.com'
+            },
+            'store2': {
+                'access_key': 'key2',
+                'secret_key': 'secret2',
+                'bucket': 'bucket2',
+                's3_host': 's3.amazonaws.com'
+            },
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+
+        # Test with bucket that doesn't match any store
+        location = self._create_s3_location(
+            's3://old_key:old_secret@s3.amazonaws.com/unknown-bucket/object')
+        self.image.locations = [location]
+        original_url = location['url']
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+
+        # Should not update anything since no store matches
+        self.assertNotIn('store', location['metadata'])
+        self.assertEqual(location['url'], original_url)
+
+    def test_find_store_by_bucket_helper_function(self):
+        """Test _find_store_by_bucket helper function directly."""
+        store1 = mock.Mock()
+        store1.bucket = 'bucket1'
+        store2 = mock.Mock()
+        store2.bucket = 'bucket2'
+        location_map = {
+            's3': {
+                'store1': {'store': store1},
+                'store2': {'store': store2}
+            }
+        }
+
+        # Test finding store by bucket
+        parsed_uri = urlparse(
+            's3://key:secret@s3.amazonaws.com/bucket1/object')
+        store_name, store_instance = store_utils._find_store_by_bucket(
+            parsed_uri, location_map, 's3')
+
+        self.assertEqual(store_name, 'store1')
+        self.assertEqual(store_instance, store1)
+
+        # Test with non-matching bucket
+        parsed_uri = urlparse(
+            's3://key:secret@s3.amazonaws.com/unknown-bucket/object')
+        result = store_utils._find_store_by_bucket(
+            parsed_uri, location_map, 's3')
+        self.assertIsNone(result)
+
+    @mock.patch('glance.common.store_utils._get_store_id_from_uri')
+    @mock.patch('glance.common.store_utils.store_api')
+    @mock.patch('glance.common.store_utils.CONF')
+    def test_credential_rotation_with_multi_store_migration(
+            self, mock_conf, mock_store_api, mock_get_store_id):
+        mock_conf.enabled_backends = ['store1', 'store2']
+        # No store found by URI (legacy behavior)
+        mock_get_store_id.return_value = None
+        # Simulate the scenario: multi-store config with different credentials
+        stores = {
+            'store1': {
+                'access_key': 'new_key1',
+                'secret_key': 'new_secret1',
+                'bucket': 'bucket1',
+                's3_host': 's3.amazonaws.com'
+            },
+            'store2': {
+                'access_key': 'new_key2',
+                'secret_key': 'new_secret2',
+                'bucket': 'bucket2',
+                's3_host': 's3.amazonaws.com'
+            },
+        }
+        mock_store_api.location.SCHEME_TO_CLS_BACKEND_MAP = {
+            's3': self._mock_store_config(stores)
+        }
+
+        # Legacy image with old credentials and no store metadata
+        location = self._create_s3_location(
+            's3://old_key:old_secret@s3.amazonaws.com/bucket1/object')
+        self.image.locations = [location]
+
+        store_utils.update_store_in_locations(
+            self.context, self.image, self.image_repo)
+
+        self.assertEqual(location['metadata']['store'], 'store1')
+        self.assertEqual(
+            location['url'],
+            's3://new_key1:new_secret1@s3.amazonaws.com/bucket1/object')
+        self.image_repo.save.assert_called_once_with(self.image)

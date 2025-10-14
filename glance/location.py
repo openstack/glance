@@ -16,6 +16,7 @@
 from collections import abc
 import copy
 import functools
+import urllib.parse as urlparse
 
 from cryptography import exceptions as crypto_exception
 from cursive import exception as cursive_exception
@@ -107,7 +108,36 @@ class ImageRepoProxy(glance.domain.proxy.Repo):
                 # still be returned to the user, just not saved in the
                 # DB. That is probably what we want anyway.
                 pass
+        else:
+            _update_location_for_legacy_store(image, self.image_repo)
         return image
+
+
+def _update_location_for_legacy_store(image, image_repo):
+    for loc in image.locations:
+        if loc['url'].startswith((
+                's3://', 's3+http://', 's3+https://')):
+            # Parse URL to get current credentials
+            parsed = urlparse.urlparse(loc['url'])
+            access_key = parsed.username
+            secret_key = parsed.password
+            scheme = parsed.scheme
+
+            location_map = store.location.SCHEME_TO_CLS_MAP
+            if scheme in location_map:
+                store_instance = location_map[scheme]['store']
+                new_access_key, new_secret_key = (
+                    store_utils._get_store_credentials(store_instance))
+                # Check if credentials mismatch
+                if (access_key != new_access_key or
+                        secret_key != new_secret_key):
+                    LOG.debug("S3 Credentials mismatch, "
+                              "updating URL")
+                    loc['url'] = store_utils._update_s3_url(
+                        parsed, new_access_key, new_secret_key)
+                    # Save the image immediately after update
+                    image_repo.save(image)
+                    break
 
 
 def _get_member_repo_for_store(image, context, db_api, store_api):
