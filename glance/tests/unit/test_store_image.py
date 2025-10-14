@@ -40,11 +40,18 @@ CONF = cfg.CONF
 
 
 class ImageRepoStub(object):
+    def __init__(self):
+        self.image_stub = None
+
     def add(self, image):
         return image
 
     def save(self, image, from_state=None):
         return image
+
+    def get(self, image_id):
+        # Return the image stub that was set up in the test
+        return self.image_stub
 
 
 class ImageStub(object):
@@ -1090,6 +1097,7 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.image = glance.location.ImageProxy(self.image_stub, {},
                                                 self.store_api, store_utils)
         self.image_repo_stub = ImageRepoStub()
+        self.image_repo_stub.image_stub = self.image_stub
         self.image_repo = glance.location.ImageRepoProxy(self.image_repo_stub,
                                                          {}, self.store_api,
                                                          store_utils)
@@ -1179,6 +1187,87 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.assertFalse(acls['public'])
         self.assertEqual([], acls['write'])
         self.assertEqual([TENANT2], acls['read'])
+
+    @mock.patch('glance.location.store')
+    @mock.patch('glance.location.CONF')
+    def test_get_single_store_s3_credentials_update(
+            self, mock_conf, mock_store):
+        """Test S3 credential update in single store scenario."""
+        mock_conf.enabled_backends = None
+        store_instance = mock.Mock()
+        store_instance.access_key = 'new_key'
+        store_instance.secret_key = 'new_secret'
+        mock_store.location.SCHEME_TO_CLS_MAP = {
+            's3': {
+                'store': store_instance,
+                'location_class': mock.Mock(),
+                'store_entry': 's3'
+            }
+        }
+
+        # Create image with S3 location
+        self.image_stub.locations = [{
+            'url': 's3://old_key:old_secret@bucket/object',
+            'metadata': {}
+        }]
+        with mock.patch.object(self.image_repo_stub, 'save') as mock_save:
+            result = self.image_repo.get(UUID1)
+
+            # Verify credentials were updated
+            expected_url = 's3://new_key:new_secret@bucket/object'
+            self.assertEqual(result.locations[0]['url'], expected_url)
+            mock_save.assert_called_once_with(result)
+
+    @mock.patch('glance.location.store')
+    @mock.patch('glance.location.CONF')
+    def test_get_single_store_s3_credentials_no_update(
+            self, mock_conf, mock_store):
+        """Test S3 credential check when credentials already match."""
+        mock_conf.enabled_backends = None
+        store_instance = mock.Mock()
+        store_instance.access_key = 'same_key'
+        store_instance.secret_key = 'same_secret'
+        mock_store.location.SCHEME_TO_CLS_MAP = {
+            's3': {
+                'store': store_instance,
+                'location_class': mock.Mock(),
+                'store_entry': 's3'
+            }
+        }
+
+        self.image_stub.locations = [{
+            'url': 's3://same_key:same_secret@bucket/object',
+            'metadata': {}
+        }]
+
+        with mock.patch.object(self.image_repo_stub, 'save') as mock_save:
+            result = self.image_repo.get(UUID1)
+
+            # Verify URL remains unchanged
+            original_url = 's3://same_key:same_secret@bucket/object'
+            self.assertEqual(result.locations[0]['url'], original_url)
+            mock_save.assert_not_called()
+
+    @mock.patch('glance.location.store')
+    @mock.patch('glance.location.CONF')
+    def test_get_single_store_s3_unknown_scheme(
+            self, mock_conf, mock_store):
+        """Test S3 credential check with unknown scheme."""
+        mock_conf.enabled_backends = None
+        mock_store.location.SCHEME_TO_CLS_MAP = {}
+
+        self.image_stub.locations = [{
+            'url': 's3://old_key:old_secret@bucket/object',
+            'metadata': {}
+        }]
+
+        with mock.patch.object(self.image_repo_stub, 'save') as mock_save:
+            result = self.image_repo.get(UUID1)
+
+            # Verify URL remains unchanged
+            original_url = 's3://old_key:old_secret@bucket/object'
+            self.assertEqual(result.locations[0]['url'], original_url)
+            mock_save.assert_not_called()
 
 
 class TestImageFactory(unit_test_base.StoreClearingUnitTest):

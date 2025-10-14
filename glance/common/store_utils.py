@@ -201,6 +201,11 @@ def update_store_in_locations(context, image, image_repo):
                 store_updated = True
                 loc['metadata']['store'] = store_id
 
+        # Always check S3 credentials for credential rotation scenarios
+        if loc['url'].startswith(('s3://', 's3+http://', 's3+https://')):
+            if _update_s3_location_and_store_id(context, loc):
+                store_updated = True
+
     if store_updated:
         image_repo.save(image)
 
@@ -232,6 +237,109 @@ def _update_cinder_location_and_store_id(context, loc):
             loc['url'] = "%s/%s" % (url_prefix, volume_id)
             loc['metadata']['store'] = "%s" % store
             return
+
+
+def _update_s3_url(parsed, new_access_key, new_secret_key):
+    """Update S3 URL with new credentials."""
+    host_part = parsed.netloc.split('@')[-1]
+    new_netloc = "%s:%s@%s" % (new_access_key, new_secret_key, host_part)
+    # Rebuild URL with new credentials but keep all other parts same
+    # We need to include params, query, fragment even if S3 URLs don't
+    # use them. This is to make sure we don't lose any URL parts
+    # when updating credentials
+    return urlparse.urlunparse((
+        parsed.scheme,
+        new_netloc,
+        parsed.path,
+        parsed.params,
+        parsed.query,
+        parsed.fragment
+    ))
+
+
+def _get_store_credentials(store_instance):
+    """Get credentials from store instance."""
+    return (getattr(store_instance, 'access_key'),
+            getattr(store_instance, 'secret_key'))
+
+
+def _find_store_by_bucket(parsed_uri, location_map, scheme):
+    """Find store instance by matching bucket from the URI."""
+    # Extract bucket from url as our S3 URLs are
+    # always in the format: s3://key:secret@host/bucket/object
+    bucket_name = parsed_uri.path.strip('/').split('/')[0]
+
+    # Find store that matches this bucket
+    for store_name, store_info in location_map[scheme].items():
+        store_instance = store_info['store']
+        if store_instance.bucket == bucket_name:
+            return (store_name, store_instance)
+
+
+def _construct_s3_url(store_instance, scheme, path):
+    """Construct the entire S3 URL including the object path."""
+    access_key = getattr(store_instance, 'access_key')
+    secret_key = getattr(store_instance, 'secret_key')
+    s3_host = getattr(store_instance, 's3_host')
+    bucket = getattr(store_instance, 'bucket')
+
+    # Construct the full URL with the object path
+    return "%s://%s:%s@%s/%s%s" % (
+        scheme, access_key, secret_key, s3_host, bucket, path)
+
+
+def _update_s3_location_and_store_id(context, loc):
+    """Update S3 location and store ID for legacy images.
+
+    :param context: The request context
+    :param loc: The image location entry
+    :returns: True if an update was made, False otherwise
+    """
+    uri = loc['url']
+    parsed = urlparse.urlparse(uri)
+    scheme = parsed.scheme
+
+    location_map = store_api.location.SCHEME_TO_CLS_BACKEND_MAP
+    if scheme not in location_map:
+        LOG.debug("Unknown scheme '%(scheme)s' found in uri '%(uri)s'",
+                  {'scheme': scheme, 'uri': uri})
+        return False
+
+    # URL format: s3://key:secret@host/bucket/object
+    # Extract object path: everything after the bucket name
+    object_path = parsed.path[parsed.path.find('/', 1):]
+    # Extract image ID from object path
+    image_id = object_path.split('/')[-1]
+
+    # Get store name from metadata
+    store_name = loc['metadata'].get('store')
+    if store_name:
+        # Multistore, find by store name
+        store_instance = location_map[scheme][store_name]['store']
+    else:
+        # Old single store instance. Find by bucket and update store name
+        store_result = _find_store_by_bucket(parsed, location_map, scheme)
+        if store_result:
+            store_name, store_instance = store_result
+            loc['metadata']['store'] = store_name
+        else:
+            # No matching store found
+            LOG.warning("No S3 store found for image %(image_id)s",
+                        {'image_id': image_id})
+            return False
+
+    # For any store (old or new), update creds if there's a mismatch
+    expected_url = _construct_s3_url(store_instance, scheme, object_path)
+    if expected_url and loc['url'] != expected_url:
+        LOG.info("S3 URL mismatch for image %(image_id)s, updating URL",
+                 {'image_id': image_id})
+        new_access_key, new_secret_key = _get_store_credentials(
+            store_instance)
+        loc['url'] = _update_s3_url(
+            parsed, new_access_key, new_secret_key)
+        return True
+
+    return False
 
 
 def get_updated_store_location(locations, context=None):
