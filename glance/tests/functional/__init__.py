@@ -1410,11 +1410,6 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.paste_config = os.path.join(self.test_dir, 'glance-api-paste.ini')
         with open(self.paste_config, 'w') as f:
             f.write(textwrap.dedent("""
-            [filter:healthcheck]
-            paste.filter_factory = oslo_middleware:Healthcheck.factory
-            path = /healthcheck
-            backends = disable_by_file
-            disable_by_file_path = /tmp/test_path
             [filter:context]
             paste.filter_factory = glance.api.middleware.context:\
                 ContextMiddleware.factory
@@ -1437,14 +1432,19 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             [pipeline:glance-api-caching]
             pipeline = context cache rootapp
             [pipeline:glance-api]
-            pipeline = healthcheck context rootapp
+            pipeline = context rootapp
             [pipeline:glance-api-fake]
             pipeline = fakeauth context rootapp
             [composite:rootapp]
             paste.composite_factory = glance.api:root_app_factory
             /v2: apiv2app
+            /healthcheck: healthcheck
             [app:apiv2app]
             paste.app_factory = glance.api.v2.router:API.factory
+            [app:healthcheck]
+            paste.app_factory = oslo_middleware:Healthcheck.app_factory
+            backends = disable_by_file
+            disable_by_file_path = /tmp/test_path
             """))
 
     def _store_dir(self, store):
