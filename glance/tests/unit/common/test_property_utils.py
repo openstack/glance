@@ -20,6 +20,7 @@ import glance.context
 from glance.tests.unit import base
 
 CONFIG_SECTIONS = [
+    'os_glance.*',  # Automatically injected at the top
     '^x_owner_.*',
     'spl_create_prop',
     'spl_read_prop',
@@ -47,7 +48,40 @@ def create_context(policy, roles=None):
                                          policy_enforcer=policy)
 
 
-class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
+class TestPropertyRules():
+    def test_inject_os_glance(self):
+        '''Test that the os_glance.* section has been injected.'''
+        rules = {'x_foo': {'create': ['fake-role'],
+                           'read': ['member'],
+                           'update': ['fake-role'],
+                           'delete': ['fake-role']},
+                 'os_glance_store': {'create': '!',
+                                     'read': '!',
+                                     'update': '!',
+                                     'delete': '!'}}
+        self.set_property_protection_rules(rules)
+        self.rules_checker = property_utils.PropertyRules()
+
+        # The x_foo section should still be here
+        self.assertTrue(self.rules_checker.check_property_rules('x_foo',
+                        'read', create_context(self.policy, ['member'])))
+
+        # The os_glance_store section should not have been here (users must not
+        # specify any section that starts with 'os_glance'. Our 'os_glance.*'
+        # section should now be here.
+        self.assertIn('os_glance.*', property_utils.CONFIG.sections())
+        self.assertNotIn('os_glance_store', property_utils.CONFIG.sections())
+
+        # And we should have the right permissions for all operations in the
+        # os_glance.* section.
+        context = create_context(self.policy, [''])
+        for operation in ['create', 'read', 'update', 'delete']:
+            self.assertTrue(
+                self.rules_checker.check_property_rules(
+                    'os_glance.*', operation, context))
+
+
+class TestPropertyRulesWithRoles(base.IsolatedUnitTest, TestPropertyRules):
 
     def setUp(self):
         super(TestPropertyRulesWithRoles, self).setUp()
@@ -321,7 +355,7 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest):
             create_context(self.policy, ['member'])))
 
 
-class TestPropertyRulesWithPolicies(base.IsolatedUnitTest):
+class TestPropertyRulesWithPolicies(base.IsolatedUnitTest, TestPropertyRules):
 
     def setUp(self):
         super(TestPropertyRulesWithPolicies, self).setUp()
