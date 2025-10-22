@@ -1,0 +1,11 @@
+---
+upgrade:
+  - |
+    Glance now defaults to performing all the GPT/MBR safety checks on those
+    images. Previously we defaulted to making MBR checks non-fatal because of
+    some wild-found images with data in the MBR that violates the GPT spec.
+    When we added the nonfatal list and the default, we noted that we would
+    leave it in place for at least one cycle and then set the default back
+    to strict. That has now been done. If operators have images that still
+    have invalid GPT/PMBR data, those should be fixed as glance will reject
+    them.
