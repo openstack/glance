@@ -605,7 +605,17 @@ class ImageProxy(glance.domain.proxy.Image):
 
         virtual_size = 0
         try:
-            inspector = data.format
+            matches = data.formats
+            matched_formats = {str(i): i for i in matches}
+            if matched_formats.keys() == {'iso', 'gpt'}:
+                # If iso+gpt, we choose the iso because bootable-as-block ISOs
+                # can legitimately have a GPT bootloader in front.
+                LOG.debug('Detected format as ISO+GPT, allowing as ISO')
+                inspector = matched_formats['iso']
+            else:
+                # If multiple formats matched, but not exactly iso+gpt,
+                # this will raise to disallow those combinations.
+                inspector = data.format
             format = str(inspector)
             if format == self.image.disk_format:
                 virtual_size = inspector.virtual_size
