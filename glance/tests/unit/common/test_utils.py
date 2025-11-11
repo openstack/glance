@@ -1208,9 +1208,10 @@ class S3CredentialUpdateTestCase(test_utils.BaseTestCase):
         # URL should remain unchanged
         self.assertEqual(location['url'], original_url)
         # Verify that the debug log was called for unknown scheme
+        # Note: URI is not logged for S3 schemes to avoid credential exposure
         mock_log.debug.assert_called_once_with(
-            "Unknown scheme '%(scheme)s' found in uri '%(uri)s'",
-            {'scheme': 's3', 'uri': 's3://key:secret@bucket/object'})
+            "Unknown scheme '%(scheme)s' found in uri",
+            {'scheme': 's3'})
 
     @mock.patch('glance.common.store_utils.store_api')
     @mock.patch('glance.common.store_utils.CONF')
