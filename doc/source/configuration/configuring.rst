@@ -1590,6 +1590,123 @@ Configuring the S3 Storage Backend
 
   The number of thread pools to perform a multipart upload in S3.
 
+.. _configuring-multiple-s3-storage-backend:
+
+Configuring multiple S3 Storage Backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+From Victoria onwards Glance fully supports configuring multiple S3
+stores. From the Glance side, you will add each of the S3 stores you want to
+define to the ``enabled_backends`` configuration option in glance
+configuration file. For each of these stores, you must then set the
+S3-specific configuration options in the store's specific configuration
+section of glance-api.conf.
+
+Below is an example of multiple S3 store configuration.
+
+Example 1: Fresh deployment
+
+For example, if you want to configure 2 S3 stores `s3-primary` and `s3-backup`
+then glance configuration should look like::
+
+    [DEFAULT]
+    # list of enabled stores identified by their property group name
+    enabled_backends = s3-primary:s3, s3-backup:s3
+
+    # the default store, if not set glance-api service will not start
+    [glance_store]
+    default_backend = s3-primary
+
+    # conf props for s3-primary store instance
+    [s3-primary]
+    s3_store_host = https://s3-us-east-1.amazonaws.com
+    s3_store_access_key = primary-access-key
+    s3_store_secret_key = primary-secret-key
+    s3_store_bucket = glance-primary-bucket
+    s3_store_create_bucket_on_put = True
+    s3_store_bucket_url_format = virtual
+    # etc..
+
+    # conf props for s3-backup store instance
+    [s3-backup]
+    s3_store_host = https://s3-us-west-2.amazonaws.com
+    s3_store_access_key = backup-access-key
+    s3_store_secret_key = backup-secret-key
+    s3_store_bucket = glance-backup-bucket
+    s3_store_create_bucket_on_put = True
+    s3_store_bucket_url_format = virtual
+    # etc..
+
+Example 2: Upgrade from single S3 store to multiple S3 stores
+
+When upgrading from a single traditional S3 store to multistore,
+you need to ensure that the ``s3_store_host`` value
+remains the same as it was in the old configuration. This is critical for
+maintaining compatibility with existing images.
+
+.. warning::
+
+    When upgrading from single S3 store to multiple S3 stores, the
+    ``s3_store_host`` configuration parameter value **must remain the same**
+    before and after the upgrade. Changing ``s3_store_host`` during upgrade
+    will break access to existing images.
+
+    However, you can update ``s3_store_access_key`` and ``s3_store_secret_key``
+    at any time, including during the upgrade. Glance will automatically handle
+    credential updates for existing images using lazy updating on each GET API
+    call. This allows for seamless credential rotation without requiring
+    immediate updates to all existing image locations.
+
+Example config before upgrade::
+
+    # old configuration in glance
+    [glance_store]
+    stores = s3, file, http
+    default_store = s3
+    s3_store_host = https://s3.amazonaws.com
+    s3_store_access_key = old-access-key
+    s3_store_secret_key = old-secret-key
+    s3_store_bucket = glance-images
+    s3_store_create_bucket_on_put = True
+    s3_store_bucket_url_format = virtual
+
+Example config after upgrade::
+
+    # new configuration in glance
+    [DEFAULT]
+    enabled_backends = s3-legacy:s3
+
+    [glance_store]
+    default_backend = s3-legacy
+
+    # S3 store matching old (single store) configuration
+    # NOTE: s3_store_host MUST remain the same as old configuration
+    [s3-legacy]
+    s3_store_host = https://s3.amazonaws.com  # Same as before upgrade
+    s3_store_access_key = old-access-key  # Can be updated anytime
+    s3_store_secret_key = old-secret-key  # Can be updated anytime
+    s3_store_bucket = glance-images
+    s3_store_create_bucket_on_put = True
+    s3_store_bucket_url_format = virtual
+
+**Credential Rotation**: You can update ``s3_store_access_key`` and
+``s3_store_secret_key`` in the store configuration at any time, including
+during or after the upgrade. When an image with old credentials is accessed
+via a GET API call, Glance will automatically detect the credential mismatch
+and update the image location URL with the new credentials. This lazy update
+mechanism ensures that:
+
+* Credential rotation can be performed without downtime
+* Existing images continue to work with old credentials until accessed
+* Image locations are automatically updated when images are accessed
+* No manual intervention is required for credential updates
+
+**Note**: After upgrade from single S3 store to use multiple S3 stores, the
+first ``GET`` or ``image-show`` call for an image will take additional time
+as we will perform the lazy loading operation to update legacy image location
+URL to use new image location URLs with updated credentials if needed.
+Subsequent ``GET`` or ``image-show`` calls will perform as normal.
+
 Configuring the Storage Endpoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
