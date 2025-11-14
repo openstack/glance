@@ -301,8 +301,8 @@ def _update_s3_location_and_store_id(context, loc):
 
     location_map = store_api.location.SCHEME_TO_CLS_BACKEND_MAP
     if scheme not in location_map:
-        LOG.debug("Unknown scheme '%(scheme)s' found in uri '%(uri)s'",
-                  {'scheme': scheme, 'uri': uri})
+        LOG.debug("Unknown scheme '%(scheme)s' found in uri",
+                  {'scheme': scheme})
         return False
 
     # URL format: s3://key:secret@host/bucket/object
