@@ -449,7 +449,7 @@ class ImageDataController(object):
                                   "internal error"))
                 self._restore(image_repo, image)
 
-    def download(self, req, image_id):
+    def download(self, req, image_id, stores=None):
         image_repo = self.gateway.get_repo(req.context)
         try:
             image = image_repo.get(image_id)
@@ -467,6 +467,60 @@ class ImageDataController(object):
         except exception.Forbidden as e:
             LOG.debug("User not permitted to download image '%s'", image_id)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
+
+        if stores:
+            # NOTE(abhishekk): Enforce policy for store selection when prefer
+            # parameter is provided.
+            try:
+                api_pol.download_from_store()
+            except webob.exc.HTTPForbidden:
+                with excutils.save_and_reraise_exception():
+                    LOG.debug("User not permitted to use store selection for "
+                              "image '%s'", image_id)
+            stores = self._validate_stores(stores)
+            image = self._filter_locations_by_stores(image, stores)
+
+        return image
+
+    def _validate_stores(self, stores):
+        if not CONF.enabled_backends:
+            msg = _("Store selection for download is not available when "
+                    "multiple backends are not enabled.")
+            raise webob.exc.HTTPBadRequest(explanation=msg)
+
+        available_stores = []
+        for store in stores:
+            if store not in CONF.enabled_backends:
+                msg = (_("Store '%(store)s' is not configured.") %
+                       {'store': store})
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+
+            try:
+                glance_store.get_store_from_store_identifier(store)
+            except glance_store.UnknownScheme:
+                msg = _("Store '%(store)s' does not exist.") % {'store': store}
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+
+            available_stores.append(store)
+
+        return available_stores
+
+    def _filter_locations_by_stores(self, image, stores):
+        if not image.locations:
+            return image
+
+        preferred = []
+        others = []
+        for loc in image.locations:
+            store_id = loc.get('metadata', {}).get('store')
+            if store_id in stores:
+                preferred.append(loc)
+            else:
+                others.append(loc)
+
+        # Always fallback to default behavior if image not found in
+        # specified stores
+        image.locations = preferred + others
 
         return image
 
@@ -513,6 +567,22 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
 
         return {'size': self._get_image_size(request),
                 'data': request.body_file}
+
+    def download(self, request):
+        # NOTE(abhishekk): If the image is cached, the cache middleware will
+        # serve it directly and this method will not be called. Store
+        # preference parameters are only processed when fetching from backend
+        # stores, not when serving from cache.
+        params = request.params.copy()
+        stores = []
+        prefer_param = params.get('prefer', '')
+        if prefer_param:
+            for store in prefer_param.split(','):
+                store = store.strip()
+                if store:
+                    stores.append(store)
+
+        return {'stores': stores}
 
 
 class ResponseSerializer(wsgi.JSONResponseSerializer):

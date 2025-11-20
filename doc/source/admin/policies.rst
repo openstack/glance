@@ -58,6 +58,14 @@ The actions that may have a rule enforced on them are:
   * ``GET /v1/images/<IMAGE_ID>``
   * ``GET /v2/images/<IMAGE_ID>/file``
 
+* ``download_from_store`` - Download binary image data from specific store
+
+  * ``GET /v2/images/<IMAGE_ID>/file`` with ``prefer`` query parameter
+
+  This policy controls who can use store preference parameters when
+  downloading images. By default, anyone who can download images can also
+  use store preference. Deployers can restrict this policy if needed.
+
 * ``upload_image`` - Upload binary image data
 
   * ``POST /v1/images``

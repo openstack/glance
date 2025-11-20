@@ -370,6 +370,12 @@ class APIImagePolicy(APIPolicyBase):
                                                       'download_image',
                                                       mock.ANY)
 
+    def test_download_from_store(self):
+        self.policy.download_from_store()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'download_from_store',
+                                                      mock.ANY)
+
     def test_modify_image(self):
         self.policy.modify_image()
         self.enforcer.enforce.assert_called_once_with(self.context,

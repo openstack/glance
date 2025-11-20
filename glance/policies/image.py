@@ -131,6 +131,17 @@ image_policies = [
             deprecated_since=versionutils.deprecated.WALLABY),
     ),
     policy.DocumentedRuleDefault(
+        name="download_from_store",
+        check_str=base.ADMIN_OR_PROJECT_MEMBER_DOWNLOAD_IMAGE,
+        scope_types=['project'],
+        description=('Downloads image from specific store using store '
+                     'selection parameters'),
+        operations=[
+            {'path': '/v2/images/{image_id}/file',
+             'method': 'GET'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
         name="upload_image",
         check_str=base.ADMIN_OR_PROJECT_MEMBER,
         scope_types=['project'],
