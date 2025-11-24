@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    `Bug #2085321 <https://bugs.launchpad.net/glance/+bug/2085321>`_:
+    Fixed an issue that prevented users from using property protection files
+    and image import or the inject metadata plugin. A valid "os_glance.*"
+    section is now automatically added to the property protection file.

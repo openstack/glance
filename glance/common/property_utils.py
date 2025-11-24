@@ -13,6 +13,7 @@
 #    under the License.
 
 import configparser
+import io
 import re
 
 from oslo_config import cfg
@@ -108,10 +109,51 @@ class PropertyRules(object):
         self.prop_prot_rule_format = self.prop_prot_rule_format.lower()
         self._load_rules()
 
+    def _inject_os_glance_section(self):
+        # Inject an 'os_glance.*' section to work around bug #2085321.
+        # https://bugs.launchpad.net/glance/+bug/2085321
+        # An exception will be raised if a property protection file is in
+        # use and does not contain the os_glance.* section. Since this is
+        # internal to Glance, the users should not have to specify that
+        # section in the config file themselves. We therefore inject it
+        # here on their behalf.
+        #
+        # We also remove all sections starting with 'os_glance' since the
+        # keyword is reserved for internal use.
+        #
+        # See:
+        #   glance/tests/etc/property-protections-policies.conf
+        #   glance/tests/etc/property-protections.conf
+        global CONFIG
+
+        for section in CONFIG.sections():
+            if section.startswith('os_glance'):
+                CONFIG.remove_section(section)
+
+        # We want to insert the [os_glance.*] section at the top of the config,
+        # so it is not shadowed by sections such as [.*]. To do this, we:
+        # 1) Dump the user config into a StringIO
+        # 2) Init a new ConfigParser object
+        # 3) Read our [os_glance.*] section
+        # 4) Read the user config
+        txt_config = io.StringIO()
+        CONFIG.write(txt_config)
+        CONFIG = configparser.ConfigParser()
+        CONFIG.read_dict({
+            'os_glance.*': {
+                'create': '@',
+                'read': '@',
+                'update': '@',
+                'delete': '@',
+            }
+        })
+        CONFIG.read_string(txt_config.getvalue())
+
     def _load_rules(self):
         try:
             conf_file = CONF.find_file(CONF.property_protection_file)
             CONFIG.read(conf_file)
+            self._inject_os_glance_section()
         except Exception as e:
             msg = (_LE("Couldn't find property protection file %(file)s: "
                        "%(error)s.") % {'file': CONF.property_protection_file,
