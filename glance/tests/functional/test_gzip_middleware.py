@@ -15,34 +15,26 @@
 
 """Tests gzip middleware."""
 
-import httplib2
-
 from glance.tests import functional
 from glance.tests import utils
 
 
-class GzipMiddlewareTest(functional.FunctionalTest):
+class GzipMiddlewareTest(functional.SynchronousAPIBase):
+
+    def setUp(self):
+        super(GzipMiddlewareTest, self).setUp()
+        self.start_server()
 
     @utils.skip_if_disabled
     def test_gzip_requests(self):
-        self.cleanup()
-        self.start_servers(**self.__dict__.copy())
-
-        def request(path, headers=None):
-            # We don't care what version we're using here so,
-            # sticking with latest
-            url = 'http://127.0.0.1:%s/v2/%s' % (self.api_port, path)
-            http = httplib2.Http()
-            return http.request(url, 'GET', headers=headers)
-
         # Accept-Encoding: Identity
-        headers = {'Accept-Encoding': 'identity'}
-        response, content = request('images', headers=headers)
-        self.assertIsNone(response.get("-content-encoding"))
+        headers = self._headers({'Accept-Encoding': 'identity'})
+        response = self.api_get('/v2/images', headers=headers)
+        # When identity is requested, Content-Encoding should not be set
+        self.assertIsNone(response.headers.get('content-encoding'))
 
         # Accept-Encoding: gzip
-        headers = {'Accept-Encoding': 'gzip'}
-        response, content = request('images', headers=headers)
-        self.assertEqual('gzip', response.get("-content-encoding"))
-
-        self.stop_servers()
+        headers = self._headers({'Accept-Encoding': 'gzip'})
+        response = self.api_get('/v2/images', headers=headers)
+        # When gzip is requested, Content-Encoding should be set to gzip
+        self.assertEqual('gzip', response.headers.get('content-encoding'))
