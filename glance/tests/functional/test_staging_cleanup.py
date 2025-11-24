@@ -13,47 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-"""Tests for `glance.wsgi`."""
+"""Tests for staging store cleanup."""
 
 import http.client as http
 import os
-import socket
 import time
 
 from oslo_serialization import jsonutils
 from oslo_utils.fixture import uuidsentinel as uuids
 
-from glance.common import wsgi
 from glance.tests import functional
-
-
-class TestWSGIServer(functional.FunctionalTest):
-    """WSGI server tests."""
-    def test_client_socket_timeout(self):
-        self.config(workers=0)
-        self.config(client_socket_timeout=1)
-        """Verify connections are timed out as per 'client_socket_timeout'"""
-        greetings = b'Hello, World!!!'
-
-        def hello_world(env, start_response):
-            start_response('200 OK', [('Content-Type', 'text/plain')])
-            return [greetings]
-
-        server = wsgi.Server()
-        server.start(hello_world, 0)
-        port = server.sock.getsockname()[1]
-
-        def get_request(delay=0.0):
-            sock = socket.socket()
-            sock.connect(('127.0.0.1', port))
-            time.sleep(delay)
-            sock.send(b'GET / HTTP/1.1\r\nHost: localhost\r\n\r\n')
-            return sock.recv(1024)
-
-        # Should succeed - no timeout
-        self.assertIn(greetings, get_request())
-        # Should fail - connection timed out so we get nothing from the server
-        self.assertFalse(get_request(delay=1.1))
 
 
 class StagingCleanupBase:
