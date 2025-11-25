@@ -179,6 +179,200 @@ class TestDecompressImageTask(test_utils.BaseTestCase):
         # Verify image_repo.save was NOT called
         self.img_repo.save.assert_not_called()
 
+    @mock.patch('glance.async_.flows.plugins.image_decompression.lhafile',
+                create=True)
+    def test_decompress_lha_updates_image_size(self, mock_lhafile):
+        """Test that image size is updated after successful LHA
+        decompression.
+        """
+        # Create a fake LHA file (just a file with LHA magic bytes)
+        lha_file = os.path.join(self.test_dir, 'test.lha')
+        # Write LHA magic bytes at offset 2: 2d 6c 68
+        with open(lha_file, 'wb') as f:
+            # Magic bytes + padding
+            f.write(b'\x00\x00\x2d\x6c\x68' + b'X' * 100)
+
+        # Mock lhafile.LhaFile
+        mock_lha = mock.MagicMock()
+        mock_lha.namelist.return_value = ['test_image.raw']
+        mock_lha.read.return_value = b'x' * 15000  # 15KB decompressed content
+        mock_lha.fp = mock.MagicMock()  # Mock file pointer
+        mock_lhafile.LhaFile.return_value = mock_lha
+        mock_lhafile.NO_LHA = False
+
+        # Set NO_LHA to False to enable LHA support
+        original_no_lha = image_decompression.NO_LHA
+        image_decompression.NO_LHA = False
+
+        try:
+            decompress_task = image_decompression._DecompressImage(
+                self.context, self.task_id, self.task_type,
+                self.img_repo, self.image_id)
+
+            file_path = 'file://%s' % lha_file
+            result = decompress_task.execute(file_path)
+
+            # Verify LhaFile was instantiated (not with context manager)
+            mock_lhafile.LhaFile.assert_called_once_with(
+                lha_file, 'r')
+            # Verify namelist was called
+            mock_lha.namelist.assert_called_once()
+            # Verify read was called (not extract)
+            mock_lha.read.assert_called_once_with('test_image.raw')
+            # Verify file pointer was closed
+            mock_lha.fp.close.assert_called_once()
+            # Verify the image size was updated to decompressed size
+            self.assertEqual(15000, self.image.size)
+            # Verify image_repo.save was called
+            self.img_repo.save.assert_called_once_with(self.image)
+            # Verify the result is the file path
+            self.assertEqual(file_path, result)
+        finally:
+            image_decompression.NO_LHA = original_no_lha
+
+    @mock.patch('glance.async_.flows.plugins.image_decompression.lhafile',
+                create=True)
+    def test_decompress_lha_handles_multiple_files_error(self, mock_lhafile):
+        """Test that LHA decompression raises error for archives with
+        multiple files.
+        """
+        lha_file = os.path.join(self.test_dir, 'test.lha')
+        with open(lha_file, 'wb') as f:
+            f.write(b'\x00\x00\x2d\x6c\x68' + b'X' * 100)
+
+        mock_lha = mock.MagicMock()
+        # Multiple files
+        mock_lha.namelist.return_value = ['file1.raw', 'file2.raw']
+        mock_lhafile.LhaFile.return_value = mock_lha
+        mock_lhafile.NO_LHA = False
+
+        original_no_lha = image_decompression.NO_LHA
+        image_decompression.NO_LHA = False
+
+        try:
+            decompress_task = image_decompression._DecompressImage(
+                self.context, self.task_id, self.task_type,
+                self.img_repo, self.image_id)
+
+            file_path = 'file://%s' % lha_file
+            # Should raise Exception for multiple files
+            try:
+                decompress_task.execute(file_path)
+                self.fail("Expected Exception for multiple files")
+            except Exception as e:
+                self.assertIn('more than one file', str(e))
+
+            # Verify file pointer was still closed in finally block
+            mock_lha.fp.close.assert_called_once()
+            # Verify image size was NOT updated
+            self.assertEqual(1000, self.image.size)
+            # Verify image_repo.save was NOT called
+            self.img_repo.save.assert_not_called()
+        finally:
+            image_decompression.NO_LHA = original_no_lha
+
+    @mock.patch('glance.async_.flows.plugins.image_decompression.lhafile',
+                create=True)
+    def test_decompress_lha_handles_no_lha_library(self, mock_lhafile):
+        """Test that LHA decompression raises error when lhafile library
+        is not available.
+        """
+        lha_file = os.path.join(self.test_dir, 'test.lha')
+        with open(lha_file, 'wb') as f:
+            f.write(b'\x00\x00\x2d\x6c\x68' + b'X' * 100)
+
+        original_no_lha = image_decompression.NO_LHA
+        image_decompression.NO_LHA = True
+
+        try:
+            decompress_task = image_decompression._DecompressImage(
+                self.context, self.task_id, self.task_type,
+                self.img_repo, self.image_id)
+
+            file_path = 'file://%s' % lha_file
+            # Should raise Exception when NO_LHA is True
+            try:
+                decompress_task.execute(file_path)
+                self.fail("Expected Exception when NO_LHA is True")
+            except Exception as e:
+                self.assertIn('No lhafile available', str(e))
+
+            # Verify LhaFile was NOT called
+            mock_lhafile.LhaFile.assert_not_called()
+            # Verify image size was NOT updated
+            self.assertEqual(1000, self.image.size)
+            # Verify image_repo.save was NOT called
+            self.img_repo.save.assert_not_called()
+        finally:
+            image_decompression.NO_LHA = original_no_lha
+
+    @mock.patch('glance.async_.flows.plugins.image_decompression.lhafile',
+                create=True)
+    def test_decompress_lha_closes_file_pointer_on_error(self, mock_lhafile):
+        """Test that file pointer is closed even when an error occurs."""
+        lha_file = os.path.join(self.test_dir, 'test.lha')
+        with open(lha_file, 'wb') as f:
+            f.write(b'\x00\x00\x2d\x6c\x68' + b'X' * 100)
+
+        mock_lha = mock.MagicMock()
+        mock_lha.namelist.return_value = ['test_image.raw']
+        mock_lha.read.side_effect = IOError("Read error")
+        mock_lha.fp = mock.MagicMock()
+        mock_lhafile.LhaFile.return_value = mock_lha
+        mock_lhafile.NO_LHA = False
+
+        original_no_lha = image_decompression.NO_LHA
+        image_decompression.NO_LHA = False
+
+        try:
+            decompress_task = image_decompression._DecompressImage(
+                self.context, self.task_id, self.task_type,
+                self.img_repo, self.image_id)
+
+            file_path = 'file://%s' % lha_file
+            # Should raise IOError
+            self.assertRaises(IOError, decompress_task.execute, file_path)
+
+            # Verify file pointer was closed in finally block
+            mock_lha.fp.close.assert_called_once()
+        finally:
+            image_decompression.NO_LHA = original_no_lha
+
+    @mock.patch('glance.async_.flows.plugins.image_decompression.lhafile',
+                create=True)
+    def test_decompress_lha_handles_no_file_pointer(self, mock_lhafile):
+        """Test that LHA decompression works when file pointer
+        doesn't exist.
+        """
+        lha_file = os.path.join(self.test_dir, 'test.lha')
+        with open(lha_file, 'wb') as f:
+            f.write(b'\x00\x00\x2d\x6c\x68' + b'X' * 100)
+
+        mock_lha = mock.MagicMock()
+        mock_lha.namelist.return_value = ['test_image.raw']
+        mock_lha.read.return_value = b'x' * 8000
+        mock_lha.fp = None  # No file pointer
+        mock_lhafile.LhaFile.return_value = mock_lha
+        mock_lhafile.NO_LHA = False
+
+        original_no_lha = image_decompression.NO_LHA
+        image_decompression.NO_LHA = False
+
+        try:
+            decompress_task = image_decompression._DecompressImage(
+                self.context, self.task_id, self.task_type,
+                self.img_repo, self.image_id)
+
+            file_path = 'file://%s' % lha_file
+            result = decompress_task.execute(file_path)
+
+            # Should work fine even without file pointer
+            self.assertEqual(8000, self.image.size)
+            self.img_repo.save.assert_called_once_with(self.image)
+            self.assertEqual(file_path, result)
+        finally:
+            image_decompression.NO_LHA = original_no_lha
+
     def test_get_flow_returns_flow_with_decompress_task(self):
         """Test that get_flow returns a flow with the decompress task."""
         kwargs = {
