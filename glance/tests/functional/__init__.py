@@ -683,13 +683,6 @@ class FunctionalTest(test_utils.BaseTestCase):
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
-        self.copy_data_file('property-protections.conf', conf_dir)
-        self.copy_data_file('property-protections-policies.conf', conf_dir)
-        self.property_file_roles = os.path.join(conf_dir,
-                                                'property-protections.conf')
-        property_policies = 'property-protections-policies.conf'
-        self.property_file_policies = os.path.join(conf_dir,
-                                                   property_policies)
         self.policy_file = os.path.join(conf_dir, 'policy.yaml')
 
         self.api_server = ApiServer(self.test_dir,
@@ -1009,13 +1002,6 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
-        self.copy_data_file('property-protections.conf', conf_dir)
-        self.copy_data_file('property-protections-policies.conf', conf_dir)
-        self.property_file_roles = os.path.join(conf_dir,
-                                                'property-protections.conf')
-        property_policies = 'property-protections-policies.conf'
-        self.property_file_policies = os.path.join(conf_dir,
-                                                   property_policies)
         self.policy_file = os.path.join(conf_dir, 'policy.yaml')
 
         self.api_server_multiple_backend = ApiServerForMultipleBackend(
@@ -1460,6 +1446,194 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         glance_store.create_stores(CONF)
         glance_store.verify_default_store()
 
+    def setup_property_protection_files(self):
+        """Setup property protection configuration files.
+
+        This creates property protection files dynamically for testing,
+        similar to how setup_simple_paste() creates paste config files.
+        Creates both roles-based and policies-based property protection
+        files.
+        """
+        conf_dir = os.path.join(self.test_dir, 'etc')
+        utils.safe_mkdirs(conf_dir)
+
+        # Create roles-based property protection file
+        property_file_roles = os.path.join(conf_dir,
+                                           'property-protections.conf')
+        with open(property_file_roles, 'w') as f:
+            f.write(textwrap.dedent("""
+            [^x_owner_.*]
+            create = admin,member
+            read = admin,member
+            update = admin,member
+            delete = admin,member
+
+            [spl_create_prop]
+            create = admin,spl_role
+            read = admin,spl_role
+            update = admin
+            delete = admin
+
+            [spl_read_prop]
+            create = admin,spl_role
+            read = admin,spl_role
+            update = admin
+            delete = admin
+
+            [spl_read_only_prop]
+            create = admin
+            read = admin,spl_role
+            update = admin
+            delete = admin
+
+            [spl_update_prop]
+            create = admin,spl_role
+            read = admin,spl_role
+            update = admin,spl_role
+            delete = admin
+
+            [spl_update_only_prop]
+            create = admin
+            read = admin
+            update = admin,spl_role
+            delete = admin
+
+            [spl_delete_prop]
+            create = admin,spl_role
+            read = admin,spl_role
+            update = admin
+            delete = admin,spl_role
+
+            [spl_delete_empty_prop]
+            create = admin,spl_role
+            read = admin,spl_role
+            update = admin
+            delete = admin,spl_role
+
+            [^x_all_permitted.*]
+            create = @
+            read = @
+            update = @
+            delete = @
+
+            [^x_none_permitted.*]
+            create = !
+            read = !
+            update = !
+            delete = !
+
+            [x_none_read]
+            create = admin,member
+            read = !
+            update = !
+            delete = !
+
+            [x_none_update]
+            create = admin,member
+            read = admin,member
+            update = !
+            delete = admin,member
+
+            [x_none_delete]
+            create = admin,member
+            read = admin,member
+            update = admin,member
+            delete = !
+
+            [x_case_insensitive]
+            create = admin,Member
+            read = admin,Member
+            update = admin,Member
+            delete = admin,Member
+
+            [x_foo_matcher]
+            create = admin
+            read = admin
+            update = admin
+            delete = admin
+
+            [x_foo_*]
+            create = @
+            read = @
+            update = @
+            delete = @
+
+            [.*]
+            create = admin
+            read = admin
+            update = admin
+            delete = admin
+            """))
+
+        # Create policies-based property protection file
+        property_file_policies = os.path.join(
+            conf_dir, 'property-protections-policies.conf')
+        with open(property_file_policies, 'w') as f:
+            f.write(textwrap.dedent("""
+            [spl_creator_policy]
+            create = glance_creator
+            read = glance_creator
+            update = context_is_admin
+            delete = context_is_admin
+
+            [spl_default_policy]
+            create = context_is_admin
+            read = default
+            update = context_is_admin
+            delete = context_is_admin
+
+            [^x_all_permitted.*]
+            create = @
+            read = @
+            update = @
+            delete = @
+
+            [^x_none_permitted.*]
+            create = !
+            read = !
+            update = !
+            delete = !
+
+            [x_none_read]
+            create = context_is_admin
+            read = !
+            update = !
+            delete = !
+
+            [x_none_update]
+            create = context_is_admin
+            read = context_is_admin
+            update = !
+            delete = context_is_admin
+
+            [x_none_delete]
+            create = context_is_admin
+            read = context_is_admin
+            update = context_is_admin
+            delete = !
+
+            [x_foo_matcher]
+            create = context_is_admin
+            read = context_is_admin
+            update = context_is_admin
+            delete = context_is_admin
+
+            [x_foo_*]
+            create = @
+            read = @
+            update = @
+            delete = @
+
+            [.*]
+            create = context_is_admin
+            read = context_is_admin
+            update = context_is_admin
+            delete = context_is_admin
+            """))
+
+        self.property_file_roles = property_file_roles
+        self.property_file_policies = property_file_policies
+
     def setup_stores(self):
         """Configures multiple backend stores.
 
@@ -1503,13 +1677,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         conf_dir = os.path.join(self.test_dir, 'etc')
         utils.safe_mkdirs(conf_dir)
         self.copy_data_file('schema-image.json', conf_dir)
-        self.copy_data_file('property-protections.conf', conf_dir)
-        self.copy_data_file('property-protections-policies.conf', conf_dir)
-        self.property_file_roles = os.path.join(conf_dir,
-                                                'property-protections.conf')
-        property_policies = 'property-protections-policies.conf'
-        self.property_file_policies = os.path.join(conf_dir,
-                                                   property_policies)
+        self.setup_property_protection_files()
 
     def copy_data_file(self, file_name, dst_dir):
         src_file_name = os.path.join('glance/tests/etc', file_name)

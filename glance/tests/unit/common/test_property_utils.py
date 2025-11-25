@@ -80,6 +80,43 @@ class TestPropertyRules():
                 self.rules_checker.check_property_rules(
                     'os_glance.*', operation, context))
 
+    def test_inject_os_glance_with_wrong_values_reinjected(self):
+        '''Test that os_glance.* section with wrong values is removed and
+        re-injected.
+        '''
+        # First, inject os_glance.* with correct values
+        rules = {'x_foo': {'create': ['fake-role'],
+                           'read': ['member'],
+                           'update': ['fake-role'],
+                           'delete': ['fake-role']}}
+        self.set_property_protection_rules(rules)
+        property_utils.PropertyRules()
+
+        # Manually modify os_glance.* to have wrong values
+        property_utils.CONFIG.set('os_glance.*', 'create', '!')
+        property_utils.CONFIG.set('os_glance.*', 'read', '!')
+        property_utils.CONFIG.set('os_glance.*', 'update', '!')
+        property_utils.CONFIG.set('os_glance.*', 'delete', '!')
+
+        # Verify it has wrong values
+        section = property_utils.CONFIG['os_glance.*']
+        self.assertEqual('!', section.get('create'))
+        self.assertEqual('!', section.get('read'))
+        self.assertEqual('!', section.get('update'))
+        self.assertEqual('!', section.get('delete'))
+
+        # Create new PropertyRules instance - should detect wrong values
+        # and re-inject with correct values
+        property_utils.PropertyRules()
+
+        # Verify os_glance.* now has correct values
+        self.assertIn('os_glance.*', property_utils.CONFIG.sections())
+        section = property_utils.CONFIG['os_glance.*']
+        self.assertEqual('@', section.get('create'))
+        self.assertEqual('@', section.get('read'))
+        self.assertEqual('@', section.get('update'))
+        self.assertEqual('@', section.get('delete'))
+
 
 class TestPropertyRulesWithRoles(base.IsolatedUnitTest, TestPropertyRules):
 

@@ -34,6 +34,19 @@ class Gateway(object):
         self.store_utils = store_utils
         self.notifier = notifier or glance.notifier.Notifier()
         self.policy = policy_enforcer or policy.Enforcer()
+        self._property_rules = None
+
+    def _get_property_rules(self):
+        """Get cached PropertyRules instance, creating it if necessary.
+
+        This method ensures that property protection rules are loaded
+        only once per Gateway instance, rather than on every API request.
+        """
+        if self._property_rules is None:
+            if property_utils.is_property_protection_enabled():
+                self._property_rules = property_utils.PropertyRules(
+                    self.policy)
+        return self._property_rules
 
     def get_image_factory(self, context):
         factory = glance.domain.ImageFactory()
@@ -43,8 +56,8 @@ class Gateway(object):
             factory, context, self.db_api, self.store_utils)
         factory = glance.notifier.ImageFactoryProxy(
             factory, context, self.notifier)
-        if property_utils.is_property_protection_enabled():
-            property_rules = property_utils.PropertyRules(self.policy)
+        property_rules = self._get_property_rules()
+        if property_rules is not None:
             factory = property_protections.ProtectedImageFactoryProxy(
                 factory, context, property_rules)
         return factory
@@ -73,8 +86,8 @@ class Gateway(object):
             repo, context, self.db_api, self.store_utils)
         repo = glance.notifier.ImageRepoProxy(
             repo, context, self.notifier)
-        if property_utils.is_property_protection_enabled():
-            property_rules = property_utils.PropertyRules(self.policy)
+        property_rules = self._get_property_rules()
+        if property_rules is not None:
             repo = property_protections.ProtectedImageRepoProxy(
                 repo, context, property_rules)
 
