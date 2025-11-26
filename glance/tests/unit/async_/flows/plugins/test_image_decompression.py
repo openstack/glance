@@ -16,6 +16,7 @@
 import gzip
 import os
 from unittest import mock
+import zipfile
 
 import glance.async_.flows.plugins.image_decompression as image_decompression
 from glance import gateway
@@ -398,3 +399,70 @@ class TestDecompressImageTask(test_utils.BaseTestCase):
         self.assertEqual(self.image_id, task.image_id)
         self.assertEqual(self.task_id, task.task_id)
         self.assertEqual(self.task_type, task.task_type)
+
+    def _create_zip_file(self, content, filename='test.zip',
+                         entry_name='test_image.raw'):
+        """Create a ZIP file with the given content."""
+        filepath = os.path.join(self.test_dir, filename)
+        with zipfile.ZipFile(filepath, 'w') as zf:
+            zf.writestr(entry_name, content)
+        return filepath
+
+    def test_decompress_zip_updates_image_size(self):
+        """Test that image size is updated after successful ZIP
+        decompression.
+        """
+        # Create a ZIP file with single file
+        original_content = b'x' * 12000  # 12KB uncompressed
+        zip_file = self._create_zip_file(original_content, 'test.zip',
+                                         'test_image.raw')
+
+        # Get compressed size
+        compressed_size = os.path.getsize(zip_file)
+
+        # Create decompression task
+        decompress_task = image_decompression._DecompressImage(
+            self.context, self.task_id, self.task_type,
+            self.img_repo, self.image_id)
+
+        # Execute decompression
+        file_path = 'file://%s' % zip_file
+        result = decompress_task.execute(file_path)
+
+        # Verify the image size was updated to decompressed size
+        self.assertEqual(12000, self.image.size)
+        # Verify image_repo.save was called
+        self.img_repo.save.assert_called_once_with(self.image)
+        # Verify the result is the file path
+        self.assertEqual(file_path, result)
+        # Verify the file was decompressed (original file replaced)
+        self.assertTrue(os.path.exists(zip_file))
+        # Verify compressed size is different from decompressed size
+        self.assertNotEqual(compressed_size, os.path.getsize(zip_file))
+        self.assertEqual(12000, os.path.getsize(zip_file))
+
+    def test_decompress_zip_handles_multiple_files_error(self):
+        """Test that ZIP decompression raises error for archives with
+        multiple files.
+        """
+        zip_file = os.path.join(self.test_dir, 'test.zip')
+        with zipfile.ZipFile(zip_file, 'w') as zf:
+            zf.writestr('file1.raw', b'content1')
+            zf.writestr('file2.raw', b'content2')
+
+        decompress_task = image_decompression._DecompressImage(
+            self.context, self.task_id, self.task_type,
+            self.img_repo, self.image_id)
+
+        file_path = 'file://%s' % zip_file
+        # Should raise Exception for multiple files
+        try:
+            decompress_task.execute(file_path)
+            self.fail("Expected Exception for multiple files")
+        except Exception as e:
+            self.assertIn('more than one file', str(e))
+
+        # Verify image size was NOT updated
+        self.assertEqual(1000, self.image.size)
+        # Verify image_repo.save was NOT called
+        self.img_repo.save.assert_not_called()

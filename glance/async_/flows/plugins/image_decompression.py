@@ -51,13 +51,30 @@ MAX_HEADER = max(header_lengths())
 
 
 def _zipfile(src_path, dest_path, image_id):
+    """Decompress a ZIP file containing a single file.
+
+    Only ZIP archives with exactly one file are supported. Raises an
+    exception if the archive contains multiple files.
+
+    :param src_path: Path to the ZIP file
+    :param dest_path: Path where the decompressed file should be written
+    :param image_id: Image ID for logging purposes
+    :raises Exception: If archive contains more than one file or extraction
+                       fails
+    """
     try:
         with zipfile.ZipFile(src_path, 'r') as zfd:
             content = zfd.namelist()
             if len(content) != 1:
                 raise Exception("Archive contains more than one file.")
             else:
-                zfd.extract(content[0], dest_path)
+                # extract() expects a directory path, not a file path
+                # Extract to parent directory, then move to dest_path
+                extract_dir = os.path.dirname(dest_path)
+                extracted_file = zfd.extract(content[0], extract_dir)
+                # Move extracted file to the desired destination
+                if extracted_file != dest_path:
+                    os.replace(extracted_file, dest_path)
     except Exception as e:
         LOG.debug("ZIP: Error decompressing image %(iid)s: %(exc)s", {
                   "iid": image_id,
