@@ -52,17 +52,23 @@ class TestTaskCancellationTracker(base.MultiStoreClearingUnitTest):
 
     @mock.patch('builtins.open', new_callable=mock.mock_open)
     @mock.patch.object(lockutils, 'external_lock')
-    @mock.patch('os.path.exists', side_effect=[True, False])
     @mock.patch('time.sleep')
     def test_cancel_operation_immediate_cancel(
-            self, mock_sleep, mock_exists, mock_external_lock, mock_open):
+            self, mock_sleep, mock_external_lock, mock_open):
         op_id = 'op3'
+        operation_path = tracker.path_for_op(op_id)
+        # Register the operation (this will create the file)
         tracker.register_operation(op_id)
-        tracker.cancel_operation(op_id)
+        # Mock os.path.exists to simulate file being removed immediately
+        # after cancel_operation writes to it
+        with mock.patch('os.path.exists',
+                        side_effect=[True, False]) as mock_exists:
+            tracker.cancel_operation(op_id)
         self.assertTrue(mock_external_lock.called)
         self.assertTrue(mock_open.called)
         mock_sleep.assert_not_called()
-        mock_exists.assert_any_call(tracker.path_for_op(op_id))
+        # Verify os.path.exists was called with the operation path
+        mock_exists.assert_any_call(operation_path)
 
     def test_register_operation_already_exists(self):
         op_id = 'op4'
@@ -106,3 +112,33 @@ class TestTaskCancellationTracker(base.MultiStoreClearingUnitTest):
         self.assertFalse(tracker.is_canceled(op_id))
         self.assertRaises(
             exception.ServerError, tracker.cancel_operation, op_id)
+
+    def test_register_operation_creates_directory(self):
+        """Test that register_operation creates parent directory if missing."""
+        # Use a subdirectory within test_dir that doesn't exist
+        # test_dir is automatically cleaned up by the fixture
+        non_existent_dir = os.path.join(self.test_dir, 'nonexistent', 'subdir')
+        op_id = 'op9'
+
+        # Mock get_data_dir to return the non-existent directory
+        with mock.patch.object(tracker, 'get_data_dir',
+                               return_value=non_existent_dir):
+            # This should not raise FileNotFoundError
+            tracker.register_operation(op_id)
+
+            # Verify the directory was created
+            self.assertTrue(os.path.exists(non_existent_dir))
+
+            # Verify the operation file was created
+            operation_path = tracker.path_for_op(op_id)
+            self.assertTrue(os.path.exists(operation_path))
+            self.assertEqual(os.path.getsize(operation_path), 0)
+
+    def test_register_operation_with_existing_directory(self):
+        """Test that register_operation works when directory already exists."""
+        op_id = 'op10'
+        # The test_dir should already exist from setUp
+        tracker.register_operation(op_id)
+        # Should succeed without issues
+        operation_path = tracker.path_for_op(op_id)
+        self.assertTrue(os.path.exists(operation_path))
