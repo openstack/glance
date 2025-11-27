@@ -54,6 +54,12 @@ def register_operation(operation_id):
     """Register a new operation by creating a lock file."""
     with lockutils.external_lock('tasks'):
         operation_path = path_for_op(operation_id)
+        # NOTE(abhishekk): In multistore deployments, the staging directory is
+        # created at service startup, but in legacy single-store deployments,
+        # the staging directory is created during the image import operation.
+        # This ensures the directory exists before we attempt to create
+        # the operation lock file.
+        os.makedirs(os.path.dirname(operation_path), exist_ok=True)
         try:
             # Use os.open with O_CREAT | O_EXCL to ensure atomic creation
             fd = os.open(operation_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
