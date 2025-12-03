@@ -833,3 +833,60 @@ class Test_UwsgiChunkedFile(test_utils.BaseTestCase):
         wsgi.uwsgi.chunked_read = fake_read
         out = reader.read(length=-2)
         self.assertEqual(out, b'abc')
+
+    def test_read_data_length_with_overshoot(self):
+        reader = wsgi._UWSGIChunkFile()
+        wsgi.uwsgi = mock.MagicMock()
+        self.addCleanup(_cleanup_uwsgi)
+
+        values_read_count = 0
+        values_read_count_prev = 0
+        values = iter([b'a', b'bcd', b'e', b'fg', b'h', None, None])
+
+        def fake_read():
+            nonlocal values_read_count
+            values_read_count += 1
+            return next(values)
+
+        def values_read_count_get():
+            nonlocal values_read_count, values_read_count_prev
+            res = values_read_count - values_read_count_prev
+            values_read_count_prev = values_read_count
+            return res
+
+        wsgi.uwsgi.chunked_read = fake_read
+        out = reader.read(length=2)
+
+        # empty buffer case
+        self.assertEqual(out, b'ab')
+        self.assertEqual(values_read_count_get(), 2)
+
+        # buffer contains more - no extra read
+        out = reader.read(length=1)
+        self.assertEqual(out, b'c')
+        self.assertEqual(values_read_count_get(), 0)
+
+        # buffer contains exactly what we need - no extra read
+        out = reader.read(length=1)
+        self.assertEqual(out, b'd')
+        self.assertEqual(values_read_count_get(), 0)
+
+        # buffer is empty + 1st read returns less - must read twice
+        out = reader.read(length=2)
+        self.assertEqual(out, b'ef')
+        self.assertEqual(values_read_count_get(), 2)
+
+        # buffer isn't empty, but not enough - must read
+        out = reader.read(length=2)
+        self.assertEqual(out, b'gh')
+        self.assertEqual(values_read_count_get(), 1)
+
+        # eof case
+        out = reader.read(length=2)
+        self.assertEqual(out, b'')
+        self.assertEqual(values_read_count_get(), 1)
+
+        # eof case when request till eof
+        out = reader.read(length=-2)
+        self.assertEqual(out, b'')
+        self.assertEqual(values_read_count_get(), 1)
