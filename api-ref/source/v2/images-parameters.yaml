@@ -204,6 +204,20 @@ owner-in-query:
   in: query
   required: false
   type: string
+prefer-in-query:
+  description: |
+    A comma-separated list of store identifiers suggesting the ordering of
+    stores to try when downloading the image. Store identifiers are
+    site-specific and can be discovered using the :ref:`Store Discovery
+    <store-discovery-call>` call. Glance will try stores from the list in
+    order. If the image is not found in any of the specified stores, the
+    system will fall back to the default behavior (trying all stores).
+    Store preference parameters only apply when fetching images from backend
+    stores, not when serving from cache. Cached images bypass the store
+    preference logic entirely.
+  in: query
+  required: false
+  type: string
 protected-in-query:
   description: |
     Filters the response by the 'protected' image property.  A valid value is
