@@ -13,9 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import os
 from unittest import mock
 
 import oslo_policy.policy
+from oslo_utils import units
 
 from glance.api import policy
 from glance.image_cache import prefetcher
@@ -294,3 +296,76 @@ class TestCacheImagesPolicy(functional.SynchronousAPIBase):
         response = self.api_get(path)
         output = response.json
         self.assertEqual(1, len(output['cached_images']))
+
+    def test_clean_cache(self):
+        self.start_server()
+        # Create some invalid cache files to clean
+        cache_dir = self._store_dir('cache')
+        invalid_dir = os.path.join(cache_dir, 'invalid')
+        os.makedirs(invalid_dir, exist_ok=True)
+        invalid_file = os.path.join(invalid_dir, 'invalid-image-id')
+        with open(invalid_file, 'wb') as f:
+            f.write(b'invalid cache data')
+
+        # Make sure you are able to clean cache
+        path = '/v2/cache/clean'
+        response = self.api_post(path)
+        self.assertEqual(200, response.status_code)
+
+        # Verify invalid file was cleaned
+        self.assertFalse(os.path.exists(invalid_file))
+
+        # Create another invalid file
+        invalid_file2 = os.path.join(invalid_dir, 'invalid-image-id-2')
+        with open(invalid_file2, 'wb') as f:
+            f.write(b'invalid cache data 2')
+
+        # Now disable cache_clean policy to ensure you will get
+        # 403 Forbidden error
+        self.set_policy_rules({
+            'cache_clean': '!',
+            'cache_list': '',
+            'cache_delete': '',
+            'cache_image': '',
+            'add_image': '',
+            'upload_image': ''
+        })
+        response = self.api_post(path)
+        self.assertEqual(403, response.status_code)
+
+        # Verify that invalid file is still present
+        self.assertTrue(os.path.exists(invalid_file2))
+
+    def test_prune_cache(self):
+        self.start_server()
+        # Set a small max cache size to force pruning
+        self.config(image_cache_max_size=100 * units.Ki)
+
+        # Create and cache multiple images to exceed the limit
+        image_ids = []
+        for i in range(5):
+            image_id = self._create_upload_and_cache(cache_image=True)
+            image_ids.append(image_id)
+
+        # Make sure you are able to prune cache
+        path = '/v2/cache/prune'
+        response = self.api_post(path)
+        self.assertEqual(200, response.status_code)
+        output = response.json
+        self.assertIn('total_files_pruned', output)
+        self.assertIn('total_bytes_pruned', output)
+        self.assertIsInstance(output['total_files_pruned'], int)
+        self.assertIsInstance(output['total_bytes_pruned'], int)
+
+        # Now disable cache_prune policy to ensure you will get
+        # 403 Forbidden error
+        self.set_policy_rules({
+            'cache_prune': '!',
+            'cache_list': '',
+            'cache_delete': '',
+            'cache_image': '',
+            'add_image': '',
+            'upload_image': ''
+        })
+        response = self.api_post(path)
+        self.assertEqual(403, response.status_code)

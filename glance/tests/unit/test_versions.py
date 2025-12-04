@@ -144,7 +144,10 @@ def get_versions_list(url, enabled_backends=False,
         ] + image_versions[2:]
 
     if enabled_cache:
-        image_versions[0]['status'] = 'SUPPORTED'
+        image_versions = [
+            version for version in image_versions
+            if version['id'] != 'v2.17'
+        ]
         image_versions.insert(1, {
             'id': 'v2.14',
             'status': 'SUPPORTED',
@@ -153,6 +156,18 @@ def get_versions_list(url, enabled_backends=False,
         })
         image_versions.insert(0, {
             'id': 'v2.16',
+            'status': 'SUPPORTED',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        })
+        image_versions.insert(0, {
+            'id': 'v2.18',
+            'status': 'CURRENT',
+            'links': [{'rel': 'self',
+                       'href': '%s/v2/' % url}],
+        })
+        image_versions.insert(1, {
+            'id': 'v2.17',
             'status': 'SUPPORTED',
             'links': [{'rel': 'self',
                        'href': '%s/v2/' % url}],
@@ -394,13 +409,31 @@ class VersionNegotiationTest(base.IsolatedUnitTest):
         self.middleware.process_request(request)
         self.assertEqual('/v2/images', request.path_info)
 
-    # version 2.18 does not exist
+    # version 2.18 exists only when cache is enabled
     def test_request_url_v2_18_default_unsupported(self):
         request = webob.Request.blank('/v2.18/images')
         resp = self.middleware.process_request(request)
         self.assertIsInstance(resp, versions.Controller)
 
-    def test_request_url_v2_18_enabled_unsupported(self):
+    def test_request_url_v2_18_enabled_supported(self):
+        self.config(image_cache_dir='/tmp/cache')
+        request = webob.Request.blank('/v2.18/images')
+        self.middleware.process_request(request)
+        self.assertEqual('/v2/images', request.path_info)
+
+    # version 2.19 does not exist
+    def test_request_url_v2_19_default_unsupported(self):
+        request = webob.Request.blank('/v2.19/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
+
+    def test_request_url_v2_19_enabled_unsupported(self):
+        self.config(enabled_backends='slow:one,fast:two')
+        request = webob.Request.blank('/v2.19/images')
+        resp = self.middleware.process_request(request)
+        self.assertIsInstance(resp, versions.Controller)
+
+    def test_request_url_v2_18_enabled_unsupported_without_cache(self):
         self.config(enabled_backends='slow:one,fast:two')
         request = webob.Request.blank('/v2.18/images')
         resp = self.middleware.process_request(request)

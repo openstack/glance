@@ -80,10 +80,10 @@ However, when images are successfully returned from a call to
 file to its cache, regardless of whether the resulting write would make the
 image cache's size exceed the value of ``image_cache_max_size``.
 In order to keep the image cache at or below this maximum cache size,
-you need to run the ``glance-cache-pruner`` executable.
-
-The recommended practice is to use ``cron`` to fire ``glance-cache-pruner``
-at a regular interval.
+you need to prune the cache periodically. The recommended approach is to
+call ``POST /v2/cache/prune`` on each glance-api node (see
+:ref:`cache-clean-prune-api` below). You can also use the deprecated
+``glance-cache-pruner`` command-line tool via ``cron``.
 
 Cleaning the Image Cache
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,11 +93,11 @@ a stalled or invalid state. Stalled image files are the result of an image
 cache write failing to complete. Invalid image files are the result of an
 image file not being written properly to disk.
 
-To remove these types of files, you run the ``glance-cache-cleaner``
-executable.
+To remove these types of files, call ``POST /v2/cache/clean`` on each
+glance-api node (see :ref:`cache-clean-prune-api` below). You can also use
+the deprecated ``glance-cache-cleaner`` command-line tool via ``cron``.
 
-The recommended practice is to use ``cron`` to fire ``glance-cache-cleaner``
-at a semi-regular interval.
+.. _cache-clean-prune-api:
 
 Controlling Image Cache using V2 API
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -175,6 +175,63 @@ the following methods:
   Example usage::
 
    $ glance --host=<HOST> cache-list
+
+To clean invalid and stalled cached images, you can use one of the
+following methods:
+
+These clean and prune APIs are available since Image API v2.18 and only
+when image caching is enabled.
+
+* You can call ``POST /v2/cache/clean`` to remove invalid cache entries
+  and stalled incomplete images. This operation is equivalent to running
+  the deprecated ``glance-cache-cleaner`` command-line tool and removes:
+
+  - Invalid cache entries (images that failed to be written properly to disk)
+  - Stalled incomplete images (images that have been in an incomplete state
+    longer than the configured ``image_cache_stall_time``)
+
+* Alternately, you can use the deprecated ``glance-cache-cleaner``
+  command-line tool. The recommended practice is to use ``cron`` to fire
+  ``glance-cache-cleaner`` at a semi-regular interval.
+
+  .. note::
+
+     The ``POST /v2/cache/clean`` API endpoint provides the same functionality
+     as the deprecated ``glance-cache-cleaner`` command-line tool. The API
+     endpoint is thread-safe and serializes concurrent requests to prevent
+     race conditions.
+
+To prune the image cache when it exceeds the maximum size, you can use one
+of the following methods:
+
+* You can call ``POST /v2/cache/prune`` to remove least recently accessed
+  images when the cache size exceeds the maximum configured size
+  (``image_cache_max_size``). This operation is equivalent to running
+  the deprecated ``glance-cache-pruner`` command-line tool and returns a
+  JSON response containing:
+
+  - ``total_files_pruned``: The number of cached image files that were removed
+  - ``total_bytes_pruned``: The total number of bytes that were freed
+
+  Example response::
+
+    {
+        "total_files_pruned": 5,
+        "total_bytes_pruned": 104857600
+    }
+
+* Alternately, you can use the deprecated ``glance-cache-pruner``
+  command-line tool. The recommended practice is to use ``cron`` to fire
+  ``glance-cache-pruner`` at a regular interval.
+
+  .. note::
+
+     The ``POST /v2/cache/prune`` API endpoint provides the same functionality
+     as the deprecated ``glance-cache-pruner`` command-line tool. The API
+     endpoint is thread-safe and serializes concurrent requests to prevent
+     race conditions.
+     If the cache size is already below the maximum, the operation returns
+     zeros for both ``total_files_pruned`` and ``total_bytes_pruned``.
 
 Finding Which Images are in the Image Cache with glance-cache-manage
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

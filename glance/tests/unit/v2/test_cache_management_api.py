@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import threading
+import time
 from unittest import mock
 
 from glance.api.v2 import cached_images
@@ -116,6 +118,22 @@ class TestCacheManageAPI(test_utils.BaseTestCase):
                                 'get_cache_state',
                                 'cache_list'], image_mock=False)
 
+    def test_clean_cache(self):
+        self._main_test_helper(['clean',
+                                'clean_cache',
+                                'cache_clean'], image_mock=False)
+
+    def test_prune_cache(self):
+        with mock.patch.object(cached_images.CacheController,
+                               '_enforce') as e:
+            with mock.patch('glance.image_cache.ImageCache') as ic:
+                cc = cached_images.CacheController()
+                cc.cache = ic
+                ic.prune.return_value = (5, 1048576)  # (files, bytes)
+                cc.prune_cache(self.req)
+                e.assert_called_once_with(self.req, new_policy='cache_prune')
+                ic.prune.assert_called_once()
+
     @mock.patch.object(cached_images, 'WORKER')
     def test_queue_image_from_api(self, mock_worker):
         self._main_test_helper(['queue_image',
@@ -123,6 +141,101 @@ class TestCacheManageAPI(test_utils.BaseTestCase):
                                 'cache_image',
                                 UUID1])
         mock_worker.submit.assert_called_once_with(UUID1)
+
+    def test_clean_cache_concurrent_execution(self):
+        """Test that concurrent clean_cache calls are serialized."""
+        with mock.patch.object(cached_images.CacheController,
+                               '_enforce'):
+            with mock.patch('glance.image_cache.ImageCache') as ic:
+                cc = cached_images.CacheController()
+                cc.cache = ic
+
+                # Track execution order to verify serialization
+                execution_order = []
+                execution_lock = threading.Lock()
+
+                def track_clean():
+                    with execution_lock:
+                        execution_order.append('start')
+                    time.sleep(0.05)  # Simulate work
+                    with execution_lock:
+                        execution_order.append('end')
+
+                # Mock clean to track execution
+                ic.clean.side_effect = track_clean
+
+                # Start two threads calling clean_cache concurrently
+                threads = []
+                for i in range(2):
+                    t = threading.Thread(target=cc.clean_cache,
+                                         args=(self.req,))
+                    threads.append(t)
+                    t.start()
+
+                # Wait for both threads to complete (with timeout)
+                for t in threads:
+                    t.join(timeout=5.0)
+                    self.assertFalse(t.is_alive(), "Thread did not complete")
+
+                # Verify clean was called exactly twice
+                self.assertEqual(ic.clean.call_count, 2)
+                # Verify both calls completed (start and end for each)
+                self.assertEqual(len(execution_order), 4)
+                # Verify calls were serialized (not interleaved)
+                # Pattern should be: start, end, start, end
+                # (not start, start, end, end)
+                self.assertEqual(execution_order[0], 'start')
+                self.assertEqual(execution_order[1], 'end')
+                self.assertEqual(execution_order[2], 'start')
+                self.assertEqual(execution_order[3], 'end')
+
+    def test_prune_cache_concurrent_execution(self):
+        """Test that concurrent prune_cache calls are serialized."""
+        with mock.patch.object(cached_images.CacheController,
+                               '_enforce'):
+            with mock.patch('glance.image_cache.ImageCache') as ic:
+                cc = cached_images.CacheController()
+                cc.cache = ic
+
+                # Track execution order to verify serialization
+                execution_order = []
+                execution_lock = threading.Lock()
+
+                def track_prune():
+                    with execution_lock:
+                        execution_order.append('start')
+                    time.sleep(0.05)  # Simulate work
+                    with execution_lock:
+                        execution_order.append('end')
+                    return (5, 1048576)
+
+                # Mock prune to track execution
+                ic.prune.side_effect = track_prune
+
+                # Start two threads calling prune_cache concurrently
+                threads = []
+                for i in range(2):
+                    t = threading.Thread(target=cc.prune_cache,
+                                         args=(self.req,))
+                    threads.append(t)
+                    t.start()
+
+                # Wait for both threads to complete (with timeout)
+                for t in threads:
+                    t.join(timeout=5.0)
+                    self.assertFalse(t.is_alive(), "Thread did not complete")
+
+                # Verify prune was called exactly twice
+                self.assertEqual(ic.prune.call_count, 2)
+                # Verify both calls completed (start and end for each)
+                self.assertEqual(len(execution_order), 4)
+                # Verify calls were serialized (not interleaved)
+                # Pattern should be: start, end, start, end
+                # (not start, start, end, end)
+                self.assertEqual(execution_order[0], 'start')
+                self.assertEqual(execution_order[1], 'end')
+                self.assertEqual(execution_order[2], 'start')
+                self.assertEqual(execution_order[3], 'end')
 
     def test_init_no_config(self):
         # Make sure the worker was reset to uninitialized

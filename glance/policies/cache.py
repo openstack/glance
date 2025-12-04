@@ -68,6 +68,26 @@ cache_policies = [
             deprecated_since=versionutils.deprecated.XENA
         ),
     ),
+    policy.DocumentedRuleDefault(
+        name="cache_clean",
+        check_str=base.ADMIN,
+        scope_types=['project'],
+        description='Clean invalid and stalled cached images',
+        operations=[
+            {'path': '/v2/cache/clean',
+             'method': 'POST'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
+        name="cache_prune",
+        check_str=base.ADMIN,
+        scope_types=['project'],
+        description='Prune cached images to reduce cache size',
+        operations=[
+            {'path': '/v2/cache/prune',
+             'method': 'POST'}
+        ],
+    ),
 ]
 
 

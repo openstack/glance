@@ -21,8 +21,10 @@ import queue
 import threading
 
 import glance_store
+from oslo_concurrency import lockutils
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import encodeutils
 import webob.exc
 
 from glance.api import policy
@@ -273,6 +275,30 @@ class CacheController(object):
         self.cache.queue_image(image_id)
         WORKER.submit(image_id)
 
+    @lockutils.synchronized('glance-cache-clean', external=True)
+    def clean_cache(self, req):
+        """
+        POST /cache/clean - Clean invalid and stalled cached images
+
+        Cleans up any invalid cache entries and incomplete images that
+        have been stalled longer than the configured stall time.
+        """
+        self._enforce(req, new_policy='cache_clean')
+        self.cache.clean()
+
+    @lockutils.synchronized('glance-cache-prune', external=True)
+    def prune_cache(self, req):
+        """
+        POST /cache/prune - Prune cached images to reduce cache size
+
+        Removes cached images when the cache size exceeds the maximum
+        configured size. Returns the number of files and bytes pruned.
+        """
+        self._enforce(req, new_policy='cache_prune')
+        total_files_pruned, total_bytes_pruned = self.cache.prune()
+        return dict(total_files_pruned=total_files_pruned,
+                    total_bytes_pruned=total_bytes_pruned)
+
 
 class CacheWorker(threading.Thread):
     EXIT_SENTINEL = object()
@@ -328,6 +354,16 @@ class CachedImageSerializer(wsgi.JSONResponseSerializer):
 
     def delete_cache_entry(self, response, result):
         response.status_int = 204
+
+    def clean_cache(self, response, result):
+        response.status_int = 200
+
+    def prune_cache(self, response, result):
+        response.status_int = 200
+        response.content_type = 'application/json'
+        body = self.to_json(result)
+        body = encodeutils.to_utf8(body)
+        response.body = body
 
 
 def create_resource():

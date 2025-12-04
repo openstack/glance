@@ -85,6 +85,7 @@ class VersionNegotiationFilter(wsgi.Middleware):
         if CONF.image_cache_dir:
             allowed_versions['v2.14'] = 2
             allowed_versions['v2.16'] = 2
+            allowed_versions['v2.18'] = 2
         allowed_versions['v2.15'] = 2
         if CONF.enabled_backends:
             allowed_versions['v2.8'] = 2

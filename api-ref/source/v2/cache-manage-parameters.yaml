@@ -23,3 +23,17 @@ queued_images:
   in: body
   required: true
   type: array
+total_bytes_pruned:
+  description: |
+    The total number of bytes that were freed during the prune
+    operation.
+  in: body
+  required: true
+  type: integer
+total_files_pruned:
+  description: |
+    The total number of cached image files that were removed during
+    the prune operation.
+  in: body
+  required: true
+  type: integer
