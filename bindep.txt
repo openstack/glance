@@ -29,5 +29,5 @@ qemu-utils [platform:dpkg devstack build-image-dib]
 qemu-img [platform:redhat]
 qemu-tools [platform:suse]  # Provides qemu-img
 libpq-dev [platform:dpkg]
-libpcre3-dev [platform:dpkg]
-pcre-devel [platform:redhat]
+libpcre3-dev [platform:dpkg doc]
+pcre-devel [platform:redhat doc]
