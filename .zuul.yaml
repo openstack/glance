@@ -34,11 +34,9 @@
     parent: glance-tox-oslo-tips-base
     description: |
       Glance py312 functional tests vs. oslo libraries masters
-    nodeset: debian-bookworm
     vars:
       python_version: 3.12
       tox_envlist: functional-py312
-      python_use_pyenv: True
 
 - job:
     name: glance-tox-functional-py313-oslo-tips
@@ -67,11 +65,9 @@
     parent: glance-tox-keystone-tips-base
     description: |
       Glance py312 unit tests vs. keystone masters
-    nodeset: debian-bookworm
     vars:
       python_version: 3.12
       tox_envlist: py312
-      python_use_pyenv: True
 
 - job:
     name: glance-tox-py313-keystone-tips
@@ -88,11 +84,9 @@
     parent: glance-tox-keystone-tips-base
     description: |
       Glance py312 functional tests vs. keystone masters
-    nodeset: debian-bookworm
     vars:
       python_version: 3.12
       tox_envlist: functional-py312
-      python_use_pyenv: True
 
 - job:
     name: glance-tox-functional-py313-keystone-tips
@@ -119,11 +113,9 @@
     parent: glance-tox-glance_store-tips-base
     description: |
       Glance py312 unit tests vs. glance_store master
-    nodeset: debian-bookworm
     vars:
       python_version: 3.12
       tox_envlist: py312
-      python_use_pyenv: True
 
 - job:
     name: glance-tox-py313-glance_store-tips
@@ -140,11 +132,9 @@
     parent: glance-tox-glance_store-tips-base
     description: |
       Glance py312 functional tests vs. glance_store master
-    nodeset: debian-bookworm
     vars:
       python_version: 3.12
       tox_envlist: functional-py312
-      python_use_pyenv: True
 
 - job:
     name: glance-tox-functional-py313-glance_store-tips
@@ -173,11 +163,9 @@
     parent: glance-tox-cursive-tips-base
     description: |
       Glance py312 unit tests vs. cursive (and related libs) master
-    nodeset: debian-bookworm
     vars:
       python_version: 3.12
       tox_envlist: py312
-      python_use_pyenv: True
 
 - job:
     name: glance-tox-py313-cursive-tips
@@ -194,11 +182,9 @@
     parent: glance-tox-cursive-tips-base
     description: |
       Glance py312 functional tests vs. cursive (and related libs) master
-    nodeset: debian-bookworm
     vars:
       python_version: 3.12
       tox_envlist: functional-py312
-      python_use_pyenv: True
 
 - job:
     name: glance-tox-functional-py313-cursive-tips
