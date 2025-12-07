@@ -30,15 +30,6 @@
       - name: openstack/taskflow
 
 - job:
-    name: glance-tox-functional-py312-oslo-tips
-    parent: glance-tox-oslo-tips-base
-    description: |
-      Glance py312 functional tests vs. oslo libraries masters
-    vars:
-      python_version: 3.12
-      tox_envlist: functional-py312
-
-- job:
     name: glance-tox-functional-py313-oslo-tips
     parent: glance-tox-oslo-tips-base
     nodeset: debian-trixie-8GB
@@ -61,15 +52,6 @@
       - name: openstack/python-keystoneclient
 
 - job:
-    name: glance-tox-py312-keystone-tips
-    parent: glance-tox-keystone-tips-base
-    description: |
-      Glance py312 unit tests vs. keystone masters
-    vars:
-      python_version: 3.12
-      tox_envlist: py312
-
-- job:
     name: glance-tox-py313-keystone-tips
     parent: glance-tox-keystone-tips-base
     nodeset: debian-trixie-8GB
@@ -78,15 +60,6 @@
     vars:
       python_version: 3.13
       tox_envlist: py313
-
-- job:
-    name: glance-tox-functional-py312-keystone-tips
-    parent: glance-tox-keystone-tips-base
-    description: |
-      Glance py312 functional tests vs. keystone masters
-    vars:
-      python_version: 3.12
-      tox_envlist: functional-py312
 
 - job:
     name: glance-tox-functional-py313-keystone-tips
@@ -109,15 +82,6 @@
       - name: openstack/glance_store
 
 - job:
-    name: glance-tox-py312-glance_store-tips
-    parent: glance-tox-glance_store-tips-base
-    description: |
-      Glance py312 unit tests vs. glance_store master
-    vars:
-      python_version: 3.12
-      tox_envlist: py312
-
-- job:
     name: glance-tox-py313-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     nodeset: debian-trixie-8GB
@@ -126,15 +90,6 @@
     vars:
       python_version: 3.13
       tox_envlist: py313
-
-- job:
-    name: glance-tox-functional-py312-glance_store-tips
-    parent: glance-tox-glance_store-tips-base
-    description: |
-      Glance py312 functional tests vs. glance_store master
-    vars:
-      python_version: 3.12
-      tox_envlist: functional-py312
 
 - job:
     name: glance-tox-functional-py313-glance_store-tips
@@ -159,15 +114,6 @@
       - name: openstack/castellan
 
 - job:
-    name: glance-tox-py312-cursive-tips
-    parent: glance-tox-cursive-tips-base
-    description: |
-      Glance py312 unit tests vs. cursive (and related libs) master
-    vars:
-      python_version: 3.12
-      tox_envlist: py312
-
-- job:
     name: glance-tox-py313-cursive-tips
     parent: glance-tox-cursive-tips-base
     nodeset: debian-trixie-8GB
@@ -176,15 +122,6 @@
     vars:
       python_version: 3.13
       tox_envlist: py313
-
-- job:
-    name: glance-tox-functional-py312-cursive-tips
-    parent: glance-tox-cursive-tips-base
-    description: |
-      Glance py312 functional tests vs. cursive (and related libs) master
-    vars:
-      python_version: 3.12
-      tox_envlist: functional-py312
 
 - job:
     name: glance-tox-functional-py313-cursive-tips
@@ -467,9 +404,7 @@
         - glance-secure-rbac-protection-functional
     experimental:
       jobs:
-        - glance-tox-py312-glance_store-tips
         - glance-tox-py313-glance_store-tips
-        - glance-tox-functional-py312-glance_store-tips
         - glance-tox-functional-py313-glance_store-tips
         - barbican-tempest-plugin-simple-crypto
         - grenade-multinode
@@ -492,31 +427,17 @@
         # to define these jobs in the openstack/project-config repo.
         # That would make us less agile in adjusting these tests, so we
         # aren't doing that either.
-        - glance-tox-functional-py312-oslo-tips:
-            branches: master
         - glance-tox-functional-py313-oslo-tips:
-            branches: master
-        - glance-tox-py312-keystone-tips:
             branches: master
         - glance-tox-py313-keystone-tips:
             branches: master
-        - glance-tox-functional-py312-keystone-tips:
-            branches: master
         - glance-tox-functional-py313-keystone-tips:
-            branches: master
-        - glance-tox-py312-glance_store-tips:
             branches: master
         - glance-tox-py313-glance_store-tips:
             branches: master
-        - glance-tox-functional-py312-glance_store-tips:
-            branches: master
         - glance-tox-functional-py313-glance_store-tips:
             branches: master
-        - glance-tox-py312-cursive-tips:
-            branches: master
         - glance-tox-py313-cursive-tips:
-            branches: master
-        - glance-tox-functional-py312-cursive-tips:
             branches: master
         - glance-tox-functional-py313-cursive-tips:
             branches: master
