@@ -1,0 +1,34 @@
+---
+features:
+  - |
+    Enhanced the custom property schema file (``schema-image.json``) to
+    support an extended format that allows operators to define required
+    properties. The schema file now supports a structured format with
+    ``properties`` and ``required`` keys::
+
+      {
+          "properties": {
+              "os_distro": {
+                  "description": "Operating system distribution",
+                  "type": "string"
+              },
+              "architecture": {
+                  "description": "Operating system architecture",
+                  "type": "string"
+              }
+          },
+          "required": ["os_distro", "architecture"]
+      }
+
+    When using this extended format, properties listed in the ``required``
+    array will be validated as mandatory fields during image creation. This
+    allows operators to enforce that specific custom properties are provided
+    when images are created, improving data quality and consistency.
+
+    Backwards compatibility is fully maintained. The original flat format
+    (with property definitions at the top level) continues to work as before,
+    and existing ``schema-image.json`` files do not need to be modified. The
+    schema loading logic automatically detects which format is being used.
+
+    A sample extended format schema file is provided at
+    ``etc/schema-image.json.extended-format-sample``.

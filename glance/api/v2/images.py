@@ -2098,12 +2098,31 @@ def _get_base_links():
 def get_schema(custom_properties=None):
     properties = get_base_properties()
     links = _get_base_links()
-    schema = glance.schema.PermissiveSchema('image', properties, links)
+
+    required = None
+    custom_props = None
 
     if custom_properties:
-        for property_value in custom_properties.values():
+        # Support extended format: {'properties': {...}, 'required': [...]}
+        if (isinstance(custom_properties, dict) and
+           'properties' in custom_properties):
+            required = custom_properties.get('required')
+            # Convert empty required list to None
+            if required is not None and len(required) == 0:
+                required = None
+            custom_props = custom_properties.get('properties', {})
+        else:
+            # Support flat format (backward compatibility)
+            custom_props = custom_properties
+
+    schema = glance.schema.PermissiveSchema(
+        'image', properties, links, required=required
+    )
+
+    if custom_props:
+        for property_value in custom_props.values():
             property_value['is_base'] = False
-        schema.merge_properties(custom_properties)
+        schema.merge_properties(custom_props)
     return schema
 
 
@@ -2119,18 +2138,48 @@ def get_collection_schema(custom_properties=None):
 
 
 def load_custom_properties():
-    """Find the schema properties files and load them into a dict."""
+    """Find the schema properties files and load them into a dict.
+
+    Supports two formats:
+    1. Extended format (with required support)::
+
+       {"properties": {...}, "required": [...]}
+
+    2. Flat format (backward compatibility)::
+
+       {"property_name": {...}, ...}
+
+    Returns:
+        dict: Either {'properties': {...}, 'required': [...]}
+              for extended format,
+              or {'properties': {...}, 'required': None} for flat format,
+              or {'properties': {}, 'required': None} if file not found.
+    """
     filename = 'schema-image.json'
     match = CONF.find_file(filename)
     if match:
         with open(match, 'r') as schema_file:
             schema_data = schema_file.read()
-        return json.loads(schema_data)
+        data = json.loads(schema_data)
+
+        # Check if it's the extended format with 'properties' key
+        if isinstance(data, dict) and 'properties' in data:
+            # Extended format: {'properties': {...}, 'required': [...]}
+            return {
+                'properties': data.get('properties', {}),
+                'required': data.get('required')
+            }
+        else:
+            # Flat format (backward compatibility): just property definitions
+            return {
+                'properties': data,
+                'required': None
+            }
     else:
         msg = (_LW('Could not find schema properties file %s. Continuing '
                    'without custom properties') % filename)
         LOG.warning(msg)
-        return {}
+        return {'properties': {}, 'required': None}
 
 
 def create_resource(custom_properties=None):
