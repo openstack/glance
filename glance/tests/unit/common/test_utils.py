@@ -1290,21 +1290,73 @@ class S3CredentialUpdateTestCase(test_utils.BaseTestCase):
     def test_update_s3_url_helper_function(self):
         """Test the _update_s3_url helper function directly."""
         # Test basic URL update
-        parsed = urlparse('s3://old_key:old_secret@bucket/object')
-        result = store_utils._update_s3_url(parsed, 'new_key', 'new_secret')
+        url = 's3://old_key:old_secret@bucket/object'
+        result = store_utils._update_s3_url(url, 'new_key', 'new_secret')
         expected = 's3://new_key:new_secret@bucket/object'
         self.assertEqual(result, expected)
 
         # Test URL without existing credentials
-        parsed = urlparse('s3://bucket/object')
-        result = store_utils._update_s3_url(parsed, 'new_key', 'new_secret')
+        url = 's3://bucket/object'
+        result = store_utils._update_s3_url(url, 'new_key', 'new_secret')
         expected = 's3://new_key:new_secret@bucket/object'
         self.assertEqual(result, expected)
 
         # Test with s3+https scheme
-        parsed = urlparse('s3+https://old_key:old_secret@bucket/object')
-        result = store_utils._update_s3_url(parsed, 'new_key', 'new_secret')
+        url = 's3+https://old_key:old_secret@bucket/object'
+        result = store_utils._update_s3_url(url, 'new_key', 'new_secret')
         expected = 's3+https://new_key:new_secret@bucket/object'
+        self.assertEqual(result, expected)
+
+    def test_update_s3_url_with_slash_in_secret(self):
+        """Test _update_s3_url handles forward slash in secret key.
+
+        AWS S3 secret access keys can contain '/'.
+        urlparse incorrectly interprets '/' as path separator, so we
+        use rfind('@') to correctly locate the credentials separator.
+        """
+        # Secret key contains forward slash
+        url = 's3+https://old_key:old/secret@bucket/object'
+        result = store_utils._update_s3_url(url, 'new_key', 'new/secret')
+        expected = 's3+https://new_key:new/secret@bucket/object'
+        self.assertEqual(result, expected)
+
+        # Secret key contains multiple forward slashes
+        url = 's3+https://KEY:a/b/c@bucket/object'
+        result = store_utils._update_s3_url(url, 'NEW', 'x/y/z')
+        expected = 's3+https://NEW:x/y/z@bucket/object'
+        self.assertEqual(result, expected)
+
+    def test_update_s3_url_preserves_query_and_fragment(self):
+        """Test _update_s3_url preserves query parameters and fragments."""
+        # URL with query parameters
+        url = 's3://old_key:old_secret@host.com/bucket/obj?param=value'
+        result = store_utils._update_s3_url(url, 'new_key', 'new_secret')
+        expected = 's3://new_key:new_secret@host.com/bucket/obj?param=value'
+        self.assertEqual(result, expected)
+
+        # URL with fragment
+        url = 's3://old_key:old_secret@host.com/bucket/obj#fragment'
+        result = store_utils._update_s3_url(url, 'new_key', 'new_secret')
+        expected = 's3://new_key:new_secret@host.com/bucket/obj#fragment'
+        self.assertEqual(result, expected)
+
+        # URL with both query and fragment
+        url = 's3://old_key:old_secret@host.com/bucket/obj?p=value#frag'
+        result = store_utils._update_s3_url(url, 'new_key', 'new_secret')
+        expected = 's3://new_key:new_secret@host.com/bucket/obj?p=value#frag'
+        self.assertEqual(result, expected)
+
+    def test_update_s3_url_with_port(self):
+        """Test _update_s3_url handles hosts with port numbers."""
+        url = 's3://old_key:old_secret@host.com:8080/bucket/obj'
+        result = store_utils._update_s3_url(url, 'new_key', 'new_secret')
+        expected = 's3://new_key:new_secret@host.com:8080/bucket/obj'
+        self.assertEqual(result, expected)
+
+        # Port with slash in secret
+        url = 's3://old_key:old/secret@host.com:9000/bucket/obj'
+        result = store_utils._update_s3_url(url, 'new_key', 'new/secret')
+        expected = 's3://new_key:new/secret@host.com:9000/bucket/obj'
         self.assertEqual(result, expected)
 
     def test_construct_s3_url(self):
