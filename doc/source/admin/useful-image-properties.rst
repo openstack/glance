@@ -489,6 +489,42 @@ Here is a list of useful image properties and the values they expect.
 
   - ``usbtablet``
 
+``hw_qemu_guest_agent``
+  :Type: str
+
+  Specifies whether QEMU Guest Agent support is enabled for instances
+  created from this image.
+
+  One of:
+
+  * ``yes`` - enables communication between compute nodes and the guest
+    through a QMP socket using the QEMU Guest Agent.
+  * ``no`` - disables guest agent support.
+
+``hw_rescue_bus``
+  :Type: str
+
+  Defines the bus type used to attach the rescue device when booting an
+  instance into rescue mode.
+
+  One of:
+
+  * ``scsi`` - attach the rescue device to a SCSI bus.
+  * ``virtio`` - attach the rescue device using the VirtIO bus.
+  * ``ide`` - attach the rescue device to an IDE bus.
+  * ``usb`` - attach the rescue device to a USB bus.
+
+``hw_rescue_device``
+  :Type: str
+
+  Defines the type of device used when booting an instance into rescue mode.
+
+  One of:
+
+  * ``cdrom`` - attach the rescue image as a CD-ROM device.
+  * ``disk`` - attach the rescue image as a disk device.
+  * ``floppy`` - attach the rescue image as a floppy device.
+
 ``hw_rng_model``
   :Type: str
 
