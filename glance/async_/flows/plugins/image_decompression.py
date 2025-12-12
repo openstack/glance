@@ -135,6 +135,15 @@ class _DecompressImage(task.Task):
             if head.startswith(val, offset):
                 globals()[key](src_path, self.dest_path, self.image_id)
                 os.replace(self.dest_path, src_path)
+                # Update image size after successful decompression
+                decompressed_size = os.path.getsize(src_path)
+                image.size = decompressed_size
+                self.image_repo.save(image)
+                LOG.info("Updated image %(image_id)s size to %(size)d after "
+                         "decompression",
+                         {'image_id': self.image_id,
+                          'size': decompressed_size})
+                break
 
         return "file://%s" % src_path
 
