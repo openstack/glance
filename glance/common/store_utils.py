@@ -239,18 +239,60 @@ def _update_cinder_location_and_store_id(context, loc):
             return
 
 
-def _update_s3_url(parsed, new_access_key, new_secret_key):
-    """Update S3 URL with new credentials."""
-    host_part = parsed.netloc.split('@')[-1]
-    new_netloc = "%s:%s@%s" % (new_access_key, new_secret_key, host_part)
-    # Rebuild URL with new credentials but keep all other parts same
-    # We need to include params, query, fragment even if S3 URLs don't
-    # use them. This is to make sure we don't lose any URL parts
-    # when updating credentials
+def _update_s3_url(url, new_access_key, new_secret_key):
+    """Update S3 URL with new credentials.
+
+    This function replaces the access key and secret key in an S3 URL while
+    preserving all other URL components (host, port, path, query, fragment).
+
+    The implementation uses a hybrid approach:
+    - urlparse is used to extract query parameters and fragments, which it
+      handles correctly regardless of credential content.
+    - Manual string parsing with rfind('@') is used to locate credentials,
+      because urlparse incorrectly interprets '/' characters in the secret
+      key as path separators, corrupting the URL.
+
+    For example, with secret key 'abc/def':
+    - urlparse sees: s3://key:abc/def@host/bucket as path '/def@host/bucket'
+    - rfind('@') correctly finds the last '@' separating creds from host
+    """
+    # Parse URL to get query and fragment (these are parsed correctly)
+    parsed = urlparse.urlparse(url)
+    scheme = parsed.scheme
+
+    # Find the last '@' in the original URL (before query/fragment)
+    # This handles the case where secret key contains '/'
+    url_without_query = url.split('?')[0].split('#')[0]
+    separator_position = url_without_query.rfind('@')
+
+    if separator_position == -1:
+        # No credentials - shouldn't happen for S3, but handle gracefully
+        new_netloc = "%s:%s@%s" % (new_access_key, new_secret_key,
+                                   parsed.netloc)
+        path_part = parsed.path  # Use parsed.path when no '@' found
+    else:
+        # Extract host+path from after '@'
+        host_and_path = url_without_query[separator_position + 1:]
+        # Remove scheme part if it's still there
+        if '://' in host_and_path:
+            host_and_path = host_and_path.split('://', 1)[1]
+
+        # Separate host from path
+        first_slash = host_and_path.find('/')
+        if first_slash == -1:
+            host_part = host_and_path
+            path_part = ''
+        else:
+            host_part = host_and_path[:first_slash]
+            path_part = host_and_path[first_slash:]
+
+        new_netloc = "%s:%s@%s" % (new_access_key, new_secret_key, host_part)
+
+    # Rebuild URL preserving query and fragment
     return urlparse.urlunparse((
-        parsed.scheme,
+        scheme,
         new_netloc,
-        parsed.path,
+        path_part,
         parsed.params,
         parsed.query,
         parsed.fragment
@@ -336,7 +378,7 @@ def _update_s3_location_and_store_id(context, loc):
         new_access_key, new_secret_key = _get_store_credentials(
             store_instance)
         loc['url'] = _update_s3_url(
-            parsed, new_access_key, new_secret_key)
+            uri, new_access_key, new_secret_key)
         return True
 
     return False

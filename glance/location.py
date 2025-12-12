@@ -134,7 +134,7 @@ def _update_location_for_legacy_store(image, image_repo):
                     LOG.debug("S3 Credentials mismatch, "
                               "updating URL")
                     loc['url'] = store_utils._update_s3_url(
-                        parsed, new_access_key, new_secret_key)
+                        loc['url'], new_access_key, new_secret_key)
                     # Save the image immediately after update
                     image_repo.save(image)
                     break
