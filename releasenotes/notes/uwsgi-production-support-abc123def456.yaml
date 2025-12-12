@@ -1,0 +1,35 @@
+---
+features:
+  - |
+    Glance now provides full production support for uWSGI deployment. All
+    previous limitations with uWSGI deployment have been resolved, making it
+    a recommended deployment method for production environments.
+
+    **Key Features:**
+    - Complete support for chunked transfer encoding
+    - Full interoperable image import functionality
+    - Proper graceful shutdown and reload capabilities
+    - Native threading support for improved performance
+    - Production-ready stability and reliability
+
+    **Supported Deployment Methods:**
+    - uWSGI HTTP mode (recommended)
+    - mod_proxy_uwsgi with Apache HTTPD
+    - mod_wsgi with Apache HTTPD
+
+    **Configuration:**
+    - Use the provided uWSGI configuration template in ``httpd/glance-api-uwsgi.ini``
+    - Enable ``http-auto-chunked`` and ``http-chunked-input`` for full compatibility
+    - Configure appropriate process and thread counts for your environment
+    - Set proper timeouts for large image transfers
+
+    **Migration:**
+    - Existing standalone Glance deployments can be migrated to uWSGI
+    - No functionality loss compared to standalone deployment
+    - Improved integration with web server infrastructure
+    - Better resource utilization and performance
+
+    See the updated `Running Glance in HTTPD`_ documentation for complete
+    deployment instructions, configuration examples, and best practices.
+
+    .. _`Running Glance in HTTPD`: https://docs.openstack.org/glance/latest/admin/apache-httpd.html
