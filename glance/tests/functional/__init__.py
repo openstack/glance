@@ -62,14 +62,6 @@ SQLITE_CONN_TEMPLATE = 'sqlite:////%s/tests.sqlite'
 CONF = cfg.CONF
 
 
-import glance.async_
-# NOTE(danms): Default to eventlet threading for tests
-try:
-    glance.async_.set_threadpool_model('eventlet')
-except RuntimeError:
-    pass
-
-
 class BaseServer(metaclass=abc.ABCMeta):
     """
     Class used to easily manage starting and stopping
@@ -345,7 +337,7 @@ class ApiServer(Server):
 
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
-default_log_levels = eventlet.wsgi.server=DEBUG,stevedore.extension=INFO
+default_log_levels = stevedore.extension=INFO
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
@@ -525,7 +517,7 @@ class ApiServerForMultipleBackend(Server):
 
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
-default_log_levels = eventlet.wsgi.server=DEBUG,stevedore.extension=INFO
+default_log_levels = stevedore.extension=INFO
 bind_host = %(bind_host)s
 bind_port = %(bind_port)s
 metadata_encryption_key = %(metadata_encryption_key)s
