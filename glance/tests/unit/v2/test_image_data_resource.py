@@ -284,6 +284,18 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPBadRequest, self.controller.upload,
                           request, unit_test_utils.UUID1, 'YYYY', 4)
 
+    def test_upload_store_invalid_exception(self):
+        """Test that glance_store.Invalid exception is properly handled."""
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage()
+        image.set_data = Raise(glance_store.Invalid(
+            message="Size mismatch: expected 5 bytes, got 4 bytes"))
+        self.image_repo.result = image
+        exc = self.assertRaises(webob.exc.HTTPBadRequest,
+                                self.controller.upload,
+                                request, unit_test_utils.UUID1, 'YYYY', 4)
+        self.assertIn('Size mismatch', str(exc))
+
     def test_upload_with_expired_token(self):
         def side_effect(image, from_state=None):
             if from_state == 'saving':

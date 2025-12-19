@@ -209,6 +209,13 @@ class ImageDataController(object):
                 raise webob.exc.HTTPUnauthorized(explanation=msg,
                                                  request=req,
                                                  content_type='text/plain')
+        except glance_store.Invalid as e:
+            LOG.error(str(e))
+            if image.status not in ('queued', 'deleted'):
+                self._restore(image_repo, image)
+            raise webob.exc.HTTPBadRequest(
+                explanation=str(e))
+
         except ValueError as e:
             LOG.debug("Cannot save data for image %(id)s: %(e)s",
                       {'id': image_id,
