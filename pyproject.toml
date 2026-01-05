@@ -46,10 +46,6 @@ glance = "glance.api.policy:get_enforcer"
 [project.entry-points."oslo.policy.policies"]
 glance = "glance.policies:list_rules"
 
-# TODO(stephenfin): Remove this entrypoint. There are no other backends
-[project.entry-points."glance.database.metadata_backend"]
-sqlalchemy = "glance.db.sqlalchemy.metadata"
-
 [project.entry-points."glance.flows"]
 api_image_import = "glance.async_.flows.api_image_import:get_flow"
 import = "glance.async_.flows.base_import:get_flow"
