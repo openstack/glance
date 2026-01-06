@@ -68,18 +68,28 @@ def _zipfile(src_path, dest_path, image_id):
 def _lhafile(src_path, dest_path, image_id):
     if NO_LHA:
         raise Exception("No lhafile available.")
+    lfd = None
     try:
-        with lhafile.LhaFile(src_path, 'r') as lfd:
-            content = lfd.namelist()
-            if len(content) != 1:
-                raise Exception("Archive contains more than one file.")
-            else:
-                lfd.extract(content[0], dest_path)
+        lfd = lhafile.LhaFile(src_path, 'r')
+        content = lfd.namelist()
+        if len(content) != 1:
+            raise Exception("Archive contains more than one file.")
+        else:
+            # Read the file content and write to destination
+            file_data = lfd.read(content[0])
+            with open(dest_path, 'wb') as fd:
+                fd.write(file_data)
     except Exception as e:
         LOG.debug("LHA: Error decompressing image %(iid)s: %(exc)s", {
                   "iid": image_id,
                   "exc": e})
         raise
+    finally:
+        # NOTE(abhishekk): lhafile.LhaFile doesn't have close() method
+        # The file will be closed when the object is garbage collected
+        # or we can close the underlying file pointer if it exists
+        if lfd is not None and hasattr(lfd, 'fp') and lfd.fp:
+            lfd.fp.close()
 
 
 def _gzipfile(src_path, dest_path, image_id):
