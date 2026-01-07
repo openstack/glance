@@ -738,12 +738,15 @@ as shown below:
 
 .. note::
 
-  The supported archive types for Image Decompression are zip, lha/lzh and gzip.
-  Currently the plugin does not support multi-layered archives (like tar.gz).
-  Lha/lzh is only supported in case python3 `lhafile` dependency library is
-  installed, absence of this dependency will fail the import job where lha file
-  is provided. (In this case we know it won't be bootable as the image is
-  compressed and we do not have means to decompress it.)
+  The supported archive types for Image Decompression are zip, lha/lzh and
+  gzip. Currently the plugin does not support multi-layered archives (like
+  tar.gz). ZIP and LHA archives must contain exactly one file; archives with
+  multiple files will fail during import. For single-file compression, GZIP
+  is the recommended format. Lha/lzh is only supported in case python3
+  `lhafile` dependency library is installed, absence of this dependency will
+  fail the import job where lha file is provided. (In this case we know it
+  won't be bootable as the image is compressed and we do not have means to
+  decompress it.)
 
 .. note::
 
