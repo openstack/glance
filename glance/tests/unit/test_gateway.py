@@ -16,6 +16,7 @@
 from unittest import mock
 
 from glance.api import property_protections
+from glance.common import property_utils
 from glance import context
 from glance import gateway
 from glance import notifier
@@ -175,3 +176,26 @@ class TestGateway(test_utils.BaseTestCase):
     def test_get_task_stub_repo(self):
         repo = self.gateway.get_task_stub_repo(self.context)
         self.assertIsInstance(repo, notifier.TaskStubRepoProxy)
+
+    @mock.patch('glance.common.property_utils.PropertyRules._load_rules')
+    def test_get_property_rules_caches_instance(self, mock_load):
+        """Test that _get_property_rules caches PropertyRules instance."""
+        self.config(property_protection_file='foo')
+
+        # First call should create PropertyRules
+        rules1 = self.gateway._get_property_rules()
+        self.assertIsNotNone(rules1)
+        self.assertIsInstance(rules1, property_utils.PropertyRules)
+        self.assertEqual(1, mock_load.call_count)
+
+        # Second call should return the same cached instance
+        rules2 = self.gateway._get_property_rules()
+        self.assertIs(rules1, rules2)
+        # _load_rules should not be called again
+        self.assertEqual(1, mock_load.call_count)
+
+    def test_get_property_rules_returns_none_when_disabled(self):
+        """Test that _get_property_rules returns None when PP is disabled."""
+        self.config(property_protection_file=None)
+        rules = self.gateway._get_property_rules()
+        self.assertIsNone(rules)
