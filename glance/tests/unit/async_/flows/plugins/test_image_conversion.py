@@ -119,8 +119,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                                disk_format='raw')
         self.img_repo.get.return_value = image
 
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = ("", None)
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = ("", None)
             with mock.patch.object(json, 'loads') as jloads_mock:
                 jloads_mock.return_value = {'format': 'raw',
                                             'virtual-size': 456}
@@ -132,7 +132,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                 # to qemu-utis to avoid inferring the image format. This
                 # shields us from an attack vector described at
                 # https://bugs.launchpad.net/glance/+bug/1449062/comments/72
-                self.assertIn('-f', exc_mock.call_args[0])
+                self.assertIn('-f', cmd_mock.call_args[0])
                 self.assertEqual("qcow2", image.disk_format)
 
         self.assertEqual('bare', image.container_format)
@@ -201,13 +201,13 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
     def test_image_convert_fails_inspection(self):
         convert = self._setup_image_convert_info_fail()
-        with mock.patch.object(processutils, 'execute') as exc_mock:
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
-            exc_mock.side_effect = OSError('fail')
+            cmd_mock.side_effect = OSError('fail')
             self.assertRaises(OSError,
                               convert.execute, 'file:///test/path.raw')
-            exc_mock.assert_called_once_with(
+            cmd_mock.assert_called_once_with(
                 'qemu-img', 'info',
                 '-f', 'qcow2',
                 '--output=json',
@@ -220,13 +220,13 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
     def test_image_convert_inspection_reports_error(self):
         convert = self._setup_image_convert_info_fail()
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = '', 'some error'
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = '', 'some error'
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
             self.assertRaises(RuntimeError,
                               convert.execute, 'file:///test/path.raw')
-            exc_mock.assert_called_once_with(
+            cmd_mock.assert_called_once_with(
                 'qemu-img', 'info',
                 '-f', 'qcow2',
                 '--output=json',
@@ -242,10 +242,10 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                 'backing-filename': '/etc/hosts'}
 
         convert = self._setup_image_convert_info_fail()
-        with mock.patch.object(processutils, 'execute') as exc_mock:
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
-            exc_mock.return_value = json.dumps(data), ''
+            cmd_mock.return_value = json.dumps(data), ''
             e = self.assertRaises(RuntimeError,
                                   convert.execute, 'file:///test/path.qcow')
             self.assertEqual('QCOW images with backing files are not allowed',
@@ -260,8 +260,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                 }}
 
         convert = self._setup_image_convert_info_fail()
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = json.dumps(data), ''
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = json.dumps(data), ''
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
             e = self.assertRaises(RuntimeError,
@@ -307,10 +307,10 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                     }}}
 
         convert = self._setup_image_convert_info_fail(disk_format='vmdk')
-        with mock.patch.object(processutils, 'execute') as exc_mock:
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.side_effect = ['vmdk', 'qcow2']
-            exc_mock.return_value = json.dumps(data), ''
+            cmd_mock.return_value = json.dumps(data), ''
             convert.execute('file:///test/path.vmdk')
 
     def test_image_convert_invalid_vmdk(self):
@@ -338,14 +338,14 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
     def test_image_convert_fails(self):
         convert = self._setup_image_convert_info_fail(disk_format='raw')
-        with mock.patch.object(processutils, 'execute') as exc_mock:
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'raw'
-            exc_mock.side_effect = [('{"format":"raw"}', ''),
+            cmd_mock.side_effect = [('{"format":"raw"}', ''),
                                     OSError('convert_fail')]
             self.assertRaises(OSError,
                               convert.execute, 'file:///test/path.raw')
-            exc_mock.assert_has_calls(
+            cmd_mock.assert_has_calls(
                 [mock.call('qemu-img', 'info',
                            '-f', 'raw',
                            '--output=json',
@@ -361,14 +361,14 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
     def test_image_convert_reports_fail(self):
         convert = self._setup_image_convert_info_fail(disk_format='raw')
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.side_effect = [('{"format":"raw"}', ''),
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.side_effect = [('{"format":"raw"}', ''),
                                     ('', 'some error')]
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'raw'
             self.assertRaises(RuntimeError,
                               convert.execute, 'file:///test/path.raw')
-            exc_mock.assert_has_calls(
+            cmd_mock.assert_has_calls(
                 [mock.call('qemu-img', 'info',
                            '-f', 'raw',
                            '--output=json',
@@ -384,14 +384,14 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
     def test_image_convert_fails_source_format(self):
         convert = self._setup_image_convert_info_fail()
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = ('{}', '')
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = ('{}', '')
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
             exc = self.assertRaises(RuntimeError,
                                     convert.execute, 'file:///test/path.raw')
             self.assertIn('Image metadata disagrees about format', str(exc))
-            exc_mock.assert_called_once_with(
+            cmd_mock.assert_called_once_with(
                 'qemu-img', 'info',
                 '-f', 'qcow2',
                 '--output=json',
@@ -404,8 +404,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
     def test_image_convert_source_format_inspection_not_match(self):
         convert = self._setup_image_convert_info_fail(disk_format="raw")
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = (
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = (
                 '{"format": "raw", "virtual-size": 123}', '')
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
@@ -415,14 +415,14 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
     def test_image_convert_same_format_does_nothing(self):
         convert = self._setup_image_convert_info_fail()
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = (
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = (
                 '{"format": "qcow2", "virtual-size": 123}', '')
             inspector = self.detect_file_format_mock.return_value
             inspector.__str__.return_value = 'qcow2'
             convert.execute('file:///test/path.qcow')
             # Make sure we only called qemu-img for inspection, not conversion
-            exc_mock.assert_called_once_with(
+            cmd_mock.assert_called_once_with(
                 'qemu-img', 'info',
                 '-f', 'qcow2',
                 '--output=json',
@@ -445,8 +445,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
                     group='image_conversion')
         convert = self._setup_image_convert_info_fail()
         mock_stat.return_value.st_size = 123
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = (
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = (
                 '{"format": "%s", "virtual-size": 123}' % src_format, '')
             pre_inspector = mock.MagicMock()
             post_inspector = mock.MagicMock()
@@ -518,8 +518,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
         action, image_convert = self._set_image_conversion(
             mock_os_remove, stores=self.stores)
 
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = ("", None)
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = ("", None)
             with mock.patch.object(os.path, 'exists') as os_exists_mock:
                 os_exists_mock.return_value = True
                 image_convert.revert(result=mock.MagicMock())
@@ -536,8 +536,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             self, mock_os_remove):
         action, image_convert = self._set_image_conversion(mock_os_remove)
 
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = ("", None)
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = ("", None)
             with mock.patch.object(os.path, 'exists') as os_exists_mock:
                 os_exists_mock.return_value = True
                 image_convert.revert(result=mock.MagicMock())
@@ -554,8 +554,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             mock_os_remove, stores=self.stores)
         image_convert.src_path = mock.MagicMock()
 
-        with mock.patch.object(processutils, 'execute') as exc_mock:
-            exc_mock.return_value = ("", None)
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = ("", None)
             with mock.patch.object(os.path, 'exists') as os_exists_mock:
                 os_exists_mock.return_value = True
                 image_convert.revert(result=mock.MagicMock())
