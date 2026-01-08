@@ -2562,12 +2562,10 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         self.assertTrue(output[0]['url'])
 
 
-class TestImages(functional.FunctionalTest):
+class TestImages(functional.SynchronousAPIBase):
 
     def setUp(self):
         super(TestImages, self).setUp()
-        self.cleanup()
-        self.api_server.deployment_flavor = 'noauth'
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
                                                "foo_image%d" % i)
@@ -2595,38 +2593,35 @@ class TestImages(functional.FunctionalTest):
         return base_headers
 
     def test_image_visibility_to_different_users(self):
-        self.cleanup()
-        self.api_server.deployment_flavor = 'fakeauth'
-
-        kwargs = self.__dict__.copy()
-        self.start_servers(**kwargs)
+        # Use fakeauth pipeline for authentication testing
+        self.start_server(use_fake_auth=True)
 
         owners = ['admin', 'tenant1', 'tenant2', 'none']
         visibilities = ['public', 'private', 'shared', 'community']
 
         for owner in owners:
             for visibility in visibilities:
-                path = self._url('/v2/images')
-                headers = self._headers({
+                path = '/v2/images'
+                headers = {
                     'content-type': 'application/json',
                     'X-Auth-Token': 'createuser:%s:admin' % owner,
-                })
-                data = jsonutils.dumps({
+                }
+                data = {
                     'name': '%s-%s' % (owner, visibility),
                     'visibility': visibility,
-                })
-                response = requests.post(path, headers=headers, data=data)
+                }
+                response = self.api_post(path, headers=headers, json=data)
                 self.assertEqual(http.CREATED, response.status_code)
 
         def list_images(tenant, role='', visibility=None):
             auth_token = 'user:%s:%s' % (tenant, role)
             headers = {'X-Auth-Token': auth_token}
-            path = self._url('/v2/images')
+            path = '/v2/images'
             if visibility is not None:
                 path += '?visibility=%s' % visibility
-            response = requests.get(path, headers=headers)
+            response = self.api_get(path, headers=headers)
             self.assertEqual(http.OK, response.status_code)
-            return jsonutils.loads(response.text)['images']
+            return response.json['images']
 
         # 1. Known user sees public and their own images
         images = list_images('tenant1', role='reader')
@@ -2744,18 +2739,12 @@ class TestImages(functional.FunctionalTest):
         for image in images:
             self.assertEqual('community', image['visibility'])
 
-        self.stop_servers()
 
-
-class TestImagesIPv6(functional.FunctionalTest):
-    """Verify that API and REG servers running IPv6 can communicate"""
+class TestImagesIPv6(functional.MinimalIPv6TestBase):
+    """Verify that API servers running IPv6 can communicate."""
 
     def setUp(self):
-        """
-        First applying monkey patches of functions and methods which have
-        IPv4 hardcoded.
-        """
-        # Setting up initial monkey patch (1)
+        """Apply monkey patches for IPv6 support."""
         test_utils.get_unused_port_ipv4 = test_utils.get_unused_port
         test_utils.get_unused_port_and_socket_ipv4 = (
             test_utils.get_unused_port_and_socket)
@@ -2764,15 +2753,9 @@ class TestImagesIPv6(functional.FunctionalTest):
             test_utils.get_unused_port_and_socket_ipv6)
         super(TestImagesIPv6, self).setUp()
         self.cleanup()
-        # Setting up monkey patch (2), after object is ready...
-        self.ping_server_ipv4 = self.ping_server
-        self.ping_server = self.ping_server_ipv6
 
     def tearDown(self):
-        # Cleaning up monkey patch (2).
-        self.ping_server = self.ping_server_ipv4
         super(TestImagesIPv6, self).tearDown()
-        # Cleaning up monkey patch (1).
         test_utils.get_unused_port = test_utils.get_unused_port_ipv4
         test_utils.get_unused_port_and_socket = (
             test_utils.get_unused_port_and_socket_ipv4)

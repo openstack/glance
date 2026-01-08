@@ -1299,6 +1299,150 @@ class MultipleBackendFunctionalTest(test_utils.BaseTestCase):
                 s.server_name, testtools.content.text_content(s.dump_log()))
 
 
+class MinimalIPv6TestBase(test_utils.BaseTestCase):
+    """Minimal test base class for IPv6 network testing.
+
+    This class provides only the essential functionality needed to test
+    IPv6 network binding and communication. It's a stripped-down version
+    of FunctionalTest that only includes what's necessary for IPv6 tests.
+    """
+
+    def setUp(self):
+        super(MinimalIPv6TestBase, self).setUp()
+        self.test_dir = self.useFixture(fixtures.TempDir()).path
+
+        self.api_port, api_sock = test_utils.get_unused_port_and_socket()
+
+        self.config(bind_host='::1')
+        self.config(image_cache_dir=self.test_dir)
+
+        conf_dir = os.path.join(self.test_dir, 'etc')
+        utils.safe_mkdirs(conf_dir)
+        self.copy_data_file('schema-image.json', conf_dir)
+        self.policy_file = os.path.join(conf_dir, 'policy.yaml')
+
+        with open(self.policy_file, 'w') as f:
+            f.write('{}')
+
+        self.api_server = ApiServer(self.test_dir,
+                                    self.api_port,
+                                    self.policy_file,
+                                    sock=api_sock)
+        self.api_server.bind_host = '::1'
+
+        self.launched_servers = []
+        self.files_to_destroy = []
+
+        self.addCleanup(
+            self._reset_database, self.api_server.sql_connection)
+        self.addCleanup(self.cleanup)
+        self._reset_database(self.api_server.sql_connection)
+
+    def copy_data_file(self, file_name, dst_dir):
+        src_file_name = os.path.join('glance/tests/etc', file_name)
+        shutil.copy(src_file_name, dst_dir)
+        dst_file_name = os.path.join(dst_dir, file_name)
+        return dst_file_name
+
+    def _reset_database(self, conn_string):
+        """Reset the database for clean test state."""
+        if conn_string.startswith('sqlite'):
+            pass
+        elif conn_string.startswith('mysql'):
+            conn_pieces = urlparse.urlparse(conn_string)
+            database = conn_pieces.path.strip('/')
+            loc_pieces = conn_pieces.netloc.split('@')
+            host = loc_pieces[1]
+            auth_pieces = loc_pieces[0].split(':')
+            user = auth_pieces[0]
+            password = ""
+            if len(auth_pieces) > 1:
+                if auth_pieces[1].strip():
+                    password = "-p%s" % auth_pieces[1]
+            sql = ("drop database if exists %(database)s; "
+                   "create database %(database)s;") % {'database': database}
+            cmd = ("mysql -u%(user)s %(password)s -h%(host)s "
+                   "-e\"%(sql)s\"") % {'user': user, 'password': password,
+                                       'host': host, 'sql': sql}
+            exitcode, out, err = execute(cmd)
+            self.assertEqual(0, exitcode)
+
+    def cleanup(self):
+        """Stop any started servers and clean up files."""
+        servers = [self.api_server]
+        for s in servers:
+            try:
+                s.stop()
+            except Exception:
+                pass
+
+        for f in self.files_to_destroy:
+            if os.path.exists(f):
+                os.unlink(f)
+
+    def ping_server_ipv6(self, port):
+        """Ping server on IPv6 port."""
+        s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        try:
+            s.connect(("::1", port))
+            return True
+        except socket.error:
+            return False
+        finally:
+            s.close()
+
+    def wait_for_servers(self, servers, expect_launch=True, timeout=30):
+        """Wait for servers to be ready on IPv6."""
+        now = datetime.datetime.now()
+        timeout_time = now + datetime.timedelta(seconds=timeout)
+        replied = []
+        while (timeout_time > now):
+            pinged = 0
+            for server in servers:
+                if self.ping_server_ipv6(server.bind_port):
+                    pinged += 1
+                    if server not in replied:
+                        replied.append(server)
+            if pinged == len(servers):
+                return None if expect_launch else 'Unexpected server launch'
+            now = datetime.datetime.now()
+            time.sleep(0.05)
+
+        failed = list(set(servers) - set(replied))
+        if failed:
+            return 'Servers failed to start: %s' % [s.server_name for s in failed]
+        return None if expect_launch else 'Unexpected server launch'
+
+    def start_with_retry(self, server, port_name, max_retries,
+                         expect_launch=True, **kwargs):
+        """Start server with retry logic."""
+        launch_msg = None
+        for i in range(max_retries):
+            exitcode, out, err = server.start(expect_exit=not expect_launch,
+                                              **kwargs)
+            name = server.server_name
+            self.assertEqual(0, exitcode,
+                             "Failed to spin up the %s server. "
+                             "Got: %s" % (name, err))
+            launch_msg = self.wait_for_servers([server], expect_launch)
+            if launch_msg:
+                server.stop()
+                port, sock = test_utils.get_unused_port_and_socket()
+                server.bind_port = port
+                if sock:
+                    server.sock = sock
+                setattr(self, port_name, port)
+            else:
+                self.launched_servers.append(server)
+                break
+        self.assertTrue(launch_msg is None, launch_msg)
+
+    def start_servers(self, **kwargs):
+        """Start the API server."""
+        self.cleanup()
+        self.start_with_retry(self.api_server, 'api_port', 3, **kwargs)
+
+
 class SynchronousAPIBase(test_utils.BaseTestCase):
     """A base class that provides synchronous calling into the API.
 
@@ -1391,6 +1535,12 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             [filter:context]
             paste.filter_factory = glance.api.middleware.context:\
                 ContextMiddleware.factory
+            [filter:unauthenticated-context]
+            paste.filter_factory = glance.api.middleware.context:\
+                UnauthenticatedContextMiddleware.factory
+            [filter:versionnegotiation]
+            paste.filter_factory = glance.api.middleware.version_negotiation:\
+                VersionNegotiationFilter.factory
             [filter:fakeauth]
             paste.filter_factory = glance.tests.utils:\
                 FakeAuthMiddleware.factory
@@ -1413,13 +1563,18 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             [pipeline:glance-api-caching]
             pipeline = context cache gzip rootapp
             [pipeline:glance-api]
-            pipeline = context gzip rootapp
+            pipeline = context rootapp
+            [pipeline:glance-api-versionnegotiation]
+            pipeline = versionnegotiation unauthenticated-context cache cachemanage rootapp
             [pipeline:glance-api-fake]
             pipeline = fakeauth context gzip rootapp
             [composite:rootapp]
             paste.composite_factory = glance.api:root_app_factory
+            /: apiversions
             /v2: apiv2app
             /healthcheck: healthcheck
+            [app:apiversions]
+            paste.app_factory = glance.api.versions:create_resource
             [app:apiv2app]
             paste.app_factory = glance.api.v2.router:API.factory
             [app:healthcheck]
@@ -1690,7 +1845,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
 
     def start_server(self, enable_cache=True, set_worker_url=True,
                      use_fake_auth=False, run_staging_cleaner=False,
-                     enable_cors=False):
+                     enable_cors=False, enable_version_negotiation=False):
         """Builds and "starts" the API server.
 
         Note that this doesn't actually "start" anything like
@@ -1699,7 +1854,10 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         """
         config.set_config_defaults()
         root_app = 'glance-api'
-        if enable_cache:
+        if enable_version_negotiation:
+            root_app = 'glance-api-versionnegotiation'
+            self.config(image_cache_dir=self._store_dir('cache'))
+        elif enable_cache:
             root_app = 'glance-api-cachemanagement'
             self.config(image_cache_dir=self._store_dir('cache'))
 
@@ -1782,15 +1940,26 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         """
         if not self.bypass_headers:
             headers = self._headers(headers)
+        else:
+            # Ensure headers is at least an empty dict, not None
+            if headers is None:
+                headers = {}
+        # Set a base URL for the request so application_url is available
+        # Use host_url to ensure application_url is properly set
         req = webob.Request.blank(url, method=method,
                                   headers=headers)
+        if not req.application_url:
+            req.environ['wsgi.url_scheme'] = 'http'
+            req.environ['HTTP_HOST'] = 'localhost'
+            req.environ['SERVER_NAME'] = 'localhost'
+            req.environ['SERVER_PORT'] = '80'
         if json and not data:
             data = jsonutils.dumps(json).encode()
         if data and not body_file:
             req.body = data
         elif body_file:
             req.body_file = body_file
-        return self.api(req)
+        return self._call_api(req)
 
     def api_get(self, url, headers=None, data=None, json=None):
         """Perform a GET request against the API.
@@ -1851,6 +2020,24 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         """
         return self.api_request('DELETE', url, headers=headers,
                                 data=data, json=json)
+
+    def _call_api(self, req):
+        """Call the WSGI application and handle Controller responses.
+
+        This wraps the WSGI application call and handles cases where the
+        version negotiation middleware returns a Controller object instead
+        of a Response.
+
+        :param req: A webob.Request object
+        :returns: A webob.Response object
+        """
+        response = self.api(req)
+        # The version negotiation filter may return a Controller for
+        # unknown versions, which needs to be called to get the Response
+        if hasattr(response, '__call__') and not hasattr(
+                response, 'status_code'):
+            response = response(req)
+        return response
 
     def api_patch(self, url, patches, headers=None):
         """Perform a PATCH request against the API.
