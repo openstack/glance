@@ -1397,6 +1397,9 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             [filter:cors]
             paste.filter_factory = oslo_middleware.cors:filter_factory
             allowed_origin=http://valid.example.com
+            [filter:gzip]
+            paste.filter_factory = glance.api.middleware.gzip:\
+                GzipMiddleware.factory
             [filter:cache]
             paste.filter_factory = glance.api.middleware.cache:\
             CacheFilter.factory
@@ -1404,15 +1407,15 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             paste.filter_factory = glance.api.middleware.cache_manage:\
             CacheManageFilter.factory
             [pipeline:glance-api-cachemanagement]
-            pipeline = context cache cachemanage rootapp
+            pipeline = context cache cachemanage gzip rootapp
             [pipeline:glance-api-cors]
-            pipeline = cors context rootapp
+            pipeline = cors context gzip rootapp
             [pipeline:glance-api-caching]
-            pipeline = context cache rootapp
+            pipeline = context cache gzip rootapp
             [pipeline:glance-api]
-            pipeline = context rootapp
+            pipeline = context gzip rootapp
             [pipeline:glance-api-fake]
-            pipeline = fakeauth context rootapp
+            pipeline = fakeauth context gzip rootapp
             [composite:rootapp]
             paste.composite_factory = glance.api:root_app_factory
             /v2: apiv2app
