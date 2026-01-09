@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Bug 2137762_: Fixed AttributeError when running ``glance-manage db``
+                  without a subcommand.
+
+    .. _2137762: https://bugs.launchpad.net/glance/+bug/2137762

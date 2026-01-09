@@ -678,3 +678,16 @@ class TestManage(TestManageBase):
                                db_metadata.db_export_metadefs,
                                db_api.get_engine(),
                                '/mock/')
+
+    def test_db_no_action_shows_help(self):
+        """Test that running 'glance-manage db' without action shows help."""
+        self.useFixture(
+            fixtures.MonkeyPatch('sys.argv', ['glance-manage', 'db']))
+        exit = self.assertRaises(SystemExit, manage.main)
+        self.assertEqual(2, exit.code)
+        output = self.output.getvalue()
+        self.assertIn("Available actions for 'db':", output)
+        self.assertIn("version - Print database's current migration level",
+                      output)
+        self.assertIn("sync - Perform a complete (offline) database migration",
+                      output)
