@@ -67,12 +67,9 @@ def log_call(func):
 
 
 def configure():
-    if CONF.workers not in [0, 1]:
-        msg = _('CONF.workers should be set to 0 or 1 when using the '
-                'db.simple.api backend. Fore more info, see '
-                'https://bugs.launchpad.net/glance/+bug/1619508')
-        LOG.critical(msg)
-        raise SystemExit(msg)
+    # No-op: workers check removed as standalone server is deprecated
+    # In uWSGI deployments, workers are managed by uWSGI, not Glance config
+    pass
 
 
 def reset():
