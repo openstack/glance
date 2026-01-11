@@ -20,8 +20,8 @@ Image Identifiers
 Images are uniquely identified by way of a URI that
 matches the following signature::
 
-  <Glance Server Location>/v1/images/<ID>
+  <Glance Server Location>/v2/images/<ID>
 
 where `<Glance Server Location>` is the resource location of the Glance service
 that knows about an image, and `<ID>` is the image's identifier. Image
-identifiers in Glance are *uuids*, making them *globally unique*.
+identifiers in Glance are *UUIDs*, making them *globally unique*.
