@@ -158,8 +158,7 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
         self.assertEqual('store1,store3', image['stores'])
         self.assertEqual('', image['os_glance_failed_import'])
 
-        # Free up the stalled task and give eventlet time to let it
-        # play out the rest of the task
+        # Free up the stalled task and give it time to complete
         state['want_run'] = False
         for i in range(0, 10):
             image = self.api_get('/v2/images/%s' % image_id).json
