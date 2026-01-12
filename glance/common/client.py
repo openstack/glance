@@ -22,7 +22,6 @@ import copy
 import functools
 import http.client
 import os
-import re
 import socket
 import ssl
 import urllib.parse as urlparse
@@ -42,8 +41,6 @@ LOG = logging.getLogger(__name__)
 
 # common chunk size for get and put
 CHUNKSIZE = 65536
-
-VERSION_REGEX = re.compile(r"/?v[0-9\.]+")
 
 
 def handle_unauthenticated(func):
@@ -153,8 +150,7 @@ class BaseClient(object):
 
     def __init__(self, host, port=None, timeout=None, use_ssl=False,
                  auth_token=None, creds=None, doc_root=None, key_file=None,
-                 cert_file=None, ca_file=None, insecure=False,
-                 configure_via_auth=True):
+                 cert_file=None, ca_file=None, insecure=False):
         """
         Creates a new client to some service.
 
@@ -184,10 +180,6 @@ class BaseClient(object):
                         GLANCE_CLIENT_CA_FILE is looked for.
         :param insecure: Optional. If set then the server's certificate
                          will not be verified.
-        :param configure_via_auth: Optional. Defaults to True. If set, the
-                         URL returned from the service catalog for the image
-                         endpoint will **override** the URL supplied to in
-                         the host parameter.
         """
         self.host = host
         self.port = port or self.DEFAULT_PORT
@@ -199,7 +191,6 @@ class BaseClient(object):
         self.auth_token = auth_token
         self.creds = creds or {}
         self.connection = None
-        self.configure_via_auth = configure_via_auth
         # doc_root can be a nullstring, which is valid, and why we
         # cannot simply do doc_root or self.DEFAULT_DOC_ROOT below.
         self.doc_root = (doc_root if doc_root is not None
@@ -272,40 +263,12 @@ class BaseClient(object):
 
         return connect_kwargs
 
-    def configure_from_url(self, url):
-        """
-        Setups the connection based on the given url.
-
-        The form is::
-
-            <http|https>://<host>:port/doc_root
-        """
-        LOG.debug("Configuring from URL: %s", url)
-        parsed = urlparse.urlparse(url)
-        self.use_ssl = parsed.scheme == 'https'
-        self.host = parsed.hostname
-        self.port = parsed.port or 80
-        self.doc_root = parsed.path.rstrip('/')
-
-        # We need to ensure a version identifier is appended to the doc_root
-        if not VERSION_REGEX.match(self.doc_root):
-            if self.DEFAULT_DOC_ROOT:
-                doc_root = self.DEFAULT_DOC_ROOT.lstrip('/')
-                self.doc_root += '/' + doc_root
-                LOG.debug("Appending doc_root %(doc_root)s to URL %(url)s",
-                          {'doc_root': doc_root, 'url': url})
-
-        # ensure connection kwargs are re-evaluated after the service catalog
-        # publicURL is parsed for potential SSL usage
-        self.connect_kwargs = self.get_connect_kwargs()
-
     def make_auth_plugin(self, creds, insecure):
         """
         Returns an instantiated authentication plugin.
         """
         strategy = creds.get('strategy', 'noauth')
-        plugin = auth.get_plugin_from_strategy(strategy, creds, insecure,
-                                               self.configure_via_auth)
+        plugin = auth.get_plugin_from_strategy(strategy, creds, insecure)
         return plugin
 
     def get_connection_type(self):
@@ -329,10 +292,6 @@ class BaseClient(object):
             auth_plugin.authenticate()
 
         self.auth_token = auth_plugin.auth_token
-
-        management_url = auth_plugin.management_url
-        if management_url and self.configure_via_auth:
-            self.configure_from_url(management_url)
 
     @handle_unauthenticated
     def do_request(self, method, action, body=None, headers=None,

@@ -27,16 +27,12 @@ Keystone (an identity management system).
    > auth_plugin.auth_token
     abcdefg
 
-   > auth_plugin.management_url
-   http://service_endpoint/
-
 """
 
 import http.client as http
 import urllib.parse as urlparse
 
 import httplib2
-from keystoneclient import service_catalog as ks_service_catalog
 from oslo_serialization import jsonutils
 
 from glance.common import exception
@@ -46,8 +42,6 @@ from glance.i18n import _
 class BaseStrategy(object):
     def __init__(self):
         self.auth_token = None
-        # TODO(sirp): Should expose selecting public/internal/admin URL.
-        self.management_url = None
 
     def authenticate(self):
         raise NotImplementedError
@@ -77,10 +71,9 @@ class NoAuthStrategy(BaseStrategy):
 class KeystoneStrategy(BaseStrategy):
     MAX_REDIRECTS = 10
 
-    def __init__(self, creds, insecure=False, configure_via_auth=True):
+    def __init__(self, creds, insecure=False):
         self.creds = creds
         self.insecure = insecure
-        self.configure_via_auth = configure_via_auth
         super(KeystoneStrategy, self).__init__()
 
     def check_auth_params(self):
@@ -171,20 +164,8 @@ class KeystoneStrategy(BaseStrategy):
 
         resp, resp_body = self._do_request(token_url, 'GET', headers=headers)
 
-        def _management_url(self, resp):
-            for url_header in ('x-image-management-url',
-                               'x-server-management-url',
-                               'x-glance'):
-                try:
-                    return resp[url_header]
-                except KeyError as e:
-                    not_found = e
-            raise not_found
-
         if resp.status in (http.OK, http.NO_CONTENT):
             try:
-                if self.configure_via_auth:
-                    self.management_url = _management_url(self, resp)
                 self.auth_token = resp['x-auth-token']
             except KeyError:
                 raise exception.AuthorizationFailure()
@@ -232,11 +213,6 @@ class KeystoneStrategy(BaseStrategy):
 
         if resp.status == 201:
             resp_auth = resp['x-subject-token']
-            creds_region = self.creds.get('region')
-            if self.configure_via_auth:
-                endpoint = get_endpoint(resp_body['token']['catalog'],
-                                        endpoint_region=creds_region)
-                self.management_url = endpoint
             self.auth_token = resp_auth
         elif resp.status == 305:
             raise exception.RedirectException(resp['location'])
@@ -267,11 +243,6 @@ class KeystoneStrategy(BaseStrategy):
 
         if resp.status == http.OK:
             resp_auth = jsonutils.loads(resp_body)['access']
-            creds_region = self.creds.get('region')
-            if self.configure_via_auth:
-                endpoint = get_endpoint(resp_auth['serviceCatalog'],
-                                        endpoint_region=creds_region)
-                self.management_url = endpoint
             self.auth_token = resp_auth['token']['id']
         elif resp.status == http.USE_PROXY:
             raise exception.RedirectException(resp['location'])
@@ -302,37 +273,10 @@ class KeystoneStrategy(BaseStrategy):
         return resp, resp_body
 
 
-def get_plugin_from_strategy(strategy, creds=None, insecure=False,
-                             configure_via_auth=True):
+def get_plugin_from_strategy(strategy, creds=None, insecure=False):
     if strategy == 'noauth':
         return NoAuthStrategy()
     elif strategy == 'keystone':
-        return KeystoneStrategy(creds, insecure,
-                                configure_via_auth=configure_via_auth)
+        return KeystoneStrategy(creds, insecure)
     else:
         raise Exception(_("Unknown auth strategy '%s'") % strategy)
-
-
-def get_endpoint(service_catalog, service_type='image', endpoint_region=None,
-                 endpoint_type='publicURL'):
-    """
-    Select an endpoint from the service catalog
-
-    We search the full service catalog for services
-    matching both type and region. If the client
-    supplied no region then any 'image' endpoint
-    is considered a match. There must be one -- and
-    only one -- successful match in the catalog,
-    otherwise we will raise an exception.
-    """
-    endpoints = ks_service_catalog.ServiceCatalogV2(
-        {'serviceCatalog': service_catalog}
-    ).get_urls(service_type=service_type,
-               region_name=endpoint_region,
-               endpoint_type=endpoint_type)
-    if endpoints is None:
-        raise exception.NoServiceEndpoint()
-    elif len(endpoints) == 1:
-        return endpoints[0]
-    else:
-        raise exception.RegionAmbiguity(region=endpoint_region)
