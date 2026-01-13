@@ -403,7 +403,7 @@
     check:
       jobs:
         - openstack-tox-functional-py310
-        - openstack-tox-functional-py312
+        - openstack-tox-functional-py313
         - glance-ceph-thin-provisioning:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
@@ -447,7 +447,7 @@
     gate:
       jobs:
         - openstack-tox-functional-py310
-        - openstack-tox-functional-py312
+        - openstack-tox-functional-py313
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-enforce-scope-new-defaults:
