@@ -16,6 +16,7 @@
 
 import http.client as http
 
+from keystoneauth1 import fixture as ksa_fixture
 from oslo_serialization import jsonutils
 import webob
 
@@ -40,51 +41,15 @@ class FakeResponse(object):
         return self.resp.status_int
 
 
-class V2Token(object):
-    def __init__(self):
-        self.tok = self.base_token
-
-    @property
-    def token(self):
-        return self.tok
-
-    @property
-    def base_endpoint(self):
-        return {
-            "adminURL": "http://localhost:9292",
-            "internalURL": "http://localhost:9292",
-            "publicURL": "http://localhost:9292"
-        }
-
-    @property
-    def base_token(self):
-        return {
-            "access": {
-                "token": {
-                    "expires": "2010-11-23T16:40:53.321584",
-                    "id": "5c7f8799-2e54-43e4-851b-31f81871b6c",
-                    "tenant": {"id": "1", "name": "tenant-ok"}
-                },
-                "serviceCatalog": [
-                ],
-                "user": {
-                    "id": "2",
-                    "roles": [{
-                        "tenantId": "1",
-                        "id": "1",
-                        "name": "Admin"
-                    }],
-                    "name": "joeadmin"
-                }
-            }
-        }
-
-
 class TestKeystoneAuthPlugin(utils.BaseTestCase):
     """Test that the Keystone auth plugin works properly"""
 
     def setUp(self):
         super(TestKeystoneAuthPlugin, self).setUp()
+
+    def test_get_plugin_from_strategy_keystone(self):
+        strategy = auth.get_plugin_from_strategy('keystone')
+        self.assertIsInstance(strategy, auth.KeystoneStrategy)
 
     def test_required_creds(self):
         """
@@ -95,41 +60,52 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             {},  # missing everything
             {
                 'username': 'user1',
+                'user_domain_id': 'userdomain',
+                'project': 'project1',
+                'project_domain_id': 'projectdomain',
                 'strategy': 'keystone',
                 'password': 'pass'
             },  # missing auth_url
             {
+                'user_domain_id': 'userdomain',
                 'password': 'pass',
+                'project': 'project1',
+                'project_domain_id': 'projectdomain',
                 'strategy': 'keystone',
-                'auth_url': 'http://localhost/v1'
+                'auth_url': 'http://localhost'
             },  # missing username
             {
                 'username': 'user1',
+                'user_domain_id': 'userdomain',
+                'project': 'project1',
+                'project_domain_id': 'projectdomain',
                 'strategy': 'keystone',
-                'auth_url': 'http://localhost/v1'
+                'auth_url': 'http://localhost',
             },  # missing password
             {
                 'username': 'user1',
-                'password': 'pass',
-                'auth_url': 'http://localhost/v1'
-            },  # missing strategy
-            {
-                'username': 'user1',
+                'user_domain_id': 'userdomain',
+                'project_domain_id': 'projectdomain',
                 'password': 'pass',
                 'strategy': 'keystone',
-                'auth_url': 'http://localhost/v2.0/'
-            },  # v2.0: missing tenant
-            {
-                'username': None,
-                'password': 'pass',
-                'auth_url': 'http://localhost/v2.0/'
-            },  # None parameter
+                'auth_url': 'http://localhost'
+            },  # missing project
             {
                 'username': 'user1',
+                'user_domain_id': 'userdomain',
                 'password': 'pass',
-                'auth_url': 'http://localhost/v2.0/',
-                'tenant': None
-            }  # None tenant
+                'project': 'project1',
+                'project_domain_id': 'projectdomain',
+                'auth_url': 'http://localhost'
+            },  # missing strategy
+            {
+                'username': None,
+                'user_domain_id': 'userdomain',
+                'project': 'project1',
+                'project_domain_id': 'projectdomain',
+                'password': 'pass',
+                'auth_url': 'http://localhost'
+            }   # None parameter
         ]
         for creds in bad_creds:
             try:
@@ -140,7 +116,7 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
             except exception.MissingCredentialError:
                 continue  # Expected
 
-    def test_invalid_auth_url_v1(self):
+    def test_invalid_auth_url(self):
         """
         Test that a 400 during authenticate raises exception.AuthBadRequest
         """
@@ -153,213 +129,119 @@ class TestKeystoneAuthPlugin(utils.BaseTestCase):
 
         bad_creds = {
             'username': 'user1',
-            'auth_url': 'http://localhost/badauthurl/',
+            'user_domain_id': 'userdomain',
+            'auth_url': 'http://localhost/badauthurl/v3',
             'password': 'pass',
-            'strategy': 'keystone',
+            'project': 'project1',
+            'project_domain_id': 'projectdomain',
+            'strategy': 'keystone'
         }
 
         plugin = auth.KeystoneStrategy(bad_creds)
         self.assertRaises(exception.AuthBadRequest, plugin.authenticate)
 
-    def test_invalid_auth_url_v2(self):
-        """
-        Test that a 400 during authenticate raises exception.AuthBadRequest
-        """
-        def fake_do_request(*args, **kwargs):
-            resp = webob.Response()
-            resp.status = http.BAD_REQUEST
-            return FakeResponse(resp), ""
+    def test_v3_auth(self):
+        """Test v3 auth code paths"""
+        mock_token = None
 
-        self.mock_object(auth.KeystoneStrategy, '_do_request', fake_do_request)
-
-        bad_creds = {
-            'username': 'user1',
-            'auth_url': 'http://localhost/badauthurl/v2.0/',
-            'password': 'pass',
-            'tenant': 'tenant1',
-            'strategy': 'keystone',
-        }
-
-        plugin = auth.KeystoneStrategy(bad_creds)
-        self.assertRaises(exception.AuthBadRequest, plugin.authenticate)
-
-    def test_v1_auth(self):
-        """Test v1 auth code paths"""
         def fake_do_request(cls, url, method, headers=None, body=None):
-            if url.find("2.0") != -1:
-                self.fail("Invalid v1.0 token path (%s)" % url)
-            headers = headers or {}
-
+            creds = jsonutils.loads(body)['auth']
+            username = creds['identity']['password']['user']['name']
+            password = creds['identity']['password']['user']['password']
+            project = creds['scope']['project']['name']
             resp = webob.Response()
 
-            if (headers.get('X-Auth-User') != 'user1' or
-                    headers.get('X-Auth-Key') != 'pass'):
+            if (username != 'user1' or password != 'pass' or
+                    project != 'project-ok'):
                 resp.status = http.UNAUTHORIZED
             else:
-                resp.status = http.OK
+                resp.status = http.CREATED
+                body = mock_token
 
-            return FakeResponse(resp), ""
+            return FakeResponse(resp), jsonutils.dumps(body)
+
+        mock_token = ksa_fixture.V3Token()
 
         self.mock_object(auth.KeystoneStrategy, '_do_request', fake_do_request)
 
         unauthorized_creds = [
             {
                 'username': 'wronguser',
-                'auth_url': 'http://localhost/badauthurl/',
-                'strategy': 'keystone',
-                'password': 'pass'
+                'user_domain_id': 'userdomain',
+                'auth_url': 'http://localhost/identity',
+                'password': 'pass',
+                'project': 'project-ok',
+                'project_domain_id': 'projectdomain',
+                'strategy': 'keystone'
             },  # wrong username
             {
                 'username': 'user1',
-                'auth_url': 'http://localhost/badauthurl/',
-                'strategy': 'keystone',
-                'password': 'badpass'
+                'user_domain_id': 'userdomain',
+                'auth_url': 'http://localhost/identity',
+                'password': 'badpass',
+                'project': 'project-ok',
+                'project_domain_id': 'projectdomain',
+                'strategy': 'keystone'
             },  # bad password...
+            {
+                'username': 'user1',
+                'user_domain_id': 'userdomain',
+                'auth_url': 'http://localhost/identity',
+                'password': 'pass',
+                'project': 'carterhayes',
+                'project_domain_id': 'projectdomain',
+                'strategy': 'keystone'
+            },  # bad project...
         ]
 
         for creds in unauthorized_creds:
-            try:
-                plugin = auth.KeystoneStrategy(creds)
-                plugin.authenticate()
-                self.fail("Failed to raise NotAuthenticated when supplying "
-                          "bad credentials: %r" % creds)
-            except exception.NotAuthenticated:
-                continue  # Expected
+            plugin = auth.KeystoneStrategy(creds)
+            self.assertRaises(exception.NotAuthenticated, plugin.authenticate)
 
         no_strategy_creds = {
             'username': 'user1',
+            'user_domain_id': 'userdomain',
+            'project': 'project-ok',
+            'project_domain_id': 'projectdomain',
             'auth_url': 'http://localhost/redirect/',
             'password': 'pass'
         }
 
-        try:
-            plugin = auth.KeystoneStrategy(no_strategy_creds)
-            plugin.authenticate()
-            self.fail("Failed to raise MissingCredentialError when "
-                      "supplying no strategy: %r" % no_strategy_creds)
-        except exception.MissingCredentialError:
-            pass  # Expected
-
-        good_creds = [
-            {
-                'username': 'user1',
-                'auth_url': 'http://localhost/redirect/',
-                'password': 'pass',
-                'strategy': 'keystone'
-            }
-        ]
-
-        for creds in good_creds:
-            plugin = auth.KeystoneStrategy(creds)
-            self.assertIsNone(plugin.authenticate())
-
-    def test_v2_auth(self):
-        """Test v2 auth code paths"""
-        mock_token = None
-
-        def fake_do_request(cls, url, method, headers=None, body=None):
-            if (not url.rstrip('/').endswith('v2.0/tokens') or
-                    url.count("2.0") != 1):
-                self.fail("Invalid v2.0 token path (%s)" % url)
-
-            creds = jsonutils.loads(body)['auth']
-            username = creds['passwordCredentials']['username']
-            password = creds['passwordCredentials']['password']
-            tenant = creds['tenantName']
-            resp = webob.Response()
-
-            if (username != 'user1' or password != 'pass' or
-                    tenant != 'tenant-ok'):
-                resp.status = http.UNAUTHORIZED
-            else:
-                resp.status = http.OK
-                body = mock_token.token
-
-            return FakeResponse(resp), jsonutils.dumps(body)
-
-        mock_token = V2Token()
-        self.mock_object(auth.KeystoneStrategy, '_do_request', fake_do_request)
-
-        unauthorized_creds = [
-            {
-                'username': 'wronguser',
-                'auth_url': 'http://localhost/v2.0',
-                'password': 'pass',
-                'tenant': 'tenant-ok',
-                'strategy': 'keystone',
-            },  # wrong username
-            {
-                'username': 'user1',
-                'auth_url': 'http://localhost/v2.0',
-                'password': 'badpass',
-                'tenant': 'tenant-ok',
-                'strategy': 'keystone',
-            },  # bad password...
-            {
-                'username': 'user1',
-                'auth_url': 'http://localhost/v2.0',
-                'password': 'pass',
-                'tenant': 'carterhayes',
-                'strategy': 'keystone',
-            },  # bad tenant...
-        ]
-
-        for creds in unauthorized_creds:
-            try:
-                plugin = auth.KeystoneStrategy(creds)
-                plugin.authenticate()
-                self.fail("Failed to raise NotAuthenticated when supplying "
-                          "bad credentials: %r" % creds)
-            except exception.NotAuthenticated:
-                continue  # Expected
-
-        no_strategy_creds = {
-            'username': 'user1',
-            'tenant': 'tenant-ok',
-            'auth_url': 'http://localhost/redirect/v2.0/',
-            'password': 'pass'
-        }
-
-        try:
-            plugin = auth.KeystoneStrategy(no_strategy_creds)
-            plugin.authenticate()
-            self.fail("Failed to raise MissingCredentialError when "
-                      "supplying no strategy: %r" % no_strategy_creds)
-        except exception.MissingCredentialError:
-            pass  # Expected
+        plugin = auth.KeystoneStrategy(no_strategy_creds)
+        self.assertRaises(exception.MissingCredentialError,
+                          plugin.authenticate)
 
         bad_strategy_creds = {
             'username': 'user1',
-            'tenant': 'tenant-ok',
-            'auth_url': 'http://localhost/redirect/v2.0/',
+            'user_domain_id': 'userdomain',
+            'project': 'project-ok',
+            'project_domain_id': 'projectdomain',
+            'auth_url': 'http://localhost/redirect/',
             'password': 'pass',
             'strategy': 'keypebble'
         }
 
-        try:
-            plugin = auth.KeystoneStrategy(bad_strategy_creds)
-            plugin.authenticate()
-            self.fail("Failed to raise BadAuthStrategy when supplying "
-                      "bad auth strategy: %r" % bad_strategy_creds)
-        except exception.BadAuthStrategy:
-            pass  # Expected
-
-        mock_token = V2Token()
+        plugin = auth.KeystoneStrategy(bad_strategy_creds)
+        self.assertRaises(exception.BadAuthStrategy, plugin.authenticate)
 
         good_creds = [
             {
                 'username': 'user1',
-                'auth_url': 'http://localhost/v2.0/',
+                'user_domain_id': 'userdomain',
+                'auth_url': 'http://localhost/',
                 'password': 'pass',
-                'tenant': 'tenant-ok',
-                'strategy': 'keystone',
+                'project': 'project-ok',
+                'project_domain_id': 'projectdomain',
+                'strategy': 'keystone'
             },  # auth_url with trailing '/'
             {
                 'username': 'user1',
-                'auth_url': 'http://localhost/v2.0',
+                'user_domain_id': 'userdomain',
+                'auth_url': 'http://localhost',
                 'password': 'pass',
-                'tenant': 'tenant-ok',
-                'strategy': 'keystone',
+                'project': 'project-ok',
+                'project_domain_id': 'projectdomain',
+                'strategy': 'keystone'
             }   # auth_url without trailing '/'
         ]
 
