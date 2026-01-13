@@ -655,7 +655,7 @@ class ImagesController(object):
             raise webob.exc.HTTPForbidden(msg)
         elif path_root == 'locations' and value:
             api_pol.update_locations()
-            self._do_replace_locations(image, value)
+            self._do_replace_locations(image, value, req.context)
         elif path_root == 'owner' and not req.context.is_admin:
             msg = _("Owner can't be updated by non admin.")
             raise webob.exc.HTTPForbidden(msg)
@@ -1043,7 +1043,7 @@ class ImagesController(object):
             return None
         return pos
 
-    def _do_replace_locations(self, image, value):
+    def _do_replace_locations(self, image, value, context):
         if not CONF.show_multiple_locations:
             msg = _("It's not allowed to update locations if locations are "
                     "invisible.")
@@ -1059,7 +1059,7 @@ class ImagesController(object):
         updated_location = value
         if CONF.enabled_backends:
             updated_location = store_utils.get_updated_store_location(
-                value)
+                value, context)
 
         try:
             # NOTE(flwang): _locations_proxy's setattr method will check if
