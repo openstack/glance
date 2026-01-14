@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The eventlet server has been deprecated. Glance must now be run using
+    WSGI.
