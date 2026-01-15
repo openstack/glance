@@ -35,10 +35,8 @@ from oslo_utils import timeutils as oslo_timeutils
 import osprofiler.sqlalchemy
 import sqlalchemy
 from sqlalchemy.ext.compiler import compiles
-from sqlalchemy import MetaData, Table
-import sqlalchemy.orm as sa_orm
-from sqlalchemy import sql
-import sqlalchemy.sql as sa_sql
+from sqlalchemy import orm as sa_orm
+from sqlalchemy import sql as sa_sql
 
 from glance.common import exception
 from glance.common import utils
@@ -518,7 +516,7 @@ def _make_conditions_from_filters(filters, is_public=None):
         tags = filters.pop('tags')
         for tag in tags:
             alias = sa_orm.aliased(models.ImageTag)
-            tag_filters = [alias.deleted == sql.false()]
+            tag_filters = [alias.deleted == sa_sql.false()]
             tag_filters.extend([alias.value == tag])
             tag_conditions.append((alias, tag_filters))
 
@@ -583,7 +581,7 @@ def _make_conditions_from_filters(filters, is_public=None):
 
 def _make_image_property_condition(key, value):
     alias = sa_orm.aliased(models.ImageProperty)
-    prop_filters = [alias.deleted == sql.false()]
+    prop_filters = [alias.deleted == sa_sql.false()]
     prop_filters.extend([alias.name == key])
     prop_filters.extend([alias.value == value])
     return alias, prop_filters
@@ -598,7 +596,7 @@ def _select_images_query(context, session, image_conditions, admin_as_user,
     query_member = session.query(models.Image).join(
         models.Image.members).filter(img_conditional_clause)
     if regular_user:
-        member_filters = [models.ImageMember.deleted == sql.false()]
+        member_filters = [models.ImageMember.deleted == sa_sql.false()]
         member_filters.extend([models.Image.visibility == 'shared'])
         if context.owner is not None:
             member_filters.extend([models.ImageMember.member == context.owner])
@@ -922,7 +920,7 @@ def image_set_property_atomic(image_id, name, value):
         result = connection.execute(table.update().where(
             sa_sql.and_(table.c.name == name,
                         table.c.image_id == image_id,
-                        table.c.deleted != sql.false())).values(
+                        table.c.deleted != sa_sql.false())).values(
                             value=value, deleted=False))
         if result.rowcount == 1:
             # Found and updated a deleted property, so we win
@@ -967,7 +965,7 @@ def image_delete_property_atomic(image_id, name, value):
             sa_sql.and_(table.c.name == name,
                         table.c.value == value,
                         table.c.image_id == image_id,
-                        table.c.deleted == sql.false())))
+                        table.c.deleted == sa_sql.false())))
         if result.rowcount == 1:
             return
 
@@ -1571,7 +1569,7 @@ def purge_deleted_rows(context, age_in_days, max_rows):
     # check max_rows for its maximum limit
     _validate_db_int(max_rows=max_rows)
 
-    metadata = MetaData()
+    metadata = sqlalchemy.MetaData()
     engine = get_engine()
     deleted_age = oslo_timeutils.utcnow() - datetime.timedelta(
         days=age_in_days)
@@ -1587,10 +1585,10 @@ def purge_deleted_rows(context, age_in_days, max_rows):
     # are referencing soft deleted tasks/images records (e.g. task_info
     # records). Then purge all soft deleted records in glance tables in the
     # right order to avoid FK constraint violation.
-    t = Table("tasks", metadata, autoload_with=engine)
-    ti = Table("task_info", metadata, autoload_with=engine)
+    t = sqlalchemy.Table("tasks", metadata, autoload_with=engine)
+    ti = sqlalchemy.Table("task_info", metadata, autoload_with=engine)
     joined_rec = ti.join(t, t.c.id == ti.c.task_id)
-    deleted_task_info = sql.\
+    deleted_task_info = sa_sql.\
         select(ti.c.task_id).where(t.c.deleted_at < deleted_age).\
         select_from(joined_rec).\
         order_by(t.c.deleted_at)
@@ -1630,7 +1628,7 @@ def purge_deleted_rows(context, age_in_days, max_rows):
             tables.append(tbl)
 
     for tbl in tables:
-        tab = Table(tbl, metadata, autoload_with=engine)
+        tab = sqlalchemy.Table(tbl, metadata, autoload_with=engine)
         LOG.info(
             _LI('Purging deleted rows older than %(age_in_days)d day(s) '
                 'from table %(tbl)s'),
@@ -1639,7 +1637,7 @@ def purge_deleted_rows(context, age_in_days, max_rows):
         column = tab.c.id
         deleted_at_column = tab.c.deleted_at
 
-        query_delete = sql.select(column).\
+        query_delete = sa_sql.select(column).\
             where(deleted_at_column < deleted_age).\
             order_by(deleted_at_column)
         if max_rows != -1:
@@ -1670,13 +1668,13 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows):
     # check max_rows for its maximum limit
     _validate_db_int(max_rows=max_rows)
 
-    metadata = MetaData()
+    metadata = sqlalchemy.MetaData()
     engine = get_engine()
     deleted_age = oslo_timeutils.utcnow() - datetime.timedelta(
         days=age_in_days)
 
     tbl = 'images'
-    tab = Table(tbl, metadata, autoload_with=engine)
+    tab = sqlalchemy.Table(tbl, metadata, autoload_with=engine)
     LOG.info(
         _LI('Purging deleted rows older than %(age_in_days)d day(s) '
             'from table %(tbl)s'),
@@ -1685,7 +1683,7 @@ def purge_deleted_rows_from_images(context, age_in_days, max_rows):
     column = tab.c.id
     deleted_at_column = tab.c.deleted_at
 
-    query_delete = sql.\
+    query_delete = sa_sql.\
         select(column).\
         where(deleted_at_column < deleted_age).\
         order_by(deleted_at_column)
