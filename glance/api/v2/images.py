@@ -656,7 +656,7 @@ class ImagesController(object):
         elif path_root == 'locations' and value:
             api_pol.update_locations()
             self._do_replace_locations(image, value)
-        elif path_root == 'owner' and req.context.is_admin == False:
+        elif path_root == 'owner' and not req.context.is_admin:
             msg = _("Owner can't be updated by non admin.")
             raise webob.exc.HTTPForbidden(msg)
         else:
@@ -1044,7 +1044,7 @@ class ImagesController(object):
         return pos
 
     def _do_replace_locations(self, image, value):
-        if CONF.show_multiple_locations == False:
+        if not CONF.show_multiple_locations:
             msg = _("It's not allowed to update locations if locations are "
                     "invisible.")
             raise webob.exc.HTTPForbidden(explanation=msg)
@@ -1075,7 +1075,7 @@ class ImagesController(object):
             raise webob.exc.HTTPBadRequest(explanation=str(ve))
 
     def _do_add_locations(self, image, path_pos, value, context):
-        if CONF.show_multiple_locations == False:
+        if not CONF.show_multiple_locations:
             msg = _("It's not allowed to add locations if locations are "
                     "invisible.")
             raise webob.exc.HTTPForbidden(explanation=msg)
@@ -1109,7 +1109,7 @@ class ImagesController(object):
             raise webob.exc.HTTPBadRequest(explanation=str(e))
 
     def _do_remove_locations(self, image, path_pos):
-        if CONF.show_multiple_locations == False:
+        if not CONF.show_multiple_locations:
             msg = _("It's not allowed to remove locations if locations are "
                     "invisible.")
             raise webob.exc.HTTPForbidden(explanation=msg)

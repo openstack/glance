@@ -277,7 +277,7 @@ def _filter_images(images, filters, context,
         image_is_public = image['visibility'] == 'public'
         image_is_community = image['visibility'] == 'community'
         image_is_shared = image['visibility'] == 'shared'
-        image_is_hidden = image['os_hidden'] == True
+        image_is_hidden = image['os_hidden'] is True
         acts_as_admin = context.is_admin and not admin_as_user
         can_see = (image_is_public
                    or image_is_community
@@ -738,7 +738,7 @@ def _image_locations_delete_all(context, image_id, delete_time=None):
                                   delete_time=delete_time)
 
     for i, loc in enumerate(DATA['locations']):
-        if image_id == loc['image_id'] and loc['deleted'] == False:
+        if image_id == loc['image_id'] and loc['deleted'] is False:
             del DATA['locations'][i]
 
 
@@ -1032,7 +1032,7 @@ def _task_soft_delete(context):
     tasks = DATA['tasks'].values()
 
     for task in tasks:
-        if (task['owner'] == context.owner and task['deleted'] == False
+        if (task['owner'] == context.owner and task['deleted'] is False
                 and task['expires_at'] <= now):
 
             task['deleted'] = True
