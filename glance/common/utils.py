@@ -21,6 +21,7 @@ System-level utilities and helper functions.
 """
 
 import errno
+import ipaddress
 
 try:
     from eventlet import sleep
@@ -129,6 +130,65 @@ CONF.import_group('import_filtering_opts',
                   'glance.async_.flows._internal_plugins')
 
 
+def normalize_hostname(host):
+    """Normalize IP address to standard format or return hostname.
+
+    Uses ipaddress module to validate and normalize IP addresses, rejecting
+    encoded formats. For hostnames, requires DNS resolution to ensure they
+    are valid and not encoded IP attempts.
+
+    :param host: hostname or IP address
+    :returns: normalized IP address, hostname unchanged, or None
+    """
+    if not host:
+        return host
+
+    # NOTE(abhishekk): Try to parse as IPv4. ipaddress module only accepts
+    # standard format like 127.0.0.1. It rejects encoded formats like
+    # decimal (2130706433), hex (0x7f000001), or octal (017700000001).
+    try:
+        return str(ipaddress.IPv4Address(host))
+    except ValueError:
+        pass
+
+    # NOTE(abhishekk): Try to parse as IPv6. ipaddress module only accepts
+    # standard IPv6 format and rejects encoded formats.
+    try:
+        return str(ipaddress.IPv6Address(host))
+    except ValueError:
+        pass
+
+    # NOTE(abhishekk): Not valid IP address, check as hostname. Reject pure
+    # numeric strings like "2130706433" (decimal encoded IP). ipaddress module
+    # rejected it, but OS might still resolve using inet_aton() if not blocked.
+    if host.isdigit():
+        return None
+
+    # NOTE(abhishekk): Reject all numeric strings with dots like "127.1" or
+    # "10.1". These are shorthand IP addresses. ipaddress module rejects them
+    # because they need 4 octets, but OS may still resolve them. We block to
+    # prevent SSRF bypass attacks.
+    if all(c.isdigit() or c == '.' for c in host):
+        return None
+
+    # NOTE(abhishekk): Add trailing dot to force DNS lookup instead of numeric
+    # parsing. This blocks encoded IP formats like 0x7f000001 or 127.0x0.0.1
+    # because they fail DNS lookup. Only real hostnames that resolve via DNS
+    # are allowed.
+    testhost = host
+    if not testhost.endswith('.'):
+        testhost += '.'
+
+    try:
+        socket.getaddrinfo(testhost, 80)
+    except socket.gaierror:
+        # NOTE(abhishekk): DNS resolution failed, reject the hostname
+        return None
+
+    # NOTE(abhishekk): Valid and resolvable hostname, return unchanged
+    return host
+
+
 def validate_import_uri(uri):
     """Validate requested uri for Image Import web-download.
 
@@ -166,9 +226,14 @@ def validate_import_uri(uri):
     if not scheme or ((wl_schemes and scheme not in wl_schemes) or
                       parsed_uri.scheme in bl_schemes):
         return False
-    if not host or ((wl_hosts and host not in wl_hosts) or
-                    host in bl_hosts):
+
+    normalized_host = normalize_hostname(host)
+
+    if not normalized_host or (
+            (wl_hosts and normalized_host not in wl_hosts) or
+            normalized_host in bl_hosts):
         return False
+
     if port and ((wl_ports and port not in wl_ports) or
                  port in bl_ports):
         return False
