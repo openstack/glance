@@ -374,9 +374,15 @@ class TestImportTask(test_utils.BaseTestCase):
         self.img_repo.get.return_value = self.image
         img_factory.new_image.side_effect = create_image
 
-        with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            content = b"TEST_IMAGE"
-            dmock.return_value = (io.BytesIO(content), len(content))
+        # Mock get_image_data_iter to avoid actual network calls
+        # and to work with our SafeRedirectHandler changes
+        content = b"TEST_IMAGE"
+        mock_response = io.BytesIO(content)
+        mock_response.headers = {}
+
+        with mock.patch(
+                'glance.common.scripts.utils.get_image_data_iter') as dmock:
+            dmock.return_value = (mock_response, len(content))
 
             with mock.patch.object(import_flow, "_get_import_flows") as imock:
                 imock.return_value = (x for x in [])

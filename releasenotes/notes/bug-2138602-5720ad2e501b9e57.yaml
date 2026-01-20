@@ -1,0 +1,95 @@
+---
+security:
+  - |
+    Fixed multiple Server-Side Request Forgery (SSRF) vulnerabilities in
+    Glance's image import functionality. These vulnerabilities could allow
+    attackers to bypass URL validation and access internal resources.
+
+    **web-download Import Method SSRF:**
+
+    The web-download import method had two SSRF vulnerabilities:
+
+    *HTTP Redirect Bypass:*
+    The web-download import method did not validate redirect destinations when
+    following HTTP redirects. An attacker could provide an initial URL that
+    passed validation, but redirect to an internal or disallowed resource that
+    would bypass the security checks. This has been fixed by implementing
+    ``SafeRedirectHandler`` that validates redirect destinations before
+    following them using the same ``validate_import_uri()`` checks as the
+    initial URL.
+
+    *IP Address Encoding Bypass:*
+    The web-download import method's URL validation could be bypassed by
+    encoding IP addresses in alternative formats (decimal integer,
+    hexadecimal, octal). For example, ``127.0.0.1`` could be encoded as
+    ``2130706433`` (decimal) or ``0x7f000001`` (hexadecimal) to bypass
+    blacklist checks. This has been fixed by implementing
+    ``normalize_hostname()`` function that uses Python's ``ipaddress`` module
+    to validate IP addresses. The ``ipaddress`` module only accepts standard
+    dotted-decimal notation for IPv4 and standard format for IPv6, automatically
+    rejecting all encoded formats (decimal, hexadecimal, octal). Any attempt to
+    use encoded IP formats is rejected, preventing SSRF bypass attacks.
+
+    **glance-download Import Method SSRF:**
+
+    The glance-download import method had redirect validation bypass
+    vulnerabilities in two steps of the import flow:
+
+    *Image Data Download:*
+    When downloading image data from a remote Glance endpoint, redirects were
+    not validated, allowing attackers to redirect to internal services.
+
+    *Metadata Fetch:*
+    When fetching image metadata from a remote Glance endpoint, redirects were
+    not validated, allowing attackers to redirect to internal services.
+
+    Both steps have been fixed by using ``SafeRedirectHandler`` to validate
+    redirect destinations before following them.
+
+    **OVF Processing SSRF:**
+
+    The OVF processing functionality had a critical SSRF vulnerability with
+    zero protection - no URI validation, no redirect validation, and no IP
+    normalization. The code directly called ``urllib.request.urlopen(uri)``
+    without any validation checks. This has been fixed by adding URI
+    validation using ``validate_import_uri()`` and redirect validation using
+    ``SafeRedirectHandler``.
+
+    **Affected Components:**
+
+    - ``glance.common.scripts.utils.get_image_data_iter()``
+    - ``glance.common.utils.validate_import_uri()``
+    - ``glance.async_.flows._internal_plugins.glance_download._DownloadGlanceImage.execute()``
+    - ``glance.async_.flows.api_image_import._ImportMetadata.execute()``
+    - ``glance.async_.flows.ovf_process._OVF_Process._get_ova_iter_objects()``
+
+    **Impact:**
+
+    - Severity: High (web-download, glance-download), Critical (OVF processing)
+    - Affected Versions: All versions prior to this fix
+    - Workaround: Administrators can temporarily disable affected import
+      methods by removing them from the ``enabled_import_methods``
+      configuration option
+
+    Bugs `#2138602 <https://bugs.launchpad.net/glance/+bug/2138602>`_,
+    `#2138672 <https://bugs.launchpad.net/glance/+bug/2138672>`_,
+    `#2138675 <https://bugs.launchpad.net/glance/+bug/2138675>`_
+
+fixes:
+  - |
+    `Bug 2138602 <https://bugs.launchpad.net/glance/+bug/2138602>`__: Fixed SSRF
+    vulnerability in web-download import method via HTTP redirect bypass and
+    IP address encoding bypass. Added redirect validation using
+    ``SafeRedirectHandler`` and IP address validation using Python's
+    ``ipaddress`` module to reject encoded IP formats and prevent bypass
+    attacks.
+
+    `Bug 2138672 <https://bugs.launchpad.net/glance/+bug/2138672>`__: Fixed SSRF
+    vulnerability in glance-download import method via HTTP redirect bypass.
+    Added redirect validation for both image data download and metadata fetch
+    operations.
+
+    `Bug 2138675 <https://bugs.launchpad.net/glance/+bug/2138675>`__: Fixed SSRF
+    vulnerability in OVF processing functionality which lacked URI validation.
+    Added URI validation and redirect validation to prevent SSRF attacks when
+    processing OVA files.
