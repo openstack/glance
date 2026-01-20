@@ -15,9 +15,11 @@
 
 import hashlib
 import http.client as http
+import http.server as http_server
 import os
 import subprocess
 import tempfile
+import threading
 import time
 import urllib
 import uuid
@@ -386,6 +388,164 @@ class TestImages(functional.FunctionalTest):
         self.assertEqual(http.OK, response.status_code)
         images = jsonutils.loads(response.text)['images']
         self.assertEqual(0, len(images))
+
+        self.stop_servers()
+
+    def test_web_download_redirect_validation(self):
+        """Test that redirect destinations are validated."""
+        self.config(allowed_ports=[80], group='import_filtering_opts')
+        self.config(disallowed_hosts=['127.0.0.1'],
+                    group='import_filtering_opts')
+        self.start_servers(**self.__dict__.copy())
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({
+            'name': 'redirect-test', 'type': 'kernel',
+            'disk_format': 'aki', 'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        # Try to import with redirect to disallowed host
+        # The redirect destination should be validated and rejected
+        # Create a local redirect server
+        def _get_redirect_handler_class():
+            class RedirectHTTPRequestHandler(
+                    http_server.BaseHTTPRequestHandler):
+                def do_GET(self):
+                    self.send_response(http.FOUND)
+                    self.send_header('Location', 'http://127.0.0.1:80/')
+                    self.end_headers()
+                    return
+
+                def log_message(self, *args, **kwargs):
+                    return
+
+        server_address = ('127.0.0.1', 0)
+        handler_class = _get_redirect_handler_class()
+        redirect_httpd = http_server.HTTPServer(server_address, handler_class)
+        redirect_port = redirect_httpd.socket.getsockname()[1]
+        redirect_thread = threading.Thread(target=redirect_httpd.serve_forever)
+        redirect_thread.daemon = True
+        redirect_thread.start()
+
+        redirect_uri = 'http://127.0.0.1:%s/' % redirect_port
+        path = self._url('/v2/images/%s/import' % image_id)
+        headers = self._headers({
+            'content-type': 'application/json',
+            'X-Roles': 'admin',
+        })
+        data = jsonutils.dumps({'method': {
+            'name': 'web-download',
+            'uri': redirect_uri
+        }})
+
+        # Import request may be accepted (202) but should fail during
+        # processing when redirect destination is validated
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.ACCEPTED, response.status_code)
+
+        # Clean up redirect server
+        redirect_httpd.shutdown()
+        redirect_httpd.server_close()
+
+        # Wait for the task to process and verify it failed
+        # The redirect validation in get_image_data_iter should prevent
+        # access to disallowed host (127.0.0.1)
+        time.sleep(5)  # Give task time to process
+
+        # Verify the task failed due to redirect validation
+        path = self._url('/v2/images/%s/tasks' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        tasks = jsonutils.loads(response.text)['tasks']
+        tasks = sorted(tasks, key=lambda t: t['updated_at'])
+        self.assertGreater(len(tasks), 0)
+        task = tasks[-1]
+        self.assertEqual('failure', task['status'])
+
+        # Verify the image status is still queued (not active)
+        # since the import failed - this proves the SSRF was prevented
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        image = jsonutils.loads(response.text)
+        self.assertEqual('queued', image['status'])
+        # Image should not have checksum or size since import failed
+        # If checksum/size exist, it means data was downloaded (SSRF succeeded)
+        self.assertIsNone(image.get('checksum'))
+        # Image should not have size since import failed
+        self.assertIsNone(image.get('size'))
+
+        # Clean up
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        self.stop_servers()
+
+    def test_web_download_ip_normalization(self):
+        """Test that encoded IP addresses are normalized and blocked."""
+        self.config(allowed_ports=[80], group='import_filtering_opts')
+        self.config(disallowed_hosts=['127.0.0.1'],
+                    group='import_filtering_opts')
+        self.start_servers(**self.__dict__.copy())
+
+        # Create an image
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({
+            'name': 'ip-encoding-test', 'type': 'kernel',
+            'disk_format': 'aki', 'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        # Test that encoded IP (2130706433 = 127.0.0.1) is blocked
+        # after normalization
+        encoded_ip_uri = 'http://2130706433:80/'
+        path = self._url('/v2/images/%s/import' % image_id)
+        headers = self._headers({
+            'content-type': 'application/json',
+            'X-Roles': 'admin',
+        })
+        data = jsonutils.dumps({'method': {
+            'name': 'web-download',
+            'uri': encoded_ip_uri
+        }})
+        # Should be rejected because encoded IP normalizes to 127.0.0.1
+        # which is in disallowed_hosts
+        # Validation happens at API level, so should return 400
+        response = requests.post(path, headers=headers, data=data)
+        # Should be rejected with 400 Bad Request
+        self.assertEqual(400, response.status_code)
+
+        # Test octal integer encoded IP (017700000001 = 127.0.0.1)
+        octal_int_uri = 'http://017700000001:80/'
+        data = jsonutils.dumps({'method': {
+            'name': 'web-download',
+            'uri': octal_int_uri
+        }})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(400, response.status_code)
+
+        # Test octal dotted-decimal encoded IP (0177.0.0.01 = 127.0.0.1)
+        octal_dotted_uri = 'http://0177.0.0.01:80/'
+        data = jsonutils.dumps({'method': {
+            'name': 'web-download',
+            'uri': octal_dotted_uri
+        }})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(400, response.status_code)
+
+        # Clean up
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
 
         self.stop_servers()
 

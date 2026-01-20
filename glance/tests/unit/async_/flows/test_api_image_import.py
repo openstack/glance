@@ -25,6 +25,7 @@ import taskflow
 import glance.async_.flows.api_image_import as import_flow
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
+from glance.common.scripts import utils as script_utils
 from glance import context
 from glance.domain import ExtraProperties
 from glance import gateway
@@ -1176,6 +1177,11 @@ class TestImportMetadata(test_utils.BaseTestCase):
             'extra_metadata': 'hello',
             'size': '12345'
         }
+        mock_opener = mock.MagicMock()
+        mock_payload = mock.MagicMock()
+        mock_payload.read.return_value = b'{"status": "active"}'
+        mock_opener.open.return_value.__enter__.return_value = mock_payload
+        mock_request.build_opener.return_value = mock_opener
         task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
                                            self.context, self.wrapper,
                                            self.import_req)
@@ -1184,6 +1190,7 @@ class TestImportMetadata(test_utils.BaseTestCase):
             'https://other.cloud.foo/image/v2/images/%s' % (
                 IMAGE_ID1),
             headers={'X-Auth-Token': self.context.auth_token})
+        mock_request.build_opener.assert_called_once()
         mock_gge.assert_called_once_with(self.context, 'RegionTwo', 'public')
         action.set_image_attribute.assert_called_once_with(
             disk_format='qcow2',
@@ -1212,8 +1219,11 @@ class TestImportMetadata(test_utils.BaseTestCase):
     @mock.patch('glance.async_.utils.get_glance_endpoint')
     def test_execute_fail_remote_glance_unreachable(self, mock_gge, mock_r):
         action = self.wrapper.__enter__.return_value
-        mock_r.urlopen.side_effect = urllib.error.HTTPError(
+        mock_gge.return_value = 'https://other.cloud.foo/image'
+        mock_opener = mock.MagicMock()
+        mock_opener.open.side_effect = urllib.error.HTTPError(
             '/file', 400, 'Test Fail', {}, None)
+        mock_r.build_opener.return_value = mock_opener
         task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
                                            self.context, self.wrapper,
                                            self.import_req)
@@ -1231,6 +1241,11 @@ class TestImportMetadata(test_utils.BaseTestCase):
         mock_json.loads.return_value = {
             'status': 'queued',
         }
+        mock_opener = mock.MagicMock()
+        mock_payload = mock.MagicMock()
+        mock_payload.read.return_value = b'{"status": "queued"}'
+        mock_opener.open.return_value.__enter__.return_value = mock_payload
+        mock_request.build_opener.return_value = mock_opener
         task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
                                            self.context, self.wrapper,
                                            self.import_req)
@@ -1254,6 +1269,11 @@ class TestImportMetadata(test_utils.BaseTestCase):
             'os_hash': 'hash',
             'extra_metadata': 'hello',
         }
+        mock_opener = mock.MagicMock()
+        mock_payload = mock.MagicMock()
+        mock_payload.read.return_value = b'{"status": "active"}'
+        mock_opener.open.return_value.__enter__.return_value = mock_payload
+        mock_request.build_opener.return_value = mock_opener
         task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
                                            self.context, self.wrapper,
                                            self.import_req)
@@ -1262,6 +1282,7 @@ class TestImportMetadata(test_utils.BaseTestCase):
             'https://other.cloud.foo/image/v2/images/%s' % (
                 IMAGE_ID1),
             headers={'X-Auth-Token': self.context.auth_token})
+        mock_request.build_opener.assert_called_once()
         mock_gge.assert_called_once_with(self.context, 'RegionTwo', 'public')
         action.set_image_attribute.assert_called_once_with(
             disk_format='qcow2',
@@ -1270,6 +1291,71 @@ class TestImportMetadata(test_utils.BaseTestCase):
             'hw:numa_nodes': '2',
             'os_hash': 'hash'
         })
+
+    @mock.patch('urllib.request')
+    @mock.patch('glance.async_.utils.get_glance_endpoint')
+    def test_import_metadata_redirect_validation(self, mock_gge,
+                                                 mock_request):
+        """Test redirect destinations are validated during metadata fetch."""
+        mock_gge.return_value = 'https://other.cloud.foo/image'
+        task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
+                                           self.context, self.wrapper,
+                                           self.import_req)
+        mock_opener = mock.MagicMock()
+        # Simulate redirect to disallowed URL
+        mock_opener.open.side_effect = exception.ImportTaskError(
+            "Redirect to disallowed URL: http://127.0.0.1:5000/")
+        mock_request.build_opener.return_value = mock_opener
+        self.assertRaises(exception.ImportTaskError, task.execute)
+        # Verify SafeRedirectHandler is used
+        mock_request.build_opener.assert_called_once()
+        # Verify the handler passed is SafeRedirectHandler
+        call_args = mock_request.build_opener.call_args
+        # Check if SafeRedirectHandler class or instance is in args
+        found_handler = (
+            any(isinstance(arg, script_utils.SafeRedirectHandler)
+                for arg in call_args.args) or
+            script_utils.SafeRedirectHandler in call_args.args)
+        self.assertTrue(
+            found_handler,
+            "SafeRedirectHandler should be used for redirect validation")
+
+    @mock.patch('urllib.request')
+    @mock.patch('glance.async_.flows.api_image_import.json')
+    @mock.patch('glance.async_.utils.get_glance_endpoint')
+    def test_import_metadata_uses_safe_redirect_handler(self, mock_gge,
+                                                        mock_json,
+                                                        mock_request):
+        """Test that SafeRedirectHandler is used and allows valid redirects."""
+        mock_gge.return_value = 'https://other.cloud.foo/image'
+        mock_json.loads.return_value = {
+            'status': 'active',
+            'disk_format': 'qcow2',
+            'container_format': 'bare',
+            'size': '12345'
+        }
+        mock_opener = mock.MagicMock()
+        mock_payload = mock.MagicMock()
+        mock_payload.read.return_value = b'{"status": "active"}'
+        mock_opener.open.return_value.__enter__.return_value = mock_payload
+        mock_request.build_opener.return_value = mock_opener
+        task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
+                                           self.context, self.wrapper,
+                                           self.import_req)
+        # Execute should succeed with valid redirect
+        result = task.execute()
+        # Verify build_opener was called with SafeRedirectHandler
+        mock_request.build_opener.assert_called_once()
+        call_args = mock_request.build_opener.call_args
+        found_handler = (
+            any(isinstance(arg, script_utils.SafeRedirectHandler)
+                for arg in call_args.args) or
+            script_utils.SafeRedirectHandler in call_args.args)
+        self.assertTrue(
+            found_handler,
+            "SafeRedirectHandler should be passed to build_opener")
+        # Verify execution succeeded (handler allows valid redirects)
+        self.assertEqual(12345, result)
 
     def test_revert_rollback_metadata_value(self):
         action = self.wrapper.__enter__.return_value

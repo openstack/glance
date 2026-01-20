@@ -24,6 +24,7 @@ from taskflow.patterns import linear_flow as lf
 from glance.async_.flows._internal_plugins import base_download
 from glance.async_ import utils
 from glance.common import exception
+from glance.common.scripts import utils as script_utils
 from glance.common import utils as common_utils
 from glance.i18n import _, _LI, _LE
 
@@ -66,7 +67,9 @@ class _DownloadGlanceImage(base_download.BaseDownload):
             token = self.context.auth_token
             request = urllib.request.Request(image_download_url,
                                              headers={'X-Auth-Token': token})
-            data = urllib.request.urlopen(request)
+            opener = urllib.request.build_opener(
+                script_utils.SafeRedirectHandler)
+            data = opener.open(request)
         except Exception as e:
             with excutils.save_and_reraise_exception():
                 LOG.error(
