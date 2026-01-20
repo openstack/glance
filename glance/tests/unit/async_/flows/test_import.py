@@ -17,7 +17,6 @@ import io
 import json
 import os
 from unittest import mock
-import urllib
 
 import glance_store
 from oslo_concurrency import processutils as putils
@@ -371,9 +370,15 @@ class TestImportTask(test_utils.BaseTestCase):
         self.img_repo.get.return_value = self.image
         img_factory.new_image.side_effect = create_image
 
-        with mock.patch.object(urllib.request, 'urlopen') as umock:
-            content = b"TEST_IMAGE"
-            umock.return_value = io.BytesIO(content)
+        # Mock get_image_data_iter to avoid actual network calls
+        # and to work with our SafeRedirectHandler changes
+        content = b"TEST_IMAGE"
+        mock_response = io.BytesIO(content)
+        mock_response.headers = {}
+
+        with mock.patch(
+                'glance.common.scripts.utils.get_image_data_iter') as umock:
+            umock.return_value = mock_response
 
             with mock.patch.object(import_flow, "_get_import_flows") as imock:
                 imock.return_value = (x for x in [])

@@ -15,6 +15,8 @@
 #    under the License.
 
 import io
+import ipaddress
+import socket
 import tempfile
 from unittest import mock
 from urllib.parse import urlparse
@@ -1014,6 +1016,182 @@ class ImportURITestCase(test_utils.BaseTestCase):
                         group='import_filtering_opts')
             self.assertTrue(utils.validate_import_uri("ftp://foo.com:8484"))
             mock_run.assert_called_once()
+
+    def test_validate_import_uri_ip_rejection(self):
+        """Test that encoded IP addresses are rejected (not normalized)."""
+        # Test that standard IP is blocked when in blacklist
+        self.config(disallowed_hosts=['127.0.0.1'],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[80],
+                    group='import_filtering_opts')
+        self.assertFalse(utils.validate_import_uri("http://127.0.0.1:80/"))
+
+        # Test that encoded IP (decimal) is rejected
+        result = utils.validate_import_uri("http://2130706433:80/")
+        self.assertFalse(result)
+
+        # Test that shorthand IP addresses are rejected
+        self.assertFalse(utils.validate_import_uri("http://127.1:80/"))
+        self.assertFalse(utils.validate_import_uri("http://10.1:80/"))
+        self.assertFalse(utils.validate_import_uri("http://192.168.1:80/"))
+
+        # Test with allowed host - encoded IP should still be rejected
+        self.config(disallowed_hosts=[],
+                    group='import_filtering_opts')
+        self.config(allowed_hosts=['127.0.0.1'],
+                    group='import_filtering_opts')
+        self.assertTrue(utils.validate_import_uri("http://127.0.0.1:80/"))
+        self.assertFalse(utils.validate_import_uri("http://2130706433:80/"))
+
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
+    def test_normalize_hostname(self, mock_getaddrinfo):
+        """Test the normalize_hostname function."""
+        # Test standard IPv4 - should return normalized
+        result = utils.normalize_hostname("127.0.0.1")
+        self.assertEqual(result, "127.0.0.1")
+        mock_getaddrinfo.assert_not_called()
+
+        # Test standard IPv4 with different format - should normalize
+        result = utils.normalize_hostname("192.168.1.1")
+        self.assertEqual(result, "192.168.1.1")
+        mock_getaddrinfo.assert_not_called()
+
+        # Test encoded IP (decimal) - should be rejected (fails isdigit check)
+        result = utils.normalize_hostname("2130706433")
+        self.assertIsNone(result)
+        mock_getaddrinfo.assert_not_called()
+
+        # Test hex encoded IP - should be rejected (DNS resolution fails)
+        mock_getaddrinfo.reset_mock()
+        mock_getaddrinfo.side_effect = socket.gaierror(
+            "Name or service not known")
+        result = utils.normalize_hostname("0x7f000001")
+        self.assertIsNone(result)
+        mock_getaddrinfo.assert_called_once_with("0x7f000001.", 80)
+
+        # Test octal integer encoded IP - should be rejected
+        # (fails isdigit check)
+        mock_getaddrinfo.reset_mock()
+        result = utils.normalize_hostname("017700000001")
+        self.assertIsNone(result)
+        mock_getaddrinfo.assert_not_called()
+
+        # Test octal dotted-decimal encoded IP - should be rejected
+        # (all digits/dots)
+        mock_getaddrinfo.reset_mock()
+        result = utils.normalize_hostname("0177.0.0.01")
+        self.assertIsNone(result)
+        mock_getaddrinfo.assert_not_called()
+
+        # Test mixed octal/decimal dotted-decimal - should be rejected
+        # (all digits/dots)
+        mock_getaddrinfo.reset_mock()
+        result = utils.normalize_hostname("0177.0.0.1")
+        self.assertIsNone(result)
+        mock_getaddrinfo.assert_not_called()
+
+        # Test IPv6 address - should normalize to standard format
+        mock_getaddrinfo.reset_mock()
+        result = utils.normalize_hostname("::1")
+        self.assertEqual(result, "::1")
+        mock_getaddrinfo.assert_not_called()
+
+        result = utils.normalize_hostname("2001:db8::1")
+        self.assertEqual(result, "2001:db8::1")
+        mock_getaddrinfo.assert_not_called()
+
+        # Test IPv6-mapped IPv4 - should normalize
+        result = utils.normalize_hostname("::ffff:127.0.0.1")
+        ipv6 = ipaddress.IPv6Address(result)
+        expected = ipaddress.IPv6Address("::ffff:127.0.0.1")
+        self.assertEqual(ipv6, expected)
+        mock_getaddrinfo.assert_not_called()
+
+        # Test shorthand IP addresses - should be rejected
+        mock_getaddrinfo.reset_mock()
+        result = utils.normalize_hostname("127.1")
+        self.assertIsNone(result)
+        mock_getaddrinfo.assert_not_called()
+
+        result = utils.normalize_hostname("10.1")
+        self.assertIsNone(result)
+
+        result = utils.normalize_hostname("192.168.1")
+        self.assertIsNone(result)
+
+        # Test valid hostname - should return unchanged
+        mock_getaddrinfo.reset_mock()
+        mock_getaddrinfo.side_effect = None
+        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        result = utils.normalize_hostname("example.com")
+        self.assertEqual(result, "example.com")
+        mock_getaddrinfo.assert_called_once_with("example.com.", 80)
+
+        # Test valid domain starting with digit (3m.com)
+        mock_getaddrinfo.reset_mock()
+        mock_getaddrinfo.side_effect = None
+        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        result = utils.normalize_hostname("3m.com")
+        self.assertEqual(result, "3m.com")
+        mock_getaddrinfo.assert_called_once_with("3m.com.", 80)
+
+        # Test valid domain starting with 0x (0xdeadbeef.com)
+        mock_getaddrinfo.reset_mock()
+        mock_getaddrinfo.side_effect = None
+        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        result = utils.normalize_hostname("0xdeadbeef.com")
+        self.assertEqual(result, "0xdeadbeef.com")
+        mock_getaddrinfo.assert_called_once_with(
+            "0xdeadbeef.com.", 80)
+
+        # Test invalid/unresolvable hostname - should be rejected
+        mock_getaddrinfo.reset_mock()
+        mock_getaddrinfo.side_effect = socket.gaierror(
+            "Name or service not known")
+        result = utils.normalize_hostname("invalid-hostname-12345")
+        self.assertIsNone(result)
+        mock_getaddrinfo.assert_called_once_with(
+            "invalid-hostname-12345.", 80)
+
+    def test_validate_import_uri_ipv6_validation(self):
+        """Test IPv6 addresses are properly validated against blacklist."""
+        # Test that IPv6 localhost is blocked when in blacklist
+        self.config(disallowed_hosts=['::1'],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[80],
+                    group='import_filtering_opts')
+        # IPv6 addresses in URLs are in brackets, but urlparse removes them
+        # So we test with the hostname directly
+        self.assertFalse(
+            utils.validate_import_uri("http://[::1]:80/"))
+
+        # Test that IPv6 address not in blacklist is allowed
+        self.config(disallowed_hosts=[],
+                    group='import_filtering_opts')
+        self.config(allowed_hosts=['2001:db8::1'],
+                    group='import_filtering_opts')
+        self.assertTrue(utils.validate_import_uri("http://[2001:db8::1]:80/"))
+
+        # Test that IPv6 localhost can be blocked separately from IPv4
+        # This ensures IPv6 addresses are properly normalized and can be
+        # blacklisted
+        self.config(disallowed_hosts=['127.0.0.1'],
+                    group='import_filtering_opts')
+        self.config(allowed_hosts=[],  # Explicitly clear whitelist
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[80],
+                    group='import_filtering_opts')
+        # IPv6 localhost should pass if not in blacklist (no whitelist)
+        # The fix ensures IPv6 is normalized and can be blacklisted separately
+        result = utils.validate_import_uri("http://[::1]:80/")
+        # If ::1 is not in blacklist and no whitelist, it will pass
+        # Administrators should add both IPv4 and IPv6 to blacklist if needed
+        self.assertTrue(result)
+
+        # Test that IPv6 can be blacklisted separately
+        self.config(disallowed_hosts=['127.0.0.1', '::1'],
+                    group='import_filtering_opts')
+        self.assertFalse(utils.validate_import_uri("http://[::1]:80/"))
 
 
 class S3CredentialUpdateTestCase(test_utils.BaseTestCase):

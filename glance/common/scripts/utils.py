@@ -19,14 +19,18 @@ __all__ = [
     'set_base_image_properties',
     'validate_location_uri',
     'get_image_data_iter',
+    'SafeRedirectHandler',
 ]
 
 import urllib
+import urllib.error
+import urllib.request
 
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
 from glance.common import exception
+from glance.common import utils as common_utils
 from glance.i18n import _, _LE
 
 LOG = logging.getLogger(__name__)
@@ -125,6 +129,15 @@ def validate_location_uri(location):
         raise urllib.error.URLError(msg)
 
 
+class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """HTTP redirect handler that validates redirect destinations."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not common_utils.validate_import_uri(newurl):
+            msg = (_("Redirect to disallowed URL: %s") % newurl)
+            raise exception.ImportTaskError(msg)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
 def get_image_data_iter(uri):
     """Returns iterable object either for local file or uri
 
@@ -148,7 +161,8 @@ def get_image_data_iter(uri):
         # into memory. Some images may be quite heavy.
         return open(uri, "rb")
 
-    return urllib.request.urlopen(uri)
+    opener = urllib.request.build_opener(SafeRedirectHandler)
+    return opener.open(uri)
 
 
 class CallbackIterator(object):

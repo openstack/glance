@@ -18,6 +18,7 @@ import http.client as http
 import os
 import subprocess
 import tempfile
+import time
 from unittest import mock
 import urllib
 import uuid
@@ -499,6 +500,109 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         # Clean up: Delete the image and verify the list is empty
         self.api_methods.delete_image(image_id)
         self.api_methods.verify_empty_image_list()
+
+    def test_web_download_redirect_validation(self):
+        """Test that redirect destinations are validated."""
+        self.config(allowed_ports=[80], group='import_filtering_opts')
+        self.config(disallowed_hosts=['127.0.0.1'],
+                    group='import_filtering_opts')
+        self.start_server()
+
+        # Create an image
+        image_id = self.api_methods.create_and_verify_image(
+            name='redirect-test', type='kernel',
+            disk_format='aki', container_format='aki')
+
+        # Try to import with redirect to disallowed host
+        # The redirect destination should be validated and rejected
+        redirect_uri = (
+            'http://httpbin.org/redirect-to?url='
+            'http://127.0.0.1:80/')
+        data = {'method': {
+            'name': 'web-download',
+            'uri': redirect_uri
+        }}
+
+        # Import request may be accepted (202) but should fail during
+        # processing when redirect destination is validated
+        self.api_methods.import_image(image_id, data=data)
+
+        # Wait for the task to process and verify it failed
+        # The redirect validation in get_image_data_iter should prevent
+        # access to disallowed host (127.0.0.1)
+        time.sleep(2)  # Give task time to process
+
+        # Verify the task failed due to redirect validation
+        task = self._get_latest_task(image_id)
+        self.assertEqual('failure', task['status'])
+
+        # Verify the image status is still queued (not active)
+        # since the import failed - this proves the SSRF was prevented
+        path = f'/v2/images/{image_id}'
+        resp = self.api_methods.api_get(
+            path, headers=self.api_methods._headers())
+        self.assertEqual(200, resp.status_code)
+        image = resp.json
+        self.assertEqual('queued', image['status'])
+        # Image should not have checksum or size since import failed
+        # If checksum/size exist, it means data was downloaded (SSRF succeeded)
+        self.assertIsNone(image.get('checksum'))
+        # Image should not have size since import failed
+        self.assertIsNone(image.get('size'))
+
+        # Clean up
+        self.api_methods.delete_image(image_id)
+
+    def test_web_download_ip_normalization(self):
+        """Test that encoded IP addresses are normalized and blocked."""
+        self.config(allowed_ports=[80], group='import_filtering_opts')
+        self.config(disallowed_hosts=['127.0.0.1'],
+                    group='import_filtering_opts')
+        self.start_server()
+
+        # Create an image
+        image_id = self.api_methods.create_and_verify_image(
+            name='ip-encoding-test', type='kernel',
+            disk_format='aki', container_format='aki')
+
+        # Test that encoded IP (2130706433 = 127.0.0.1) is blocked
+        # after normalization
+        encoded_ip_uri = 'http://2130706433:80/'
+        data = {'method': {
+            'name': 'web-download',
+            'uri': encoded_ip_uri
+        }}
+
+        # Should be rejected because encoded IP normalizes to 127.0.0.1
+        # which is in disallowed_hosts
+        # Validation happens at API level, so should return 400
+        path = f'/v2/images/{image_id}/import'
+        headers = self.api_methods._headers(
+            {'content-type': 'application/json', 'X-Roles': 'admin'})
+        resp = self.api_methods.api_post(path, headers=headers, json=data)
+        # Should be rejected with 400 Bad Request
+        self.assertEqual(400, resp.status_code)
+
+        # Test octal integer encoded IP (017700000001 = 127.0.0.1)
+        octal_int_uri = 'http://017700000001:80/'
+        data = {'method': {
+            'name': 'web-download',
+            'uri': octal_int_uri
+        }}
+        resp = self.api_methods.api_post(path, headers=headers, json=data)
+        self.assertEqual(400, resp.status_code)
+
+        # Test octal dotted-decimal encoded IP (0177.0.0.01 = 127.0.0.1)
+        octal_dotted_uri = 'http://0177.0.0.01:80/'
+        data = {'method': {
+            'name': 'web-download',
+            'uri': octal_dotted_uri
+        }}
+        resp = self.api_methods.api_post(path, headers=headers, json=data)
+        self.assertEqual(400, resp.status_code)
+
+        # Clean up
+        self.api_methods.delete_image(image_id)
 
     @mock.patch('glance.location._check_image_location', new=lambda *a: 0)
     @mock.patch('glance.location.ImageRepoProxy._set_acls', new=lambda *a: 0)

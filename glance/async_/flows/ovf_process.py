@@ -18,6 +18,7 @@ import re
 import shutil
 import tarfile
 import urllib
+import urllib.request
 
 from defusedxml import ElementTree as etree
 
@@ -27,6 +28,9 @@ from oslo_serialization import jsonutils as json
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
 
+from glance.common import exception
+from glance.common.scripts import utils as script_utils
+from glance.common import utils as common_utils
 from glance.i18n import _, _LW
 
 LOG = logging.getLogger(__name__)
@@ -75,7 +79,13 @@ class _OVF_Process(task.Task):
             uri = uri.split("file://")[-1]
             return open(uri, "rb")
 
-        return urllib.request.urlopen(uri)
+        if not common_utils.validate_import_uri(uri):
+            msg = (_("URI for OVF processing does not pass filtering: %s") %
+                   uri)
+            raise exception.ImportTaskError(msg)
+
+        opener = urllib.request.build_opener(script_utils.SafeRedirectHandler)
+        return opener.open(uri)
 
     def execute(self, image_id, file_path):
         """
