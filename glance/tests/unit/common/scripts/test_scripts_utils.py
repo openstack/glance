@@ -15,6 +15,8 @@
 
 from unittest import mock
 import urllib
+import urllib.error
+import urllib.request
 
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
@@ -230,3 +232,115 @@ class TestCallbackIterator(test_utils.BaseTestCase):
         # call the callback with that.
         callback.assert_has_calls([mock.call(2, 2),
                                    mock.call(1, 3)])
+
+
+class TestSafeRedirectHandler(test_utils.BaseTestCase):
+    """Test SafeRedirectHandler for redirect validation."""
+
+    def setUp(self):
+        super(TestSafeRedirectHandler, self).setUp()
+
+    @mock.patch('glance.common.utils.validate_import_uri')
+    def test_redirect_to_allowed_url(self, mock_validate):
+        """Test redirect to allowed URL is accepted."""
+        mock_validate.return_value = True
+        handler = script_utils.SafeRedirectHandler()
+
+        req = mock.Mock()
+        req.full_url = 'http://example.com/redirect'
+        fp = mock.Mock()
+        headers = mock.Mock()
+
+        # Redirect to allowed URL
+        # redirect_request should call super().redirect_request
+        # which returns a request
+        with mock.patch.object(urllib.request.HTTPRedirectHandler,
+                               'redirect_request') as mock_super:
+            mock_super.return_value = mock.Mock()
+            result = handler.redirect_request(
+                req, fp, 302, 'Found', headers, 'http://allowed.com/target'
+            )
+
+        mock_validate.assert_called_once_with('http://allowed.com/target')
+        # Should return a request object (not None)
+        self.assertIsNotNone(result)
+
+    @mock.patch('glance.common.utils.validate_import_uri')
+    def test_redirect_to_disallowed_url(self, mock_validate):
+        """Test redirect to disallowed URL raises error."""
+        mock_validate.return_value = False
+        handler = script_utils.SafeRedirectHandler()
+
+        req = mock.Mock()
+        req.full_url = 'http://example.com/redirect'
+        fp = mock.Mock()
+        headers = mock.Mock()
+
+        # Redirect to disallowed URL should raise ImportTaskError
+        self.assertRaises(
+            exception.ImportTaskError,
+            handler.redirect_request,
+            req, fp, 302, 'Found', headers, 'http://127.0.0.1:5000/'
+        )
+
+        mock_validate.assert_called_once_with('http://127.0.0.1:5000/')
+
+
+class TestGetImageDataIter(test_utils.BaseTestCase):
+    """Test get_image_data_iter with redirect validation."""
+
+    def setUp(self):
+        super(TestGetImageDataIter, self).setUp()
+
+    @mock.patch('builtins.open', create=True)
+    @mock.patch('glance.common.scripts.utils.os.path.getsize')
+    def test_get_image_data_iter_file_uri(self, mock_getsize, mock_open):
+        """Test file:// URI handling."""
+        mock_file = mock.Mock()
+        mock_open.return_value = mock_file
+        mock_getsize.return_value = 42
+
+        result = script_utils.get_image_data_iter("file:///tmp/test.img")
+
+        mock_getsize.assert_called_once_with("/tmp/test.img")
+        mock_open.assert_called_once_with("/tmp/test.img", "rb")
+        self.assertEqual(result, (mock_file, 42))
+
+    @mock.patch('urllib.request.build_opener')
+    def test_get_image_data_iter_http_uri(self, mock_build_opener):
+        """Test HTTP URI handling with redirect validation."""
+        mock_opener = mock.Mock()
+        mock_response = mock.Mock()
+        mock_opener.open.return_value = mock_response
+        mock_build_opener.return_value = mock_opener
+
+        result = script_utils.get_image_data_iter("http://example.com/image")
+
+        # Should use build_opener with SafeRedirectHandler
+        mock_build_opener.assert_called_once()
+        # Check that SafeRedirectHandler was passed as an argument
+        call_args = mock_build_opener.call_args
+        # build_opener can be called with *args or keyword args
+        # Check both positional and keyword arguments
+        found_handler = False
+        if call_args.args:
+            found_handler = any(
+                isinstance(arg, script_utils.SafeRedirectHandler)
+                for arg in call_args.args)
+        if not found_handler and call_args.kwargs:
+            found_handler = any(
+                isinstance(v, script_utils.SafeRedirectHandler)
+                for v in call_args.kwargs.values())
+        # Also check if it's passed as a handler class (not instance)
+        if not found_handler:
+            found_handler = (
+                script_utils.SafeRedirectHandler in call_args.args)
+
+        self.assertTrue(
+            found_handler,
+            "SafeRedirectHandler should be passed to build_opener")
+
+        mock_opener.open.assert_called_once_with("http://example.com/image")
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0], mock_response)
+        self.assertEqual(result[1], 0)

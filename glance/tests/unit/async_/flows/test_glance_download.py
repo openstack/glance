@@ -22,7 +22,8 @@ from oslo_utils.fixture import uuidsentinel
 
 from glance.async_.flows._internal_plugins import glance_download
 from glance.async_.flows import api_image_import
-import glance.common.exception
+from glance.common import exception
+from glance.common.scripts import utils as script_utils
 import glance.context
 from glance import domain
 import glance.tests.utils as test_utils
@@ -72,37 +73,49 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
         self.image_repo.get.return_value = mock.MagicMock(
             extra_properties={'os_glance_import_task': self.task_id})
 
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
     @mock.patch.object(filesystem.Store, 'add')
     @mock.patch('glance.async_.utils.get_glance_endpoint')
-    def test_glance_download(self, mock_gge, mock_add):
+    def test_glance_download(self, mock_gge, mock_add, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
         mock_gge.return_value = 'https://other.cloud.foo/image'
         glance_download_task = glance_download._DownloadGlanceImage(
             self.context, self.task.task_id, self.task_type,
             self.action_wrapper, ['foo'],
             'RegionTwo', uuidsentinel.remote_image, 'public')
         with mock.patch('urllib.request') as mock_request:
+            mock_opener = mock.MagicMock()
+            mock_response = mock.MagicMock()
+            mock_opener.open.return_value = mock_response
+            mock_request.build_opener.return_value = mock_opener
             mock_add.return_value = ["path", 12345]
             self.assertEqual(glance_download_task.execute(12345), "path")
             mock_add.assert_called_once_with(
                 self.image_id,
-                mock_request.urlopen.return_value, 0)
+                mock_response, 0)
             mock_request.Request.assert_called_once_with(
                 'https://other.cloud.foo/image/v2/images/%s/file' % (
                     uuidsentinel.remote_image),
                 headers={'X-Auth-Token': self.context.auth_token})
+            mock_request.build_opener.assert_called_once()
         mock_gge.assert_called_once_with(self.context, 'RegionTwo', 'public')
 
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
     @mock.patch.object(filesystem.Store, 'add')
     @mock.patch('glance.async_.utils.get_glance_endpoint')
-    def test_glance_download_failed(self, mock_gge, mock_add):
+    def test_glance_download_failed(self, mock_gge, mock_add,
+                                    mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
         mock_gge.return_value = 'https://other.cloud.foo/image'
         glance_download_task = glance_download._DownloadGlanceImage(
             self.context, self.task.task_id, self.task_type,
             self.action_wrapper, ['foo'],
             'RegionTwo', uuidsentinel.remote_image, 'public')
         with mock.patch('urllib.request') as mock_request:
-            mock_request.urlopen.side_effect = urllib.error.HTTPError(
+            mock_opener = mock.MagicMock()
+            mock_opener.open.side_effect = urllib.error.HTTPError(
                 '/file', 400, 'Test Fail', {}, None)
+            mock_request.build_opener.return_value = mock_opener
             self.assertRaises(urllib.error.HTTPError,
                               glance_download_task.execute,
                               12345)
@@ -127,21 +140,28 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
                           glance_download_task.execute, 12345)
         mock_request.assert_not_called()
 
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
     @mock.patch.object(filesystem.Store, 'add')
     @mock.patch('glance.async_.utils.get_glance_endpoint')
-    def test_glance_download_size_mismatch(self, mock_gge, mock_add):
+    def test_glance_download_size_mismatch(self, mock_gge, mock_add,
+                                           mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
         mock_gge.return_value = 'https://other.cloud.foo/image'
         glance_download_task = glance_download._DownloadGlanceImage(
             self.context, self.task.task_id, self.task_type,
             self.action_wrapper, ['foo'],
             'RegionTwo', uuidsentinel.remote_image, 'public')
         with mock.patch('urllib.request') as mock_request:
+            mock_opener = mock.MagicMock()
+            mock_response = mock.MagicMock()
+            mock_opener.open.return_value = mock_response
+            mock_request.build_opener.return_value = mock_opener
             mock_add.return_value = ["path", 1]
             self.assertRaises(glance.common.exception.ImportTaskError,
                               glance_download_task.execute, 12345)
             mock_add.assert_called_once_with(
                 self.image_id,
-                mock_request.urlopen.return_value, 0)
+                mock_response, 0)
             mock_request.Request.assert_called_once_with(
                 'https://other.cloud.foo/image/v2/images/%s/file' % (
                     uuidsentinel.remote_image),
@@ -165,3 +185,70 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
         mock_validate.assert_called_once_with(
             'https://other.cloud.foo/image/v2/images/%s/file' % (
                 uuidsentinel.remote_image))
+
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
+    @mock.patch('urllib.request')
+    @mock.patch('glance.async_.utils.get_glance_endpoint')
+    def test_glance_download_redirect_validation(self, mock_gge,
+                                                 mock_request,
+                                                 mock_getaddrinfo):
+        """Test redirect destinations are validated during image download."""
+        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        mock_gge.return_value = 'https://other.cloud.foo/image'
+        glance_download_task = glance_download._DownloadGlanceImage(
+            self.context, self.task.task_id, self.task_type,
+            self.action_wrapper, ['foo'],
+            'RegionTwo', uuidsentinel.remote_image, 'public')
+        mock_opener = mock.MagicMock()
+        # Simulate redirect to disallowed URL
+        mock_opener.open.side_effect = exception.ImportTaskError(
+            "Redirect to disallowed URL: http://127.0.0.1:5000/")
+        mock_request.build_opener.return_value = mock_opener
+        self.assertRaises(exception.ImportTaskError,
+                          glance_download_task.execute, 12345)
+        # Verify SafeRedirectHandler is used
+        mock_request.build_opener.assert_called_once()
+        # Verify the handler passed is SafeRedirectHandler
+        call_args = mock_request.build_opener.call_args
+        # Check if SafeRedirectHandler class or instance is in args
+        found_handler = (
+            any(isinstance(arg, script_utils.SafeRedirectHandler)
+                for arg in call_args.args) or
+            script_utils.SafeRedirectHandler in call_args.args)
+        self.assertTrue(
+            found_handler,
+            "SafeRedirectHandler should be used for redirect validation")
+
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
+    @mock.patch.object(filesystem.Store, 'add')
+    @mock.patch('urllib.request')
+    @mock.patch('glance.async_.utils.get_glance_endpoint')
+    def test_glance_download_uses_safe_redirect_handler(
+            self, mock_gge, mock_request, mock_add, mock_getaddrinfo):
+        """Test that SafeRedirectHandler is used and allows valid execution."""
+        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        mock_gge.return_value = 'https://other.cloud.foo/image'
+        glance_download_task = glance_download._DownloadGlanceImage(
+            self.context, self.task.task_id, self.task_type,
+            self.action_wrapper, ['foo'],
+            'RegionTwo', uuidsentinel.remote_image, 'public')
+        mock_opener = mock.MagicMock()
+        mock_response = mock.MagicMock()
+        mock_opener.open.return_value = mock_response
+        mock_request.build_opener.return_value = mock_opener
+        mock_add.return_value = ["path", 12345]
+        result = glance_download_task.execute(12345)
+        # Verify build_opener was called with SafeRedirectHandler
+        mock_request.build_opener.assert_called_once()
+        # Verify SafeRedirectHandler was passed
+        call_args = mock_request.build_opener.call_args
+        # Check if SafeRedirectHandler class or instance is in args
+        found_handler = (
+            any(isinstance(arg, script_utils.SafeRedirectHandler)
+                for arg in call_args.args) or
+            script_utils.SafeRedirectHandler in call_args.args)
+        self.assertTrue(
+            found_handler,
+            "SafeRedirectHandler should be passed to build_opener")
+        # Verify execution succeeded (handler allows valid execution)
+        self.assertEqual("path", result)
