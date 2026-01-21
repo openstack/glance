@@ -266,21 +266,12 @@ Related options:
 """)),
 ]
 
-store_opts = [
-    cfg.DictOpt('enabled_backends',
-                help=_('Key:Value pair of store identifier and store type. '
-                       'In case of multiple backends should be separated '
-                       'using comma.')),
-]
-
-
 LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
 CONF.register_opts(bind_opts)
 CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
-CONF.register_opts(store_opts)
 profiler_opts.set_defaults(CONF)
 
 ASYNC_EVENTLET_THREAD_POOL_LIST = []

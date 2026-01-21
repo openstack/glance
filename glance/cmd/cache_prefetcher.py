@@ -53,7 +53,7 @@ def main():
     try:
         config.parse_cache_args()
         logging.setup(CONF, 'glance')
-        CONF.import_opt('enabled_backends', 'glance.common.wsgi')
+        CONF.import_opt('enabled_backends', 'glance.common.config')
         glance.async_.set_threadpool_model('eventlet')
 
         if CONF.enabled_backends:

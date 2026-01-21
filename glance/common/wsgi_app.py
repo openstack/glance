@@ -30,7 +30,7 @@ from glance import sqlite_migration
 
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
-CONF.import_opt("enabled_backends", "glance.common.wsgi")
+CONF.import_opt("enabled_backends", "glance.common.config")
 logging.register_options(CONF)
 LOG = logging.getLogger(__name__)
 

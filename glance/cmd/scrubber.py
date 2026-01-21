@@ -53,7 +53,7 @@ def main():
 
         config.parse_args()
         logging.setup(CONF, 'glance')
-        CONF.import_opt('enabled_backends', 'glance.common.wsgi')
+        CONF.import_opt('enabled_backends', 'glance.common.config')
 
         if CONF.enabled_backends:
             glance_store.register_store_opts(CONF)

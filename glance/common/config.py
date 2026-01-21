@@ -658,6 +658,13 @@ be the same interpreter running Glance itself. However, in some situations
 interpreter and an alternative value must be set.""")),
 ]
 
+store_opts = [
+    cfg.DictOpt('enabled_backends',
+                help=_('Key:Value pair of store identifier and store type. '
+                       'In case of multiple backends should be separated '
+                       'using comma.')),
+]
+
 
 CONF = cfg.CONF
 CONF.register_opts(paste_deploy_opts, group='paste_deploy')
@@ -665,6 +672,7 @@ CONF.register_opts(image_format_opts, group='image_format')
 CONF.register_opts(task_opts, group='task')
 CONF.register_opts(common_opts)
 CONF.register_opts(wsgi_opts, group='wsgi')
+CONF.register_opts(store_opts)
 
 
 def parse_args(args=None, usage=None, default_config_files=None):
