@@ -7,7 +7,7 @@
         {
             "id":"fast",
             "description": "Provides quick access to your image data",
-            "default": true
+            "default": "true"
         },
         {
             "id":"cheap",
@@ -16,7 +16,7 @@
         {
             "id":"special",
             "description": "Need a plausible description here that doesn't expose the store type",
-            "read-only": true
+            "read-only": "true"
         }
     ]
 }
