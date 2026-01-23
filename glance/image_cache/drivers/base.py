@@ -90,7 +90,7 @@ class Driver(object):
             ]
 
         """
-        return NotImplementedError
+        raise NotImplementedError
 
     def is_cached(self, image_id):
         """
