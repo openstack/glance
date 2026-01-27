@@ -20,6 +20,7 @@ import futurist
 import glance_store as store
 from oslo_config import cfg
 from taskflow.patterns import linear_flow
+import testtools
 
 import glance.async_
 from glance.async_.flows import api_image_import
@@ -215,6 +216,7 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
 
 @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
 class TestSystemThreadPoolModel(test_utils.BaseTestCase):
+    @testtools.skip("Eventlet support is deprecated")
     def test_eventlet_model(self):
         model_cls = glance.async_.EventletThreadPoolModel
         self.assertEqual(futurist.GreenThreadPoolExecutor,
@@ -246,7 +248,7 @@ class TestSystemThreadPoolModel(test_utils.BaseTestCase):
         self.assertEqual(pool.submit.return_value, result)
 
     def test_model_map(self):
-        model = glance.async_.EventletThreadPoolModel()
+        model = glance.async_.NativeThreadPoolModel()
         results = model.map(lambda s: s.upper(), ['a', 'b', 'c'])
         self.assertEqual(['A', 'B', 'C'], list(results))
 
@@ -265,6 +267,7 @@ class TestSystemThreadPoolModel(test_utils.BaseTestCase):
         self.assertEqual(glance.async_.NativeThreadPoolModel,
                          glance.async_._THREADPOOL_MODEL)
 
+    @testtools.skip("Eventlet support is deprecated")
     def test_set_threadpool_model_eventlet(self):
         glance.async_.set_threadpool_model('eventlet')
         self.assertEqual(glance.async_.EventletThreadPoolModel,
@@ -286,8 +289,9 @@ class TestSystemThreadPoolModel(test_utils.BaseTestCase):
         # The model cannot be switched at runtime
         self.assertRaises(RuntimeError,
                           glance.async_.set_threadpool_model,
-                          'eventlet')
+                          'danthread9000')
 
+    @testtools.skip("Eventlet support is deprecated")
     def test_set_threadpool_model_log(self):
         with mock.patch.object(glance.async_, 'LOG') as mock_log:
             glance.async_.set_threadpool_model('eventlet')

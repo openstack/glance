@@ -72,6 +72,8 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
         self.config(group='glance_store', default_store='file')
         glance.cmd.api.main()
         # Make sure we declared the system threadpool model as eventlet
+        # NOTE: This will be updated to 'native' when glance/cmd/api.py
+        # is migrated
         mock_set_model.assert_called_once_with('eventlet')
 
     @mock.patch.object(prefetcher, 'Prefetcher')

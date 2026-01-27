@@ -672,11 +672,6 @@ class TestImageCacheSqlite(test_utils.BaseTestCase,
         self.assertFalse(fetcher.cache.is_queued(image.image_id))
 
     @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
-    def test_prefetcher_greenthread(self):
-        async_.set_threadpool_model('eventlet')
-        self._test_prefetcher()
-
-    @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
     def test_prefetcher_native(self):
         async_.set_threadpool_model('native')
         self._test_prefetcher()

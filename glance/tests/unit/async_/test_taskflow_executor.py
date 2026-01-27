@@ -35,7 +35,7 @@ class TestTaskExecutor(test_utils.BaseTestCase):
     def setUp(self):
         # NOTE(danms): Makes sure that we have a model set to something
         glance.async_._THREADPOOL_MODEL = None
-        glance.async_.set_threadpool_model('eventlet')
+        glance.async_.set_threadpool_model('native')
 
         super(TestTaskExecutor, self).setUp()
 
@@ -82,7 +82,7 @@ class TestTaskExecutor(test_utils.BaseTestCase):
     def test_fetch_an_executor_parallel(self):
         self.config(engine_mode='parallel', group='taskflow_executor')
         pool = self.executor._fetch_an_executor()
-        self.assertIsInstance(pool, futurist.GreenThreadPoolExecutor)
+        self.assertIsInstance(pool, futurist.ThreadPoolExecutor)
 
     def test_fetch_an_executor_serial(self):
         pool = self.executor._fetch_an_executor()
