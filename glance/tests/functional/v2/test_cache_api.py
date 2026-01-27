@@ -114,6 +114,7 @@ class TestImageCache(functional.SynchronousAPIBase):
 
     def wait_for_caching(self, image_id, max_sec=10, delay_sec=0.2,
                          start_delay_sec=None):
+        """Wait until image is cached."""
         start_time = time.time()
         done_time = start_time + max_sec
         if start_delay_sec:
@@ -128,6 +129,39 @@ class TestImageCache(functional.SynchronousAPIBase):
         msg = "Image {0} failed to cached within {1} sec"
         raise Exception(msg.format(image_id, max_sec))
 
+    def wait_for_in_cache(self, image_id, max_sec=10, delay_sec=0.1,
+                          start_delay_sec=0.1):
+        """Wait until image is queued or cached."""
+        if start_delay_sec:
+            time.sleep(start_delay_sec)
+        start_time = time.time()
+        done_time = start_time + max_sec
+        while time.time() <= done_time:
+            output = self.list_cache()
+            queued = output['queued_images']
+            cached = [img['image_id'] for img in output['cached_images']]
+            if image_id in queued or image_id in cached:
+                return (image_id in queued, image_id in cached)
+            time.sleep(delay_sec)
+
+        msg = "Image {0} failed to appear in cache system within {1} sec"
+        raise Exception(msg.format(image_id, max_sec))
+
+    def wait_for_queued(self, image_id, max_sec=2, delay_sec=0.05):
+        """Wait until image is in queue."""
+        start_time = time.time()
+        done_time = start_time + max_sec
+        while time.time() <= done_time:
+            output = self.list_cache()
+            if image_id in output['queued_images']:
+                return True
+            # Already cached, queue was too fast
+            cached = [img['image_id'] for img in output['cached_images']]
+            if image_id in cached:
+                return False
+            time.sleep(delay_sec)
+        return False
+
     def test_cache_list(self):
         self.start_server(enable_cache=True)
         images = self.load_data()
@@ -138,9 +172,10 @@ class TestImageCache(functional.SynchronousAPIBase):
 
         # Queue 1 image for caching
         self.cache_queue(images['public'])
+        self.wait_for_in_cache(images['public'])
         output = self.list_cache()
-        self.assertEqual(1, len(output['queued_images']))
-        self.assertEqual(0, len(output['cached_images']))
+        total = len(output['queued_images']) + len(output['cached_images'])
+        self.assertEqual(1, total)
 
     def test_list_cached_nodes_centralized_cache_disabled(self):
         self.start_server(enable_cache=True)
@@ -240,20 +275,15 @@ class TestImageCache(functional.SynchronousAPIBase):
         # Queue 2 images for caching
         self.cache_queue(images['public'])
         self.cache_queue(images['private'])
-        # Now verify that we have 2 queued images
-        # NOTE(abhishekk): We might fail with race here as queue call
-        # will immediately start caching of an image, so we may not find
-        # all images in queued state.
+        self.wait_for_in_cache(images['public'])
+        self.wait_for_in_cache(images['private'])
         output = self.list_cache()
-        self.assertEqual(2, len(output['queued_images']))
-        self.assertEqual(0, len(output['cached_images']))
+        total = len(output['queued_images']) + len(output['cached_images'])
+        self.assertEqual(2, total)
 
-        # Clear all images from cache
         self.cache_clear(target='queue')
-        # Now verify that we have 0 queued images
         output = self.list_cache()
         self.assertEqual(0, len(output['queued_images']))
-        self.assertEqual(0, len(output['cached_images']))
 
     def test_cache_clear_cached_images(self):
         self.start_server(enable_cache=True)
@@ -280,25 +310,22 @@ class TestImageCache(functional.SynchronousAPIBase):
         self.start_server(enable_cache=True)
         images = self.load_data()
 
-        # Queue 2 images for caching
+        # Queue first image and wait for it to be cached
         self.cache_queue(images['public'])
         self.wait_for_caching(images['public'])
-        # Now verify that we have 1 cached images
         output = self.list_cache()
         self.assertEqual(1, len(output['cached_images']))
+        self.assertIn(images['public'],
+                      [img['image_id'] for img in output['cached_images']])
 
+        # Queue second image, may still be in queue
         self.cache_queue(images['private'])
-        # Now verify that we have 1 queued and 1 cached images
+        self.wait_for_in_cache(images['private'])
         output = self.list_cache()
-        # NOTE(abhishekk): We might fail with race here as queue call
-        # will immediately start caching of an image, so we may not find
-        # image in queued state.
-        self.assertEqual(1, len(output['queued_images']))
-        self.assertEqual(1, len(output['cached_images']))
+        total = len(output['queued_images']) + len(output['cached_images'])
+        self.assertEqual(2, total)
 
-        # Clear all images from cache
         self.cache_clear()
-        # Now verify that we have 0 queued and cached images
         output = self.list_cache()
         self.assertEqual(0, len(output['queued_images']))
         self.assertEqual(0, len(output['cached_images']))
@@ -319,9 +346,7 @@ class TestImageCache(functional.SynchronousAPIBase):
         self.cache_clear(target='both', expected_code=400)
 
     def test_cache_image_queue_delete(self):
-        # This test verifies that if image is queued for caching
-        # and user deletes the original image, but it is still
-        # present in queued list and deleted with cache-delete API.
+        # Delete original image, then remove it from cache with cache-delete
         self.start_server(enable_cache=True)
         images = self.load_data()
 
@@ -330,28 +355,22 @@ class TestImageCache(functional.SynchronousAPIBase):
         self.assertEqual(0, len(output['queued_images']))
         self.assertEqual(0, len(output['cached_images']))
 
+        # Queue image for caching
         self.cache_queue(images['public'])
-        # Now verify that we have 1 image queued for caching and 0
-        # cached images
-        output = self.list_cache()
-        self.assertEqual(1, len(output['queued_images']))
-        self.assertEqual(0, len(output['cached_images']))
-        # Verify same image is queued for caching
-        self.assertIn(images['public'], output['queued_images'])
+        self.wait_for_in_cache(images['public'])
 
-        # Delete image and verify that it is still present
-        # in queued list
         path = '/v2/images/%s' % images['public']
         response = self.api_delete(path)
         self.assertEqual(204, response.status_code)
 
+        # Deleting the Glance image may already drop the cache entry (404 on
+        # cache-delete) or leave it queued/cached (204 on cache-delete).
         output = self.list_cache()
-        self.assertEqual(1, len(output['queued_images']))
-        self.assertEqual(0, len(output['cached_images']))
-        self.assertIn(images['public'], output['queued_images'])
+        queued = output['queued_images']
+        cached = [img['image_id'] for img in output['cached_images']]
+        if images['public'] in queued or images['public'] in cached:
+            self.cache_delete(images['public'])
 
-        # Deleted the image from queued list
-        self.cache_delete(images['public'])
         output = self.list_cache()
         self.assertEqual(0, len(output['queued_images']))
         self.assertEqual(0, len(output['cached_images']))

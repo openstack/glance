@@ -23,6 +23,7 @@ from unittest import mock
 
 from oslo_utils import fileutils
 
+from glance.api.v2 import cached_images
 from glance.image_cache.drivers import centralized_db
 from glance.tests import functional
 
@@ -91,6 +92,39 @@ class TestCentralizedDb(functional.SynchronousAPIBase):
             time.sleep(delay_sec)
 
         msg = "Image {0} failed to cached within {1} sec"
+        raise Exception(msg.format(image_id, max_sec))
+
+    def wait_for_queued(self, image_id, max_sec=2, delay_sec=0.05,
+                        start_delay_sec=0.1):
+        """Wait until image is in queue."""
+        if start_delay_sec:
+            time.sleep(start_delay_sec)
+        start_time = time.time()
+        done_time = start_time + max_sec
+        while time.time() <= done_time:
+            if self.driver.is_queued(image_id):
+                return True
+            # If it's already cached, it was processed too quickly
+            if self.driver.is_cached(image_id):
+                return False
+            time.sleep(delay_sec)
+        return False
+
+    def wait_for_in_cache_system(self, image_id, max_sec=2, delay_sec=0.05,
+                                 start_delay_sec=0.1):
+        """Wait until image is queued or cached."""
+        if start_delay_sec:
+            time.sleep(start_delay_sec)
+        start_time = time.time()
+        done_time = start_time + max_sec
+        while time.time() <= done_time:
+            if (self.driver.is_queued(image_id) or
+                    self.driver.is_cached(image_id)):
+                return (self.driver.is_queued(image_id),
+                        self.driver.is_cached(image_id))
+            time.sleep(delay_sec)
+
+        msg = "Image {0} failed to appear in cache system within {1} sec"
         raise Exception(msg.format(image_id, max_sec))
 
     def list_cache(self, expected_code=200):
@@ -227,7 +261,9 @@ class TestCentralizedDb(functional.SynchronousAPIBase):
 
         # Now queue image for caching
         path = '/v2/cache/%s' % images['public']
-        self.api_put(path)
+        self.list_cache()
+        with mock.patch.object(cached_images.WORKER, 'submit'):
+            self.api_put(path)
         self.assertTrue(self.driver.is_queued(images['public']))
 
     def test_delete_cached_image(self):
@@ -294,17 +330,18 @@ class TestCentralizedDb(functional.SynchronousAPIBase):
         # Verify deleting non-existing image from queued dir will not fail
         self.driver.delete_queued_image('fake-image-id')
 
-        # Now queue imgae for caching
+        # Queue without starting the cache worker so we can assert queue state.
         path = '/v2/cache/%s' % images['public']
-        self.api_put(path)
-        # verify image is queued
-        self.assertTrue(self.driver.is_queued(images['public']))
-        self.assertEqual(1, len(self.driver.get_queued_images()))
+        self.list_cache()
+        with mock.patch.object(cached_images.WORKER, 'submit'):
+            self.api_put(path)
 
-        # Delete the image from queued dir
+        self.assertTrue(self.wait_for_queued(images['public']))
+        self.assertEqual(1, len(self.driver.get_queued_images()))
+        self.assertIn(images['public'], self.driver.get_queued_images())
+
         self.driver.delete_queued_image(images['public'])
 
-        # Verify image is deleted from cache
         self.assertFalse(self.driver.is_queued(images['public']))
         self.assertEqual(0, len(self.driver.get_queued_images()))
 
@@ -313,31 +350,32 @@ class TestCentralizedDb(functional.SynchronousAPIBase):
         images = self.load_data()
         self.driver = centralized_db.Driver()
         self.driver.configure()
-        # Verify no image is cached yet
+        # Verify no image is queued yet
         self.assertEqual(0, len(self.driver.get_queued_images()))
 
         # Verify delete call should not fail even if no images are queued
         self.driver.delete_all_queued_images()
+        self.assertEqual(0, len(self.driver.get_queued_images()))
 
-        # Now queue the image
+        # Queue without starting the cache worker so we can assert queue state.
         path = '/v2/cache/%s' % images['public']
-        self.api_put(path)
-        # verify image is queued
-        self.assertTrue(self.driver.is_queued(images['public']))
-        self.assertEqual(1, len(self.driver.get_queued_images()))
+        self.list_cache()
+        with mock.patch.object(cached_images.WORKER, 'submit'):
+            self.api_put(path)
+        self.assertTrue(self.wait_for_queued(images['public']))
 
-        # Now queue another image
         path = '/v2/cache/%s' % images['private']
-        self.api_put(path)
-        # verify image is queued
-        self.assertTrue(self.driver.is_queued(images['private']))
+        with mock.patch.object(cached_images.WORKER, 'submit'):
+            self.api_put(path)
+        self.assertTrue(self.wait_for_queued(images['private']))
         self.assertEqual(2, len(self.driver.get_queued_images()))
 
-        # Delete all the images form queued dir
+        # Only queued images are deleted, not cached ones
         self.driver.delete_all_queued_images()
 
-        # Verify images are deleted from cache
         self.assertEqual(0, len(self.driver.get_queued_images()))
+        self.assertFalse(self.driver.is_queued(images['public']))
+        self.assertFalse(self.driver.is_queued(images['private']))
 
     def test_clean(self):
         self.start_server(enable_cache=True)

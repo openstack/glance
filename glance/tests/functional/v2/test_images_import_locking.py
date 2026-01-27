@@ -32,12 +32,10 @@ LOG = logging.getLogger(__name__)
 
 
 class TestImageImportLocking(functional.SynchronousAPIBase):
-    def _get_image_import_task(self, image_id, task_id=None):
-        if task_id is None:
-            image = self.api_get('/v2/images/%s' % image_id).json
-            task_id = image['os_glance_import_task']
-
-        return self.api_get('/v2/tasks/%s' % task_id).json
+    def _get_image_import_task(self, image_id, task_id=None,
+                               exclude_task_ids=None):
+        return self._get_import_task(image_id, task_id=task_id,
+                                     exclude_task_ids=exclude_task_ids)
 
     def _test_import_copy(self, warp_time=False):
         self.start_server()
@@ -128,8 +126,8 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
             self.assertEqual('failure', first_import_task['status'])
             self.assertEqual('Expired lock preempted',
                              first_import_task['message'])
-            # The new task should be off and running
-            self.assertEqual('processing', second_import_task['status'])
+            second_import_task = self._wait_for_task_status(
+                second_import_task['id'], 'processing')
         else:
             # We didn't bust the lock, so we didn't start another
             # task, so confirm it hasn't changed

@@ -373,8 +373,13 @@ class Driver(base.Driver):
         files = [f for f in self.get_cache_files(self.queue_dir)]
         items = []
         for path in files:
-            mtime = os.path.getmtime(path)
-            items.append((mtime, os.path.basename(path)))
+            # CacheWorker can delete queue file while we list them.
+            # Skip file if it is already gone.
+            try:
+                mtime = os.path.getmtime(path)
+                items.append((mtime, os.path.basename(path)))
+            except (OSError, FileNotFoundError):
+                continue
 
         items.sort()
         return [image_id for (modtime, image_id) in items]

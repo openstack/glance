@@ -453,6 +453,9 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         # Ensure size is updated accordingly
         self.api_methods.verify_image_size(image_id, expected_size=5)
 
+        # Wait for import to finish before delete
+        self._wait_for_import(image_id)
+
         # Clean up: Delete the image and verify the list is empty
         self.api_methods.delete_image(image_id)
         self.api_methods.verify_empty_image_list()
