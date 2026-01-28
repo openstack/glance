@@ -6419,6 +6419,133 @@ class TestImageSchemaDeterminePropertyBasis(test_utils.BaseTestCase):
         self.assertTrue(schema.properties['disk_format'].get('is_base', True))
 
 
+class TestImageSchemaWithRequiredProperties(test_utils.BaseTestCase):
+
+    def test_get_schema_flat_format_without_required(self):
+        """Test flat format (backward compatibility) without required"""
+        custom_properties = {
+            'os_distro': {
+                'type': 'string',
+                'description': 'Operating system distribution'
+            }
+        }
+        schema = glance.api.v2.images.get_schema(custom_properties)
+
+        # Schema should not have required field
+        self.assertIsNone(schema.required)
+        # Custom property should be present
+        self.assertIn('os_distro', schema.properties)
+        self.assertFalse(schema.properties['os_distro'].get('is_base', True))
+
+    def test_get_schema_extended_format_with_multiple_required(self):
+        """Test extended format with multiple required fields"""
+        custom_properties = {
+            'properties': {
+                'os_distro': {
+                    'type': 'string',
+                    'description': 'Operating system distribution'
+                },
+                'architecture': {
+                    'type': 'string',
+                    'description': 'CPU architecture'
+                },
+                'os_version': {
+                    'type': 'string',
+                    'description': 'OS version'
+                }
+            },
+            'required': ['os_distro', 'architecture']
+        }
+        schema = glance.api.v2.images.get_schema(custom_properties)
+
+        # Schema should have both required fields
+        self.assertIsNotNone(schema.required)
+        self.assertEqual(2, len(schema.required))
+        self.assertIn('os_distro', schema.required)
+        self.assertIn('architecture', schema.required)
+        self.assertNotIn('os_version', schema.required)
+
+    def test_get_schema_extended_format_without_required_key(self):
+        """Test extended format without required key"""
+        custom_properties = {
+            'properties': {
+                'os_distro': {
+                    'type': 'string',
+                    'description': 'Operating system distribution'
+                }
+            }
+        }
+        schema = glance.api.v2.images.get_schema(custom_properties)
+
+        # Schema should not have required field when not specified
+        self.assertIsNone(schema.required)
+        self.assertIn('os_distro', schema.properties)
+
+    def test_get_schema_extended_format_with_empty_required(self):
+        """Test extended format with empty required array"""
+        custom_properties = {
+            'properties': {
+                'os_distro': {
+                    'type': 'string',
+                    'description': 'Operating system distribution'
+                }
+            },
+            'required': []
+        }
+        schema = glance.api.v2.images.get_schema(custom_properties)
+
+        # Empty required list should result in None
+        self.assertIsNone(schema.required)
+
+    def test_load_custom_properties_flat_format(self):
+        """Test load_custom_properties with flat format"""
+        with mock.patch.object(CONF, 'find_file') as mock_find:
+            mock_find.return_value = '/etc/glance/schema-image.json'
+            with mock.patch('builtins.open', mock.mock_open(
+                 read_data='{"os_distro": {"type": "string"}}')):
+                result = glance.api.v2.images.load_custom_properties()
+
+                self.assertIn('properties', result)
+                self.assertIn('required', result)
+                self.assertIsNotNone(result['properties'])
+                self.assertIsNone(result['required'])
+                self.assertIn('os_distro', result['properties'])
+
+    def test_load_custom_properties_extended_format(self):
+        """Test load_custom_properties with extended format"""
+        extended_data = '''{
+            "properties": {
+                "os_distro": {"type": "string"},
+                "architecture": {"type": "string"}
+            },
+            "required": ["os_distro"]
+        }'''
+        with mock.patch.object(CONF, 'find_file') as mock_find:
+            mock_find.return_value = '/etc/glance/schema-image.json'
+            with mock.patch('builtins.open', mock.mock_open(
+                 read_data=extended_data)):
+                result = glance.api.v2.images.load_custom_properties()
+
+                self.assertIn('properties', result)
+                self.assertIn('required', result)
+                self.assertIsNotNone(result['properties'])
+                self.assertIsNotNone(result['required'])
+                self.assertEqual(['os_distro'], result['required'])
+                self.assertIn('os_distro', result['properties'])
+                self.assertIn('architecture', result['properties'])
+
+    def test_load_custom_properties_file_not_found(self):
+        """Test load_custom_properties when file is not found"""
+        with mock.patch.object(CONF, 'find_file') as mock_find:
+            mock_find.return_value = None
+            result = glance.api.v2.images.load_custom_properties()
+
+            self.assertIn('properties', result)
+            self.assertIn('required', result)
+            self.assertEqual({}, result['properties'])
+            self.assertIsNone(result['required'])
+
+
 class TestMultiImagesController(base.MultiIsolatedUnitTest):
 
     def setUp(self):
