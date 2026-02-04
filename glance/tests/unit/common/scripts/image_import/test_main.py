@@ -147,3 +147,35 @@ class TestImageImport(test_utils.BaseTestCase):
         # for the four reads we did, including the final obligatory one
         callback.assert_has_calls([mock.call(110, 110),
                                    mock.call(160, 270)])
+
+    @mock.patch.object(utils, 'get_image_data_iter')
+    def test_set_image_data_passes_image_size_to_set_data(
+            self, mock_image_iter):
+        """Verify set_data called with size=image.size when image.size set."""
+        uri = 'http://www.example.com'
+        image = mock.Mock(size=1024)
+        mock_image_iter.return_value = test_utils.FakeHTTPResponse()
+
+        image_import_script.set_image_data(image, uri, None)
+
+        image.set_data.assert_called_once()
+        call_kwargs = image.set_data.call_args[1]
+        self.assertEqual(1024, call_kwargs['size'])
+        self.assertIn('backend', call_kwargs)
+        self.assertIn('set_active', call_kwargs)
+
+    @mock.patch.object(utils, 'get_image_data_iter')
+    def test_set_image_data_passes_zero_size_when_image_size_is_none(
+            self, mock_image_iter):
+        """Verify set_data is called with size=0 when image.size is None."""
+        uri = 'http://www.example.com'
+        image = mock.Mock(size=None)
+        mock_image_iter.return_value = test_utils.FakeHTTPResponse()
+
+        image_import_script.set_image_data(image, uri, None)
+
+        image.set_data.assert_called_once()
+        call_kwargs = image.set_data.call_args[1]
+        self.assertEqual(0, call_kwargs['size'])
+        self.assertIn('backend', call_kwargs)
+        self.assertIn('set_active', call_kwargs)
