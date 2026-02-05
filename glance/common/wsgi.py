@@ -56,8 +56,17 @@ from glance.i18n import _, _LE, _LI, _LW
 from glance import sqlite_migration
 
 
+EVENTLET_DEPRECATION_REASON = """
+Eventlet has been deprecated in the Gazpacho release. Glance is now expected to
+be run using WSGI. The eventlet implementation will be removed in either the H
+release or the I release.
+"""
+
+
 bind_opts = [
     cfg.HostAddressOpt('bind_host',
+                       deprecated_reason=EVENTLET_DEPRECATION_REASON,
+                       deprecated_since='Gazpacho',
                        default='0.0.0.0',
                        help=_("""
 IP address to bind the glance servers to.
@@ -79,6 +88,8 @@ Related options:
 """)),
 
     cfg.PortOpt('bind_port',
+                deprecated_reason=EVENTLET_DEPRECATION_REASON,
+                deprecated_since='Gazpacho',
                 help=_("""
 Port number on which the server will listen.
 
@@ -98,6 +109,8 @@ Related options:
 
 socket_opts = [
     cfg.IntOpt('backlog',
+               deprecated_reason=EVENTLET_DEPRECATION_REASON,
+               deprecated_since='Gazpacho',
                default=4096,
                min=1,
                help=_("""
@@ -119,6 +132,8 @@ Related options:
 """)),
 
     cfg.IntOpt('tcp_keepidle',
+               deprecated_reason=EVENTLET_DEPRECATION_REASON,
+               deprecated_since='Gazpacho',
                default=600,
                min=1,
                help=_("""
@@ -141,8 +156,11 @@ Related options:
 """)),
 ]
 
+
 eventlet_opts = [
     cfg.IntOpt('workers',
+               deprecated_reason=EVENTLET_DEPRECATION_REASON,
+               deprecated_since='Gazpacho',
                min=0,
                help=_("""
 Number of Glance worker processes to start.
@@ -170,6 +188,8 @@ Related options:
 """)),
 
     cfg.IntOpt('max_header_line',
+               deprecated_reason=EVENTLET_DEPRECATION_REASON,
+               deprecated_since='Gazpacho',
                default=16384,
                min=0,
                help=_("""
@@ -196,6 +216,8 @@ Related options:
 """)),
 
     cfg.BoolOpt('http_keepalive',
+                deprecated_reason=EVENTLET_DEPRECATION_REASON,
+                deprecated_since='Gazpacho',
                 default=True,
                 help=_("""
 Set keep alive option for HTTP over TCP.
@@ -221,6 +243,8 @@ Related options:
 """)),
 
     cfg.IntOpt('client_socket_timeout',
+               deprecated_reason=EVENTLET_DEPRECATION_REASON,
+               deprecated_since='Gazpacho',
                default=900,
                min=0,
                help=_("""
