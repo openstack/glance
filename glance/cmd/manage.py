@@ -554,12 +554,29 @@ def main():
         sys.exit("ERROR: %s" % e)
 
     try:
-        if CONF.command.action.startswith('db'):
-            return CONF.command.action_fn()
+        action_fn = getattr(CONF.command, 'action_fn', None)
+        if action_fn is None:
+            # No action specified, show help for the selected category
+            if hasattr(CONF.command, 'command_object'):
+                command_object = CONF.command.command_object
+                print(_("Available actions for 'db':"))
+                for (action, fn) in methods_of(command_object):
+                    doc = fn.__doc__ or _("No description available")
+                    print(_("\t%s - %s") % (action, doc.split('\n')[0]))
+            else:
+                script_name = sys.argv[0]
+                print("%s category action [<args>]" % script_name)
+                print(_("Available categories:"))
+                for category in CATEGORIES:
+                    print(_("\t%s") % category)
+            sys.exit(2)
+
+        if getattr(CONF.command, 'action', '').startswith('db'):
+            return action_fn()
         else:
             func_kwargs = {}
             for k in CONF.command.action_kwargs:
-                v = getattr(CONF.command, 'action_kwarg_' + k)
+                v = getattr(CONF.command, 'action_kwarg_' + k, None)
                 if v is None:
                     continue
                 if isinstance(v, str):
@@ -567,7 +584,7 @@ def main():
                 func_kwargs[k] = v
             func_args = [encodeutils.safe_decode(arg)
                          for arg in CONF.command.action_args]
-            return CONF.command.action_fn(*func_args, **func_kwargs)
+            return action_fn(*func_args, **func_kwargs)
     except exception.GlanceException as e:
         sys.exit("ERROR: %s" % e)
 
