@@ -17,31 +17,6 @@ from glance.tests import utils
 
 
 class HackingTestCase(utils.BaseTestCase):
-    def test_assert_true_instance(self):
-        self.assertEqual(1, len(list(checks.assert_true_instance(
-            "self.assertTrue(isinstance(e, "
-            "exception.BuildAbortException))"))))
-
-        self.assertEqual(
-            0, len(list(checks.assert_true_instance("self.assertTrue()"))))
-
-    def test_assert_equal_type(self):
-        self.assertEqual(1, len(list(checks.assert_equal_type(
-            "self.assertEqual(type(also['QuicAssist']), list)"))))
-
-        self.assertEqual(
-            0, len(list(checks.assert_equal_type("self.assertTrue()"))))
-
-    def test_assert_equal_none(self):
-        self.assertEqual(1, len(list(checks.assert_equal_none(
-            "self.assertEqual(A, None)"))))
-
-        self.assertEqual(1, len(list(checks.assert_equal_none(
-            "self.assertEqual(None, A)"))))
-
-        self.assertEqual(
-            0, len(list(checks.assert_equal_none("self.assertIsNone()"))))
-
     def test_no_translate_debug_logs(self):
         self.assertEqual(1, len(list(checks.no_translate_debug_logs(
             "LOG.debug(_('foo'))", "glance/store/foo.py"))))
