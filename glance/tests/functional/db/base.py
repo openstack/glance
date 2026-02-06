@@ -411,9 +411,9 @@ class DriverTests(object):
     def test_image_get_not_owned(self):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False, project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
-        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2,
+        ctxt2 = context.RequestContext(is_admin=False, project_id=TENANT2,
                                        auth_token='user:%s:user' % TENANT2)
         image = self.db_api.image_create(
             ctxt1, {'status': 'queued', 'owner': TENANT1})
@@ -657,7 +657,7 @@ class DriverTests(object):
         marker is specified and order is descending
         """
         TENANT1 = str(uuid.uuid4())
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False, project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
         UUIDX = str(uuid.uuid4())
         self.db_api.image_create(ctxt1, {'id': UUIDX,
@@ -679,7 +679,7 @@ class DriverTests(object):
         marker is specified and order is descending
         """
         TENANT1 = str(uuid.uuid4())
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False, project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
         UUIDX = str(uuid.uuid4())
         self.db_api.image_create(ctxt1, {'id': UUIDX,
@@ -701,7 +701,7 @@ class DriverTests(object):
         marker is specified and order is descending
         """
         TENANT1 = str(uuid.uuid4())
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False, project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
         UUIDX = str(uuid.uuid4())
         self.db_api.image_create(ctxt1, {'id': UUIDX,
@@ -723,7 +723,7 @@ class DriverTests(object):
         marker is specified and order is ascending
         """
         TENANT1 = str(uuid.uuid4())
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False, project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
         UUIDX = str(uuid.uuid4())
         self.db_api.image_create(ctxt1, {'id': UUIDX,
@@ -745,7 +745,7 @@ class DriverTests(object):
         marker is specified and order is ascending
         """
         TENANT1 = str(uuid.uuid4())
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False, project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
         UUIDX = str(uuid.uuid4())
         self.db_api.image_create(ctxt1, {'id': UUIDX,
@@ -767,7 +767,7 @@ class DriverTests(object):
         marker is specified and order is ascending
         """
         TENANT1 = str(uuid.uuid4())
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False, project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
         UUIDX = str(uuid.uuid4())
         self.db_api.image_create(ctxt1, {'id': UUIDX,
@@ -797,7 +797,7 @@ class DriverTests(object):
     def test_image_get_all_owned(self):
         TENANT1 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False,
-                                       tenant=TENANT1,
+                                       project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
         UUIDX = str(uuid.uuid4())
         image_meta_data = {'id': UUIDX, 'status': 'queued', 'owner': TENANT1}
@@ -805,7 +805,7 @@ class DriverTests(object):
 
         TENANT2 = str(uuid.uuid4())
         ctxt2 = context.RequestContext(is_admin=False,
-                                       tenant=TENANT2,
+                                       project_id=TENANT2,
                                        auth_token='user:%s:user' % TENANT2)
         UUIDY = str(uuid.uuid4())
         image_meta_data = {'id': UUIDY, 'status': 'queued', 'owner': TENANT2}
@@ -820,7 +820,7 @@ class DriverTests(object):
     def test_image_get_all_owned_checksum(self):
         TENANT1 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False,
-                                       tenant=TENANT1,
+                                       project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
         UUIDX = str(uuid.uuid4())
         CHECKSUM1 = '91264c3edf5972c9f1cb309543d38a5c'
@@ -841,7 +841,7 @@ class DriverTests(object):
 
         TENANT2 = str(uuid.uuid4())
         ctxt2 = context.RequestContext(is_admin=False,
-                                       tenant=TENANT2,
+                                       project_id=TENANT2,
                                        auth_token='user:%s:user' % TENANT2)
         UUIDY = str(uuid.uuid4())
         CHECKSUM2 = '92264c3edf5972c9f1cb309543d38a5c'
@@ -1086,9 +1086,9 @@ class DriverTests(object):
     def test_image_get_multiple_members(self):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False, project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
-        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2,
+        ctxt2 = context.RequestContext(is_admin=False, project_id=TENANT2,
                                        auth_token='user:%s:user' % TENANT2)
         UUIDX = str(uuid.uuid4())
         # We need a shared image and context.owner should not match image
@@ -1137,9 +1137,9 @@ class DriverTests(object):
     def test_is_image_visible(self):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
-        ctxt1 = context.RequestContext(is_admin=False, tenant=TENANT1,
+        ctxt1 = context.RequestContext(is_admin=False, project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
-        ctxt2 = context.RequestContext(is_admin=False, tenant=TENANT2,
+        ctxt2 = context.RequestContext(is_admin=False, project_id=TENANT2,
                                        auth_token='user:%s:user' % TENANT2)
         UUIDX = str(uuid.uuid4())
         # We need a shared image and context.owner should not match image
@@ -1165,12 +1165,12 @@ class DriverTests(object):
     def test_is_community_image_visible(self):
         TENANT1 = str(uuid.uuid4())
         TENANT2 = str(uuid.uuid4())
-        owners_ctxt = context.RequestContext(is_admin=False, tenant=TENANT1,
-                                             auth_token='user:%s:user'
-                                             % TENANT1)
-        viewing_ctxt = context.RequestContext(is_admin=False, user=TENANT2,
-                                              auth_token='user:%s:user'
-                                              % TENANT2)
+        owners_ctxt = context.RequestContext(
+            is_admin=False, project_id=TENANT1,
+            auth_token='user:%s:user' % TENANT1)
+        viewing_ctxt = context.RequestContext(
+            is_admin=False, user_id=TENANT2,
+            auth_token='user:%s:user' % TENANT2)
         UUIDX = str(uuid.uuid4())
         # We need a community image and context.owner should not match image
         # owner
@@ -1464,7 +1464,7 @@ class DriverQuotaTests(test_utils.BaseTestCase):
         super(DriverQuotaTests, self).setUp()
         self.owner_id1 = str(uuid.uuid4())
         self.context1 = context.RequestContext(
-            is_admin=False, user=self.owner_id1, tenant=self.owner_id1,
+            is_admin=False, user_id=self.owner_id1, project_id=self.owner_id1,
             auth_token='%s:%s:user' % (self.owner_id1, self.owner_id1))
         self.db_api = db_tests.get_db(self.config)
         db_tests.reset_db(self.db_api)
@@ -1572,9 +1572,11 @@ class TaskTests(test_utils.BaseTestCase):
         self.admin_id = 'admin'
         self.owner_id = 'user'
         self.adm_context = context.RequestContext(
-            is_admin=True, auth_token='user:admin:admin', tenant=self.admin_id)
+            is_admin=True, auth_token='user:admin:admin',
+            project_id=self.admin_id)
         self.context = context.RequestContext(
-            is_admin=False, auth_token='user:user:user', user=self.owner_id)
+            is_admin=False, auth_token='user:user:user',
+            user_id=self.owner_id)
         self.db_api = db_tests.get_db(self.config)
         self.fixtures = self.build_task_fixtures()
         db_tests.reset_db(self.db_api)
@@ -1669,7 +1671,7 @@ class TaskTests(test_utils.BaseTestCase):
         then = oslo_timeutils.utcnow() + datetime.timedelta(days=365)
         TENANT1 = str(uuid.uuid4())
         ctxt1 = context.RequestContext(is_admin=False,
-                                       tenant=TENANT1,
+                                       project_id=TENANT1,
                                        auth_token='user:%s:user' % TENANT1)
 
         task_values = {'type': 'import', 'status': 'pending',
@@ -1679,7 +1681,7 @@ class TaskTests(test_utils.BaseTestCase):
 
         TENANT2 = str(uuid.uuid4())
         ctxt2 = context.RequestContext(is_admin=False,
-                                       tenant=TENANT2,
+                                       project_id=TENANT2,
                                        auth_token='user:%s:user' % TENANT2)
 
         task_values = {'type': 'export', 'status': 'pending',
@@ -2193,12 +2195,12 @@ class TestVisibility(test_utils.BaseTestCase):
 
     def setup_contexts(self):
         self.admin_context = context.RequestContext(
-            is_admin=True, tenant=self.admin_tenant)
+            is_admin=True, project_id=self.admin_tenant)
         self.admin_none_context = context.RequestContext(
-            is_admin=True, tenant=None)
-        self.tenant1_context = context.RequestContext(tenant=self.tenant1)
-        self.tenant2_context = context.RequestContext(tenant=self.tenant2)
-        self.none_context = context.RequestContext(tenant=None)
+            is_admin=True, project_id=None)
+        self.tenant1_context = context.RequestContext(project_id=self.tenant1)
+        self.tenant2_context = context.RequestContext(project_id=self.tenant2)
+        self.none_context = context.RequestContext(project_id=None)
 
     def build_image_fixtures(self):
         fixtures = []
@@ -2592,7 +2594,7 @@ class TestMembershipVisibility(test_utils.BaseTestCase):
 
     def _user_fixture(self, admin=False):
         tenant_id = str(uuid.uuid4())
-        ctx = context.RequestContext(tenant=tenant_id, is_admin=admin)
+        ctx = context.RequestContext(project_id=tenant_id, is_admin=admin)
         return tenant_id, ctx
 
     def _create_images(self):

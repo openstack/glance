@@ -117,7 +117,7 @@ class TestStoreMultiBackends(utils.BaseTestCase):
 
     @mock.patch("glance.location.signature_utils.get_verifier")
     def test_set_data_calls_upload_to_store(self, msig):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         extra_properties = {
             'img_signature_certificate_uuid': 'UUID',
             'img_signature_hash_method': 'METHOD',
@@ -154,7 +154,7 @@ class TestStoreMultiBackends(utils.BaseTestCase):
         store_api = mock.MagicMock()
         store_api.add_with_multihash.return_value = (
             "rbd://ceph1", 4, "Z", "MH", {"backend": "ceph1"})
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image = glance.location.ImageProxy(image_stub, context,
                                            store_api, self.store_utils)
@@ -172,7 +172,7 @@ class TestStoreMultiBackends(utils.BaseTestCase):
         store_api = mock.MagicMock()
         store_api.add_with_multihash.return_value = (
             "rbd://ceph1", 4, "Z", "MH", {"backend": "ceph1"})
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         extra_properties = {
             'img_signature_certificate_uuid': 'UUID',
             'img_signature_hash_method': 'METHOD',
@@ -198,7 +198,7 @@ class TestStoreMultiBackends(utils.BaseTestCase):
         store_api = mock.MagicMock()
         store_api.add_with_multihash.return_value = (
             "rbd://ceph1", 4, "Z", "MH", {"backend": "ceph1"})
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         extra_properties = {
             'img_signature_certificate_uuid': 'UUID',
             'img_signature_hash_method': 'METHOD',
@@ -250,7 +250,7 @@ class TestStoreImage(utils.BaseTestCase):
                                             self.store_api, self.store_utils)
         self.assertEqual('XXX', image1.get_data())
         # Multiple location support
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image2, image_stub2) = self._add_image(context, UUID2, 'ZZZ', 3)
         location_data = image2.locations[0]
 
@@ -274,7 +274,7 @@ class TestStoreImage(utils.BaseTestCase):
         image2.delete()
 
     def test_image_set_data(self):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         # We are going to pass an iterable data source, so use the
         # FakeStoreAPIReader that actually reads from that data
@@ -290,7 +290,7 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(4, image.virtual_size)
 
     def test_image_set_data_inspector_no_match(self):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'qcow2'
         # We are going to pass an iterable data source, so use the
@@ -311,7 +311,7 @@ class TestStoreImage(utils.BaseTestCase):
             self.assertEqual(0, image.virtual_size)
 
     def test_image_set_data_inspector_unsupported_format(self):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'ami'
         # We are going to pass an iterable data source, so use the
@@ -351,7 +351,7 @@ class TestStoreImage(utils.BaseTestCase):
         return data
 
     def test_image_set_data_inspector_gpt_as_raw_compat(self):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'raw'
         # We are going to pass an iterable data source, so use the
@@ -370,7 +370,7 @@ class TestStoreImage(utils.BaseTestCase):
         self.assertEqual(1024, image.virtual_size)
 
     def test_image_set_data_inspector_format_unsupported_hiding(self):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'ami'
         # We are going to pass an iterable data source, so use the
@@ -386,7 +386,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_set_data_inspector_format_fails_safety_check(self):
         self.config(gpt_safety_checks_nonfatal=[], group='image_format')
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'gpt'
         # We are going to pass an iterable data source, so use the
@@ -405,7 +405,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     def test_image_set_data_gpt_safety_ignored(self):
         self.config(gpt_safety_checks_nonfatal=['mbr'], group='image_format')
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'gpt'
         # We are going to pass an iterable data source, so use the
@@ -433,7 +433,7 @@ class TestStoreImage(utils.BaseTestCase):
             mock_result.format.side_effect = format_inspector.ImageFormatError
         else:
             mock_result.format.__str__.return_value = formats[0]
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'iso'
         store_api = unit_test_utils.FakeStoreAPIReader(max_size=2048)
@@ -478,7 +478,7 @@ class TestStoreImage(utils.BaseTestCase):
         # Make virtual_size fail in some unexpected way
         mock_vs.side_effect = ValueError('some error')
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'qcow2'
         # We are going to pass an iterable data source, so use the
@@ -507,7 +507,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     @mock.patch('oslo_utils.imageutils.format_inspector.InspectWrapper')
     def test_image_set_data_inspector_not_needed(self, mock_inspect):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.virtual_size = 123
         image_stub.container_format = 'gzip'
@@ -529,7 +529,7 @@ class TestStoreImage(utils.BaseTestCase):
         mock_inspect.assert_not_called()
 
     def test_image_set_data_location_metadata(self):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         loc_meta = {'key': 'value5032'}
         store_api = unit_test_utils.FakeStoreAPI(store_metadata=loc_meta)
@@ -550,7 +550,7 @@ class TestStoreImage(utils.BaseTestCase):
                           image.locations[0]['url'], {})
 
     def test_image_set_data_unknown_size(self):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub = ImageStub(UUID2, status='queued', locations=[])
         image_stub.disk_format = 'iso'
         image = glance.location.ImageProxy(image_stub, context,
@@ -578,7 +578,7 @@ class TestStoreImage(utils.BaseTestCase):
 
     @mock.patch('glance.location.LOG')
     def test_image_set_data_valid_signature(self, mock_log):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         extra_properties = {
             'img_signature_certificate_uuid': 'UUID',
             'img_signature_hash_method': 'METHOD',
@@ -598,7 +598,7 @@ class TestStoreImage(utils.BaseTestCase):
             UUID2)
 
     def test_image_set_data_invalid_signature(self):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         extra_properties = {
             'img_signature_certificate_uuid': 'UUID',
             'img_signature_hash_method': 'METHOD',
@@ -619,7 +619,7 @@ class TestStoreImage(utils.BaseTestCase):
             mock_delete.assert_called()
 
     def test_image_set_data_invalid_signature_missing_metadata(self):
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         extra_properties = {
             'img_signature_hash_method': 'METHOD',
             'img_signature_key_type': 'TYPE',
@@ -653,7 +653,7 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_change_append_invalid_location_uri(self):
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
 
         location_bad = {'url': 'unknown://location', 'metadata': {}}
@@ -669,7 +669,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -694,7 +694,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -718,7 +718,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -746,7 +746,7 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_change_extend_invalid_locations_uri(self):
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
 
         location_bad = {'url': 'unknown://location', 'metadata': {}}
@@ -763,7 +763,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -783,7 +783,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -807,7 +807,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -833,7 +833,7 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_change_delete_location(self):
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
 
         del image1.locations[0]
@@ -849,7 +849,7 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_change_insert_invalid_location_uri(self):
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
 
         location_bad = {'url': 'unknown://location', 'metadata': {}}
@@ -865,7 +865,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -885,7 +885,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -909,7 +909,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -936,7 +936,7 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_change_adding_invalid_location_uri(self):
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         image_stub1 = ImageStub('fake_image_id', status='queued', locations=[])
         image1 = glance.location.ImageProxy(image_stub1, context,
                                             self.store_api, self.store_utils)
@@ -956,7 +956,7 @@ class TestStoreImage(utils.BaseTestCase):
     def test_image_change_adding_invalid_location_metadata(self):
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
 
         image_stub2 = ImageStub('fake_image_id', status='queued', locations=[])
@@ -980,7 +980,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -1010,7 +1010,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
         image_stub3 = ImageStub('fake_image_id', status='queued', locations=[])
@@ -1040,7 +1040,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
         image_stub3 = ImageStub('fake_image_id', status='queued', locations=[])
@@ -1070,7 +1070,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -1102,7 +1102,7 @@ class TestStoreImage(utils.BaseTestCase):
         UUID3 = 'a8a61ec4-d7a3-11e2-8c28-000c29c27581'
         self.assertEqual(2, len(self.store_api.data.keys()))
 
-        context = glance.context.RequestContext(user=USER1)
+        context = glance.context.RequestContext(user_id=USER1)
         (image1, image_stub1) = self._add_image(context, UUID2, 'XXXX', 4)
         (image2, image_stub2) = self._add_image(context, UUID3, 'YYYY', 4)
 
@@ -1321,7 +1321,7 @@ class TestImageFactory(unit_test_base.StoreClearingUnitTest):
         store_utils = unit_test_utils.FakeStoreUtils(store_api)
         self.image_factory = glance.location.ImageFactoryProxy(
             ImageFactoryStub(),
-            glance.context.RequestContext(user=USER1),
+            glance.context.RequestContext(user_id=USER1),
             store_api,
             store_utils)
 

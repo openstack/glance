@@ -150,8 +150,8 @@ class TestImageNotifications(utils.BaseTestCase):
             tags=['one', 'two'], disk_format='ami', min_ram=128,
             min_disk=10, checksum='ca425b88f047ce8ec45ee90e813ada91',
             locations=['http://127.0.0.1'])
-        self.context = glance.context.RequestContext(tenant=TENANT2,
-                                                     user=USER1)
+        self.context = glance.context.RequestContext(project_id=TENANT2,
+                                                     user_id=USER1)
         self.image_repo_stub = ImageRepoStub()
         self.notifier = unit_test_utils.FakeNotifier()
         self.image_repo_proxy = glance.notifier.ImageRepoProxy(
@@ -304,7 +304,8 @@ class TestImageNotifications(utils.BaseTestCase):
         image = ImageStub(image_id=UUID1, name='image-1', status='queued',
                           created_at=DATETIME, updated_at=DATETIME,
                           owner=TENANT1, visibility='public')
-        context = glance.context.RequestContext(tenant=TENANT2, user=USER1)
+        context = glance.context.RequestContext(project_id=TENANT2,
+                                                user_id=USER1)
         fake_notifier = unit_test_utils.FakeNotifier()
         image_proxy = glance.notifier.ImageProxy(image, context, fake_notifier)
 
@@ -364,7 +365,8 @@ class TestImageNotifications(utils.BaseTestCase):
         image = ImageStub(image_id=UUID1, name='image-1', status='queued',
                           created_at=DATETIME, updated_at=DATETIME,
                           owner=TENANT1, visibility='public')
-        context = glance.context.RequestContext(tenant=TENANT2, user=USER1)
+        context = glance.context.RequestContext(project_id=TENANT2,
+                                                user_id=USER1)
         fake_notifier = unit_test_utils.FakeNotifier()
         image_proxy = glance.notifier.ImageProxy(image, context, fake_notifier)
 
@@ -521,8 +523,8 @@ class TestImageMemberNotifications(utils.BaseTestCase):
 
     def setUp(self):
         super(TestImageMemberNotifications, self).setUp()
-        self.context = glance.context.RequestContext(tenant=TENANT2,
-                                                     user=USER1)
+        self.context = glance.context.RequestContext(project_id=TENANT2,
+                                                     user_id=USER1)
         self.notifier = unit_test_utils.FakeNotifier()
 
         self.image = ImageStub(
@@ -654,8 +656,8 @@ class TestTaskNotifications(utils.BaseTestCase):
             request_id='fake_request_id',
         )
         self.context = glance.context.RequestContext(
-            tenant=TENANT2,
-            user=USER1
+            project_id=TENANT2,
+            user_id=USER1
         )
         self.task_repo_stub = TaskRepoStub()
         self.notifier = unit_test_utils.FakeNotifier()

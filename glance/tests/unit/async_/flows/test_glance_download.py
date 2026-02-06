@@ -43,7 +43,7 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
         self.image_id = mock.MagicMock()
         self.uri = mock.MagicMock()
         self.task_factory = domain.TaskFactory()
-        self.context = glance.context.RequestContext(tenant=TENANT1,
+        self.context = glance.context.RequestContext(project_id=TENANT1,
                                                      auth_token='token')
         task_input = {
             "import_req": {

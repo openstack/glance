@@ -25,7 +25,7 @@ BASE_URI = unit_test_utils.BASE_URI
 
 USER1 = '54492ba0-f4df-4e4e-be62-27f4d76b29cf'
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
-TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
+PROJECT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
 CHKSUM = '93264c3edf5972c9f1cb309543d38a5c'
 
 
@@ -71,14 +71,14 @@ class TestImageActionsController(base.IsolatedUnitTest):
         self.controller.gateway.store_utils = self.store_utils
         store.create_stores()
 
-    def _get_fake_context(self, user=USER1, tenant=TENANT1, roles=None,
+    def _get_fake_context(self, user_id=USER1, project_id=PROJECT1, roles=None,
                           is_admin=False):
         if roles is None:
             roles = ['member']
 
         kwargs = {
-            'user': user,
-            'tenant': tenant,
+            'user_id': user_id,
+            'project_id': project_id,
             'roles': roles,
             'is_admin': is_admin,
         }
@@ -88,7 +88,7 @@ class TestImageActionsController(base.IsolatedUnitTest):
 
     def _create_image(self, status):
         self.images = [
-            _db_fixture(UUID1, owner=TENANT1, checksum=CHKSUM,
+            _db_fixture(UUID1, owner=PROJECT1, checksum=CHKSUM,
                         name='1', size=256, virtual_size=1024,
                         visibility='public',
                         locations=[{'url': '%s/%s' % (BASE_URI, UUID1),

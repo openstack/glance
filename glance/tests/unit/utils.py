@@ -78,8 +78,8 @@ def get_fake_request(path='', method='POST', is_admin=False, user=USER1,
         req.headers.update(headers)
 
     kwargs = {
-        'user': user,
-        'tenant': tenant,
+        'user_id': user,
+        'project_id': tenant,
         'roles': roles,
         'is_admin': is_admin,
     }
@@ -117,8 +117,8 @@ def get_fake_context(user=USER1, tenant=TENANT1, roles=None, is_admin=False):
         roles = ['member']
 
     kwargs = {
-        'user': user,
-        'tenant': tenant,
+        'user_id': user,
+        'project_id': tenant,
         'roles': roles,
         'is_admin': is_admin,
     }
