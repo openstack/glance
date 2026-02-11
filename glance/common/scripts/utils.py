@@ -20,7 +20,7 @@ __all__ = [
     'validate_location_uri',
     'get_image_data_iter',
 ]
-
+import os
 import urllib
 
 from oslo_log import log as logging
@@ -133,6 +133,7 @@ def get_image_data_iter(uri):
     Validation/sanitization of the uri is expected to happen before we get
     here.
     """
+    size = 0
     # NOTE(flaper87): This is safe because the input uri is already
     # verified before the task is created.
     if uri.startswith("file://"):
@@ -146,9 +147,16 @@ def get_image_data_iter(uri):
         #
         # We're not using StringIO or other tools to avoid reading everything
         # into memory. Some images may be quite heavy.
-        return open(uri, "rb")
+        size = os.path.getsize(uri)
+        return open(uri, "rb"), size
 
-    return urllib.request.urlopen(uri)
+    urlopen = urllib.request.urlopen(uri)
+    try:
+        size = int(urlopen.headers['content-length'])
+    except (KeyError, ValueError, TypeError):
+        pass
+
+    return urlopen, size
 
 
 class CallbackIterator(object):

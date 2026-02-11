@@ -118,8 +118,8 @@ def set_image_data(image, uri, task_id, backend=None):
     try:
         LOG.info("Task %(task_id)s: Got image data uri %(data_uri)s to be "
                  "imported", {"data_uri": uri, "task_id": task_id})
-        data_iter = script_utils.get_image_data_iter(uri)
-        image.set_data(data_iter, backend=backend)
+        data_iter, size = script_utils.get_image_data_iter(uri)
+        image.set_data(data_iter, backend=backend, size=size)
     except Exception as e:
         with excutils.save_and_reraise_exception():
             LOG.warning("Task %(task_id)s failed with exception %(error)s",

@@ -17,7 +17,6 @@ import io
 import json
 import os
 from unittest import mock
-import urllib
 
 import glance_store
 from oslo_concurrency import processutils as putils
@@ -123,7 +122,11 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
+            content = b"TEST_IMAGE"
+
+            def new_data_iter(*args, **kwargs):
+                return io.BytesIO(content), len(content)
+            dmock.side_effect = new_data_iter
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -166,7 +169,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
+            dmock.return_value = (io.BytesIO(b"TEST_IMAGE"), 10)
 
             with mock.patch.object(import_flow._ImportToFS, 'execute') as emk:
                 executor.begin_processing(self.task.task_id)
@@ -200,7 +203,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
+            dmock.return_value = (io.BytesIO(b"TEST_IMAGE"), 10)
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 out = json.dumps({'format-specific':
@@ -270,7 +273,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
+            dmock.return_value = (io.BytesIO(b"TEST_IMAGE"), 10)
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -320,7 +323,7 @@ class TestImportTask(test_utils.BaseTestCase):
         img_factory.new_image.side_effect = create_image
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
+            dmock.return_value = (io.BytesIO(b"TEST_IMAGE"), 10)
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({
@@ -371,9 +374,9 @@ class TestImportTask(test_utils.BaseTestCase):
         self.img_repo.get.return_value = self.image
         img_factory.new_image.side_effect = create_image
 
-        with mock.patch.object(urllib.request, 'urlopen') as umock:
+        with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
             content = b"TEST_IMAGE"
-            umock.return_value = io.BytesIO(content)
+            dmock.return_value = (io.BytesIO(content), len(content))
 
             with mock.patch.object(import_flow, "_get_import_flows") as imock:
                 imock.return_value = (x for x in [])
@@ -383,7 +386,7 @@ class TestImportTask(test_utils.BaseTestCase):
                                               "%s.tasks_import" % image_path)
                 self.assertFalse(os.path.exists(tmp_image_path))
                 self.assertTrue(os.path.exists(image_path))
-                self.assertEqual(1, umock.call_count)
+                self.assertEqual(1, dmock.call_count)
 
                 with open(image_path, 'rb') as ifile:
                     self.assertEqual(content, ifile.read())
@@ -430,7 +433,7 @@ class TestImportTask(test_utils.BaseTestCase):
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
             content = b"test"
-            dmock.return_value = [content]
+            dmock.return_value = ([content], 4)
 
             with mock.patch.object(putils, 'trycmd') as tmock:
                 tmock.return_value = (json.dumps({

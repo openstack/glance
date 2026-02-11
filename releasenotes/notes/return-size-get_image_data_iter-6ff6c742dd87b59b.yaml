@@ -1,0 +1,10 @@
+---
+fixes:
+  - |
+    Bug 2141673_: image import can fail for bigger images with s3 backend
+
+    Glance now tries to detect the image size in advance so that some backends
+    can be more efficient when uploading image data. This is true for the S3
+    backend which can use a multipart upload instead of a singlepart upload.
+
+    .. _2141673: https://bugs.launchpad.net/glance/+bug/2141673

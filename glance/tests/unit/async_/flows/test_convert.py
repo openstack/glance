@@ -155,7 +155,7 @@ class TestImportTask(test_utils.BaseTestCase):
                 assert os.path.exists(args[3].split("file://")[-1])
 
                 return (json.dumps({
-                    "virtual-size": 10737418240,
+                    "virtual-size": 10,
                     "filename": "/tmp/image.qcow2",
                     "cluster-size": 65536,
                     "format": "raw",
@@ -173,7 +173,11 @@ class TestImportTask(test_utils.BaseTestCase):
             return ("", None)
 
         with mock.patch.object(script_utils, 'get_image_data_iter') as dmock:
-            dmock.return_value = io.BytesIO(b"TEST_IMAGE")
+            content = b"TEST_IMAGE"
+
+            def new_data_iter(*args, **kwargs):
+                return io.BytesIO(content), len(content)
+            dmock.side_effect = new_data_iter
 
             with mock.patch.object(processutils, 'execute') as exc_mock:
                 exc_mock.side_effect = fake_execute
@@ -187,7 +191,7 @@ class TestImportTask(test_utils.BaseTestCase):
                 # the tasks have been executed.
                 self.assertEqual([], os.listdir(self.work_dir))
                 self.assertEqual('raw', image.disk_format)
-                self.assertEqual(10737418240, image.virtual_size)
+                self.assertEqual(10, image.virtual_size)
 
                 # NOTE(hemanthm): Asserting that the source format is passed
                 # to qemu-utis to avoid inferring the image format when

@@ -88,7 +88,8 @@ class TestImageImport(test_utils.BaseTestCase):
     def test_set_image_data_http(self, mock_image_iter):
         uri = 'http://www.example.com'
         image = mock.Mock()
-        mock_image_iter.return_value = test_utils.FakeHTTPResponse()
+        image.size = None
+        mock_image_iter.return_value = (test_utils.FakeHTTPResponse(), 0)
         self.assertIsNone(image_import_script.set_image_data(image,
                                                              uri,
                                                              None))
@@ -127,10 +128,12 @@ class TestImageImport(test_utils.BaseTestCase):
     def test_set_image_data_with_callback(self, mock_gidi, mock_sw):
         data = [b'0' * 60, b'0' * 50, b'0' * 10, b'0' * 150]
         result_data = []
-        mock_gidi.return_value = iter(data)
+        # Return the iterator and the total size in bytes of the data
+        mock_gidi.return_value = (iter(data), len(data))
         mock_sw.return_value.expired.side_effect = [False, True, False,
                                                     False]
         image = mock.MagicMock()
+        image.size = None
         callback = mock.MagicMock()
 
         def fake_set_data(data_iter, **kwargs):
@@ -154,7 +157,7 @@ class TestImageImport(test_utils.BaseTestCase):
         """Verify set_data called with size=image.size when image.size set."""
         uri = 'http://www.example.com'
         image = mock.Mock(size=1024)
-        mock_image_iter.return_value = test_utils.FakeHTTPResponse()
+        mock_image_iter.return_value = (test_utils.FakeHTTPResponse(), 1024)
 
         image_import_script.set_image_data(image, uri, None)
 
@@ -170,7 +173,7 @@ class TestImageImport(test_utils.BaseTestCase):
         """Verify set_data is called with size=0 when image.size is None."""
         uri = 'http://www.example.com'
         image = mock.Mock(size=None)
-        mock_image_iter.return_value = test_utils.FakeHTTPResponse()
+        mock_image_iter.return_value = (test_utils.FakeHTTPResponse(), 0)
 
         image_import_script.set_image_data(image, uri, None)
 
@@ -179,3 +182,14 @@ class TestImageImport(test_utils.BaseTestCase):
         self.assertEqual(0, call_kwargs['size'])
         self.assertIn('backend', call_kwargs)
         self.assertIn('set_active', call_kwargs)
+
+    @mock.patch.object(utils, 'get_image_data_iter')
+    def test_set_image_data_fails_when_image_size_mismatch(
+            self, mock_image_iter):
+        """Verify set_data fails during size mismatch"""
+        uri = 'http://www.example.com'
+        image = mock.Mock(size=1024)
+        mock_image_iter.return_value = (test_utils.FakeHTTPResponse(), 512)
+
+        self.assertRaises(exception.ImportTaskError,
+                          image_import_script.set_image_data, image, uri, None)

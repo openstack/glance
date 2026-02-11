@@ -75,36 +75,44 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
             mock_add.return_value = ["path", 4]
-            mock_iter.return_value.headers = {}
+            data_mock = mock.MagicMock()
+            data_mock.headers = {}
+            mock_iter.return_value = (data_mock, 0)
             self.assertEqual(self.web_download_task.execute(), "path")
             mock_add.assert_called_once_with(self.image_id,
-                                             mock_iter.return_value, 0)
+                                             data_mock, 0)
 
     @mock.patch.object(filesystem.Store, 'add')
     def test_web_download_with_content_length(self, mock_add):
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
-            mock_iter.return_value.headers = {'content-length': '4'}
+            data_mock = mock.MagicMock()
+            data_mock.headers = {'content-length': '4'}
+            mock_iter.return_value = (data_mock, 4)
             mock_add.return_value = ["path", 4]
             self.assertEqual(self.web_download_task.execute(), "path")
             mock_add.assert_called_once_with(self.image_id,
-                                             mock_iter.return_value, 0)
+                                             data_mock, 4)
 
     @mock.patch.object(filesystem.Store, 'add')
     def test_web_download_with_invalid_content_length(self, mock_add):
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
-            mock_iter.return_value.headers = {'content-length': "not_valid"}
+            data_mock = mock.MagicMock()
+            data_mock.headers = {'content-length': "not_valid"}
+            mock_iter.return_value = (data_mock, 0)
             mock_add.return_value = ["path", 4]
             self.assertEqual(self.web_download_task.execute(), "path")
             mock_add.assert_called_once_with(self.image_id,
-                                             mock_iter.return_value, 0)
+                                             data_mock, 0)
 
     @mock.patch.object(filesystem.Store, 'add')
     def test_web_download_fails_when_data_size_different(self, mock_add):
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
-            mock_iter.return_value.headers = {'content-length': '4'}
+            data_mock = mock.MagicMock()
+            data_mock.headers = {'content-length': '4'}
+            mock_iter.return_value = (data_mock, 4)
             mock_add.return_value = ["path", 3]
             self.assertRaises(
                 glance.common.exception.ImportTaskError,
@@ -122,26 +130,32 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
             mock_add.return_value = ["path", 4]
-            mock_iter.return_value.headers = {'content-length': '4'}
+            data_mock = mock.MagicMock()
+            data_mock.headers = {'content-length': '4'}
+            mock_iter.return_value = (data_mock, 4)
             self.assertEqual(self.web_download_task.execute(), "path")
             mock_add.assert_called_once_with(self.image_id,
-                                             mock_iter.return_value, 0)
+                                             data_mock, 4)
 
     @mock.patch.object(filesystem.Store, 'add')
     def test_web_download_invalid_content_length(self, mock_add):
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
             mock_add.return_value = ["path", 4]
-            mock_iter.return_value.headers = {'content-length': 'not_valid'}
+            data_mock = mock.MagicMock()
+            data_mock.headers = {'content-length': 'not_valid'}
+            mock_iter.return_value = (data_mock, 0)
             self.assertEqual(self.web_download_task.execute(), "path")
             mock_add.assert_called_once_with(self.image_id,
-                                             mock_iter.return_value, 0)
+                                             data_mock, 0)
 
     @mock.patch.object(filesystem.Store, 'add')
     def test_web_download_wrong_content_length(self, mock_add):
         with mock.patch.object(script_utils,
                                'get_image_data_iter') as mock_iter:
             mock_add.return_value = ["path", 2]
-            mock_iter.return_value.headers = {'content-length': '4'}
+            data_mock = mock.MagicMock()
+            data_mock.headers = {'content-length': '4'}
+            mock_iter.return_value = (data_mock, 4)
             self.assertRaises(glance.common.exception.ImportTaskError,
                               self.web_download_task.execute)
