@@ -146,7 +146,10 @@ def set_image_data(image, uri, task_id, backend=None, set_active=True,
             # the function every 60 seconds.
             data_iter = script_utils.CallbackIterator(
                 data_iter, callback, min_interval=60)
-        image.set_data(data_iter, backend=backend, set_active=set_active)
+
+        image_size = image.size if image.size is not None else 0
+        image.set_data(data_iter, size=image_size, backend=backend,
+                       set_active=set_active)
     except Exception as e:
         with excutils.save_and_reraise_exception():
             LOG.warning(_LW("Task %(task_id)s failed with exception "
