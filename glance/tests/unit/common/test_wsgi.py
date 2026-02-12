@@ -27,6 +27,7 @@ import fixtures
 from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
 import routes
+import testtools
 import webob
 
 from glance.api.v2 import router as router_v2
@@ -559,6 +560,7 @@ class JSONRequestDeserializerTest(test_utils.BaseTestCase):
 
 
 class ServerTest(test_utils.BaseTestCase):
+    @testtools.skip("glance.common.wsgi uses eventlet and is deprecated")
     @mock.patch.object(prefetcher, 'Prefetcher')
     def test_create_pool(self, mock_prefetcher):
         """Ensure the wsgi thread pool is an eventlet.greenpool.GreenPool."""
@@ -575,6 +577,7 @@ class ServerTest(test_utils.BaseTestCase):
         server = wsgi.Server(threads=1, initialize_glance_store=True)
         self.assertRaises(RuntimeError, server.configure)
 
+    @testtools.skip("glance.common.wsgi uses eventlet and is deprecated")
     @mock.patch.object(prefetcher, 'Prefetcher')
     @mock.patch.object(wsgi.Server, 'configure_socket')
     @mock.patch('glance.sqlite_migration.can_migrate_to_central_db')

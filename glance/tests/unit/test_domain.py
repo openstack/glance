@@ -21,6 +21,7 @@ import uuid
 from oslo_config import cfg
 import oslo_utils.importutils
 from oslo_utils import timeutils
+import testtools
 
 import glance.async_
 from glance.async_ import taskflow_executor
@@ -613,6 +614,7 @@ class TestTaskExecutorFactory(test_utils.BaseTestCase):
                               task_executor_factory.new_task_executor,
                               context)
 
+    @testtools.skip("Eventlet support is deprecated")
     def test_new_task_eventlet_backwards_compatibility(self):
         context = mock.MagicMock()
 
