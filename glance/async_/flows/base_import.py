@@ -153,9 +153,9 @@ class _ImportToFS(task.Task):
         # While using any path should be "technically" fine, it's not what
         # we recommend as the best solution. For more details on this, please
         # refer to the comment in the `_ImportToStore.execute` method.
-        data = script_utils.get_image_data_iter(self.uri)
+        data, size = script_utils.get_image_data_iter(self.uri)
 
-        path = self.store.add(image_id, data, 0, context=None)[0]
+        path = self.store.add(image_id, data, size, context=None)[0]
 
         try:
             # NOTE(flaper87): Consider moving this code to a common

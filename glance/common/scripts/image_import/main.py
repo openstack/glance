@@ -140,16 +140,23 @@ def set_image_data(image, uri, task_id, backend=None, set_active=True,
     try:
         LOG.info(_LI("Task %(task_id)s: Got image data uri %(data_uri)s to be "
                  "imported"), {"data_uri": uri, "task_id": task_id})
-        data_iter = script_utils.get_image_data_iter(uri)
+        data_iter, size = script_utils.get_image_data_iter(uri)
+
         if callback:
             # If a callback was provided, wrap our data iterator to call
             # the function every 60 seconds.
             data_iter = script_utils.CallbackIterator(
                 data_iter, callback, min_interval=60)
 
-        image_size = image.size if image.size is not None else 0
-        image.set_data(data_iter, size=image_size, backend=backend,
+        if image.size is not None and image.size != size:
+            msg = _(
+                "Task %(task_id)s: Image size mismatch. Expected %(expected)d "
+                "but got %(actual)d"
+            ) % {"task_id": task_id, "expected": image.size, "actual": size}
+            raise exception.ImportTaskError(msg)
+        image.set_data(data_iter, size=size, backend=backend,
                        set_active=set_active)
+
     except Exception as e:
         with excutils.save_and_reraise_exception():
             LOG.warning(_LW("Task %(task_id)s failed with exception "

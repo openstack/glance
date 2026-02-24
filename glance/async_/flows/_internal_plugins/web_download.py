@@ -48,25 +48,24 @@ class _WebDownload(base_download.BaseDownload):
         # we recommend as the best solution. For more details on this, please
         # refer to the comment in the `_ImportToStore.execute` method.
         try:
-            data = script_utils.get_image_data_iter(self.uri)
+            data, size = script_utils.get_image_data_iter(self.uri)
         except Exception as e:
             with excutils.save_and_reraise_exception():
                 LOG.error("Task %(task_id)s failed with exception %(error)s",
                           {"error": e,
                            "task_id": self.task_id})
 
-        self._path, bytes_written = self.store.add(self.image_id, data, 0)[0:2]
-        try:
-            content_length = int(data.headers['content-length'])
-            if bytes_written != content_length:
-                msg = (_("Task %(task_id)s failed because downloaded data "
-                         "size %(data_size)i is different from expected %("
-                         "expected)i") %
-                       {"task_id": self.task_id, "data_size": bytes_written,
-                        "expected": content_length})
-                raise exception.ImportTaskError(msg)
-        except (KeyError, ValueError):
-            pass
+        self._path, bytes_written = self.store.add(self.image_id, data,
+                                                   size)[0:2]
+
+        if bytes_written != size and size != 0:
+            msg = (_("Task %(task_id)s failed because downloaded data "
+                     "size %(data_size)i is different from expected %("
+                     "expected)i") % {"task_id": self.task_id,
+                                      "data_size": bytes_written,
+                                      "expected": size})
+            raise exception.ImportTaskError(msg)
+
         return self._path
 
 
