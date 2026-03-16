@@ -109,7 +109,8 @@ def run_staging_cleanup():
 def init_app():
     config.set_config_defaults()
     config_files = _get_config_files()
-    CONF([], project='glance', default_config_files=config_files)
+    CONF([], project='glance', prog='glance-api',
+         default_config_files=config_files)
     logging.setup(CONF, "glance")
 
     # NOTE(danms): We are running inside uwsgi or mod_wsgi, so no eventlet;
