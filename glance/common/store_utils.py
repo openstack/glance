@@ -384,7 +384,7 @@ def _update_s3_location_and_store_id(context, loc):
     return False
 
 
-def get_updated_store_location(locations, context=None):
+def get_updated_store_location(locations, context):
     for loc in locations:
         if loc['url'].startswith("cinder://") and context:
             _update_cinder_location_and_store_id(context, loc)
