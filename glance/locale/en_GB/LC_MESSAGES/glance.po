@@ -13,15 +13,16 @@
 # Andi Chandler <andi@gowling.com>, 2022. #zanata
 # Andi Chandler <andi@gowling.com>, 2023. #zanata
 # Andi Chandler <andi@gowling.com>, 2024. #zanata
+# Andi Chandler <andi@gowling.com>, 2026. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2025-07-08 07:42+0000\n"
+"POT-Creation-Date: 2026-03-14 06:55+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2024-08-19 09:31+0000\n"
+"PO-Revision-Date: 2026-02-28 01:46+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language: en_GB\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -33,6 +34,10 @@ msgstr ""
 msgid "\t%s"
 msgstr "\t%s"
 
+#, python-format
+msgid "\t%s - %s"
+msgstr "\t%s - %s"
+
 msgid ""
 "\n"
 "    List of enabled Image Import Methods\n"
@@ -299,6 +304,7 @@ msgstr ""
 "    * ``image_cache_sqlite_db``\n"
 "\n"
 
+#, python-brace-format
 msgid ""
 "\n"
 "Calculate hash and checksum for the image.\n"
@@ -467,7 +473,7 @@ msgid ""
 "Possible values:\n"
 "    * An OpenSSL message digest algorithm identifier\n"
 "\n"
-"Relation options:\n"
+"Related options:\n"
 "    * None\n"
 "\n"
 msgstr ""
@@ -491,7 +497,7 @@ msgstr ""
 "Possible values:\n"
 "    * An OpenSSL message digest algorithm identifier\n"
 "\n"
-"Relation options:\n"
+"Related options:\n"
 "    * None\n"
 "\n"
 
@@ -2991,6 +2997,9 @@ msgstr ""
 msgid "Authorization failed."
 msgstr "Authorisation failed."
 
+msgid "Available actions for 'db':"
+msgstr "Available actions for 'db':"
+
 msgid "Available categories:"
 msgstr "Available categories:"
 
@@ -3004,13 +3013,6 @@ msgstr "Bad header: %(header_name)s"
 
 msgid "Body expected in request."
 msgstr "Body expected in request."
-
-msgid ""
-"CONF.workers should be set to 0 or 1 when using the db.simple.api backend. "
-"Fore more info, see https://bugs.launchpad.net/glance/+bug/1619508"
-msgstr ""
-"CONF.workers should be set to 0 or 1 when using the db.simple.api backend. "
-"Fore more info, see https://bugs.launchpad.net/glance/+bug/1619508"
 
 #, python-format
 msgid "Cache entry for %s for %s already exists."
@@ -3304,12 +3306,18 @@ msgstr "Error in store configuration. Adding images to store is disabled."
 msgid "Error: %(exc_type)s: %(e)s"
 msgstr "Error: %(exc_type)s: %(e)s"
 
+#, python-format
+msgid "Error: %(exc_type)s: %(exc)s"
+msgstr "Error: %(exc_type)s: %(exc)s"
+
 msgid "Error: <class 'Exception'>: testing"
 msgstr "Error: <class 'Exception'>: testing"
 
+#, python-brace-format
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "Expected a member in the form: {\"member\": \"image_id\"}"
 
+#, python-brace-format
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "Expected a status in the form: {\"status\": \"status\"}"
 
@@ -3394,6 +3402,10 @@ msgstr "Format of the disk"
 msgid "Hash calculation failed for image %s data"
 msgstr "Hash calculation failed for image %s data"
 
+#, python-format
+msgid "Hash calculation for image %s has been canceled"
+msgstr "Hash calculation for image %s has been cancelled"
+
 msgid ""
 "Hexdigest of the image contents using the algorithm specified by the "
 "os_hash_algo"
@@ -3470,9 +3482,19 @@ msgstr "Image %s not found."
 msgid "Image associated with the task"
 msgstr "Image associated with the task"
 
+msgid "Image data is not acceptable or does not match parameters"
+msgstr "Image data is not acceptable or does not match parameters"
+
+#, python-format
+msgid "Image disk_format %s does not match stream data %s"
+msgstr "Image disk_format %s does not match stream data %s"
+
 #, python-format
 msgid "Image exceeds the storage quota: %s"
 msgstr "Image exceeds the storage quota: %s"
+
+msgid "Image format inspection failed"
+msgstr "Image format inspection failed"
 
 msgid "Image id is required."
 msgstr "Image id is required."
@@ -3624,6 +3646,9 @@ msgid ""
 msgstr ""
 "Invalid operation: `%(op)s`. It must be one of the following: %(available)s."
 
+msgid "Invalid or missing image size in request headers."
+msgstr "Invalid or missing image size in request headers."
+
 msgid "Invalid position for adding a location."
 msgstr "Invalid position for adding a location."
 
@@ -3751,6 +3776,29 @@ msgid ""
 msgstr ""
 "Key:Value pair of store identifier and store type. In case of multiple "
 "backends should be separated using comma."
+
+msgid ""
+"List of safety check names to consider non-fatal when validating "
+"disk_format=gpt images (or images detected as gpt). Since MBR is very "
+"loosely-defined and GPT (which is strictly defined) depends on the MBR "
+"structure, it is easy to craft a GPT disk image that works, but is not valid "
+"according to the spec. While not recommended, it is possible to disable MBR "
+"or GPT-specific safety checks if necessary for compatibility. This can "
+"include \"mbr\" and/or \"gptmbr\" to avoid failing format validation if "
+"those checks fail. Use this with caution as it makes glance relax its "
+"definition of what a valid GPT disk image looks like and prevents strict "
+"adherence to the GPT spec."
+msgstr ""
+"List of safety check names to consider non-fatal when validating "
+"disk_format=gpt images (or images detected as gpt). Since MBR is very "
+"loosely-defined and GPT (which is strictly defined) depends on the MBR "
+"structure, it is easy to craft a GPT disk image that works, but is not valid "
+"according to the spec. While not recommended, it is possible to disable MBR "
+"or GPT-specific safety checks if necessary for compatibility. This can "
+"include \"mbr\" and/or \"gptmbr\" to avoid failing format validation if "
+"those checks fail. Use this with caution, as it makes glance relax its "
+"definition of what a valid GPT disk image looks like and prevents strict "
+"adherence to the GPT spec."
 
 msgid "List of strings related to the image"
 msgstr "List of strings related to the image"
@@ -3884,6 +3932,9 @@ msgstr ""
 #, python-format
 msgid "New value(s) for %s may only be provided when image status is 'queued'"
 msgstr "New value(s) for %s may only be provided when image status is 'queued'"
+
+msgid "No description available"
+msgstr "No description available"
 
 #, python-format
 msgid "No image found with ID %s"
@@ -4235,6 +4286,14 @@ msgstr "Suppressed re-spawn as %(serv)s was %(rsn)s."
 
 msgid "System SIGHUP signal received."
 msgstr "System SIGHUP signal received."
+
+#, python-format
+msgid ""
+"Task %(task_id)s: Image size mismatch. Expected %(expected)d but got "
+"%(actual)d"
+msgstr ""
+"Task %(task_id)s: Image size mismatch. Expected %(expected)d but got "
+"%(actual)d"
 
 #, python-format
 msgid "Task '%s' is required"
@@ -4775,6 +4834,21 @@ msgstr ""
 msgid "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 msgstr "Waited 15 seconds for pid %(pid)s (%(file)s) to die; giving up"
 
+msgid ""
+"When enabled, glance will inspect the content of uploads and require that "
+"they match the disk_format set on the image. A mismatch will abort the "
+"upload with an error. Disabling this may be required in the case of false "
+"match (or mismatch) issues, but those are bugs that should be filed and "
+"fixed. Enabling this feature improves security and consistency by ensuring "
+"that images claiming to be a given format have content matching that format."
+msgstr ""
+"When enabled, Glance will inspect the content of uploads and require that "
+"they match the disk_format set on the image. A mismatch will abort the "
+"upload with an error. Disabling this may be required in the case of false "
+"match (or mismatch) issues, but those are bugs that should be filed and "
+"fixed. Enabling this feature improves security and consistency by ensuring "
+"that images claiming to be a given format have content matching that format."
+
 msgid "You are not authenticated."
 msgstr "You are not authenticated."
 
@@ -4852,6 +4926,7 @@ msgstr ""
 "Your database is not up to date. Your next step is to run `glance-manage db "
 "migrate`."
 
+#, python-brace-format
 msgid ""
 "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
 "fA-F]){12}$"
