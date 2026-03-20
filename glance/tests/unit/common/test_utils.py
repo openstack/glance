@@ -956,7 +956,14 @@ class EvaluateFilterOpTestCase(test_utils.BaseTestCase):
 
 class ImportURITestCase(test_utils.BaseTestCase):
 
-    def test_validate_import_uri(self):
+    @mock.patch("eventlet.green.socket.getaddrinfo")
+    def test_validate_import_uri(self, mock_getaddrinfo):
+        # This avoid internet access in validate_import_uri()
+        # (ie: DNS resolution of foo.com)
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ("127.0.0.1", 80))
+        ]
+
         self.assertTrue(utils.validate_import_uri("http://foo.com"))
 
         self.config(allowed_schemes=['http'],
@@ -969,6 +976,8 @@ class ImportURITestCase(test_utils.BaseTestCase):
                     group='import_filtering_opts')
         self.assertTrue(utils.validate_import_uri("http://example.com:8080"))
 
+    # No need to mock eventlet.green.socket.getaddrinfo here,
+    # because this test checks that example and foo.com are blacklisted.
     def test_invalid_import_uri(self):
         self.assertFalse(utils.validate_import_uri(""))
 
@@ -985,7 +994,14 @@ class ImportURITestCase(test_utils.BaseTestCase):
                     group='import_filtering_opts')
         self.assertFalse(utils.validate_import_uri("http://localhost:8484"))
 
-    def test_ignored_filtering_options(self):
+    @mock.patch("eventlet.green.socket.getaddrinfo")
+    def test_ignored_filtering_options(self, mock_getaddrinfo):
+        # This avoid internet access in validate_import_uri()
+        # (ie: DNS resolution of foo.com)
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ("127.0.0.1", 80))
+        ]
+
         LOG = logging.getLogger('glance.common.utils')
         with mock.patch.object(LOG, 'debug') as mock_run:
             self.config(allowed_schemes=['https', 'ftp'],
