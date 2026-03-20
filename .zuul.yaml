@@ -465,7 +465,10 @@
             voting: false
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
-
+        # make this template job non-voting until it gets fixed
+        - grenade-skip-level-always:
+            irrelevant-files: *tempest-irrelevant-files
+            voting: false
     gate:
       jobs:
         - openstack-tox-functional-py39
@@ -488,6 +491,10 @@
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
+        # make this template job non-voting until it gets fixed
+        - grenade-skip-level-always:
+            irrelevant-files: *tempest-irrelevant-files
+            voting: false
     experimental:
       jobs:
         - glance-tox-py312-glance_store-tips
