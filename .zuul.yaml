@@ -225,7 +225,9 @@
     name: glance-s3-multistore
     parent: tempest-integrated-storage-import
     description: |
-      Just like the normal s3 job, but with glance multistore
+      Just like the normal s3 job, but with glance multistore.
+      Store weights are configured so tempest StoreWeightTest
+      can verify weight-based ordering (s3_fast, test_file, web).
     timeout: 9000
     vars:
       devstack_localrc:
@@ -246,11 +248,15 @@
         post-config:
           $GLANCE_API_CONF:
             DEFAULT:
-              enabled_backends: "cheap:file, s3_fast:s3, web:http"
-            cheap:
+              enabled_backends: "s3_fast:s3, test_file:file, web:http"
+            s3_fast:
+              weight: 200
+            test_file:
               filesystem_store_datadir: /opt/stack/data/glance/images/
+              weight: 100
             web:
               https_insecure: false
+              weight: 50
             os_glance_staging_store:
               filesystem_store_datadir: /opt/stack/data/glance/os_glance_staging_store/
             os_glance_tasks_store:
@@ -260,6 +266,7 @@
             image-feature-enabled:
               http_store_enabled: True
               do_secure_hash: True
+              store_weight_enabled: True
 
 - job:
     name: glance-multistore-cinder-import-fips
