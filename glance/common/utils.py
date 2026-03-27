@@ -22,8 +22,7 @@ System-level utilities and helper functions.
 
 import errno
 import ipaddress
-
-from eventlet.green import socket
+import socket
 
 import functools
 import os
@@ -92,8 +91,8 @@ def chunkiter(fp, chunk_size=65536):
 
 def cooperative_iter(iter):
     """
-    Return an iterator which schedules after each
-    iteration. This can prevent eventlet thread starvation.
+    Return an iterator which yields briefly after each iteration so other
+    concurrent work can run (cooperative scheduling).
 
     :param iter: an iterator to wrap
     """
@@ -109,8 +108,8 @@ def cooperative_iter(iter):
 
 def cooperative_read(fd):
     """
-    Wrap a file descriptor's read with a partial function which schedules
-    after each read. This can prevent eventlet thread starvation.
+    Wrap a file descriptor's read with a partial function which yields briefly
+    after each read so other concurrent work can run.
 
     :param fd: a file descriptor to wrap
     """
@@ -240,13 +239,11 @@ def validate_import_uri(uri):
 
 class CooperativeReader(object):
     """
-    An eventlet thread friendly class for reading in image data.
+    A reader for image data that yields cooperatively on each read/iteration.
 
-    When accessing data either through the iterator or the read method
-    we perform a sleep to allow a co-operative yield. When there is more than
-    one image being uploaded/downloaded this prevents eventlet thread
-    starvation, ie allows all threads to be scheduled periodically rather than
-    having the same thread be continuously active.
+    When accessing data through the iterator or the read method, a short sleep
+    is used so other concurrent uploads or downloads can make progress instead
+    of one stream monopolizing the worker.
     """
     def __init__(self, fd):
         """
