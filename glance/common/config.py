@@ -22,6 +22,7 @@ import os
 
 from oslo_config import cfg
 from oslo_middleware import cors
+from oslo_middleware import tracing
 from oslo_service.backend import BackendType
 from oslo_service.backend import register_backend_default_hook
 from paste import deploy
@@ -685,6 +686,8 @@ CONF.register_opts(task_opts, group='task')
 CONF.register_opts(common_opts)
 CONF.register_opts(wsgi_opts, group='wsgi')
 CONF.register_opts(store_opts)
+
+tracing.set_defaults(service_name='glance-api')
 
 
 def parse_args(args=None, usage=None, default_config_files=None,
