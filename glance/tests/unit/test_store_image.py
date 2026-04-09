@@ -19,6 +19,7 @@ from cursive import exception as cursive_exception
 from cursive import signature_utils
 import glance_store
 from oslo_config import cfg
+from oslo_utils.imageutils import format_inspector
 import struct
 from unittest import mock
 
@@ -409,6 +410,48 @@ class TestStoreImage(utils.BaseTestCase):
         image = glance.location.ImageProxy(image_stub, context,
                                            store_api, self.store_utils)
         image.set_data(iter((data,)), 1024)
+
+    @mock.patch('oslo_utils.imageutils.format_inspector.InspectWrapper')
+    def _test_image_set_data_inspector_multiple_formats(self, formats,
+                                                        fail_multiple,
+                                                        mock_wrapper):
+        mock_result = mock_wrapper.return_value
+        mock_result.formats = []
+        for format in formats:
+            inspector = mock.MagicMock()
+            inspector.__str__.return_value = format
+            mock_result.formats.append(inspector)
+
+        if fail_multiple:
+            mock_result.format.side_effect = format_inspector.ImageFormatError
+        else:
+            mock_result.format.__str__.return_value = formats[0]
+        context = glance.context.RequestContext(user=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = 'iso'
+        store_api = unit_test_utils.FakeStoreAPIReader(max_size=2048)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        image.set_data(iter((['ABCD'],)), 1024)
+        for inspector in mock_result.formats:
+            inspector.__str__.assert_called()
+
+    def test_image_set_data_inspector_iso_gpt_as_iso(self):
+        # ISO+GPT is allowed as ISO
+        self._test_image_set_data_inspector_multiple_formats(['iso', 'gpt'],
+                                                             False)
+
+    def test_image_set_data_inspector_iso_qcow2_as_iso(self):
+        # ISO+Qcow2 is not allowed
+        self.assertRaises(exception.InvalidImageData,
+                          self._test_image_set_data_inspector_multiple_formats,
+                          ['iso', 'qcow2'], True)
+
+    def test_image_set_data_inspector_qcow2_gpt_as_iso(self):
+        # Qcow2 is not allowed (nor really possible)
+        self.assertRaises(exception.InvalidImageData,
+                          self._test_image_set_data_inspector_multiple_formats,
+                          ['iso', 'qcow2'], True)
 
     def test_image_set_data_inspector_no_match_disabled(self):
         self.config(require_image_format_match=False, group='image_format')
