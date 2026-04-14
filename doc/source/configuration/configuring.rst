@@ -747,13 +747,37 @@ configuration file, e.g. with a user ``glance``::
   [client.glance]
   keyring=/etc/glance/rbd.keyring
 
-To set up a user named ``glance`` with minimal permissions,
-using a pool called ``images``, run::
+To set up a user named ``glance`` with minimal permissions, using a pool
+called ``images``, first create the pool and then the Ceph auth user::
 
-  rados mkpool images
-  ceph-authtool --create-keyring /etc/glance/rbd.keyring
-  ceph-authtool --gen-key --name client.glance --cap mon 'allow r' --cap osd 'allow rwx pool=images' /etc/glance/rbd.keyring
-  ceph auth add client.glance -i /etc/glance/rbd.keyring
+  ceph osd pool create images
+  ceph auth get-or-create client.glance \
+    mon 'profile rbd' \
+    osd 'profile rbd pool=images' \
+    mgr 'profile rbd pool=images'
+
+Then copy the keyring to the Glance API server::
+
+  ceph auth get-or-create client.glance | ssh {your-glance-api-server} \
+    sudo tee /etc/ceph/ceph.client.glance.keyring
+  ssh {your-glance-api-server} \
+    sudo chown glance:glance /etc/ceph/ceph.client.glance.keyring
+
+.. note::
+
+   The ``profile rbd`` capabilities are preferred over raw capabilities
+   such as ``allow rwx`` because they include permissions needed for
+   `RBD exclusive locks
+   <https://docs.ceph.com/en/latest/rbd/rbd-exclusive-locks/>`_
+   (e.g. blocklisting stale clients). They also stay up to date as Ceph
+   evolves. See the `Ceph user management documentation
+   <https://docs.ceph.com/en/latest/rados/operations/user-management/#authorization-capabilities>`_
+   for details.
+
+   For the complete set of Ceph authentication setup commands for all
+   OpenStack services (Glance, Cinder, Nova), refer to the
+   `Ceph Block Devices and OpenStack documentation
+   <https://docs.ceph.com/en/latest/rbd/rbd-openstack/#setup-ceph-client-authentication>`_.
 
 Configuring the Cinder Storage Backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
