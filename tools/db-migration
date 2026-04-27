@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# This script should be run at the start of every cycle.
+# Requirements: awk
+
+migrationfile=glance/db/migration.py
+tmpfile=$(mktemp)
+awk -F "['_]" '/^CURRENT_RELEASE/ {
+    if ($4 == 1) {
+        printf("CURRENT_RELEASE = '\''%s_2'\''\n", $3)
+    } else {
+        printf("CURRENT_RELEASE = '\''%s_1'\''\n", $3+1)
+    }
+    next
+}1' "$migrationfile" > "$tmpfile" && mv "$tmpfile" $migrationfile
