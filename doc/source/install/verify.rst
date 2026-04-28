@@ -80,7 +80,7 @@ For information about how to manage images, see the
 
    For information about disk and container formats for images, see
    `Disk and container formats for images
-   <https://docs.openstack.org/image-guide/image-formats.html>`__
+   <https://docs.openstack.org/glance/latest/user/formats.html>`__
    in the ``OpenStack Virtual Machine Image Guide``.
 
    .. note::
