@@ -63,7 +63,7 @@ cinder_encryption_key_deletion_policy
   property is missing, the Image Service will take no action.
 
 This file is the default schema. An operator can modify
-``/etc/schema-image.json`` to include arbitrary properties.
+``/etc/glance/schema-image.json`` to include arbitrary properties.
 
 .. warning::
    * Do not delete existing properties from this default schema because this
