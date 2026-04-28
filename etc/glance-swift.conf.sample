@@ -11,15 +11,15 @@
 # the glance-api's swift store will fail to configure
 
 [ref1]
-user = tenant:user1
+user = project_name1:user_name1
 key = key1
-auth_version = 2
-auth_address = http://localhost:5000/v2.0
+user_domain_id = default
+project_domain_id = default
+auth_address = http://localhost:5000/v3
 
 [ref2]
-user = project_name:user_name2
+user = project_name2:user_name2
 key = key2
 user_domain_id = default
 project_domain_id = default
-auth_version = 3
 auth_address = http://localhost:5000/v3
