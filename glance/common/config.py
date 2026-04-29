@@ -121,7 +121,7 @@ image_format_opts = [
                        'ensuring that images claiming to be a given format '
                        'have content matching that format.')),
     cfg.ListOpt('gpt_safety_checks_nonfatal',
-                default=['mbr'],
+                default=[],
                 help=_('List of safety check names to consider non-fatal when '
                        'validating disk_format=gpt images (or images detected '
                        'as gpt). Since MBR is very loosely-defined and GPT '
