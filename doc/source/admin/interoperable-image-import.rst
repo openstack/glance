@@ -120,7 +120,7 @@ URI in the ``node_staging_uri`` configuration option, like this:
 
 .. code-block:: ini
 
-   [DEFAULTS]
+   [DEFAULT]
    node_staging_uri = file:///var/lib/glance/staging
 
 In the multistore case, as described in :ref:`reserved_stores`, the
@@ -143,7 +143,7 @@ worker to handle the subsequent import request. As an example:
 
 .. code-block:: ini
 
-   [DEFAULTS]
+   [DEFAULT]
    worker_self_reference_url = https://glance01.example.com:8000
 
 This assumes you have several glance-api workers named ``glance01``,
