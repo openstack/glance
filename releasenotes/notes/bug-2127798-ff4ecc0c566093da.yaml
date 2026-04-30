@@ -1,0 +1,12 @@
+---
+fixes:
+  - |
+    Bug 2127798_: Automatic S3 credential update when EC2 credentials are rotated
+
+    Glance now automatically updates S3 image location URLs when EC2 credentials
+    are rotated in Keystone. Previously, images with S3 locations would become
+    inaccessible after credential rotation, requiring manual intervention to update
+    location metadata. This fix ensures seamless credential rotation without
+    breaking image access.
+
+    .. _2127798: https://bugs.launchpad.net/glance/+bug/2127798
