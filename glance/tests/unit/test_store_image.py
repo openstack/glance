@@ -419,6 +419,45 @@ class TestStoreImage(utils.BaseTestCase):
         image.set_data(iter((data,)), 1024)
 
     @mock.patch('oslo_utils.imageutils.format_inspector.InspectWrapper')
+    def _test_safety_check_for_disk_format(self, disk_format, failures,
+                                           expect_fail, mock_wrapper):
+        self.config(gpt_safety_checks_nonfatal=[], group='image_format')
+        mock_data = mock_wrapper.return_value
+        inspector = mock.MagicMock()
+        inspector.__str__.return_value = disk_format
+        inspector.NAME = 'gpt'
+        inspector.safety_check.side_effect = (
+            format_inspector.SafetyCheckFailed(
+                {f: 'fail' for f in failures}))
+        mock_data.formats = [inspector]
+        mock_data.format = inspector
+
+        context = glance.context.RequestContext(user_id=USER1)
+        image_stub = ImageStub(UUID2, status='queued', locations=[])
+        image_stub.disk_format = disk_format
+        store_api = unit_test_utils.FakeStoreAPIReader(max_size=2048)
+        image = glance.location.ImageProxy(image_stub, context,
+                                           store_api, self.store_utils)
+        if expect_fail:
+            self.assertRaisesRegex(exception.InvalidImageData,
+                                   'safety checks',
+                                   image.set_data, iter((['ABCD'],)), 4)
+        else:
+            image.set_data(iter((['ABCD'],)), 4)
+
+    def test_image_set_data_aki_mbr_safety_nonfatal(self):
+        self._test_safety_check_for_disk_format('aki', ['mbr'], False)
+
+    def test_image_set_data_ari_mbr_safety_nonfatal(self):
+        self._test_safety_check_for_disk_format('ari', ['mbr'], False)
+
+    def test_image_set_data_aki_non_mbr_safety_fatal(self):
+        self._test_safety_check_for_disk_format('aki', ['mbr', 'pmbr'], True)
+
+    def test_image_set_data_ari_non_mbr_safety_fatal(self):
+        self._test_safety_check_for_disk_format('ari', ['pmbr'], True)
+
+    @mock.patch('oslo_utils.imageutils.format_inspector.InspectWrapper')
     def _test_image_set_data_inspector_multiple_formats(self, formats,
                                                         fail_multiple,
                                                         mock_wrapper):
