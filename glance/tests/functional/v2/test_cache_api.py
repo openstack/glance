@@ -19,6 +19,7 @@ import uuid
 import oslo_policy.policy
 
 from glance.api import policy
+from glance.api.v2 import cached_images
 from glance.tests import functional
 
 
@@ -171,7 +172,8 @@ class TestImageCache(functional.SynchronousAPIBase):
         self.assertEqual(0, len(output['cached_images']))
 
         # Queue 1 image for caching
-        self.cache_queue(images['public'])
+        with mock.patch.object(cached_images.WORKER, 'submit'):
+            self.cache_queue(images['public'])
         self.wait_for_in_cache(images['public'])
         output = self.list_cache()
         total = len(output['queued_images']) + len(output['cached_images'])
@@ -273,8 +275,11 @@ class TestImageCache(functional.SynchronousAPIBase):
         images = self.load_data()
 
         # Queue 2 images for caching
-        self.cache_queue(images['public'])
-        self.cache_queue(images['private'])
+        self.list_cache()
+        with mock.patch.object(cached_images.WORKER, 'submit'):
+            self.cache_queue(images['public'])
+            self.cache_queue(images['private'])
+
         self.wait_for_in_cache(images['public'])
         self.wait_for_in_cache(images['private'])
         output = self.list_cache()
@@ -318,8 +323,9 @@ class TestImageCache(functional.SynchronousAPIBase):
         self.assertIn(images['public'],
                       [img['image_id'] for img in output['cached_images']])
 
-        # Queue second image, may still be in queue
-        self.cache_queue(images['private'])
+        with mock.patch.object(cached_images.WORKER, 'submit'):
+            self.cache_queue(images['private'])
+
         self.wait_for_in_cache(images['private'])
         output = self.list_cache()
         total = len(output['queued_images']) + len(output['cached_images'])
@@ -355,8 +361,10 @@ class TestImageCache(functional.SynchronousAPIBase):
         self.assertEqual(0, len(output['queued_images']))
         self.assertEqual(0, len(output['cached_images']))
 
-        # Queue image for caching
-        self.cache_queue(images['public'])
+        self.list_cache()
+        with mock.patch.object(cached_images.WORKER, 'submit'):
+            self.cache_queue(images['public'])
+
         self.wait_for_in_cache(images['public'])
 
         path = '/v2/images/%s' % images['public']

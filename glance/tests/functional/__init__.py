@@ -34,6 +34,8 @@ from oslo_config import cfg
 from oslo_serialization import jsonutils
 import webob
 
+from glance.api import common as api_common
+import glance.async_
 from glance.common import config
 from glance.common import utils
 from glance.common import wsgi
@@ -45,6 +47,11 @@ execute = test_utils.execute
 
 SQLITE_CONN_TEMPLATE = 'sqlite:////%s/tests.sqlite'
 CONF = cfg.CONF
+
+# load_paste_app() does not run wsgi_app.init_app(); set pool size once for
+# functional tests (default task_pool_threads is 16).
+glance.async_.set_threadpool_model('native')
+api_common.DEFAULT_POOL_SIZE = 16
 
 
 class SynchronousAPIBase(test_utils.BaseTestCase):
@@ -440,6 +447,23 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.copy_data_file('schema-image.json', conf_dir)
         self.setup_property_protection_files()
 
+    def tearDown(self):
+        # Stop process-global CacheWorker so prefetch threads cannot outlive
+        # this test (native threads + parallel stestr workers).
+        try:
+            from glance.api.v2 import cached_images
+        except Exception:
+            cached_images = None
+        if cached_images is not None:
+            worker = cached_images.WORKER
+            if worker is not None:
+                try:
+                    worker.terminate()
+                except Exception:
+                    pass
+                cached_images.WORKER = None
+        super(SynchronousAPIBase, self).tearDown()
+
     def copy_data_file(self, file_name, dst_dir):
         src_file_name = os.path.join('glance/tests/etc', file_name)
         shutil.copy(src_file_name, dst_dir)
@@ -810,6 +834,10 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
 
         return image_id
 
+    def _task_api_get(self, url):
+        """GET a tasks API path (requires tasks_api_access/admin role)."""
+        return self.api_get(url, headers={'X-Roles': 'admin'})
+
     def _get_latest_task(self, image_id):
         tasks = self.api_get('/v2/images/%s/tasks' % image_id).json['tasks']
         tasks = sorted(tasks, key=lambda t: t['updated_at'])
@@ -838,20 +866,16 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
     def _get_import_task(self, image_id, task_id=None, exclude_task_ids=None,
                          max_sec=2, delay_sec=0.1):
         """Get import task for image. Retry if task is not ready yet."""
-        exclude_task_ids = set(exclude_task_ids or [])
         if task_id is not None:
-            task = self._find_image_task(image_id, task_id)
-            if task:
-                return task
+            return self._task_api_get('/v2/tasks/%s' % task_id).json
 
+        exclude_task_ids = set(exclude_task_ids or [])
         done_time = time.time() + max_sec
         while time.time() <= done_time:
             image = self.api_get('/v2/images/%s' % image_id).json
             lock_task_id = image.get('os_glance_import_task')
             if lock_task_id and lock_task_id not in exclude_task_ids:
-                task = self._find_image_task(image_id, lock_task_id)
-                if task:
-                    return task
+                return self._task_api_get('/v2/tasks/%s' % lock_task_id).json
 
             tasks = self.api_get('/v2/images/%s/tasks' % image_id).json['tasks']
             active_tasks = sorted(
@@ -860,7 +884,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                  and t['id'] not in exclude_task_ids],
                 key=lambda t: t['updated_at'])
             if active_tasks:
-                return active_tasks[-1]
+                return self._task_api_get(
+                    '/v2/tasks/%s' % active_tasks[-1]['id']).json
 
             # Import may fail before we observe an active task; use the
             # latest task once the import lock has been released.
@@ -868,7 +893,8 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                 [t for t in tasks if t['id'] not in exclude_task_ids],
                 key=lambda t: t['updated_at'])
             if recent_tasks:
-                return recent_tasks[-1]
+                return self._task_api_get(
+                    '/v2/tasks/%s' % recent_tasks[-1]['id']).json
 
             time.sleep(delay_sec)
 
@@ -882,7 +908,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         while time.time() <= done_time:
             task = self._get_task_by_id(task_id)
             if task is None:
-                task = self.api_get('/v2/tasks/%s' % task_id).json
+                task = self._task_api_get('/v2/tasks/%s' % task_id).json
             if task['status'] == expected_status:
                 return task
             time.sleep(delay_sec)
@@ -924,6 +950,11 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                               "(task status=success)")
             time.sleep(delay_sec)
 
+        try:
+            last_status = self._task_api_get(
+                '/v2/tasks/%s' % task_id).json['status']
+        except AssertionError:
+            pass
         self.fail('Timed out waiting for import failure on image %s '
                   '(last status=%s)' % (image_id, last_status))
 

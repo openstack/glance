@@ -34,8 +34,6 @@ DATA = b'IMAGEDATA'
 class TestCentralizedDb(functional.SynchronousAPIBase):
     # ToDo(abhishekk): Once system scope is enabled and RBAC is fully
     # supported, enable these tests for RBAC as well
-    def setUp(self):
-        super(TestCentralizedDb, self).setUp()
 
     def start_server(self, enable_cache=True, set_worker_url=True):
         if set_worker_url:

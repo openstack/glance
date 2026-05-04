@@ -146,7 +146,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
 
     def test_decompress_gzip_with_glance_direct(self):
         """Test GZIP decompression during glance-direct import."""
-        self.start_server()
+        self.start_server(enable_cache=False)
 
         original_content = b'X' * 10000
         compressed_file = self._create_gzip_file(original_content)
@@ -189,7 +189,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
     def test_decompress_gzip_with_web_download(self):
         """Test GZIP decompression during web-download import."""
         self.config(allowed_ports=[], group='import_filtering_opts')
-        self.start_server()
+        self.start_server(enable_cache=False)
 
         original_content = b'Y' * 15000
         compressed_file = self._create_gzip_file(original_content)
@@ -227,7 +227,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
 
     def test_decompress_zip_with_glance_direct(self):
         """Test ZIP decompression during glance-direct import."""
-        self.start_server()
+        self.start_server(enable_cache=False)
 
         original_content = b'Z' * 20000
         zip_file = self._create_zip_file(original_content)
@@ -268,7 +268,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
     def test_decompress_zip_with_web_download(self):
         """Test ZIP decompression during web-download import."""
         self.config(allowed_ports=[], group='import_filtering_opts')
-        self.start_server()
+        self.start_server(enable_cache=False)
 
         original_content = b'W' * 12000
         zip_file = self._create_zip_file(original_content)
@@ -306,7 +306,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
 
     def test_decompress_zip_multiple_files_error(self):
         """Test that ZIP with multiple files fails during import."""
-        self.start_server()
+        self.start_server(enable_cache=False)
 
         # Create a ZIP file with multiple files
         files_dict = {
@@ -340,7 +340,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
 
     def test_skip_decompression_container_format_compressed(self):
         """Test decompression is skipped when container_format='compressed'."""
-        self.start_server()
+        self.start_server(enable_cache=False)
 
         original_content = b'C' * 8000
         compressed_file = self._create_gzip_file(original_content)
@@ -381,7 +381,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
 
     def test_no_decompression_uncompressed_file(self):
         """Test that uncompressed files pass through unchanged."""
-        self.start_server()
+        self.start_server(enable_cache=False)
 
         original_content = b'U' * 5000
         uncompressed_file = self._create_uncompressed_file(original_content)
@@ -431,7 +431,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
         "lhafile library not available")
     def test_decompress_lha_with_glance_direct(self):
         """Test LHA decompression during glance-direct import."""
-        self.start_server()
+        self.start_server(enable_cache=False)
 
         lha_file = self._create_lha_file(b'H' * 9000)
 
@@ -475,7 +475,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
         if not image_decompression.NO_LHA:
             self.skipTest("lhafile library is available, cannot test NO_LHA")
 
-        self.start_server()
+        self.start_server(enable_cache=False)
 
         lha_file = self._create_lha_file(b'LHA content')
 

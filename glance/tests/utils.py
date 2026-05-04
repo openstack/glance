@@ -353,6 +353,11 @@ def execute(cmd,
     :param return_process: return process to terminate explicitly
     """
 
+    # Long-lived children (expect_exit=False) must not use PIPE for
+    # stdout/stderr without a reader: the buffer fills and the child blocks on
+    # write. Eventlet's monkey-patched Popen masked this; stdlib subprocess
+    # does not. Discard I/O so daemons (e.g. glance-scrubber --daemon) run.
+
     env = os.environ.copy()
     if exec_env is not None:
         for env_name, env_val in exec_env.items():
@@ -380,10 +385,19 @@ def execute(cmd,
         path_ext.append(os.path.dirname(executable))
 
     env['PATH'] = ':'.join(path_ext) + ':' + env['PATH']
+    if expect_exit:
+        stdin_dest = subprocess.PIPE
+        stdout_dest = subprocess.PIPE
+        stderr_dest = subprocess.PIPE
+    else:
+        stdin_dest = subprocess.DEVNULL
+        stdout_dest = subprocess.DEVNULL
+        stderr_dest = subprocess.DEVNULL
+
     process = subprocess.Popen(args,
-                               stdin=subprocess.PIPE,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
+                               stdin=stdin_dest,
+                               stdout=stdout_dest,
+                               stderr=stderr_dest,
                                env=env)
     if expect_exit:
         result = process.communicate()
