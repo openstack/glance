@@ -3568,6 +3568,33 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         # Upload should now succeed
         self._create_and_upload()
 
+    def test_upload_with_known_size(self):
+        # Set a quota of 5MiB and provide known 3MiB upload sizes.
+        self.set_limit({'image_size_total': 5,
+                        'image_count_total': 10,
+                        'image_count_uploading': 10})
+        self.start_server()
+
+        headers = {'Content-Type': 'application/octet-stream',
+                   'x-openstack-image-size': str(3 * units.Mi)}
+
+        # First upload of 3MiB should succeed.
+        image_id = self._create().json['id']
+        resp = self.api_put('/v2/images/%s/file' % image_id,
+                            headers=headers,
+                            body_file=test_utils.FakeData(3 * units.Mi))
+        self.assertEqual(204, resp.status_code)
+
+        # Second known-size upload of 3MiB should be rejected pre-upload
+        # because 3MiB current usage + 3MiB delta exceeds 5MiB.
+        image_id = self._create().json['id']
+        resp = self.api_put('/v2/images/%s/file' % image_id,
+                            headers=headers,
+                            body_file=test_utils.FakeData(3 * units.Mi))
+        self.assertEqual(413, resp.status_code)
+        self.assertIn(('image_size_total is over limit of 5 due to '
+                       'current usage 3 and delta 3'), resp.text)
+
     def test_import(self):
         # Set a quota of 5MiB
         self.set_limit({'image_size_total': 5,
@@ -3714,6 +3741,34 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         # Stage should now succeed because we have freed up quota
         self._create_and_stage(
             data_iter=test_utils.FakeData(6 * units.Mi))
+
+    def test_stage_with_known_size(self):
+        # Set a stage quota of 5MiB and provide known 3MiB stage sizes.
+        self.set_limit({'image_size_total': 15,
+                        'image_stage_total': 5,
+                        'image_count_total': 10,
+                        'image_count_uploading': 10})
+        self.start_server()
+
+        headers = {'Content-Type': 'application/octet-stream',
+                   'x-openstack-image-size': str(3 * units.Mi)}
+
+        # First stage of 3MiB should succeed.
+        image_id = self._create().json['id']
+        resp = self.api_put('/v2/images/%s/stage' % image_id,
+                            headers=headers,
+                            body_file=test_utils.FakeData(3 * units.Mi))
+        self.assertEqual(204, resp.status_code)
+
+        # Second known-size stage of 3MiB should be rejected pre-stage
+        # because 3MiB current usage + 3MiB delta exceeds 5MiB.
+        image_id = self._create().json['id']
+        resp = self.api_put('/v2/images/%s/stage' % image_id,
+                            headers=headers,
+                            body_file=test_utils.FakeData(3 * units.Mi))
+        self.assertEqual(413, resp.status_code)
+        self.assertIn(('image_stage_total is over limit of 5 due to '
+                       'current usage 3 and delta 3'), resp.text)
 
     def test_create(self):
         # Set a quota of 2 images

@@ -22,6 +22,7 @@ from cursive import exception as cursive_exception
 import glance_store
 from glance_store._drivers import filesystem
 from oslo_config import cfg
+from oslo_utils import units
 import webob
 
 import glance.api.policy
@@ -201,6 +202,20 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual('YYYY', image.data)
         self.assertEqual(4, image.size)
 
+    @mock.patch('glance.api.v2.image_data.ks_quota.enforce_image_size_total')
+    def test_upload_enforces_quota_with_known_size(self, mock_enforce):
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd', owner='tenant1')
+        self.image_repo.result = image
+
+        self.controller.upload(request, unit_test_utils.UUID2,
+                               'Y' * (2 * units.Mi),
+                               2 * units.Mi)
+
+        mock_enforce.assert_called_once_with(request.context,
+                                             request.context.owner,
+                                             delta=2)
+
     def test_upload_not_allowed_by_policy(self):
         request = unit_test_utils.get_fake_request()
         with mock.patch.object(self.controller.policy, 'enforce') as mock_enf:
@@ -247,6 +262,18 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
         self.assertEqual('YYYY', image.data)
         self.assertEqual(4, image.size)
+
+    @mock.patch('glance.api.v2.image_data.ks_quota.enforce_image_size_total')
+    def test_upload_enforces_quota_with_unknown_size(self, mock_enforce):
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', None)
+
+        mock_enforce.assert_called_once_with(request.context,
+                                             request.context.owner,
+                                             delta=0)
 
     def test_upload_size_more_than_data(self):
         request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
@@ -553,6 +580,22 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual('uploading', image.status)
         self.assertEqual(4, image.size)
 
+    @mock.patch(
+        'glance.api.v2.image_data.ks_quota.enforce_image_staging_total')
+    def test_stage_enforces_quota_with_known_size(self, mock_enforce):
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        with mock.patch.object(filesystem.Store, 'add') as mock_add:
+            mock_add.return_value = ('foo://bar', 2 * units.Mi, 'ident', {})
+            self.controller.stage(request, image_id, 'Y' * (2 * units.Mi),
+                                  2 * units.Mi)
+
+        mock_enforce.assert_called_once_with(request.context,
+                                             request.context.owner,
+                                             delta=2)
+
     def test_stage_no_size(self):
         image_id = str(uuid.uuid4())
         request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
@@ -563,6 +606,21 @@ class TestImagesController(base.StoreClearingUnitTest):
             self.controller.stage(request, image_id, 'YYYY', None)
         self.assertEqual('uploading', image.status)
         self.assertEqual(4, image.size)
+
+    @mock.patch(
+        'glance.api.v2.image_data.ks_quota.enforce_image_staging_total')
+    def test_stage_enforces_quota_with_unknown_size(self, mock_enforce):
+        image_id = str(uuid.uuid4())
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage(image_id=image_id)
+        self.image_repo.result = image
+        with mock.patch.object(filesystem.Store, 'add') as mock_add:
+            mock_add.return_value = ('foo://bar', 4, 'ident', {})
+            self.controller.stage(request, image_id, 'YYYY', None)
+
+        mock_enforce.assert_called_once_with(request.context,
+                                             request.context.owner,
+                                             delta=0)
 
     def test_stage_size_more_than_data(self):
         request = unit_test_utils.get_fake_request(roles=['admin', 'member'])

@@ -1,0 +1,16 @@
+---
+fixes:
+  - |
+    Glance now uses the client-provided known image size (via the
+    ``x-openstack-image-size`` header) during quota pre-checks for both PUT
+    ``/v2/images/{image_id}/file`` and PUT ``/v2/images/{image_id}/stage``.
+    When the size is provided, ``image_size_total`` and ``image_stage_total``
+    checks include a delta based on that known size, which allows requests that
+    would exceed quota to be rejected earlier.
+issues:
+  - |
+    Quota enforcement remains best-effort for concurrent asynchronous
+    operations. Even with known-size pre-checks, multiple requests handled in
+    parallel across workers can pass independent checks and temporarily exceed
+    configured limits. Subsequent requests are then expected to be denied until
+    usage returns below quota.
