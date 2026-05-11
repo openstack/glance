@@ -4641,6 +4641,10 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
                             'application/openstack-images-v2.0-json-patch']
             expected = ', '.join(sorted(accept_patch))
             self.assertEqual(expected, e.headers['Accept-Patch'])
+            detail = str(e.detail)
+            self.assertTrue(detail.strip())
+            for ct in accept_patch:
+                self.assertIn(ct, detail)
         else:
             self.fail('Did not raise HTTPUnsupportedMediaType')
 
