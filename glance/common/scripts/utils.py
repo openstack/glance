@@ -18,6 +18,7 @@ __all__ = [
     'unpack_task_input',
     'set_base_image_properties',
     'validate_location_uri',
+    'validate_legacy_import_from_uri',
     'get_image_data_iter',
     'SafeRedirectHandler',
 ]
@@ -127,6 +128,16 @@ def validate_location_uri(location):
                 "valid uri from the following list of supported uri "
                 "%(supported)s") % {'supported': supported}
         raise urllib.error.URLError(msg)
+
+
+def validate_legacy_import_from_uri(location):
+    """Validate legacy ``import_from`` URI (scheme + import filter)."""
+    uri = validate_location_uri(location)
+    if not common_utils.validate_import_uri(uri):
+        msg = (_("URI for legacy import task does not pass filtering: %s") %
+               uri)
+        raise exception.Invalid(msg)
+    return uri
 
 
 class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):

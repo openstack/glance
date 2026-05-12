@@ -153,6 +153,26 @@ class TestScriptsUtils(test_utils.BaseTestCase):
         self.assertRaises(urllib.error.URLError,
                           script_utils.validate_location_uri, location)
 
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
+    def test_validate_legacy_import_from_uri_ok(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ('203.0.113.1', 80))]
+        uri = 'http://example.com/img'
+        self.assertEqual(
+            uri, script_utils.validate_legacy_import_from_uri(uri))
+
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
+    def test_validate_legacy_import_from_uri_filtered(self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ('127.0.0.1', 80))]
+        self.config(disallowed_hosts=['127.0.0.1'],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[80],
+                    group='import_filtering_opts')
+        self.assertRaises(exception.Invalid,
+                          script_utils.validate_legacy_import_from_uri,
+                          'http://127.0.0.1:80/x')
+
 
 class TestCallbackIterator(test_utils.BaseTestCase):
     def test_iterator_iterates(self):
