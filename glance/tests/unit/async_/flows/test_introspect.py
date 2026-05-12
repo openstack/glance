@@ -37,7 +37,7 @@ class TestImportTask(test_utils.BaseTestCase):
         super(TestImportTask, self).setUp()
         self.task_factory = domain.TaskFactory()
         task_input = {
-            "import_from": "http://cloud.foo/image.qcow2",
+            "import_from": "http://198.51.100.1/image.qcow2",
             "import_from_format": "qcow2",
             "image_properties": mock.sentinel.image_properties
         }

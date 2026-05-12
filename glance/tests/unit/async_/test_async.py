@@ -132,7 +132,7 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
         import_req = {
             'method': {
                 'name': 'web-download',
-                'uri': 'http://cloud.foo/image.qcow2'
+                'uri': 'http://198.51.100.1/image.qcow2'
             }
         }
 
