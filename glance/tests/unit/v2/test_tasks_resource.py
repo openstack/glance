@@ -297,18 +297,22 @@ class TestTasksController(test_utils.BaseTestCase):
         self.assertRaises(webob.exc.HTTPNotFound,
                           self.controller.get, request, UUID4)
 
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
     @mock.patch('glance.api.common.get_thread_pool')
     @mock.patch.object(glance.gateway.Gateway, 'get_task_factory')
     @mock.patch.object(glance.gateway.Gateway, 'get_task_executor_factory')
     @mock.patch.object(glance.gateway.Gateway, 'get_task_repo')
     def test_create(self, mock_get_task_repo, mock_get_task_executor_factory,
-                    mock_get_task_factory, mock_get_thread_pool):
+                    mock_get_task_factory, mock_get_thread_pool,
+                    mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ('203.0.113.1', 80))]
         # setup
         request = unit_test_utils.get_fake_request()
         task = {
             "type": "import",
             "input": {
-                "import_from": "swift://cloud.foo/myaccount/mycontainer/path",
+                "import_from": "http://example.com/myaccount/mycontainer/path",
                 "import_from_format": "qcow2",
                 "image_properties": {}
             }
@@ -345,8 +349,8 @@ class TestTasksController(test_utils.BaseTestCase):
             get_task_executor_factory.new_task_executor.return_value)
 
     @mock.patch('glance.common.scripts.utils.get_image_data_iter')
-    @mock.patch('glance.common.scripts.utils.validate_location_uri')
-    def test_create_with_live_time(self, mock_validate_location_uri,
+    @mock.patch('glance.common.scripts.utils.validate_legacy_import_from_uri')
+    def test_create_with_live_time(self, mock_validate_legacy_import_from_uri,
                                    mock_get_image_data_iter):
         self.skipTest("Something wrong, this test touches registry")
         request = unit_test_utils.get_fake_request()
@@ -387,10 +391,6 @@ class TestTasksController(test_utils.BaseTestCase):
             "file:///path",
             "cinder://volume-id"
         ]
-        executor_factory = self.gateway.get_task_executor_factory(
-            request.context)
-        task_repo = self.gateway.get_task_repo(request.context)
-
         for import_from in wrong_import_from:
             task = {
                 "type": "import",
@@ -404,12 +404,8 @@ class TestTasksController(test_utils.BaseTestCase):
                     }
                 }
             }
-            new_task = self.controller.create(request, task=task)
-            task_executor = executor_factory.new_task_executor(request.context)
-            task_executor.begin_processing(new_task.task_id)
-            final_task = task_repo.get(new_task.task_id)
-
-            self.assertEqual('failure', final_task.status)
+            exc = self.assertRaises(webob.exc.HTTPBadRequest,
+                                    self.controller.create, request, task=task)
             if import_from.startswith("file:///"):
                 msg = ("File based imports are not allowed. Please use a "
                        "non-local source of image data.")
@@ -418,7 +414,33 @@ class TestTasksController(test_utils.BaseTestCase):
                 msg = ("The given uri is not valid. Please specify a "
                        "valid uri from the following list of supported uri "
                        "%(supported)s") % {'supported': supported}
-            self.assertEqual(msg, final_task.message)
+            self.assertEqual(msg, exc.explanation)
+
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
+    def test_create_legacy_import_rejects_filtered_http_uri(
+            self, mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ('127.0.0.1', 80))]
+        self.config(disallowed_hosts=['127.0.0.1'],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[80],
+                    group='import_filtering_opts')
+        request = unit_test_utils.get_fake_request()
+        task = {
+            "type": "import",
+            "input": {
+                "import_from": "http://127.0.0.1:80/internal",
+                "import_from_format": "qcow2",
+                "image_properties": {
+                    "disk_format": "qcow2",
+                    "container_format": "bare",
+                    "name": "test-task"
+                }
+            }
+        }
+        exc = self.assertRaises(webob.exc.HTTPBadRequest,
+                                self.controller.create, request, task=task)
+        self.assertIn('does not pass filtering', exc.explanation)
 
     def test_create_with_properties_missed(self):
         request = unit_test_utils.get_fake_request()
@@ -426,14 +448,17 @@ class TestTasksController(test_utils.BaseTestCase):
             request.context)
         task_repo = self.gateway.get_task_repo(request.context)
 
-        task = {
-            "type": "import",
-            "input": {
-                "import_from": "swift://cloud.foo/myaccount/mycontainer/path",
-                "import_from_format": "qcow2",
+        with mock.patch('glance.common.utils.socket.getaddrinfo',
+                        return_value=[(None, None, None, None,
+                                       ('203.0.113.1', 80))]):
+            task = {
+                "type": "import",
+                "input": {
+                    "import_from": "http://example.com/myaccount/path",
+                    "import_from_format": "qcow2",
+                }
             }
-        }
-        new_task = self.controller.create(request, task=task)
+            new_task = self.controller.create(request, task=task)
         task_executor = executor_factory.new_task_executor(request.context)
         task_executor.begin_processing(new_task.task_id)
         final_task = task_repo.get(new_task.task_id)
@@ -442,8 +467,12 @@ class TestTasksController(test_utils.BaseTestCase):
         msg = "Input does not contain 'image_properties' field"
         self.assertEqual(msg, final_task.message)
 
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
     @mock.patch.object(glance.gateway.Gateway, 'get_task_factory')
-    def test_notifications_on_create(self, mock_get_task_factory):
+    def test_notifications_on_create(self, mock_get_task_factory,
+                                     mock_getaddrinfo):
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ('203.0.113.1', 80))]
         request = unit_test_utils.get_fake_request()
 
         new_task = mock.MagicMock(type='import')

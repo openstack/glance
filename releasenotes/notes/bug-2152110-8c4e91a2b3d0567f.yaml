@@ -1,0 +1,29 @@
+---
+security:
+  - |
+    Fixed insufficient validation of ``import_from`` URIs for legacy
+    ``type=import`` tasks created through the deprecated Task API
+    (``POST /v2/tasks``). Those requests were not held to the same URI
+    rules as modern image import, so Server-Side Request Forgery (SSRF)
+    protections could be weaker on that path.
+
+    Impact:
+
+    - Severity: High (SSRF-style exposure through attacker-controlled
+      ``import_from`` URIs on the legacy import task path)
+    - Affected versions: All versions prior to this fix that still
+      expose the Task API for ``type=import`` tasks
+
+    Mitigation without upgrading (especially for unmaintained
+    releases):
+
+    The Task API has been deprecated for a long time; the simplest
+    mitigation is to block it in your deployment, for example set
+    ``tasks_api_access`` to a check that never matches (such as ``!``
+    in a policy YAML file) so ``/v2/tasks`` is denied for all callers.
+
+fixes:
+  - |
+    `Bug 2152110 <https://bugs.launchpad.net/glance/+bug/2152110>`_:
+    Align legacy ``type=import`` task URI checks with modern image
+    import so ``import_from`` cannot bypass the same restrictions.
