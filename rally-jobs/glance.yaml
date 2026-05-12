@@ -8,7 +8,10 @@
         GlanceImages.create_and_list_image:
           image_location: "~/.rally/extra/fake.img"
           container_format: "bare"
-          disk_format: "qcow2"
+          # Synthetic fake.img is not qcow2; Glance format inspection treats the
+          # stream as raw on many backends, which yields InvalidImageData and
+          # HTTP 415 if disk_format claims qcow2. Use raw for this subtask only.
+          disk_format: "raw"
       runner:
         constant:
           times: 700
