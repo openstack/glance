@@ -601,18 +601,22 @@ Related options:
 
 """)),
     cfg.ListOpt('enabled_import_methods',
-                item_type=cfg.types.String(quotes=True),
+                item_type=cfg.types.String(
+                    choices=['glance-direct', 'web-download',
+                             'copy-image', 'glance-download'],
+                    quotes=True,
+                ),
                 bounds=True,
                 default=['glance-direct', 'web-download',
                          'copy-image'],
                 help=_("""
-    List of enabled Image Import Methods
+List of enabled Image Import Methods
 
-    'glance-direct', 'copy-image' and 'web-download' are enabled by default.
-    'glance-download' is available, but requires federated deployments.
+'glance-direct', 'copy-image' and 'web-download' are enabled by default.
+'glance-download' is available, but requires federated deployments.
 
-    Related options:
-        * [DEFAULT]/node_staging_uri""")),
+Related options:
+    * [DEFAULT]/node_staging_uri""")),
     cfg.StrOpt('worker_self_reference_url',
                default=None,
                help=_("""

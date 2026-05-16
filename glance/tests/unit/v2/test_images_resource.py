@@ -5321,14 +5321,29 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         self.assertEqual(sorted(['x86', '64bit']),
                          sorted(output['filters']['tags']))
 
+    def test_import_method_options(self):
+        all_import_methods = ['glance-direct', 'web-download', 'copy-image',
+                              'glance-download']
+
+        self.config(enabled_import_methods=['glance-direct'])
+        self.config(enabled_import_methods=all_import_methods)
+        self.assertRaises(
+            ValueError,
+            self.config,
+            enabled_import_methods=all_import_methods + ['invalid'])
+        self.assertRaises(
+            ValueError,
+            self.config,
+            enabled_import_methods=['invalid'])
+
     def test_image_import(self):
         # Bug 1754634: make sure that what's considered valid
         # is determined by the config option
-        self.config(enabled_import_methods=['party-time'])
+        self.config(enabled_import_methods=['web-download'])
         request = unit_test_utils.get_fake_request()
         import_body = {
             "method": {
-                "name": "party-time"
+                "name": "web-download"
             }
         }
         request.body = jsonutils.dump_as_bytes(import_body)
@@ -5396,14 +5411,12 @@ class TestImagesDeserializer(test_utils.BaseTestCase):
         request.body = jsonutils.dump_as_bytes(import_body)
         return request
 
-    KNOWN_IMPORT_METHODS = ['glance-direct', 'web-download', 'glance-download']
-
     def test_import_image_invalid_import_method(self):
-        # Bug 1754634: make sure that what's considered valid
-        # is determined by the config option.  So put known bad
-        # name in config, and known good name in request
-        self.config(enabled_import_methods=['bad-method-name'])
-        for m in self.KNOWN_IMPORT_METHODS:
+        # Bug 1754634: make sure that what's considered valid is determined by
+        # the config option. So put known but disabled name in config, and
+        # known good name in request
+        self.config(enabled_import_methods=['copy-image'])
+        for m in ['glance-direct', 'web-download', 'glance-download']:
             request = self._get_request_for_method(m)
             self.assertRaises(webob.exc.HTTPBadRequest,
                               self.deserializer.import_image,
@@ -5864,7 +5877,7 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         header_name = 'OpenStack-image-import-methods'
 
         # check multiple methods
-        enabled_methods = ['one', 'two', 'three']
+        enabled_methods = ['glance-direct', 'web-download', 'copy-image']
         self.config(enabled_import_methods=enabled_methods)
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
@@ -5874,13 +5887,14 @@ class TestImagesSerializer(test_utils.BaseTestCase):
         self.assertCountEqual(enabled_methods, header_value.split(','))
 
         # check single method
-        self.config(enabled_import_methods=['swift-party-time'])
+        enabled_methods = ['glance-direct']
+        self.config(enabled_import_methods=enabled_methods)
         response = webob.Response()
         self.serializer.create(response, self.fixtures[0])
         self.assertEqual(http.CREATED, response.status_int)
         header_value = response.headers.get(header_name)
         self.assertIsNotNone(header_value)
-        self.assertEqual('swift-party-time', header_value)
+        self.assertCountEqual(enabled_methods, header_value.split(','))
 
         # no header for empty config value
         self.config(enabled_import_methods=[])
