@@ -40,7 +40,7 @@ from oslo_utils import timeutils as oslo_timeutils
 from webob import exc
 
 from glance.common import exception
-from glance.common import wsgi
+from glance.common import wsgi_app
 from glance.i18n import _, _LE, _LW
 
 CONF = cfg.CONF
@@ -735,7 +735,7 @@ def _get_available_stores():
         # excluded from the list.
         if available_stores[store] == 'http':
             continue
-        if store not in wsgi.RESERVED_STORES:
+        if store not in wsgi_app.RESERVED_STORES:
             stores.append(store)
 
     return stores

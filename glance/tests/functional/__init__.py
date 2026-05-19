@@ -38,7 +38,7 @@ from glance.api import common as api_common
 import glance.async_
 from glance.common import config
 from glance.common import utils
-from glance.common import wsgi
+from glance.common import wsgi_app
 from glance.db.sqlalchemy import api as db_api
 from glance import housekeeping
 from glance.tests import utils as test_utils
@@ -413,7 +413,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.config(enabled_backends={'store1': 'file', 'store2': 'file',
                                       'store3': 'file'})
         glance_store.register_store_opts(CONF,
-                                         reserved_stores=wsgi.RESERVED_STORES)
+                                         reserved_stores=wsgi_app.RESERVED_STORES)
         self.config(default_backend='store1',
                     group='glance_store')
         self.config(filesystem_store_datadir=self._store_dir('store1'),
@@ -428,7 +428,7 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                     group='os_glance_tasks_store')
 
         glance_store.create_multi_stores(CONF,
-                                         reserved_stores=wsgi.RESERVED_STORES)
+                                         reserved_stores=wsgi_app.RESERVED_STORES)
         glance_store.verify_store()
 
     def setUp(self, single_store=False, bypass_headers=False):

@@ -1,0 +1,9 @@
+---
+upgrade:
+  - |
+    The standalone ``glance-api`` process (eventlet-based HTTP server started
+    directly from the ``glance-api`` console script) has been removed. Deploy
+    Glance under a WSGI server using the WSGI application
+    ``glance.wsgi.api:application``. Running ``glance-api`` on the command
+    line now exits with an error message describing the supported deployment
+    method.

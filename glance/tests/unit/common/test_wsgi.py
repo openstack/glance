@@ -18,16 +18,10 @@
 import datetime
 import gettext
 import http.client as http
-import os
-import socket
 from unittest import mock
 
-import eventlet.patcher
-import fixtures
-from oslo_concurrency import processutils
 from oslo_serialization import jsonutils
 import routes
-import testtools
 import webob
 
 from glance.api.v2 import router as router_v2
@@ -35,7 +29,6 @@ from glance.common import exception
 from glance.common import utils
 from glance.common import wsgi
 from glance import i18n
-from glance.image_cache import prefetcher
 from glance.tests import utils as test_utils
 
 
@@ -553,124 +546,6 @@ class JSONRequestDeserializerTest(test_utils.BaseTestCase):
 
         return wsgi.JSONRequestDeserializer().has_body(request)
 
-    def test_get_bind_addr_default_value(self):
-        expected = ('0.0.0.0', '123456')
-        actual = wsgi.get_bind_addr(default_port="123456")
-        self.assertEqual(expected, actual)
-
-
-class ServerTest(test_utils.BaseTestCase):
-    @testtools.skip("glance.common.wsgi uses eventlet and is deprecated")
-    @mock.patch.object(prefetcher, 'Prefetcher')
-    def test_create_pool(self, mock_prefetcher):
-        """Ensure the wsgi thread pool is an eventlet.greenpool.GreenPool."""
-        actual = wsgi.Server(threads=1).create_pool()
-        self.assertIsInstance(actual, eventlet.greenpool.GreenPool)
-
-    @mock.patch.object(prefetcher, 'Prefetcher')
-    @mock.patch.object(wsgi.Server, 'configure_socket')
-    def test_reserved_stores_not_allowed(self, mock_configure_socket,
-                                         mock_prefetcher):
-        """Ensure the reserved stores are not allowed"""
-        enabled_backends = {'os_glance_file_store': 'file'}
-        self.config(enabled_backends=enabled_backends)
-        server = wsgi.Server(threads=1, initialize_glance_store=True)
-        self.assertRaises(RuntimeError, server.configure)
-
-    @testtools.skip("glance.common.wsgi uses eventlet and is deprecated")
-    @mock.patch.object(prefetcher, 'Prefetcher')
-    @mock.patch.object(wsgi.Server, 'configure_socket')
-    @mock.patch('glance.sqlite_migration.can_migrate_to_central_db')
-    def test_http_keepalive(self, mock_migrate_db, mock_configure_socket,
-                            mock_prefetcher):
-        mock_migrate_db.return_value = False
-        self.config(http_keepalive=False)
-        self.config(workers=0)
-
-        server = wsgi.Server(threads=1)
-        server.sock = 'fake_socket'
-        # mocking eventlet.wsgi server method to check it is called with
-        # configured 'http_keepalive' value.
-        with mock.patch.object(eventlet.wsgi,
-                               'server') as mock_server:
-            fake_application = "fake-application"
-            server.start(fake_application, 0)
-            server.wait()
-            mock_server.assert_called_once_with('fake_socket',
-                                                fake_application,
-                                                log=server._logger,
-                                                debug=False,
-                                                custom_pool=server.pool,
-                                                keepalive=False,
-                                                socket_timeout=900)
-
-    @mock.patch.object(prefetcher, 'Prefetcher')
-    @mock.patch('glance.sqlite_migration.can_migrate_to_central_db')
-    def test_number_of_workers_posix(self, mock_migrate_db, mock_prefetcher):
-        """Ensure the number of workers matches num cpus limited to 8."""
-        mock_migrate_db.return_value = False
-
-        def pid():
-            i = 1
-            while True:
-                i = i + 1
-                yield i
-
-        with mock.patch.object(os, 'fork') as mock_fork:
-            with mock.patch('oslo_concurrency.processutils.get_worker_count',
-                            return_value=4):
-                mock_fork.side_effect = pid
-                server = wsgi.Server()
-                server.configure = mock.Mock()
-                fake_application = "fake-application"
-                server.start(fake_application, None)
-                self.assertEqual(4, len(server.children))
-            with mock.patch('oslo_concurrency.processutils.get_worker_count',
-                            return_value=24):
-                mock_fork.side_effect = pid
-                server = wsgi.Server()
-                server.configure = mock.Mock()
-                fake_application = "fake-application"
-                server.start(fake_application, None)
-                self.assertEqual(8, len(server.children))
-            mock_fork.side_effect = pid
-            server = wsgi.Server()
-            server.configure = mock.Mock()
-            fake_application = "fake-application"
-            server.start(fake_application, None)
-            cpus = processutils.get_worker_count()
-            expected_workers = cpus if cpus < 8 else 8
-            self.assertEqual(expected_workers,
-                             len(server.children))
-
-    @mock.patch('glance.sqlite_migration.can_migrate_to_central_db')
-    def test_invalid_staging_uri(self, mock_migrate_db):
-        mock_migrate_db.return_value = False
-        self.config(node_staging_uri='http://good.luck')
-        server = wsgi.Server()
-        with mock.patch.object(server, 'start_wsgi'):
-            # Make sure a stating URI with an bad scheme will abort startup
-            self.assertRaises(exception.GlanceException,
-                              server.start, 'fake-application', 34567)
-
-    @mock.patch('os.path.exists')
-    @mock.patch('glance.sqlite_migration.can_migrate_to_central_db')
-    def test_missing_staging_dir(self, mock_migrate_db, mock_exists):
-        mock_migrate_db.return_value = False
-        mock_exists.return_value = False
-        server = wsgi.Server()
-        with mock.patch.object(server, 'start_wsgi'):
-            # Since we are mocking out start_wsgi, create a fake pool ourselves
-            server.pool = mock.MagicMock()
-            with mock.patch.object(wsgi, 'LOG') as mock_log:
-                server.start('fake-application', 34567)
-                mock_exists.assert_called_once_with('/tmp/staging/')
-                # Make sure a missing staging directory will log a warning.
-                mock_log.warning.assert_called_once_with(
-                    'Import methods are enabled but staging directory '
-                    '%(path)s does not exist; Imports will fail!',
-                    {'path': '/tmp/staging/'})
-
 
 class TestHelpers(test_utils.BaseTestCase):
 
@@ -717,91 +592,36 @@ class TestHelpers(test_utils.BaseTestCase):
                 self.assertNotIn(k, result)
 
 
-class GetSocketTestCase(test_utils.BaseTestCase):
-
-    def setUp(self):
-        super(GetSocketTestCase, self).setUp()
-        self.useFixture(fixtures.MonkeyPatch(
-            "glance.common.wsgi.get_bind_addr",
-            lambda x: ('192.168.0.13', 1234)))
-        addr_info_list = [(2, 1, 6, '', ('192.168.0.13', 80)),
-                          (2, 2, 17, '', ('192.168.0.13', 80)),
-                          (2, 3, 0, '', ('192.168.0.13', 80))]
-        self.useFixture(fixtures.MonkeyPatch(
-            "glance.common.wsgi.socket.getaddrinfo",
-            lambda *x: addr_info_list))
-        self.useFixture(fixtures.MonkeyPatch(
-            "glance.common.wsgi.time.time",
-            mock.Mock(side_effect=[0, 1, 5, 10, 20, 35])))
-        wsgi.CONF.tcp_keepidle = 600
-
-    @mock.patch.object(prefetcher, 'Prefetcher')
-    def test_correct_configure_socket(self, mock_prefetcher):
-        mock_socket = mock.Mock()
-        self.useFixture(fixtures.MonkeyPatch(
-            'glance.common.wsgi.eventlet.listen',
-            lambda *x, **y: mock_socket))
-        server = wsgi.Server()
-        server.default_port = 1234
-        server.configure_socket()
-        self.assertIn(mock.call.setsockopt(
-            socket.SOL_SOCKET,
-            socket.SO_REUSEADDR,
-            1), mock_socket.mock_calls)
-        self.assertIn(mock.call.setsockopt(
-            socket.SOL_SOCKET,
-            socket.SO_KEEPALIVE,
-            1), mock_socket.mock_calls)
-        if hasattr(socket, 'TCP_KEEPIDLE'):
-            self.assertIn(mock.call.setsockopt(
-                socket.IPPROTO_TCP,
-                socket.TCP_KEEPIDLE,
-                wsgi.CONF.tcp_keepidle), mock_socket.mock_calls)
-
-    def test_get_socket_with_bind_problems(self):
-        self.useFixture(fixtures.MonkeyPatch(
-            'glance.common.wsgi.eventlet.listen',
-            mock.Mock(side_effect=(
-                [wsgi.socket.error(socket.errno.EADDRINUSE)] * 3 + [None]))))
-
-        self.assertRaises(RuntimeError, wsgi.get_socket, 1234)
-
-    def test_get_socket_with_unexpected_socket_errno(self):
-        self.useFixture(fixtures.MonkeyPatch(
-            'glance.common.wsgi.eventlet.listen',
-            mock.Mock(side_effect=wsgi.socket.error(socket.errno.ENOMEM))))
-        self.assertRaises(wsgi.socket.error, wsgi.get_socket, 1234)
-
-
-def _cleanup_uwsgi():
-    wsgi.uwsgi = None
-
-
 class Test_UwsgiChunkedFile(test_utils.BaseTestCase):
+
+    def _mock_uwsgi(self):
+        uwsgi_mod = mock.MagicMock()
+        patcher = mock.patch.object(wsgi, '_get_uwsgi', return_value=uwsgi_mod)
+        self.addCleanup(patcher.stop)
+        patcher.start()
+        return uwsgi_mod
 
     def test_read_no_data(self):
         reader = wsgi._UWSGIChunkFile()
-        wsgi.uwsgi = mock.MagicMock()
-        self.addCleanup(_cleanup_uwsgi)
+        uwsgi_mod = self._mock_uwsgi()
 
         def fake_read():
             return None
 
-        wsgi.uwsgi.chunked_read = fake_read
+        uwsgi_mod.chunked_read = fake_read
         out = reader.read()
         self.assertEqual(out, b'')
 
     def test_read_data_no_length(self):
         reader = wsgi._UWSGIChunkFile()
-        wsgi.uwsgi = mock.MagicMock()
-        self.addCleanup(_cleanup_uwsgi)
+        uwsgi_mod = self._mock_uwsgi()
 
         values = iter([b'a', b'b', b'c', None])
 
         def fake_read():
             return next(values)
 
-        wsgi.uwsgi.chunked_read = fake_read
+        uwsgi_mod.chunked_read = fake_read
         out = reader.read()
         self.assertEqual(out, b'abc')
 
@@ -811,36 +631,33 @@ class Test_UwsgiChunkedFile(test_utils.BaseTestCase):
 
     def test_read_data_length(self):
         reader = wsgi._UWSGIChunkFile()
-        wsgi.uwsgi = mock.MagicMock()
-        self.addCleanup(_cleanup_uwsgi)
+        uwsgi_mod = self._mock_uwsgi()
 
         values = iter([b'a', b'b', b'c', None])
 
         def fake_read():
             return next(values)
 
-        wsgi.uwsgi.chunked_read = fake_read
+        uwsgi_mod.chunked_read = fake_read
         out = reader.read(length=2)
         self.assertEqual(out, b'ab')
 
     def test_read_data_negative_length(self):
         reader = wsgi._UWSGIChunkFile()
-        wsgi.uwsgi = mock.MagicMock()
-        self.addCleanup(_cleanup_uwsgi)
+        uwsgi_mod = self._mock_uwsgi()
 
         values = iter([b'a', b'b', b'c', None])
 
         def fake_read():
             return next(values)
 
-        wsgi.uwsgi.chunked_read = fake_read
+        uwsgi_mod.chunked_read = fake_read
         out = reader.read(length=-2)
         self.assertEqual(out, b'abc')
 
     def test_read_data_length_with_overshoot(self):
         reader = wsgi._UWSGIChunkFile()
-        wsgi.uwsgi = mock.MagicMock()
-        self.addCleanup(_cleanup_uwsgi)
+        uwsgi_mod = self._mock_uwsgi()
 
         values_read_count = 0
         values_read_count_prev = 0
@@ -857,7 +674,7 @@ class Test_UwsgiChunkedFile(test_utils.BaseTestCase):
             values_read_count_prev = values_read_count
             return res
 
-        wsgi.uwsgi.chunked_read = fake_read
+        uwsgi_mod.chunked_read = fake_read
         out = reader.read(length=2)
 
         # empty buffer case

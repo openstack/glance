@@ -17,22 +17,11 @@
 #    under the License.
 
 """
-Utility methods for working with WSGI servers
+Utility methods for working with WSGI applications
 """
 
-import abc
-import errno
-import functools
-import os
-import signal
 import sys
-import time
 
-from eventlet.green import socket
-import eventlet.greenio
-import eventlet.wsgi
-import glance_store
-from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_serialization import jsonutils
@@ -45,16 +34,9 @@ import webob.dec
 import webob.exc
 from webob import multidict
 
-from glance.common import config
 from glance.common import exception
-from glance.common import store_utils
-from glance.common import utils
-import glance.db
-from glance import housekeeping
 from glance import i18n
-from glance.i18n import _, _LE, _LI, _LW
-from glance import sqlite_migration
-
+from glance.i18n import _, _LE
 
 EVENTLET_DEPRECATION_REASON = """
 Eventlet has been deprecated in the Gazpacho release. Glance is now expected to
@@ -274,470 +256,13 @@ CONF.register_opts(socket_opts)
 CONF.register_opts(eventlet_opts)
 profiler_opts.set_defaults(CONF)
 
-ASYNC_EVENTLET_THREAD_POOL_LIST = []
 
-# Detect if we're running under the uwsgi server
-try:
-    import uwsgi
-    LOG.debug('Detected running under uwsgi')
-except ImportError:
-    LOG.debug('Detected not running under uwsgi')
-    uwsgi = None
-
-# Reserved file stores for staging and tasks operations
-RESERVED_STORES = {
-    'os_glance_staging_store': 'file',
-    'os_glance_tasks_store': 'file'
-}
-
-
-def get_num_workers():
-    """Return the configured number of workers."""
-
-    if CONF.workers is None:
-        # None implies the number of CPUs limited to 8
-        # See Launchpad bug #1748916 and the config help text
-        workers = processutils.get_worker_count()
-        return workers if workers < 8 else 8
-    return CONF.workers
-
-
-def get_bind_addr(default_port=None):
-    """Return the host and port to bind to."""
-    return (CONF.bind_host, CONF.bind_port or default_port)
-
-
-def get_socket(default_port):
-    """
-    Bind socket to bind ip:port in conf
-
-    note: Mostly comes from Swift with a few small changes...
-
-    :param default_port: port to bind to if none is specified in conf
-
-    :returns: a socket object as returned from socket.listen
-    """
-    bind_addr = get_bind_addr(default_port)
-
-    # TODO(jaypipes): eventlet's greened socket module does not actually
-    # support IPv6 in getaddrinfo(). We need to get around this in the
-    # future or monitor upstream for a fix
-    address_family = [
-        addr[0] for addr in socket.getaddrinfo(bind_addr[0],
-                                               bind_addr[1],
-                                               socket.AF_UNSPEC,
-                                               socket.SOCK_STREAM)
-        if addr[0] in (socket.AF_INET, socket.AF_INET6)
-    ][0]
-
-    sock = utils.get_test_suite_socket()
-    retry_until = time.time() + 30
-
-    while not sock and time.time() < retry_until:
-        try:
-            sock = eventlet.listen(bind_addr,
-                                   backlog=CONF.backlog,
-                                   family=address_family)
-        except socket.error as err:
-            if err.args[0] != errno.EADDRINUSE:
-                raise
-            eventlet.sleep(0.1)
-    if not sock:
-        raise RuntimeError(_("Could not bind to %(host)s:%(port)s after"
-                             " trying for 30 seconds") %
-                           {'host': bind_addr[0],
-                            'port': bind_addr[1]})
-
-    return sock
-
-
-def set_eventlet_hub():
+def _get_uwsgi():
     try:
-        eventlet.hubs.use_hub('poll')
-    except Exception:
-        try:
-            eventlet.hubs.use_hub('selects')
-        except Exception:
-            msg = _("eventlet 'poll' nor 'selects' hubs are available "
-                    "on this platform")
-            raise exception.WorkerCreationFailure(
-                reason=msg)
-
-
-def initialize_glance_store():
-    """Initialize glance store."""
-    glance_store.register_opts(CONF)
-    glance_store.create_stores(CONF)
-    glance_store.verify_default_store()
-
-
-def initialize_multi_store():
-    """Initialize glance multi store backends."""
-    glance_store.register_store_opts(CONF, reserved_stores=RESERVED_STORES)
-    glance_store.create_multi_stores(CONF, reserved_stores=RESERVED_STORES)
-    glance_store.verify_store()
-
-
-def get_asynchronous_eventlet_pool(size=1000):
-    """Return eventlet pool to caller.
-
-    Also store pools created in global list, to wait on
-    it after getting signal for graceful shutdown.
-
-    :param size: eventlet pool size
-    :returns: eventlet pool
-    """
-    global ASYNC_EVENTLET_THREAD_POOL_LIST
-
-    pool = eventlet.GreenPool(size=size)
-    # Add pool to global ASYNC_EVENTLET_THREAD_POOL_LIST
-    ASYNC_EVENTLET_THREAD_POOL_LIST.append(pool)
-
-    return pool
-
-
-class BaseServer(metaclass=abc.ABCMeta):
-    """Server class to manage multiple WSGI sockets and applications.
-
-    This class requires initialize_glance_store set to True if
-    glance store needs to be initialized.
-    """
-    def __init__(self, threads=1000, initialize_glance_store=False):
-        os.umask(0o27)  # ensure files are created with the correct privileges
-        self._logger = logging.getLogger("eventlet.wsgi.server")
-        self.threads = threads
-        self.children = set()
-        self.stale_children = set()
-        self.running = True
-        # NOTE(abhishek): Allows us to only re-initialize glance_store when
-        # the API's configuration reloads.
-        self.initialize_glance_store = initialize_glance_store
-
-    @staticmethod
-    def set_signal_handler(signal_name, handler):
-        # Some signals may not be available on this platform.
-        sig = getattr(signal, signal_name, None)
-        if sig is not None:
-            signal.signal(sig, handler)
-
-    def hup(self, *args):
-        """
-        Reloads configuration files with zero down time
-        """
-        self.set_signal_handler("SIGHUP", signal.SIG_IGN)
-        raise exception.SIGHUPInterrupt
-
-    @abc.abstractmethod
-    def kill_children(self, *args):
-        pass
-
-    @abc.abstractmethod
-    def wait_on_children(self):
-        pass
-
-    @abc.abstractmethod
-    def run_child(self):
-        pass
-
-    def reload(self):
-        raise NotImplementedError()
-
-    def start(self, application, default_port):
-        """
-        Run a WSGI server with the given application.
-
-        :param application: The application to be run in the WSGI server
-        :param default_port: Port to bind to if none is specified in conf
-        """
-        self.application = application
-        self.default_port = default_port
-        self.configure()
-
-        # NOTE(abhishekk): This will raise RuntimeError if
-        # worker_self_reference_url is not set in glance-api.conf
-        sqlite_migration.migrate_if_required()
-        self.start_wsgi()
-
-        # NOTE(danms): This may raise GlanceException if the staging store is
-        # not configured properly, which will be caught and printed by
-        # cmd/api.py as an error message and abort startup.
-        staging = housekeeping.staging_store_path()
-        if not os.path.exists(staging) and CONF.enabled_import_methods:
-            LOG.warning(_LW('Import methods are enabled but staging directory '
-                            '%(path)s does not exist; Imports will fail!'),
-                        {'path': staging})
-
-        cleaner = housekeeping.StagingStoreCleaner(glance.db.get_api())
-        self.pool.spawn_n(cleaner.clean_orphaned_staging_residue)
-
-    def start_wsgi(self):
-        workers = get_num_workers()
-        self.pool = self.create_pool()
-        if workers == 0:
-            # Useful for profiling, test, debug etc.
-            self.pool.spawn_n(self._single_run, self.application, self.sock)
-            return
-        else:
-            LOG.info(_LI("Starting %d workers"), workers)
-            self.set_signal_handler("SIGTERM", self.kill_children)
-            self.set_signal_handler("SIGINT", self.kill_children)
-            self.set_signal_handler("SIGHUP", self.hup)
-            while len(self.children) < workers:
-                self.run_child()
-
-    def create_pool(self):
-        return get_asynchronous_eventlet_pool(size=self.threads)
-
-    def configure(self, old_conf=None, has_changed=None):
-        """
-        Apply configuration settings
-
-        :param old_conf: Cached old configuration settings (if any)
-        :param has_changed: callable to determine if a parameter has changed
-        """
-        eventlet.wsgi.MAX_HEADER_LINE = CONF.max_header_line
-        self.client_socket_timeout = CONF.client_socket_timeout or None
-        if self.initialize_glance_store:
-            if CONF.enabled_backends:
-                if store_utils.check_reserved_stores(CONF.enabled_backends):
-                    msg = _("'os_glance_' prefix should not be used in "
-                            "enabled_backends config option. It is reserved "
-                            "for internal use only.")
-                    raise RuntimeError(msg)
-                initialize_multi_store()
-            else:
-                initialize_glance_store()
-        self.configure_socket(old_conf, has_changed)
-
-    def wait(self):
-        """Wait until all servers have completed running."""
-        try:
-            if self.children:
-                self.wait_on_children()
-            else:
-                self.pool.waitall()
-        except KeyboardInterrupt:
-            pass
-
-    def run_server(self):
-        """Run a WSGI server."""
-        if cfg.CONF.pydev_worker_debug_host:
-            utils.setup_remote_pydev_debug(cfg.CONF.pydev_worker_debug_host,
-                                           cfg.CONF.pydev_worker_debug_port)
-
-        eventlet.wsgi.HttpProtocol.default_request_version = "HTTP/1.0"
-        self.pool = self.create_pool()
-        try:
-            eventlet.wsgi.server(self.sock,
-                                 self.application,
-                                 log=self._logger,
-                                 custom_pool=self.pool,
-                                 debug=False,
-                                 keepalive=CONF.http_keepalive,
-                                 socket_timeout=self.client_socket_timeout)
-        except socket.error as err:
-            if err[0] != errno.EINVAL:
-                raise
-
-        # waiting on async pools
-        if ASYNC_EVENTLET_THREAD_POOL_LIST:
-            for pool in ASYNC_EVENTLET_THREAD_POOL_LIST:
-                pool.waitall()
-
-        # NOTE(abhishekk): Importing the cache_images API module just
-        #  in time to avoid partial initialization of wsgi module
-        from glance.api.v2 import cached_images  # noqa
-        if cached_images.WORKER:
-            # If we started a cache worker, signal it to exit
-            # and wait until it does.
-            cached_images.WORKER.terminate()
-
-    def _single_run(self, application, sock):
-        """Start a WSGI server in a new green thread."""
-        LOG.info(_LI("Starting single process server"))
-        eventlet.wsgi.server(sock, application, custom_pool=self.pool,
-                             log=self._logger,
-                             debug=False,
-                             keepalive=CONF.http_keepalive,
-                             socket_timeout=self.client_socket_timeout)
-
-    def configure_socket(self, old_conf=None, has_changed=None):
-        """
-        Ensure a socket exists and is appropriately configured.
-
-        This function is called on start up, and can also be
-        called in the event of a configuration reload.
-
-        When called for the first time a new socket is created.
-        If reloading and either bind_host or bind port have been
-        changed the existing socket must be closed and a new
-        socket opened (laws of physics).
-
-        In all other cases (bind_host/bind_port have not changed)
-        the existing socket is reused.
-
-        :param old_conf: Cached old configuration settings (if any)
-        :param has changed: callable to determine if a parameter has changed
-        """
-        # Do we need a fresh socket?
-        new_sock = (old_conf is None or (
-                    has_changed('bind_host') or
-                    has_changed('bind_port')))
-
-        if new_sock:
-            self._sock = None
-            if old_conf is not None:
-                self.sock.close()
-            _sock = get_socket(self.default_port)
-            _sock.setsockopt(socket.SOL_SOCKET,
-                             socket.SO_REUSEADDR, 1)
-            # sockets can hang around forever without keepalive
-            _sock.setsockopt(socket.SOL_SOCKET,
-                             socket.SO_KEEPALIVE, 1)
-            self.sock = _sock
-
-        if new_sock or (old_conf is not None and has_changed('tcp_keepidle')):
-            # This option isn't available in the OS X version of eventlet
-            if hasattr(socket, 'TCP_KEEPIDLE'):
-                self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE,
-                                     CONF.tcp_keepidle)
-
-        if old_conf is not None and has_changed('backlog'):
-            self.sock.listen(CONF.backlog)
-
-
-class PosixServer(BaseServer):
-    def __init__(self, *args, **kwargs):
-        super(PosixServer, self).__init__(*args, **kwargs)
-
-        self.pgid = os.getpid()
-        try:
-            # NOTE(flaper87): Make sure this process
-            # runs in its own process group.
-            os.setpgid(self.pgid, self.pgid)
-        except OSError:
-            # NOTE(flaper87): When running glance-control,
-            # (glance's functional tests, for example)
-            # setpgid fails with EPERM as glance-control
-            # creates a fresh session, of which the newly
-            # launched service becomes the leader (session
-            # leaders may not change process groups)
-            #
-            # Running glance-(api|registry) is safe and
-            # shouldn't raise any error here.
-            self.pgid = 0
-
-    def kill_children(self, *args):
-        """Kills the entire process group."""
-        self.set_signal_handler("SIGTERM", signal.SIG_IGN)
-        self.set_signal_handler("SIGINT", signal.SIG_IGN)
-        self.set_signal_handler("SIGCHLD", signal.SIG_IGN)
-        self.running = False
-        os.killpg(self.pgid, signal.SIGTERM)
-
-    def _remove_children(self, pid):
-        if pid in self.children:
-            self.children.remove(pid)
-            LOG.info(_LI('Removed dead child %s'), pid)
-        elif pid in self.stale_children:
-            self.stale_children.remove(pid)
-            LOG.info(_LI('Removed stale child %s'), pid)
-        else:
-            LOG.warning(_LW('Unrecognised child %s'), pid)
-
-    def _verify_and_respawn_children(self, pid, status):
-        if len(self.stale_children) == 0:
-            LOG.debug('No stale children')
-        if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
-            LOG.error(_LE('Not respawning child %d, cannot '
-                          'recover from termination'), pid)
-            if not self.children and not self.stale_children:
-                LOG.info(
-                    _LI('All workers have terminated. Exiting'))
-                self.running = False
-        else:
-            if len(self.children) < get_num_workers():
-                self.run_child()
-
-    def wait_on_children(self):
-        while self.running:
-            try:
-                pid, status = os.wait()
-                if os.WIFEXITED(status) or os.WIFSIGNALED(status):
-                    self._remove_children(pid)
-                    self._verify_and_respawn_children(pid, status)
-            except OSError as err:
-                if err.errno not in (errno.EINTR, errno.ECHILD):
-                    raise
-            except KeyboardInterrupt:
-                LOG.info(_LI('Caught keyboard interrupt. Exiting.'))
-                break
-            except exception.SIGHUPInterrupt:
-                self.reload()
-                continue
-        eventlet.greenio.shutdown_safe(self.sock)
-        self.sock.close()
-        LOG.debug('Exited')
-
-    def run_child(self):
-        def child_hup(*args):
-            """Shuts down child processes, existing requests are handled."""
-            self.set_signal_handler("SIGHUP", signal.SIG_IGN)
-            eventlet.wsgi.is_accepting = False
-            self.sock.close()
-
-        pid = os.fork()
-        if pid == 0:
-            self.set_signal_handler("SIGHUP", child_hup)
-            self.set_signal_handler("SIGTERM", signal.SIG_DFL)
-            # ignore the interrupt signal to avoid a race whereby
-            # a child worker receives the signal before the parent
-            # and is respawned unnecessarily as a result
-            self.set_signal_handler("SIGINT", signal.SIG_IGN)
-            # The child has no need to stash the unwrapped
-            # socket, and the reference prevents a clean
-            # exit on sighup
-            self._sock = None
-            self.run_server()
-            LOG.info(_LI('Child %d exiting normally'), os.getpid())
-            # self.pool.waitall() is now called in wsgi's server so
-            # it's safe to exit here
-            sys.exit(0)
-        else:
-            LOG.info(_LI('Started child %s'), pid)
-            self.children.add(pid)
-
-    def reload(self):
-        """
-        Reload and re-apply configuration settings
-
-        Existing child processes are sent a SIGHUP signal
-        and will exit after completing existing requests.
-        New child processes, which will have the updated
-        configuration, are spawned. This allows preventing
-        interruption to the service.
-        """
-        def _has_changed(old, new, param):
-            old = old.get(param)
-            new = getattr(new, param)
-            return (new != old)
-
-        old_conf = utils.stash_conf_values()
-        has_changed = functools.partial(_has_changed, old_conf, CONF)
-        CONF.reload_config_files()
-        os.killpg(self.pgid, signal.SIGHUP)
-        self.stale_children = self.children
-        self.children = set()
-
-        # Ensure any logging config changes are picked up
-        logging.setup(CONF, 'glance')
-        config.set_config_defaults()
-
-        self.configure(old_conf, has_changed)
-        self.start_wsgi()
-
-
-Server = PosixServer
+        import uwsgi
+    except ImportError:
+        return None
+    return uwsgi
 
 
 class Middleware(object):
@@ -934,8 +459,9 @@ class _UWSGIChunkFile(object):
         # If no length is provided, choose some sane minimum default
         length = length if length is not None else 1 * units.Mi
 
+        uwsgi_mod = _get_uwsgi()
         while len(self._buffer) < length:
-            data = uwsgi.chunked_read()
+            data = uwsgi_mod.chunked_read()
             if not data:
                 break
             # append the buffer
@@ -954,7 +480,7 @@ class Request(webob.Request):
 
     @property
     def body_file(self):
-        if uwsgi:
+        if _get_uwsgi():
             if self.headers.get('transfer-encoding', '').lower() == 'chunked':
                 return _UWSGIChunkFile()
         return super(Request, self).body_file

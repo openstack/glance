@@ -16,18 +16,14 @@ from unittest import mock
 
 import glance_store as store
 from oslo_config import cfg
-from oslo_log import log as logging
 
 import glance.cmd.api
 import glance.cmd.cache_cleaner
 import glance.cmd.cache_pruner
-import glance.common.config
-from glance.common import exception as exc
-import glance.common.wsgi
 import glance.image_cache.cleaner
-from glance.image_cache import prefetcher
 import glance.image_cache.pruner
 from glance.tests import utils as test_utils
+from oslo_log import log as logging
 
 
 CONF = cfg.CONF
@@ -36,9 +32,6 @@ CONF = cfg.CONF
 class TestGlanceApiCmd(test_utils.BaseTestCase):
 
     __argv_backup = None
-
-    def _do_nothing(self, *args, **kwargs):
-        pass
 
     def _raise(self, exc):
         def fake(*args, **kwargs):
@@ -54,47 +47,17 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
 
         store.register_opts(CONF)
 
-        self.mock_object(glance.common.config, 'load_paste_app',
-                         self._do_nothing)
-        self.mock_object(glance.common.wsgi.Server, 'start',
-                         self._do_nothing)
-        self.mock_object(glance.common.wsgi.Server, 'wait',
-                         self._do_nothing)
-
     def tearDown(self):
         sys.stderr = sys.__stderr__
         sys.argv = self.__argv_backup
         super(TestGlanceApiCmd, self).tearDown()
 
-    @mock.patch('glance.async_.set_threadpool_model',)
-    @mock.patch.object(prefetcher, 'Prefetcher')
-    def test_supported_default_store(self, mock_prefetcher, mock_set_model):
-        self.config(group='glance_store', default_store='file')
-        glance.cmd.api.main()
-        # Make sure we declared the system threadpool model as eventlet
-        # NOTE: This will be updated to 'native' when glance/cmd/api.py
-        # is migrated
-        mock_set_model.assert_called_once_with('eventlet')
-
-    @mock.patch.object(prefetcher, 'Prefetcher')
-    @mock.patch('glance.async_.set_threadpool_model', new=mock.MagicMock())
-    def test_worker_creation_failure(self, mock_prefetcher):
-        failure = exc.WorkerCreationFailure(reason='test')
-        self.mock_object(glance.common.wsgi.Server, 'start',
-                         self._raise(failure))
+    def test_main_standalone_server_removed(self):
         exit = self.assertRaises(SystemExit, glance.cmd.api.main)
-        self.assertEqual(2, exit.code)
-
-    @mock.patch('glance.async_.set_threadpool_model', new=mock.MagicMock())
-    def test_cleaner_store_config_assertion(self):
-        failure = exc.GlanceException('This is what happens with http://')
-        self.config(node_staging_uri='http://good.luck')
-        self.mock_object(glance.common.wsgi.Server, 'start',
-                         self._raise(failure))
-        # Make sure that a failure to run the wsgi.Server will call our
-        # clean print-and-abort handler.
-        exit = self.assertRaises(SystemExit, glance.cmd.api.main)
-        self.assertEqual(99, exit.code)
+        self.assertEqual(1, exit.code)
+        self.assertIn('Standalone glance-api is no longer supported',
+                      self.stderr.getvalue())
+        self.assertIn('glance.wsgi.api:application', self.stderr.getvalue())
 
     @mock.patch.object(glance.common.config, 'parse_cache_args')
     @mock.patch.object(logging, 'setup')
@@ -153,61 +116,3 @@ class TestGlanceApiCmd(test_utils.BaseTestCase):
                          self._raise(RuntimeError))
         exit = self.assertRaises(SystemExit, glance.cmd.cache_pruner.main)
         self.assertEqual('ERROR: ', exit.code)
-
-    def test_fail_with_value_error(self):
-        with mock.patch('sys.stderr.write') as mock_stderr:
-            with mock.patch('sys.exit') as mock_exit:
-                exc_msg = 'A ValueError, LOL!'
-                exc = ValueError(exc_msg)
-                glance.cmd.api.fail(exc)
-                mock_stderr.assert_called_once_with('ERROR: %s\n' % exc_msg)
-                mock_exit.assert_called_once_with(4)
-
-    def test_fail_with_config_exception(self):
-        with mock.patch('sys.stderr.write') as mock_stderr:
-            with mock.patch('sys.exit') as mock_exit:
-                exc_msg = 'A ConfigError by George!'
-                exc = cfg.ConfigFileValueError(exc_msg)
-                glance.cmd.api.fail(exc)
-                mock_stderr.assert_called_once_with('ERROR: %s\n' % exc_msg)
-                mock_exit.assert_called_once_with(5)
-
-    def test_fail_with_unknown_exception(self):
-        with mock.patch('sys.stderr.write') as mock_stderr:
-            with mock.patch('sys.exit') as mock_exit:
-                exc_msg = 'A Crazy Unknown Error.'
-                exc = CrayCray(exc_msg)
-                glance.cmd.api.fail(exc)
-                mock_stderr.assert_called_once_with('ERROR: %s\n' % exc_msg)
-                mock_exit.assert_called_once_with(99)
-
-    def test_main_with_store_config_exception(self):
-        with mock.patch.object(glance.common.config,
-                               'parse_args') as mock_config:
-            with mock.patch('sys.exit') as mock_exit:
-                exc = store.exceptions.BadStoreConfiguration()
-                mock_config.side_effect = exc
-                glance.cmd.api.main()
-                mock_exit.assert_called_once_with(3)
-
-    def test_main_with_runtime_error(self):
-        with mock.patch.object(glance.common.config,
-                               'parse_args') as mock_config:
-            with mock.patch('sys.exit') as mock_exit:
-                exc = RuntimeError()
-                mock_config.side_effect = exc
-                glance.cmd.api.main()
-                mock_exit.assert_called_once_with(1)
-
-    def test_main_with_worker_creation_failure(self):
-        with mock.patch.object(glance.common.config,
-                               'parse_args') as mock_config:
-            with mock.patch('sys.exit') as mock_exit:
-                exx = exc.WorkerCreationFailure()
-                mock_config.side_effect = exx
-                glance.cmd.api.main()
-                mock_exit.assert_called_once_with(2)
-
-
-class CrayCray(Exception):
-    pass

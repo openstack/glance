@@ -34,7 +34,7 @@ from oslo_utils import units
 import requests
 
 from glance.api import policy
-from glance.common import wsgi
+from glance.common import wsgi_app
 from glance import context
 import glance.db as db_api
 from glance.quota import keystone as ks_quota
@@ -3874,8 +3874,8 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         self.ksa_client = self.useFixture(
             fixtures.MockPatch('glance.context.get_ksa_client')).mock
         self.config(enabled_backends={'store1': 'http', 'store2': 'http'})
-        glance_store.register_store_opts(CONF,
-                                         reserved_stores=wsgi.RESERVED_STORES)
+        glance_store.register_store_opts(
+            CONF, reserved_stores=wsgi_app.RESERVED_STORES)
 
         self.config(default_backend='store1',
                     group='glance_store')
@@ -3884,8 +3884,8 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         self.config(filesystem_store_datadir='/tmp/foo',
                     group='os_glance_tasks_store')
 
-        glance_store.create_multi_stores(CONF,
-                                         reserved_stores=wsgi.RESERVED_STORES)
+        glance_store.create_multi_stores(
+            CONF, reserved_stores=wsgi_app.RESERVED_STORES)
         glance_store.verify_store()
 
     def test_add_location_with_do_secure_hash_false(self):
