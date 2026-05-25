@@ -1,0 +1,12 @@
+---
+features:
+  - |
+    Interoperable image import can copy staged data to multiple backends in
+    parallel when ``enabled_backends`` is configured. Set
+    ``max_parallel_stores`` in ``[image_import_opts]`` (default ``1`` for
+    sequential behavior). The flow verifies signed images once on the staged
+    file before parallel copies, then imports to each store with bounded
+    concurrency. Per-store progress is recorded in ``image_locations`` using
+    ``pending`` and ``uploading`` status values until each replica is
+    ``active``. Signature verification failure reverts the image to
+    ``queued`` and removes staged data without writing to target stores.

@@ -516,8 +516,7 @@ class ImageProxy(glance.domain.proxy.Image):
              multihash, loc_meta) = self.store_api.add_with_multihash(
                 CONF,
                 self.image.image_id,
-                utils.LimitingReader(utils.CooperativeReader(data),
-                                     CONF.image_size_cap),
+                utils.wrap_data_for_store_upload(data),
                 size,
                 store,
                 hashing_algo,
@@ -531,8 +530,7 @@ class ImageProxy(glance.domain.proxy.Image):
              loc_meta) = self.store_api.add_to_backend_with_multihash(
                 CONF,
                 self.image.image_id,
-                utils.LimitingReader(utils.CooperativeReader(data),
-                                     CONF.image_size_cap),
+                utils.wrap_data_for_store_upload(data),
                 size,
                 hashing_algo,
                 context=self.context,
