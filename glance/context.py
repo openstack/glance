@@ -25,6 +25,20 @@ from glance.api import policy
 CONF = cfg.CONF
 
 
+def _get_keystone_endpoint():
+    """Return the Keystone endpoint for token_endpoint auth.
+
+    Prefer auth_url from [keystone_authtoken]. Fall back to
+    www_authenticate_uri, which has been available since the minimum
+    supported keystonemiddleware release (5.1.0).
+    """
+    for opt in ('auth_url', 'www_authenticate_uri'):
+        endpoint = getattr(CONF.keystone_authtoken, opt)
+        if endpoint:
+            return endpoint
+    raise cfg.RequiredOptError('auth_url', group='keystone_authtoken')
+
+
 def get_ksa_client(context):
     """Returns a keystoneauth Adapter using token from context.
 
@@ -36,7 +50,7 @@ def get_ksa_client(context):
     :param context: User request context
     :returns: keystoneauth1 Adapter object
     """
-    auth = token_endpoint.Token(CONF.keystone_authtoken.identity_uri,
+    auth = token_endpoint.Token(_get_keystone_endpoint(),
                                 context.auth_token)
     return session.Session(auth=auth)
 

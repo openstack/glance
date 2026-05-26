@@ -1,0 +1,9 @@
+---
+fixes:
+  - |
+    `Bug 2154257 <https://bugs.launchpad.net/glance/+bug/2154257>`__: Fixed a
+    failure when proxying API requests to another Glance worker (for example
+    during remote image deletion while hash calculation is in progress).
+    ``get_ksa_client()`` referenced the removed ``[keystone_authtoken]
+    identity_uri`` option; it now uses ``auth_url``, with a fallback to
+    ``www_authenticate_uri``.
