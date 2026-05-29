@@ -18,7 +18,6 @@ import http.client as http
 import os
 import subprocess
 import tempfile
-import time
 from unittest import mock
 import urllib
 import uuid
@@ -527,14 +526,10 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         # processing when redirect destination is validated
         self.api_methods.import_image(image_id, data=data)
 
-        # Wait for the task to process and verify it failed
+        # Wait for the task to process and verify it failed.
         # The redirect validation in get_image_data_iter should prevent
-        # access to disallowed host (127.0.0.1)
-        time.sleep(2)  # Give task time to process
-
-        # Verify the task failed due to redirect validation
-        task = self._get_latest_task(image_id)
-        self.assertEqual('failure', task['status'])
+        # access to disallowed host (127.0.0.1).
+        self._wait_for_task_failure(image_id)
 
         # Verify the image status is still queued (not active)
         # since the import failed - this proves the SSRF was prevented
