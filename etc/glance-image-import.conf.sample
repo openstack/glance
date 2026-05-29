@@ -1,7 +1,7 @@
 [DEFAULT]
 
 
-[glance_download_opts]
+[glance_download_properties]
 
 #
 # From glance
