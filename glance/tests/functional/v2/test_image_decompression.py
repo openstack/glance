@@ -19,7 +19,6 @@ import http.client as http
 import http.server as http_server
 import os
 import threading
-import time
 import zipfile
 
 from oslo_serialization import jsonutils
@@ -107,43 +106,6 @@ class TestImageDecompression(functional.SynchronousAPIBase):
     def _calculate_sha512(self, data):
         """Calculate SHA512 checksum of data."""
         return hashlib.sha512(data).hexdigest()
-
-    def _wait_for_task_failure(self, image_id, max_sec=40, delay_sec=0.2,
-                               start_delay_sec=1):
-        """Wait for import task to fail.
-
-        This method checks the task status associated with the image to
-        determine if the import task has failed.
-
-        :param image_id: The image ID to check
-        :param max_sec: Maximum seconds to wait (default: 40)
-        :param delay_sec: Seconds to sleep between checks (default: 0.2)
-        :param start_delay_sec: Seconds to wait before first check (default: 1)
-        :returns: The task dict from the API response
-        """
-        start_time = time.time()
-        done_time = start_time + max_sec
-        if start_delay_sec:
-            time.sleep(start_delay_sec)
-
-        while time.time() <= done_time:
-            try:
-                task = self._get_latest_task(image_id)
-                if task['status'] == 'failure':
-                    return task
-                elif task['status'] == 'success':
-                    self.fail("Import unexpectedly succeeded "
-                              "(task status=success)")
-            except (KeyError, IndexError):
-                # Task may not exist yet, continue checking
-                pass
-
-            time.sleep(delay_sec)
-
-        # Final check - verify task status
-        task = self._get_latest_task(image_id)
-        self.assertEqual('failure', task['status'])
-        return task
 
     def _start_binary_http_server(self, data):
         """Start an HTTP server serving binary data.
