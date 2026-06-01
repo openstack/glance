@@ -793,6 +793,38 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.assertGreater(len(tasks), 0)
         return tasks[-1]
 
+    def _wait_for_task_failure(self, image_id, max_sec=40, delay_sec=0.2,
+                               start_delay_sec=0):
+        """Wait for import task to fail.
+
+        :param image_id: The image ID to check
+        :param max_sec: Maximum seconds to wait (default: 40)
+        :param delay_sec: Seconds to sleep between checks (default: 0.2)
+        :param start_delay_sec: Seconds to wait before first check (default: 0)
+        :returns: The task dict from the API response
+        """
+        done_time = time.time() + max_sec
+        if start_delay_sec:
+            time.sleep(start_delay_sec)
+
+        while time.time() <= done_time:
+            try:
+                task = self._get_latest_task(image_id)
+                if task['status'] == 'failure':
+                    return task
+                elif task['status'] == 'success':
+                    self.fail("Import unexpectedly succeeded "
+                              "(task status=success)")
+            except (KeyError, IndexError):
+                # Task may not exist yet, continue checking
+                pass
+
+            time.sleep(delay_sec)
+
+        task = self._get_latest_task(image_id)
+        self.assertEqual('failure', task['status'])
+        return task
+
     def _create(self):
         return self.api_post('/v2/images',
                              json={'name': 'foo',
