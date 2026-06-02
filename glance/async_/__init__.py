@@ -127,15 +127,6 @@ class ThreadPoolModel(object):
             yield future.result()
 
 
-class EventletThreadPoolModel(ThreadPoolModel):
-    """A ThreadPoolModel suitable for use with evenlet/greenthreads."""
-    DEFAULTSIZE = 1024
-
-    @staticmethod
-    def get_threadpool_executor_class():
-        return futurist.GreenThreadPoolExecutor
-
-
 class NativeThreadPoolModel(ThreadPoolModel):
     """A ThreadPoolModel suitable for use with native threads."""
     DEFAULTSIZE = 16
@@ -154,21 +145,18 @@ def set_threadpool_model(thread_type):
     This sets the type of ThreadPoolModel to use globally in the process.
     It should be called very early in init, and only once.
 
-    :param thread_type: A string indicating the threading type in use,
-                        either "eventlet" or "native"
-    :raises: RuntimeError if the model is already set or some thread_type
-             other than one of the supported ones is provided.
+    :param thread_type: A string indicating the threading type in use.
+                        Only ``"native"`` is supported.
+    :raises: RuntimeError if the model is already set or thread_type is not
+             ``"native"``.
     """
     global _THREADPOOL_MODEL
 
     if thread_type == 'native':
         model = NativeThreadPoolModel
-    elif thread_type == 'eventlet':
-        model = EventletThreadPoolModel
     else:
         raise RuntimeError(
-            ('Invalid thread type %r '
-             '(must be "native" or "eventlet")') % (thread_type))
+            ('Invalid thread type %r (must be "native")') % (thread_type))
 
     if _THREADPOOL_MODEL is model:
         # Re-setting the same model is fine...
