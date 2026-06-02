@@ -180,6 +180,9 @@ def _get_store_id_from_uri(uri):
 def update_store_in_locations(context, image, image_repo):
     store_updated = False
     for loc in image.locations:
+        if loc['url'].startswith(('s3://', 's3+http://', 's3+https://')):
+            if _update_s3_location_credentials(loc):
+                store_updated = True
         if (not loc['metadata'].get(
                 'store') or loc['metadata'].get(
                 'store') not in CONF.enabled_backends):
@@ -200,11 +203,6 @@ def update_store_in_locations(context, image, image_repo):
 
                 store_updated = True
                 loc['metadata']['store'] = store_id
-
-        # Always check S3 credentials for credential rotation scenarios
-        if loc['url'].startswith(('s3://', 's3+http://', 's3+https://')):
-            if _update_s3_location_and_store_id(context, loc):
-                store_updated = True
 
     if store_updated:
         image_repo.save(image)
@@ -239,149 +237,28 @@ def _update_cinder_location_and_store_id(context, loc):
             return
 
 
-def _update_s3_url(url, new_access_key, new_secret_key):
-    """Update S3 URL with new credentials.
+def _update_s3_location_credentials(loc):
+    """Migrate S3 location from legacy credential-embedded URI to
+    credential-free format.
 
-    This function replaces the access key and secret key in an S3 URL while
-    preserving all other URL components (host, port, path, query, fragment).
-
-    The implementation uses a hybrid approach:
-    - urlparse is used to extract query parameters and fragments, which it
-      handles correctly regardless of credential content.
-    - Manual string parsing with rfind('@') is used to locate credentials,
-      because urlparse incorrectly interprets '/' characters in the secret
-      key as path separators, corrupting the URL.
-
-    For example, with secret key 'abc/def':
-    - urlparse sees: s3://key:abc/def@host/bucket as path '/def@host/bucket'
-    - rfind('@') correctly finds the last '@' separating creds from host
-    """
-    # Parse URL to get query and fragment (these are parsed correctly)
-    parsed = urlparse.urlparse(url)
-    scheme = parsed.scheme
-
-    # Find the last '@' in the original URL (before query/fragment)
-    # This handles the case where secret key contains '/'
-    url_without_query = url.split('?')[0].split('#')[0]
-    separator_position = url_without_query.rfind('@')
-
-    if separator_position == -1:
-        # No credentials - shouldn't happen for S3, but handle gracefully
-        new_netloc = "%s:%s@%s" % (new_access_key, new_secret_key,
-                                   parsed.netloc)
-        path_part = parsed.path  # Use parsed.path when no '@' found
-    else:
-        # Extract host+path from after '@'
-        host_and_path = url_without_query[separator_position + 1:]
-        # Remove scheme part if it's still there
-        if '://' in host_and_path:
-            host_and_path = host_and_path.split('://', 1)[1]
-
-        # Separate host from path
-        first_slash = host_and_path.find('/')
-        if first_slash == -1:
-            host_part = host_and_path
-            path_part = ''
-        else:
-            host_part = host_and_path[:first_slash]
-            path_part = host_and_path[first_slash:]
-
-        new_netloc = "%s:%s@%s" % (new_access_key, new_secret_key, host_part)
-
-    # Rebuild URL preserving query and fragment
-    return urlparse.urlunparse((
-        scheme,
-        new_netloc,
-        path_part,
-        parsed.params,
-        parsed.query,
-        parsed.fragment
-    ))
-
-
-def _get_store_credentials(store_instance):
-    """Get credentials from store instance."""
-    return (getattr(store_instance, 'access_key'),
-            getattr(store_instance, 'secret_key'))
-
-
-def _find_store_by_bucket(parsed_uri, location_map, scheme):
-    """Find store instance by matching bucket from the URI."""
-    # Extract bucket from url as our S3 URLs are
-    # always in the format: s3://key:secret@host/bucket/object
-    bucket_name = parsed_uri.path.strip('/').split('/')[0]
-
-    # Find store that matches this bucket
-    for store_name, store_info in location_map[scheme].items():
-        store_instance = store_info['store']
-        if store_instance.bucket == bucket_name:
-            return (store_name, store_instance)
-
-
-def _construct_s3_url(store_instance, scheme, path):
-    """Construct the entire S3 URL including the object path."""
-    access_key = getattr(store_instance, 'access_key')
-    secret_key = getattr(store_instance, 'secret_key')
-    s3_host = getattr(store_instance, 's3_host')
-    bucket = getattr(store_instance, 'bucket')
-
-    # Construct the full URL with the object path
-    return "%s://%s:%s@%s/%s%s" % (
-        scheme, access_key, secret_key, s3_host, bucket, path)
-
-
-def _update_s3_location_and_store_id(context, loc):
-    """Update S3 location and store ID for legacy images.
-
-    :param context: The request context
     :param loc: The image location entry
     :returns: True if an update was made, False otherwise
     """
     uri = loc['url']
-    parsed = urlparse.urlparse(uri)
-    scheme = parsed.scheme
 
-    location_map = store_api.location.SCHEME_TO_CLS_BACKEND_MAP
-    if scheme not in location_map:
-        LOG.debug("Unknown scheme '%(scheme)s' found in uri",
-                  {'scheme': scheme})
+    if '@' not in uri:
         return False
 
-    # URL format: s3://key:secret@host/bucket/object
-    # Extract object path: everything after the bucket name
-    object_path = parsed.path[parsed.path.find('/', 1):]
-    # Extract image ID from object path
-    image_id = object_path.split('/')[-1]
+    scheme = urlparse.urlparse(uri).scheme
 
-    # Get store name from metadata
-    store_name = loc['metadata'].get('store')
-    if store_name:
-        # Multistore, find by store name
-        store_instance = location_map[scheme][store_name]['store']
-    else:
-        # Old single store instance. Find by bucket and update store name
-        store_result = _find_store_by_bucket(parsed, location_map, scheme)
-        if store_result:
-            store_name, store_instance = store_result
-            loc['metadata']['store'] = store_name
-        else:
-            # No matching store found
-            LOG.warning("No S3 store found for image %(image_id)s",
-                        {'image_id': image_id})
-            return False
+    uri_without_query = uri.split('?')[0].split('#')[0]
+    at_pos = uri_without_query.rfind('@')
+    if at_pos == -1:
+        return False
 
-    # For any store (old or new), update creds if there's a mismatch
-    expected_url = _construct_s3_url(store_instance, scheme, object_path)
-    if expected_url and loc['url'] != expected_url:
-        LOG.info("S3 URL mismatch for image %(image_id)s, updating URL",
-                 {'image_id': image_id})
-        new_access_key, new_secret_key = _get_store_credentials(
-            store_instance)
-        loc['url'] = _update_s3_url(
-            uri, new_access_key, new_secret_key)
-        return True
-
-    return False
+    host_and_path = uri_without_query[at_pos + 1:]
+    loc['url'] = "%s://%s" % (scheme, host_and_path)
+    return True
 
 
 def get_updated_store_location(locations, context):

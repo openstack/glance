@@ -1231,85 +1231,37 @@ class TestStoreImageRepo(utils.BaseTestCase):
         self.assertEqual([], acls['write'])
         self.assertEqual([TENANT2], acls['read'])
 
-    @mock.patch('glance.location.store')
     @mock.patch('glance.location.CONF')
-    def test_get_single_store_s3_credentials_update(
-            self, mock_conf, mock_store):
-        """Test S3 credential update in single store scenario."""
+    def test_get_single_store_s3_credentials_stripped(self, mock_conf):
+        """Legacy S3 @-URI is migrated to credential-free form on image get."""
         mock_conf.enabled_backends = None
-        store_instance = mock.Mock()
-        store_instance.access_key = 'new_key'
-        store_instance.secret_key = 'new_secret'
-        mock_store.location.SCHEME_TO_CLS_MAP = {
-            's3': {
-                'store': store_instance,
-                'location_class': mock.Mock(),
-                'store_entry': 's3'
-            }
-        }
-
-        # Create image with S3 location
+        legacy_url = (
+            's3://old_key:old_secret@s3.example.com/mybucket/myobject')
         self.image_stub.locations = [{
-            'url': 's3://old_key:old_secret@bucket/object',
+            'url': legacy_url,
             'metadata': {}
         }]
         with mock.patch.object(self.image_repo_stub, 'save') as mock_save:
             result = self.image_repo.get(UUID1)
 
-            # Verify credentials were updated
-            expected_url = 's3://new_key:new_secret@bucket/object'
-            self.assertEqual(result.locations[0]['url'], expected_url)
+            expected_url = 's3://s3.example.com/mybucket/myobject'
+            self.assertEqual(expected_url, result.locations[0]['url'])
             mock_save.assert_called_once_with(result)
 
-    @mock.patch('glance.location.store')
     @mock.patch('glance.location.CONF')
-    def test_get_single_store_s3_credentials_no_update(
-            self, mock_conf, mock_store):
-        """Test S3 credential check when credentials already match."""
+    def test_get_single_store_s3_clean_url_no_save(self, mock_conf):
+        """Credential-free S3 URI is unchanged and no DB save on get."""
         mock_conf.enabled_backends = None
-        store_instance = mock.Mock()
-        store_instance.access_key = 'same_key'
-        store_instance.secret_key = 'same_secret'
-        mock_store.location.SCHEME_TO_CLS_MAP = {
-            's3': {
-                'store': store_instance,
-                'location_class': mock.Mock(),
-                'store_entry': 's3'
-            }
-        }
-
+        original_url = 's3://s3.example.com/mybucket/myobject'
         self.image_stub.locations = [{
-            'url': 's3://same_key:same_secret@bucket/object',
+            'url': original_url,
             'metadata': {}
         }]
 
         with mock.patch.object(self.image_repo_stub, 'save') as mock_save:
             result = self.image_repo.get(UUID1)
 
-            # Verify URL remains unchanged
-            original_url = 's3://same_key:same_secret@bucket/object'
-            self.assertEqual(result.locations[0]['url'], original_url)
-            mock_save.assert_not_called()
-
-    @mock.patch('glance.location.store')
-    @mock.patch('glance.location.CONF')
-    def test_get_single_store_s3_unknown_scheme(
-            self, mock_conf, mock_store):
-        """Test S3 credential check with unknown scheme."""
-        mock_conf.enabled_backends = None
-        mock_store.location.SCHEME_TO_CLS_MAP = {}
-
-        self.image_stub.locations = [{
-            'url': 's3://old_key:old_secret@bucket/object',
-            'metadata': {}
-        }]
-
-        with mock.patch.object(self.image_repo_stub, 'save') as mock_save:
-            result = self.image_repo.get(UUID1)
-
-            # Verify URL remains unchanged
-            original_url = 's3://old_key:old_secret@bucket/object'
-            self.assertEqual(result.locations[0]['url'], original_url)
+            self.assertEqual(original_url, result.locations[0]['url'])
             mock_save.assert_not_called()
 
 
