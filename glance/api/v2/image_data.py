@@ -275,7 +275,10 @@ class ImageDataController(object):
         except exception.InvalidImageData as e:
             LOG.error(str(e))
             self._restore(image_repo, image)
-            raise webob.exc.HTTPUnsupportedMediaType(explanation=str(e),
+            # WebOb's HTTPUnsupportedMediaType body uses ${detail}, not
+            # ${explanation}; pass detail so clients see the real cause instead
+            # of the generic "application/octet-stream is not supported" line.
+            raise webob.exc.HTTPUnsupportedMediaType(detail=str(e),
                                                      request=req)
 
         except glance_store.StorageWriteDenied as e:
@@ -498,7 +501,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         try:
             request.get_content_type(('application/octet-stream',))
         except exception.InvalidContentType as e:
-            raise webob.exc.HTTPUnsupportedMediaType(explanation=e.msg)
+            raise webob.exc.HTTPUnsupportedMediaType(detail=e.msg)
 
         if self.is_valid_encoding(request) and self.is_valid_method(request):
             request.is_body_readable = True
@@ -513,7 +516,7 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         try:
             request.get_content_type(('application/octet-stream',))
         except exception.InvalidContentType as e:
-            raise webob.exc.HTTPUnsupportedMediaType(explanation=e.msg)
+            raise webob.exc.HTTPUnsupportedMediaType(detail=e.msg)
 
         if self.is_valid_encoding(request) and self.is_valid_method(request):
             request.is_body_readable = True

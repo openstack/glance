@@ -1482,7 +1482,11 @@ class RequestDeserializer(wsgi.JSONRequestDeserializer):
         if request.content_type not in content_types:
             headers = {'Accept-Patch':
                        ', '.join(sorted(content_types.keys()))}
-            raise webob.exc.HTTPUnsupportedMediaType(headers=headers)
+            allowed = ', '.join(sorted(content_types.keys()))
+            detail = (_('Image PATCH expects Content-Type one of: %(allowed)s')
+                      % {'allowed': allowed})
+            raise webob.exc.HTTPUnsupportedMediaType(headers=headers,
+                                                     detail=detail)
 
         json_schema_version = content_types[request.content_type]
 

@@ -788,14 +788,26 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/json'
         request.body = b'YYYYY'
-        self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
-                          self.deserializer.upload, request)
+        exc = self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
+                                self.deserializer.upload, request)
+        self.assertTrue(str(exc.detail).strip())
+        self.assertIn('application/json', str(exc.detail))
 
         request = unit_test_utils.get_fake_request()
         request.headers['Content-Type'] = 'application/octet-st'
         request.body = b'YYYYY'
-        self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
-                          self.deserializer.upload, request)
+        exc = self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
+                                self.deserializer.upload, request)
+        self.assertTrue(str(exc.detail).strip())
+        self.assertIn('application/octet-st', str(exc.detail))
+
+    def test_upload_missing_content_type(self):
+        request = unit_test_utils.get_fake_request()
+        request.body = b'YYYYY'
+        exc = self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
+                                self.deserializer.upload, request)
+        self.assertTrue(str(exc.detail).strip())
+        self.assertIn('None', str(exc.detail))
 
     def test_stage(self):
         req = unit_test_utils.get_fake_request(roles=['admin', 'member'])
@@ -818,9 +830,11 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
         # listed in the config file
         req = unit_test_utils.get_fake_request()
         req.headers['Content-Type'] = 'application/json'
-        self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
-                          self.deserializer.stage,
-                          req)
+        exc = self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
+                                self.deserializer.stage,
+                                req)
+        self.assertTrue(str(exc.detail).strip())
+        self.assertIn('application/json', str(exc.detail))
 
     def test_with_size_header(self):
         for method in ('upload', 'stage'):
