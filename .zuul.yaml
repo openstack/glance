@@ -335,6 +335,27 @@
       devstack_localrc:
         GLANCE_ENFORCE_SCOPE: false
 
+- job:
+    name: glance-rally-task-uwsgi
+    parent: rally-task-at-devstack
+    timeout: 7800
+    description: |
+      Rally benchmarks against Glance as deployed by DevStack, which runs
+      the image API under uWSGI (native threading, no eventlet WSGI server).
+    required-projects:
+      - name: openstack/devstack
+      - name: openstack/rally
+      - name: openstack/rally-openstack
+    vars:
+      rally_task: rally-jobs/glance.yaml
+      devstack_plugins:
+        rally-openstack: https://opendev.org/openstack/rally-openstack
+      devstack_localrc:
+        # rally-jobs/glance.yaml runs 700 create_and_list iterations; DevStack
+        # defaults image_count_total / image_count_uploading to 100 otherwise.
+        GLANCE_LIMIT_IMAGE_COUNT_TOTAL: 800
+        GLANCE_LIMIT_IMAGE_COUNT_UPLOADING: 800
+
 - project:
     templates:
       - check-requirements
@@ -385,6 +406,9 @@
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
         - ironic-tempest-bios-ipmi-direct:
+            voting: false
+            irrelevant-files: *tempest-irrelevant-files
+        - glance-rally-task-uwsgi:
             voting: false
             irrelevant-files: *tempest-irrelevant-files
 
