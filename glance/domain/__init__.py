@@ -25,7 +25,7 @@ from oslo_utils import importutils
 from oslo_utils import timeutils
 
 from glance.common import exception
-from glance.i18n import _, _LE, _LI, _LW
+from glance.i18n import _, _LE, _LI
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -500,7 +500,6 @@ class TaskFactory(object):
 
 
 class TaskExecutorFactory(object):
-    eventlet_deprecation_warned = False
 
     def __init__(self, task_repo, image_repo, image_factory, admin_repo=None):
         self.task_repo = task_repo
@@ -510,21 +509,7 @@ class TaskExecutorFactory(object):
 
     def new_task_executor(self, context):
         try:
-            # NOTE(flaper87): Backwards compatibility layer.
-            # It'll allow us to provide a deprecation path to
-            # users that are currently consuming the `eventlet`
-            # executor.
             task_executor = CONF.task.task_executor
-            if task_executor == 'eventlet':
-                # NOTE(jokke): Making sure we do not log the deprecation
-                # warning 1000 times or anything crazy like that.
-                if not TaskExecutorFactory.eventlet_deprecation_warned:
-                    msg = _LW("The `eventlet` executor has been deprecated. "
-                              "Use `taskflow` instead.")
-                    LOG.warning(msg)
-                    TaskExecutorFactory.eventlet_deprecation_warned = True
-                task_executor = 'taskflow'
-
             executor_cls = ('glance.async_.%s_executor.'
                             'TaskExecutor' % task_executor)
             LOG.debug("Loading %s executor", task_executor)

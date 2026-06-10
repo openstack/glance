@@ -146,6 +146,7 @@ task_opts = [
                                                   group='DEFAULT')]),
     cfg.StrOpt('task_executor',
                default='taskflow',
+               choices=('taskflow',),
                help=_("""
 Task executor to be used to run task scripts.
 

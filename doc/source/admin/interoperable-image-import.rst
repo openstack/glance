@@ -30,8 +30,8 @@ be set:
 
 * in the ``[task]`` option group:
 
-  * ``task_executor`` must either be set to **taskflow** or be used in
-    its default value
+  * ``task_executor`` must be set to **taskflow** (the default). The
+    legacy ``eventlet`` value is no longer accepted.
 
 * in the ``[taskflow_executor]`` options group:
 

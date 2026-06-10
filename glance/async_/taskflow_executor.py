@@ -29,9 +29,6 @@ from glance.i18n import _, _LE
 
 LOG = logging.getLogger(__name__)
 
-_deprecated_opt = cfg.DeprecatedOpt('eventlet_executor_pool_size',
-                                    group='task')
-
 taskflow_executor_opts = [
     cfg.StrOpt('engine_mode',
                default='parallel',
@@ -75,8 +72,7 @@ Possible values:
 Related options:
     * engine_mode
 
-"""),
-               deprecated_opts=[_deprecated_opt])
+"""))
 ]
 
 
