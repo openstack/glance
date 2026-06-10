@@ -16,6 +16,7 @@
 
 import datetime
 import http.client as http
+import time
 from unittest import mock
 import uuid
 
@@ -124,6 +125,23 @@ class TestTasksController(test_utils.BaseTestCase):
             _db_fixture(UUID4, owner=TENANT4, type='import',
                         created_at=times[3], updated_at=times[3])]
         [self.db.task_create(None, task) for task in self.tasks]
+
+    def _wait_for_task_status(self, task_repo, task_id, expected_status,
+                              timeout=5.0, delay=0.01):
+        # NOTE(pdeore): Similar to SynchronousAPIBase._wait_for_task_status()
+        # in functional/__init__.py, but polls task_repo.get() for unit tests.
+        deadline = time.time() + timeout
+        task = None
+        while time.time() < deadline:
+            task = task_repo.get(task_id)
+            if task.status == expected_status:
+                return task
+            if task.status in ('success', 'failure'):
+                break
+            time.sleep(delay)
+        self.fail('Timed out waiting for task %s status %s (last status=%s)'
+                  % (task_id, expected_status,
+                     task.status if task else 'unknown'))
 
     def test_index(self):
         self.config(limit_param_default=1, api_limit_max=3)
@@ -444,8 +462,6 @@ class TestTasksController(test_utils.BaseTestCase):
 
     def test_create_with_properties_missed(self):
         request = unit_test_utils.get_fake_request()
-        executor_factory = self.gateway.get_task_executor_factory(
-            request.context)
         task_repo = self.gateway.get_task_repo(request.context)
 
         with mock.patch('glance.common.utils.socket.getaddrinfo',
@@ -459,9 +475,8 @@ class TestTasksController(test_utils.BaseTestCase):
                 }
             }
             new_task = self.controller.create(request, task=task)
-        task_executor = executor_factory.new_task_executor(request.context)
-        task_executor.begin_processing(new_task.task_id)
-        final_task = task_repo.get(new_task.task_id)
+            final_task = self._wait_for_task_status(
+                task_repo, new_task.task_id, 'failure')
 
         self.assertEqual('failure', final_task.status)
         msg = "Input does not contain 'image_properties' field"

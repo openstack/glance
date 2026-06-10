@@ -16,7 +16,7 @@
 import sqlite3
 from unittest import mock
 
-import futurist
+import concurrent.futures
 import glance_store
 from oslo_config import cfg
 from sqlalchemy import exc as sqlalchemy_exc
@@ -90,7 +90,7 @@ class TestTaskExecutor(test_utils.BaseTestCase):
     def test_fetch_an_executor_parallel(self):
         self.config(engine_mode='parallel', group='taskflow_executor')
         pool = self.executor._fetch_an_executor()
-        self.assertIsInstance(pool, futurist.ThreadPoolExecutor)
+        self.assertIsInstance(pool, concurrent.futures.ThreadPoolExecutor)
 
     def test_fetch_an_executor_serial(self):
         pool = self.executor._fetch_an_executor()
