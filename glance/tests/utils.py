@@ -670,6 +670,33 @@ def start_standalone_http_server():
     return thread, httpd, port
 
 
+def start_redirect_http_server(redirect_url):
+    """Start a local HTTP server that redirects to the given URL.
+
+    :param redirect_url: Location header value for the redirect response
+    :returns: tuple of (thread, httpd, port)
+    """
+    class RedirectHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(http.client.FOUND)
+            self.send_header('Location', redirect_url)
+            self.end_headers()
+
+        def log_message(self, format, *args):
+            # Suppress noisy request logging in tests
+            pass
+
+    server_address = ('127.0.0.1', 0)
+    httpd = http.server.HTTPServer(server_address, RedirectHTTPRequestHandler)
+    port = httpd.socket.getsockname()[1]
+
+    thread = threading.Thread(target=httpd.serve_forever)
+    thread.daemon = True
+    thread.start()
+
+    return thread, httpd, port
+
+
 class FakeData(object):
     """Generate a bunch of data without storing it in memory.
 
