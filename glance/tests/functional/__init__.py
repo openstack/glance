@@ -763,7 +763,30 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.assertIsNone(image.get('os_glance_import_task'),
                           'Timed out waiting for task to complete')
 
+        # Wait until task is finished before delete and similar ops.
+        self._wait_for_latest_task_termination(image_id)
+
         return image
+
+    def _wait_for_latest_task_termination(self, image_id, max_sec=5,
+                                          delay_sec=0.1):
+        """Wait until latest task reaches success or failure."""
+        done_time = time.time() + max_sec
+        while time.time() <= done_time:
+            try:
+                task = self._get_latest_task(image_id)
+            except AssertionError:
+                time.sleep(delay_sec)
+                continue
+            if task['status'] in ('success', 'failure'):
+                return task
+            time.sleep(delay_sec)
+
+        task = self._get_latest_task(image_id)
+        self.assertIn(task['status'], ('success', 'failure'),
+                      'Timed out waiting for task to finish on image %s'
+                      % image_id)
+        return task
 
     def _create_and_import(self, stores=[], data_iter=None, expected_code=202,
                            visibility=None, extra={}):
@@ -793,37 +816,98 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.assertGreater(len(tasks), 0)
         return tasks[-1]
 
+    def _find_image_task(self, image_id, task_id):
+        tasks = self.api_get('/v2/images/%s/tasks' % image_id).json['tasks']
+        for task in tasks:
+            if task['id'] == task_id:
+                return task
+        return None
+
+    def _get_import_task(self, image_id, task_id=None, exclude_task_ids=None,
+                         max_sec=2, delay_sec=0.1):
+        """Get import task for image. Retry if task is not ready yet."""
+        exclude_task_ids = set(exclude_task_ids or [])
+        if task_id is not None:
+            task = self._find_image_task(image_id, task_id)
+            if task:
+                return task
+
+        done_time = time.time() + max_sec
+        while time.time() <= done_time:
+            image = self.api_get('/v2/images/%s' % image_id).json
+            lock_task_id = image.get('os_glance_import_task')
+            if lock_task_id and lock_task_id not in exclude_task_ids:
+                task = self._find_image_task(image_id, lock_task_id)
+                if task:
+                    return task
+
+            tasks = self.api_get('/v2/images/%s/tasks' % image_id).json['tasks']
+            active_tasks = sorted(
+                [t for t in tasks
+                 if t['status'] in ('pending', 'processing')
+                 and t['id'] not in exclude_task_ids],
+                key=lambda t: t['updated_at'])
+            if active_tasks:
+                return active_tasks[-1]
+
+            # Import may fail before we observe an active task; use the
+            # latest task once the import lock has been released.
+            recent_tasks = sorted(
+                [t for t in tasks if t['id'] not in exclude_task_ids],
+                key=lambda t: t['updated_at'])
+            if recent_tasks:
+                return recent_tasks[-1]
+
+            time.sleep(delay_sec)
+
+        self.fail('Timed out waiting for import task on image %s' % image_id)
+
+    def _wait_for_task_status(self, task_id, expected_status, max_sec=2,
+                              delay_sec=0.1):
+        """Wait until task has expected status."""
+        done_time = time.time() + max_sec
+        task = None
+        while time.time() <= done_time:
+            task = self.api_get('/v2/tasks/%s' % task_id).json
+            if task['status'] == expected_status:
+                return task
+            time.sleep(delay_sec)
+
+        last_status = task['status'] if task else 'unknown'
+        self.fail('Timed out waiting for task %s status %s (last status=%s)'
+                  % (task_id, expected_status, last_status))
+
     def _wait_for_task_failure(self, image_id, max_sec=40, delay_sec=0.2,
-                               start_delay_sec=0):
+                               start_delay_sec=0.1):
         """Wait for import task to fail.
 
         :param image_id: The image ID to check
         :param max_sec: Maximum seconds to wait (default: 40)
         :param delay_sec: Seconds to sleep between checks (default: 0.2)
-        :param start_delay_sec: Seconds to wait before first check (default: 0)
+        :param start_delay_sec: Seconds to wait before first check (default: 0.1)
         :returns: The task dict from the API response
         """
-        done_time = time.time() + max_sec
         if start_delay_sec:
             time.sleep(start_delay_sec)
 
+        task = self._get_import_task(image_id, max_sec=10, delay_sec=delay_sec)
+        task_id = task['id']
+
+        done_time = time.time() + max_sec
+        last_status = task['status']
         while time.time() <= done_time:
-            try:
-                task = self._get_latest_task(image_id)
+            task = self._find_image_task(image_id, task_id)
+            if task is not None:
+                last_status = task['status']
                 if task['status'] == 'failure':
                     return task
-                elif task['status'] == 'success':
+                if task['status'] == 'success':
                     self.fail("Import unexpectedly succeeded "
                               "(task status=success)")
-            except (KeyError, IndexError):
-                # Task may not exist yet, continue checking
-                pass
-
             time.sleep(delay_sec)
 
-        task = self._get_latest_task(image_id)
-        self.assertEqual('failure', task['status'])
-        return task
+        self.fail('Timed out waiting for import failure on image %s '
+                  '(last status=%s)' % (image_id, last_status))
 
     def _create(self):
         return self.api_post('/v2/images',

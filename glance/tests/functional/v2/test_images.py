@@ -512,11 +512,14 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
             name='redirect-test', type='kernel',
             disk_format='aki', container_format='aki')
 
-        # Try to import with redirect to disallowed host
-        # The redirect destination should be validated and rejected
-        redirect_uri = (
-            'http://httpbin.org/redirect-to?url='
+        # Try to import with redirect to disallowed host.
+        # Use a local redirect server instead of httpbin.org to avoid
+        # external network delays in CI.
+        thread, httpd, port = test_utils.start_redirect_http_server(
             'http://127.0.0.1:80/')
+        self.http_servers.append(httpd)
+        self.config(allowed_ports=[port], group='import_filtering_opts')
+        redirect_uri = f'http://localhost:{port}/redirect'
         data = {'method': {
             'name': 'web-download',
             'uri': redirect_uri
@@ -3557,9 +3560,7 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         # Import should fail the task because it would put us over our
         # 5MiB quota
         self._import_direct(import_id, ['store1'])
-        image = self._wait_for_import(import_id)
-        task = self._get_latest_task(import_id)
-        self.assertEqual('failure', task['status'])
+        task = self._wait_for_task_failure(import_id)
         self.assertIn(('image_size_total is over limit of 5 due to '
                        'current usage 3 and delta 3'), task['message'])
 
@@ -3613,8 +3614,7 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
                         'image_count_uploading': 10})
         req = self._import_copy(image_id, ['store3'])
         self.assertEqual(202, req.status_code)
-        self._wait_for_import(image_id)
-        self.assertEqual('failure', self._get_latest_task(image_id)['status'])
+        self._wait_for_task_failure(image_id)
 
         # If we increase our stage quota, we should now be able to copy.
         self.set_limit({'image_size_total': 15,
@@ -3647,9 +3647,7 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         req = self._import_web_download(image_id2, ['store1'],
                                         'http://example.com/foo.img')
         self.assertEqual(202, req.status_code)
-        self._wait_for_import(image_id2)
-        task = self._get_latest_task(image_id2)
-        self.assertEqual('failure', task['status'])
+        task = self._wait_for_task_failure(image_id2)
         self.assertIn('image_stage_total is over limit', task['message'])
 
         # Finish importing one of the images, which should put us under quota
@@ -3721,9 +3719,7 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         # to avoid an unstable test (without some mocking).
         resp = self._import_copy(image_id, ['store2'])
         self.assertEqual(202, resp.status_code)
-        self._wait_for_import(image_id)
-        task = self._get_latest_task(image_id)
-        self.assertEqual('failure', task['status'])
+        task = self._wait_for_task_failure(image_id)
         self.assertIn('Resource image_count_uploading is over limit',
                       task['message'])
 
