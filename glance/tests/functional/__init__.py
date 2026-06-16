@@ -816,11 +816,23 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.assertGreater(len(tasks), 0)
         return tasks[-1]
 
+    def _admin_headers(self):
+        """Return admin headers, bypassing subclass role overrides."""
+        return SynchronousAPIBase._headers(self)
+
     def _find_image_task(self, image_id, task_id):
         tasks = self.api_get('/v2/images/%s/tasks' % image_id).json['tasks']
         for task in tasks:
             if task['id'] == task_id:
                 return task
+        return None
+
+    def _get_task_by_id(self, task_id):
+        """Get task by ID using admin credentials for reliable status."""
+        resp = self.api_get('/v2/tasks/%s' % task_id,
+                            headers=self._admin_headers())
+        if resp.status_code == 200:
+            return resp.json
         return None
 
     def _get_import_task(self, image_id, task_id=None, exclude_task_ids=None,
@@ -868,7 +880,9 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         done_time = time.time() + max_sec
         task = None
         while time.time() <= done_time:
-            task = self.api_get('/v2/tasks/%s' % task_id).json
+            task = self._get_task_by_id(task_id)
+            if task is None:
+                task = self.api_get('/v2/tasks/%s' % task_id).json
             if task['status'] == expected_status:
                 return task
             time.sleep(delay_sec)
@@ -896,7 +910,11 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         done_time = time.time() + max_sec
         last_status = task['status']
         while time.time() <= done_time:
-            task = self._find_image_task(image_id, task_id)
+            # Prefer /v2/tasks/{id} with admin credentials: the image tasks
+            # list can lag behind terminal status under CI load.
+            task = self._get_task_by_id(task_id)
+            if task is None:
+                task = self._find_image_task(image_id, task_id)
             if task is not None:
                 last_status = task['status']
                 if task['status'] == 'failure':
