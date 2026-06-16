@@ -24,6 +24,7 @@ from oslo_utils import fixture as time_fixture
 from oslo_utils import units
 
 from glance.tests import functional
+from glance.tests.functional import ft_utils as func_utils
 from glance.tests import utils as test_utils
 
 
@@ -91,22 +92,17 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
 
         # Try a second copy-image import. If we are warping time,
         # expect the lock to be busted. If not, then we should get
-        # a 409 Conflict. We should make sure to wait until it gets started
-        # before looking for the task id.
-        with mock.patch('glance.location.ImageProxy.set_data') as mock_sd:
-            mock_sd.side_effect = slow_fake_set_data
-            resp = self._import_copy(image_id, ['store3'])
-
-            # Wait to make sure the data stream gets started
-            for i in range(0, 10):
-                if 'running' in state:
-                    break
-                time.sleep(0.1)
+        # a 409 Conflict.
+        resp = self._import_copy(image_id, ['store3'])
 
         self.addDetail('Second import response',
                        ttc.text_content(str(resp)))
         if warp_time:
             self.assertEqual(202, resp.status_code)
+            # The first import's lock is busted but its set_data() may
+            # still be spinning in another thread. Stop that stall now
+            # to avoid sqlite contention with the new import task.
+            state['want_run'] = False
         else:
             self.assertEqual(409, resp.status_code)
 
@@ -114,7 +110,12 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
 
         # Grab the current import task for our image, and also
         # refresh our first task object
-        second_import_task = self._get_image_import_task(image_id)
+        if warp_time:
+            second_import_task = self._get_import_task(
+                image_id, exclude_task_ids=[first_import_task['id']],
+                max_sec=10)
+        else:
+            second_import_task = self._get_image_import_task(image_id)
         first_import_task = self._get_image_import_task(
             image_id, first_import_task['id'])
 
@@ -135,34 +136,32 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
             self.assertEqual(first_import_task['id'],
                              second_import_task['id'])
 
-        return image_id, state
+        return image_id
 
     def test_import_copy_locked(self):
         self._test_import_copy(warp_time=False)
 
     def test_import_copy_bust_lock(self):
-        image_id, state = self._test_import_copy(warp_time=True)
+        image_id = self._test_import_copy(warp_time=True)
 
-        # After the import has busted the lock, wait for our
-        # new import to start. We used a different store than
+        # After the import has busted the lock, wait for the new import
+        # to finish copying to store3. We used a different store than
         # the stalled task so we can tell the difference.
-        for i in range(0, 10):
-            image = self.api_get('/v2/images/%s' % image_id).json
-            if image['stores'] == 'store1,store3':
-                break
-            time.sleep(0.1)
+        path = '/v2/images/%s' % image_id
+        func_utils.wait_for_copying(request_path=path,
+                                    request_headers=self._headers(),
+                                    stores=['store3'],
+                                    max_sec=40,
+                                    delay_sec=0.2,
+                                    api_get_method=self.api_get)
 
         # After completion, we expect store1 (original) and store3 (new)
-        # and that the other task is still stuck importing
         image = self.api_get('/v2/images/%s' % image_id).json
         self.assertEqual('store1,store3', image['stores'])
         self.assertEqual('', image['os_glance_failed_import'])
 
-        # Free up the stalled task and give it time to complete
-        state['want_run'] = False
-        for i in range(0, 10):
-            image = self.api_get('/v2/images/%s' % image_id).json
-            time.sleep(0.1)
+        # Give the import task time to complete cleanup
+        self._wait_for_latest_task_termination(image_id, max_sec=10)
 
         # After that, we expect everything to be cleaned up and in the
         # terminal state that we expect.
