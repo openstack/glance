@@ -180,6 +180,264 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden, self.controller.download,
                           request, str(uuid.uuid4()))
 
+    def test_download_with_stores(self):
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        locations = [
+            {'url': 'file:///path1', 'metadata': {'store': 'store1'}},
+            {'url': 'file:///path2', 'metadata': {'store': 'store2'}},
+        ]
+        image = FakeImage('abcd', locations=locations)
+        self.image_repo.result = image
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier'):
+            result = self.controller.download(
+                request, 'abcd', stores=['store1'])
+            self.assertEqual(2, len(result.locations))
+            self.assertEqual(
+                'store1', result.locations[0]['metadata']['store'])
+
+    def test_download_with_stores_fallback(self):
+        """Test that download falls back to other stores when not found
+        in specified stores
+        """
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        locations = [
+            {'url': 'file:///path2', 'metadata': {'store': 'store2'}},
+        ]
+        image = FakeImage('abcd', locations=locations)
+        self.image_repo.result = image
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier'):
+            result = self.controller.download(
+                request, 'abcd', stores=['store1'])
+            # Should fallback to store2 when store1 not found
+            self.assertEqual(1, len(result.locations))
+            self.assertEqual(
+                'store2', result.locations[0]['metadata']['store'])
+
+    def test_download_with_invalid_store(self):
+        self.config(enabled_backends={'store1': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier',
+                               side_effect=glance_store.UnknownScheme()):
+            self.assertRaises(
+                webob.exc.HTTPBadRequest,
+                self.controller.download, request, 'abcd',
+                stores=['invalid'])
+
+    def test_download_with_unconfigured_store(self):
+        self.config(enabled_backends={'store1': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier'):
+            self.assertRaises(
+                webob.exc.HTTPBadRequest,
+                self.controller.download, request, 'abcd',
+                stores=['store2'])
+
+    def test_download_without_enabled_backends(self):
+        self.config(enabled_backends=None)
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        self.assertRaises(
+            webob.exc.HTTPBadRequest,
+            self.controller.download, request, 'abcd',
+            stores=['store1'])
+
+    def test_download_with_multiple_stores_all_valid(self):
+        """Test validation with multiple stores, all valid"""
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file',
+                                      'store3': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        locations = [
+            {'url': 'file:///path1', 'metadata': {'store': 'store1'}},
+            {'url': 'file:///path2', 'metadata': {'store': 'store2'}},
+            {'url': 'file:///path3', 'metadata': {'store': 'store3'}},
+        ]
+        image = FakeImage('abcd', locations=locations)
+        self.image_repo.result = image
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier'):
+            result = self.controller.download(
+                request, 'abcd', stores=['store1', 'store2', 'store3'])
+            # Should succeed with all stores validated
+            self.assertEqual(image, result)
+
+    def test_download_with_multiple_stores_invalid(self):
+        """Test validation with invalid store"""
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file',
+                                      'store3': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        with mock.patch.object(
+                glance_store,
+                'get_store_from_store_identifier',
+                side_effect=[None, glance_store.UnknownScheme(), None]):
+            # Middle store raises UnknownScheme
+            self.assertRaises(
+                webob.exc.HTTPBadRequest,
+                self.controller.download, request, 'abcd',
+                stores=['store1', 'invalid_store', 'store3'])
+
+    def test_download_with_stores_policy_enforcement(self):
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        locations = [
+            {'url': 'file:///path1', 'metadata': {'store': 'store1'}},
+            {'url': 'file:///path2', 'metadata': {'store': 'store2'}},
+        ]
+        image = FakeImage('abcd', locations=locations)
+        self.image_repo.result = image
+        with mock.patch.object(glance.api.v2.policy.ImageAPIPolicy,
+                               'download_from_store') as mock_policy:
+            with mock.patch.object(glance_store,
+                                   'get_store_from_store_identifier'):
+                self.controller.download(
+                    request, 'abcd', stores=['store1'])
+                mock_policy.assert_called_once()
+
+    def test_download_with_stores_policy_forbidden(self):
+        self.config(enabled_backends={'store1': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        locations = [{'url': 'file:///path1',
+                      'metadata': {'store': 'store1'}}]
+        image = FakeImage('abcd', locations=locations)
+        self.image_repo.result = image
+        with mock.patch.object(glance.api.v2.policy.ImageAPIPolicy,
+                               'download_from_store') as mock_policy:
+            mock_policy.side_effect = webob.exc.HTTPForbidden()
+            self.assertRaises(
+                webob.exc.HTTPForbidden,
+                self.controller.download, request, 'abcd',
+                stores=['store1'])
+
+    def test_download_without_stores_policy_not_called(self):
+        """Test that download_from_store policy is NOT called when stores=None
+        """
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd',
+                          locations=[{'url': 'http://example.com/image',
+                                      'metadata': {}, 'status': 'active'}])
+        self.image_repo.result = image
+        with mock.patch.object(glance.api.v2.policy.ImageAPIPolicy,
+                               'download_from_store') as mock_policy:
+            result = self.controller.download(request, 'abcd')
+            self.assertEqual(image, result)
+            # Verify download_from_store was never called
+            mock_policy.assert_not_called()
+
+    def test_download_with_empty_stores_policy_not_called(self):
+        """Test that download_from_store policy is NOT called when stores=[]"""
+        self.config(enabled_backends={'store1': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd',
+                          locations=[{'url': 'file:///path1',
+                                      'metadata': {'store': 'store1'}}])
+        self.image_repo.result = image
+        with mock.patch.object(glance.api.v2.policy.ImageAPIPolicy,
+                               'download_from_store') as mock_policy:
+            result = self.controller.download(
+                request, 'abcd', stores=[])
+            self.assertEqual(image, result)
+            # Verify download_from_store was never called
+            mock_policy.assert_not_called()
+
+    def test_download_with_stores_policy_forbidden_logs_message(self):
+        """Test that policy failure logs correct debug message"""
+        self.config(enabled_backends={'store1': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd',
+                          locations=[{'url': 'file:///path1',
+                                      'metadata': {'store': 'store1'}}])
+        self.image_repo.result = image
+        with mock.patch.object(glance.api.v2.policy.ImageAPIPolicy,
+                               'download_from_store') as mock_policy:
+            with mock.patch('glance.api.v2.image_data.LOG') as mock_log:
+                mock_policy.side_effect = webob.exc.HTTPForbidden()
+                self.assertRaises(
+                    webob.exc.HTTPForbidden,
+                    self.controller.download, request, 'abcd',
+                    stores=['store1'])
+                # Verify debug message was logged
+                mock_log.debug.assert_called_once()
+                # Check format string and arguments
+                call_args = mock_log.debug.call_args
+                format_string = call_args[0][0]
+                image_id_arg = call_args[0][1]
+                self.assertIn("User not permitted to use store selection",
+                              format_string)
+                self.assertEqual('abcd', image_id_arg)
+
+    def test_download_with_stores_empty_locations(self):
+        """Test that empty locations are handled correctly with stores
+        parameter
+        """
+        self.config(enabled_backends={'store1': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd')
+        self.image_repo.result = image
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier'):
+            result = self.controller.download(
+                request, 'abcd', stores=['store1'])
+            # Should return image unchanged when locations is empty
+            self.assertEqual(image, result)
+            # locations might be None or [] depending on FakeImage
+            self.assertTrue(result.locations is None or result.locations == [])
+
+    def test_download_with_stores_no_preferred(self):
+        """Test when no locations match specified stores - should fallback"""
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        locations = [
+            {'url': 'file:///path2', 'metadata': {'store': 'store2'}},
+        ]
+        image = FakeImage('abcd', locations=locations)
+        self.image_repo.result = image
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier'):
+            result = self.controller.download(
+                request, 'abcd', stores=['store1'])
+            # Should return others (store2) when no preferred match
+            self.assertEqual(1, len(result.locations))
+            self.assertEqual(
+                'store2', result.locations[0]['metadata']['store'])
+
+    def test_download_with_stores_multiple_stores_some_match(self):
+        """Test with multiple stores specified, some match, some don't"""
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file',
+                                      'store3': 'file'})
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        locations = [
+            {'url': 'file:///path1', 'metadata': {'store': 'store1'}},
+            {'url': 'file:///path2', 'metadata': {'store': 'store2'}},
+            {'url': 'file:///path3', 'metadata': {'store': 'store3'}},
+        ]
+        image = FakeImage('abcd', locations=locations)
+        self.image_repo.result = image
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier'):
+            result = self.controller.download(
+                request, 'abcd', stores=['store1', 'store3'])
+            # Should return preferred (store1, store3) first, then others
+            # (store2)
+            self.assertEqual(3, len(result.locations))
+            self.assertEqual(
+                'store1', result.locations[0]['metadata']['store'])
+            self.assertEqual(
+                'store3', result.locations[1]['metadata']['store'])
+            self.assertEqual(
+                'store2', result.locations[2]['metadata']['store'])
+
     def test_download_ok_when_get_image_location_forbidden(self):
         class ImageLocations(object):
 
@@ -727,6 +985,151 @@ class TestImagesController(base.StoreClearingUnitTest):
                               request, image_id, 'YYYY', 4)
         self.assertNotIn('os_glance_stage_host', image.extra_properties)
 
+    def test_validate_stores_with_none_enabled_backends(self):
+        self.config(enabled_backends=None)
+        self.assertRaises(
+            webob.exc.HTTPBadRequest,
+            self.controller._validate_stores, ['store1'])
+
+    def test_validate_stores_with_empty_enabled_backends(self):
+        self.config(enabled_backends={})
+        self.assertRaises(
+            webob.exc.HTTPBadRequest,
+            self.controller._validate_stores, ['store1'])
+
+    def test_validate_stores_with_unconfigured_store(self):
+        self.config(enabled_backends={'store1': 'file'})
+        self.assertRaises(
+            webob.exc.HTTPBadRequest,
+            self.controller._validate_stores, ['store2'])
+
+    def test_validate_stores_with_invalid_store_scheme(self):
+        self.config(enabled_backends={'store1': 'file'})
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier',
+                               side_effect=glance_store.UnknownScheme()):
+            self.assertRaises(
+                webob.exc.HTTPBadRequest,
+                self.controller._validate_stores, ['store1'])
+
+    def test_validate_stores_with_valid_stores(self):
+        """Test _validate_stores returns valid stores list"""
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file'})
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier',
+                               return_value=None):
+            result = self.controller._validate_stores(['store1', 'store2'])
+            self.assertEqual(['store1', 'store2'], result)
+
+    def test_validate_stores_with_mixed_valid_invalid(self):
+        """Test _validate_stores stops at first invalid store"""
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file'})
+        # First store is invalid (not in enabled_backends)
+        self.assertRaises(
+            webob.exc.HTTPBadRequest,
+            self.controller._validate_stores,
+            ['invalid_store', 'store1'])
+
+    def test_filter_locations_by_stores_with_no_locations(self):
+        image = FakeImage('abcd')
+        image.locations = None
+        result = self.controller._filter_locations_by_stores(
+            image, ['store1'])
+        self.assertEqual(image, result)
+        self.assertIsNone(result.locations)
+
+    def test_filter_locations_by_stores_with_empty_locations(self):
+        image = FakeImage('abcd')
+        image.locations = []
+        result = self.controller._filter_locations_by_stores(
+            image, ['store1'])
+        self.assertEqual(image, result)
+        self.assertEqual([], result.locations)
+
+    def test_filter_locations_by_stores_with_matching_stores(self):
+        image = FakeImage('abcd')
+        image.locations = [
+            {'url': 'file:///path1', 'metadata': {'store': 'store1'}},
+            {'url': 'file:///path2', 'metadata': {'store': 'store2'}},
+            {'url': 'file:///path3', 'metadata': {'store': 'store3'}},
+        ]
+        result = self.controller._filter_locations_by_stores(
+            image, ['store1', 'store3'])
+        # Should return preferred first, then others (fallback)
+        self.assertEqual(3, len(result.locations))
+        self.assertEqual('store1', result.locations[0]['metadata']['store'])
+        self.assertEqual('store3', result.locations[1]['metadata']['store'])
+        self.assertEqual('store2', result.locations[2]['metadata']['store'])
+
+    def test_filter_locations_by_stores_with_location_no_metadata(self):
+        image = FakeImage('abcd')
+        image.locations = [
+            {'url': 'file:///path1', 'metadata': {'store': 'store1'}},
+            {'url': 'file:///path2', 'metadata': {}},  # No store in metadata
+        ]
+        result = self.controller._filter_locations_by_stores(
+            image, ['store1'])
+        # Location without store metadata should go to others
+        self.assertEqual(2, len(result.locations))
+        self.assertEqual('store1', result.locations[0]['metadata']['store'])
+        self.assertEqual({}, result.locations[1]['metadata'])
+
+    def test_filter_locations_by_stores_with_location_no_metadata_key(self):
+        image = FakeImage('abcd')
+        image.locations = [
+            {'url': 'file:///path1', 'metadata': {'store': 'store1'}},
+            {'url': 'file:///path2'},  # No metadata key at all
+        ]
+        result = self.controller._filter_locations_by_stores(
+            image, ['store1'])
+        # Location without metadata should go to others
+        self.assertEqual(2, len(result.locations))
+        self.assertEqual('store1', result.locations[0]['metadata']['store'])
+        # Second location should not have metadata
+        self.assertNotIn('metadata', result.locations[1])
+
+    def test_validate_stores_with_empty_stores_list(self):
+        self.config(enabled_backends={'store1': 'file'})
+        result = self.controller._validate_stores([])
+        self.assertEqual([], result)
+
+    def test_filter_locations_by_stores_with_empty_stores_list(self):
+        image = FakeImage('abcd')
+        image.locations = [
+            {'url': 'file:///path1', 'metadata': {'store': 'store1'}},
+            {'url': 'file:///path2', 'metadata': {'store': 'store2'}},
+        ]
+        result = self.controller._filter_locations_by_stores(
+            image, [])
+        # Empty stores list means no preferred, so all locations returned
+        self.assertEqual(2, len(result.locations))
+        self.assertEqual('store1', result.locations[0]['metadata']['store'])
+        self.assertEqual('store2', result.locations[1]['metadata']['store'])
+
+    def test_validate_stores_with_duplicate_stores(self):
+        """Test _validate_stores handles duplicate stores in the list"""
+        self.config(enabled_backends={'store1': 'file', 'store2': 'file'})
+        with mock.patch.object(glance_store,
+                               'get_store_from_store_identifier',
+                               return_value=None):
+            result = self.controller._validate_stores(
+                ['store1', 'store1', 'store2'])
+            # Duplicates should be preserved in the result
+            self.assertEqual(['store1', 'store1', 'store2'], result)
+
+    def test_filter_locations_by_stores_with_duplicate_stores(self):
+        image = FakeImage('abcd')
+        image.locations = [
+            {'url': 'file:///path1', 'metadata': {'store': 'store1'}},
+            {'url': 'file:///path2', 'metadata': {'store': 'store2'}},
+        ]
+        result = self.controller._filter_locations_by_stores(
+            image, ['store1', 'store1'])
+        # Duplicate stores should work fine
+        self.assertEqual(2, len(result.locations))
+        self.assertEqual('store1', result.locations[0]['metadata']['store'])
+        self.assertEqual('store2', result.locations[1]['metadata']['store'])
+
 
 class TestImageDataDeserializer(test_utils.BaseTestCase):
 
@@ -874,6 +1277,40 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
                 self.assertRaisesRegex(
                     webob.exc.HTTPBadRequest, "Invalid or missing image size",
                     func, request)
+
+    def test_download_without_params(self):
+        request = unit_test_utils.get_fake_request()
+        result = self.deserializer.download(request)
+        self.assertEqual([], result['stores'])
+
+    def test_download_with_stores(self):
+        request = webob.Request.blank('/?prefer=store1,store2')
+        result = self.deserializer.download(request)
+        self.assertEqual(['store1', 'store2'], result['stores'])
+
+    def test_download_with_empty_stores(self):
+        request = webob.Request.blank('/?prefer=')
+        result = self.deserializer.download(request)
+        self.assertEqual([], result['stores'])
+
+    def test_download_with_stores_whitespace(self):
+        request = webob.Request.blank('/?prefer= store1 , store2 ')
+        result = self.deserializer.download(request)
+        self.assertEqual(['store1', 'store2'], result['stores'])
+
+    def test_download_with_stores_multiple_commas(self):
+        """Test stores parameter with multiple commas and empty strings"""
+        request = webob.Request.blank('/?prefer=store1,,store2,')
+        result = self.deserializer.download(request)
+        # Empty strings after split should be filtered out
+        self.assertEqual(['store1', 'store2'], result['stores'])
+
+    def test_download_with_stores_commas(self):
+        """Test stores parameter with commas"""
+        request = webob.Request.blank('/?prefer=,,,')
+        result = self.deserializer.download(request)
+        # All empty strings should be filtered out
+        self.assertEqual([], result['stores'])
 
     def test_with_invalid_size_header(self):
         for method in ('upload', 'stage'):

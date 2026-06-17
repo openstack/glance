@@ -266,3 +266,40 @@ the only option you must configure for each is the
 * The reserved stores will **not** be accepted as the value of the
   ``X-Image-Meta-Store`` header on the image-data-upload call or
   the image-import call.
+
+Downloading from Suggested Stores
+---------------------------------
+
+Starting with the 2026.1 (Gazpacho) release, you can suggest which stores
+to use when downloading images by adding query parameters to the image
+download endpoint.
+
+When downloading an image using ``GET /v2/images/{image_id}/file``, you can
+suggest the ordering of stores to try by adding a query parameter:
+
+* ``prefer``: A comma-separated list of store identifiers. Store identifiers
+  are site-specific. Use the store discovery call, ``GET /v2/info/stores``,
+  to determine what stores are available.
+
+  Glance will try stores from the list in order. If the image is not found
+  in any of the specified stores, the system will fall back to the default
+  behavior (trying all stores).
+
+Example:
+
+.. code-block:: bash
+
+   curl -i -X GET -H "X-Auth-Token: $token" \
+      "$image_url/v2/images/{image_id}/file?prefer=fast,cheap"
+
+.. note::
+   If the image is cached, the cache middleware will serve it directly and
+   store preference parameters are ignored. Store preference parameters only
+   apply when fetching from backend stores, not when serving from cache.
+
+.. note::
+   The ``download_from_store`` policy controls who can use store preference
+   parameters when downloading images. By default, anyone who can download
+   images can also use store preference. Deployers can restrict this policy
+   if needed. See the :doc:`Policies <policies>` documentation for more
+   information.

@@ -1,0 +1,47 @@
+---
+features:
+  - |
+    The image download endpoint ``GET /v2/images/{image_id}/file`` now
+    supports store preference using query parameters. This allows services like
+    Nova and Cinder to suggest which stores to try when downloading images,
+    enabling them to prefer stores that are close to them or have better
+    performance characteristics.
+
+    A new query parameter is available:
+
+    * ``prefer``: A comma-separated list of store identifiers suggesting the
+      ordering of stores to try when downloading the image. Store identifiers
+      are site-specific and can be discovered using the ``GET /v2/info/stores``
+      endpoint.
+
+      Glance will try stores from the list in order. If the image is not found
+      in any of the specified stores, the system will fall back to the default
+      behavior (trying all stores).
+
+    .. note::
+       Store preference parameters only apply when fetching images from
+       backend stores, not when serving from cache. Cached images bypass
+       the store preference logic entirely.
+
+    A new policy rule ``download_from_store`` controls who can use store
+    preference parameters when downloading images. By default, anyone who can
+    download images can also use store preference. Deployers can restrict this
+    policy if needed.
+upgrade:
+  - |
+    This feature is backward compatible. If no query parameters are provided,
+    the endpoint behaves exactly as before, using the default store ordering
+    logic.
+
+    The new ``download_from_store`` policy rule is available for deployers who
+    want to restrict store preference to specific users or roles. By default,
+    the policy allows anyone who can download images to also use store
+    preference. See the policies documentation for more information on
+    configuring policies.
+
+    .. note::
+       Store preference requires multiple stores to be configured via the
+       ``enabled_backends`` configuration option. If multiple stores are not
+       configured, store preference parameters will be rejected with a 400 (Bad
+       Request) response.
+

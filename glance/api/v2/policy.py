@@ -286,6 +286,9 @@ class ImageAPIPolicy(APIPolicyBase):
     def download_image(self):
         self._enforce('download_image')
 
+    def download_from_store(self):
+        self._enforce('download_from_store')
+
     def modify_image(self):
         self._enforce('modify_image')
         # TODO(danms): Remove this legacy fallback when secure RBAC
