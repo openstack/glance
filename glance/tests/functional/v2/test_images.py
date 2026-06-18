@@ -539,12 +539,7 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
 
         # Verify the image status is still queued (not active)
         # since the import failed - this proves the SSRF was prevented
-        path = f'/v2/images/{image_id}'
-        resp = self.api_methods.api_get(
-            path, headers=self.api_methods._headers())
-        self.assertEqual(200, resp.status_code)
-        image = resp.json
-        self.assertEqual('queued', image['status'])
+        image = self._wait_for_image_status(image_id, 'queued', max_sec=10)
         # Image should not have checksum or size since import failed
         # If checksum/size exist, it means data was downloaded (SSRF succeeded)
         self.assertIsNone(image.get('checksum'))
@@ -3566,6 +3561,7 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         task = self._wait_for_task_failure(import_id)
         self.assertIn(('image_size_total is over limit of 5 due to '
                        'current usage 3 and delta 3'), task['message'])
+        self._wait_for_import_lock_clear(import_id)
 
         # Delete the first image to make space
         resp = self.api_delete('/v2/images/%s' % image_id)
@@ -3617,7 +3613,9 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
                         'image_count_uploading': 10})
         req = self._import_copy(image_id, ['store3'])
         self.assertEqual(202, req.status_code)
-        self._wait_for_task_failure(image_id)
+        task = self._wait_for_task_failure(image_id)
+        self.assertIn('image_stage_total is over limit', task['message'])
+        self._wait_for_import_lock_clear(image_id)
 
         # If we increase our stage quota, we should now be able to copy.
         self.set_limit({'image_size_total': 15,
@@ -3652,6 +3650,7 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         self.assertEqual(202, req.status_code)
         task = self._wait_for_task_failure(image_id2)
         self.assertIn('image_stage_total is over limit', task['message'])
+        self._wait_for_import_lock_clear(image_id2)
 
         # Finish importing one of the images, which should put us under quota
         # for staging
@@ -3725,9 +3724,10 @@ class TestKeystoneQuotas(functional.SynchronousAPIBase):
         task = self._wait_for_task_failure(image_id)
         self.assertIn('Resource image_count_uploading is over limit',
                       task['message'])
+        self._wait_for_import_lock_clear(image_id)
 
         # Finish the staged import.
-        self._import_direct(image_id2, ['store1'])
+        resp = self._import_direct(image_id2, ['store1'])
         self.assertEqual(202, resp.status_code)
         self._wait_for_import(image_id2)
 

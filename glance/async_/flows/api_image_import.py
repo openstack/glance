@@ -39,7 +39,8 @@ from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
 from glance.common.scripts import utils as script_utils
 from glance.common import store_utils
-from glance.i18n import _, _LE, _LI
+from glance.common import utils as common_utils
+from glance.i18n import _, _LE, _LI, _LW
 from glance.quota import keystone as ks_quota
 
 
@@ -168,7 +169,9 @@ class ImportActionWrapper(object):
                       {'image_id': self._image_id,
                        'old_status': self._image_previous_status,
                        'new_status': self._image.status})
-        self._image_repo.save(self._image, self._image_previous_status)
+        common_utils.retry_on_db_lock(
+            lambda: self._image_repo.save(
+                self._image, self._image_previous_status))
 
     @property
     def image_id(self):
@@ -184,9 +187,9 @@ class ImportActionWrapper(object):
         :raises: NotFound if the image was not locked by the expected task.
         """
         image = self._image_repo.get(self._image_id)
-        self._image_repo.delete_property_atomic(image,
-                                                'os_glance_import_task',
-                                                self._task_id)
+        common_utils.retry_on_db_lock(
+            lambda: self._image_repo.delete_property_atomic(
+                image, 'os_glance_import_task', self._task_id))
 
     def _assert_task_lock(self, image):
         task_lock = image.extra_properties.get('os_glance_import_task')
@@ -753,7 +756,8 @@ class _CompleteTask(task.Task):
             err_msg = _("Error: %(exc_type)s: %(e)s")
             task.fail(err_msg % {'exc_type': str(type(e)), 'e': e})
         finally:
-            self.task_repo.save(task)
+            common_utils.retry_on_db_lock(
+                lambda: self.task_repo.save(task))
 
     def _drop_lock(self):
         try:
@@ -876,18 +880,36 @@ def assert_quota(context, task_repo, task_id, stores,
         enforce_quota_fn(context, context.owner, **enforce_kwargs)
     except exception.LimitExceeded as e:
         with excutils.save_and_reraise_exception():
-            with action_wrapper as action:
-                action.remove_importing_stores(stores)
-                if action.image_status == 'importing':
-                    action.set_image_attribute(status='queued')
-            action_wrapper.drop_lock_for_task()
+            try:
+                with action_wrapper as action:
+                    action.remove_importing_stores(stores)
+                    if action.image_status == 'importing':
+                        action.set_image_attribute(status='queued')
+            except Exception:
+                LOG.warning(_LW('Failed to cleanup image %(image)s after '
+                                'quota failure for task %(task)s'),
+                            {'image': action_wrapper.image_id,
+                             'task': task_id},
+                            exc_info=True)
+            try:
+                action_wrapper.drop_lock_for_task()
+            except exception.NotFound:
+                pass
+            except Exception:
+                LOG.warning(_LW('Failed to drop import lock for image '
+                                '%(image)s after quota failure for task '
+                                '%(task)s'),
+                            {'image': action_wrapper.image_id,
+                             'task': task_id},
+                            exc_info=True)
             task = script_utils.get_task(task_repo, task_id)
             if task is None:
                 LOG.error(_LE('Failed to find task %r to update after '
                               'quota failure'), task_id)
             else:
                 task.fail(str(e))
-                task_repo.save(task)
+                common_utils.retry_on_db_lock(
+                    lambda: task_repo.save(task))
 
 
 def get_flow(**kwargs):

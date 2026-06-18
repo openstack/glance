@@ -25,6 +25,7 @@ from taskflow.listeners import logging as llistener
 import glance.async_
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
+from glance.common import utils
 from glance.i18n import _, _LE
 
 LOG = logging.getLogger(__name__)
@@ -149,6 +150,22 @@ class TaskExecutor(glance.async_.TaskExecutor):
             LOG.exception(_LE('Task initialization failed: %s'), str(e))
             raise
 
+    def _fail_task(self, task, message):
+        try:
+            task = self.task_repo.get(task.task_id)
+            if task is None or task.status in ('failure', 'success'):
+                return
+            task.fail(message)
+            utils.retry_on_db_lock(lambda: self.task_repo.save(task))
+        except exception.InvalidTaskStatusTransition:
+            # The task may already be in a terminal state if flow
+            # initialization failed after recording the error.
+            pass
+        except Exception as exc:
+            LOG.error(_LE('Failed to mark task %(task_id)s as failed: '
+                          '%(exc)s'),
+                      {'task_id': task.task_id, 'exc': exc})
+
     def begin_processing(self, task_id):
         try:
             super(TaskExecutor, self).begin_processing(task_id)
@@ -156,8 +173,7 @@ class TaskExecutor(glance.async_.TaskExecutor):
             LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s'),
                       {'task_id': task_id, 'exc': exc.msg})
             task = self.task_repo.get(task_id)
-            task.fail(exc.msg)
-            self.task_repo.save(task)
+            self._fail_task(task, exc.msg)
 
     def _run(self, task_id, task_type):
         LOG.debug('Taskflow executor picked up the execution of task ID '
@@ -172,7 +188,18 @@ class TaskExecutor(glance.async_.TaskExecutor):
             # it's ignored here.
             return
 
-        flow = self._get_flow(task)
+        try:
+            flow = utils.retry_on_db_lock(lambda: self._get_flow(task))
+        except exception.ImportTaskError as exc:
+            self._fail_task(task, exc.msg)
+            return
+        except Exception as exc:
+            LOG.error(_LE('Failed to initialize task %(task_id)s: '
+                          '%(exc)s'),
+                      {'task_id': task_id, 'exc': exc})
+            self._fail_task(task, _('Task failed due to Internal Error'))
+            return
+
         executor = self._fetch_an_executor()
         try:
             engine = engines.load(
@@ -182,16 +209,14 @@ class TaskExecutor(glance.async_.TaskExecutor):
             with llistener.DynamicLoggingListener(engine, log=LOG):
                 engine.run()
         except exception.UploadException as exc:
-            task.fail(str(exc))
-            self.task_repo.save(task)
+            self._fail_task(task, str(exc))
         except Exception as exc:
             with excutils.save_and_reraise_exception():
                 LOG.error(_LE('Failed to execute task %(task_id)s: %(exc)s'),
                           {'task_id': task_id, 'exc': exc})
                 # TODO(sabari): Check for specific exceptions and update the
                 # task failure message.
-                task.fail(_('Task failed due to Internal Error'))
-                self.task_repo.save(task)
+                self._fail_task(task, _('Task failed due to Internal Error'))
         finally:
             if executor is not None:
                 executor.shutdown()

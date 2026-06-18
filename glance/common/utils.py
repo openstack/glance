@@ -23,10 +23,12 @@ System-level utilities and helper functions.
 import errno
 import ipaddress
 import socket
+import sqlite3
 
 import functools
 import os
 import re
+import time
 from time import sleep
 import urllib
 
@@ -37,6 +39,7 @@ from oslo_utils import excutils
 from oslo_utils import netutils
 from oslo_utils import strutils
 from oslo_utils import timeutils as oslo_timeutils
+from sqlalchemy import exc as sqlalchemy_exc
 from webob import exc
 
 from glance.common import exception
@@ -46,6 +49,40 @@ from glance.i18n import _, _LE, _LW
 CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
+
+# Default total time to retry sqlite "database is locked" errors.
+DEFAULT_DB_LOCK_RETRY_TIMEOUT = 30.0
+
+
+def is_db_lock_error(exc):
+    """Return True if exc is a sqlite database-is-locked error.
+
+    Repo operations go through SQLAlchemy, which wraps the underlying
+    sqlite3.OperationalError in sqlalchemy.exc.OperationalError.
+    """
+    if isinstance(exc, sqlite3.OperationalError):
+        return 'locked' in str(exc).lower()
+    if isinstance(exc, sqlalchemy_exc.OperationalError):
+        orig = getattr(exc, 'orig', None)
+        if isinstance(orig, sqlite3.OperationalError):
+            return 'locked' in str(orig).lower()
+    return False
+
+
+def retry_on_db_lock(func, timeout=DEFAULT_DB_LOCK_RETRY_TIMEOUT,
+                     interval=0.05):
+    """Retry a DB operation that may fail with sqlite lock errors."""
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            return func()
+        except Exception as exc:
+            if not is_db_lock_error(exc):
+                raise
+            if time.monotonic() >= deadline:
+                raise
+            sleep(interval)
+
 
 # Whitelist of v1 API headers of form x-image-meta-xxx
 IMAGE_META_HEADERS = ['x-image-meta-location', 'x-image-meta-size',

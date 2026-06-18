@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import sqlite3
 import sys
 from unittest import mock
 import urllib.error
@@ -20,6 +21,7 @@ import urllib.error
 from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_utils import units
+from sqlalchemy import exc as sqlalchemy_exc
 import taskflow
 
 import glance.async_.flows.api_image_import as import_flow
@@ -156,8 +158,36 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
                           ['store1'], wrapper, enforce_fn)
         action.remove_importing_stores.assert_called_once_with(['store1'])
         action.set_image_attribute.assert_called_once_with(status='queued')
+        wrapper.drop_lock_for_task.assert_called_once()
         task_repo.get.assert_called_once_with('some-task')
         task_repo.save.assert_called_once_with(task_repo.get.return_value)
+
+    def test_assert_quota_drops_lock_before_failing_task(self):
+        ignored = mock.MagicMock()
+        task_repo = mock.MagicMock()
+        task_id = 'some-task'
+        enforce_fn = mock.MagicMock()
+        enforce_fn.side_effect = exception.LimitExceeded
+        wrapper = mock.MagicMock()
+        action = wrapper.__enter__.return_value
+        action.image_status = 'importing'
+        call_order = []
+
+        def track_drop():
+            call_order.append('drop_lock')
+
+        def track_fail(msg):
+            call_order.append('fail_task')
+
+        wrapper.drop_lock_for_task.side_effect = track_drop
+        task = task_repo.get.return_value
+        task.fail.side_effect = track_fail
+
+        self.assertRaises(exception.LimitExceeded,
+                          import_flow.assert_quota,
+                          ignored, task_repo, task_id,
+                          ['store1'], wrapper, enforce_fn)
+        self.assertEqual(['drop_lock', 'fail_task'], call_order)
 
     def test_assert_quota_copy(self):
         ignored = mock.MagicMock()
@@ -174,8 +204,48 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
                           ['store1'], wrapper, enforce_fn)
         action.remove_importing_stores.assert_called_once_with(['store1'])
         action.set_image_attribute.assert_not_called()
+        wrapper.drop_lock_for_task.assert_called_once()
         task_repo.get.assert_called_once_with('some-task')
         task_repo.save.assert_called_once_with(task_repo.get.return_value)
+
+    def test_assert_quota_lock_drop_failure(self):
+        ignored = mock.MagicMock()
+        task_repo = mock.MagicMock()
+        task_id = 'some-task'
+        enforce_fn = mock.MagicMock()
+        enforce_fn.side_effect = exception.LimitExceeded
+        wrapper = mock.MagicMock()
+        action = wrapper.__enter__.return_value
+        action.image_status = 'active'
+        wrapper.drop_lock_for_task.side_effect = Exception('db locked')
+        with mock.patch.object(import_flow, 'LOG') as mock_log:
+            self.assertRaises(exception.LimitExceeded,
+                              import_flow.assert_quota,
+                              ignored, task_repo, task_id,
+                              ['store1'], wrapper, enforce_fn)
+        wrapper.drop_lock_for_task.assert_called_once()
+        action.remove_importing_stores.assert_called_once_with(['store1'])
+        self.assertEqual(1, mock_log.warning.call_count)
+
+    def test_assert_quota_cleanup_failure(self):
+        ignored = mock.MagicMock()
+        task_repo = mock.MagicMock()
+        task_id = 'some-task'
+        enforce_fn = mock.MagicMock()
+        enforce_fn.side_effect = exception.LimitExceeded
+        wrapper = mock.MagicMock()
+        action = wrapper.__enter__.return_value
+        action.image_status = 'active'
+        wrapper.__exit__.side_effect = Exception('db locked')
+        with mock.patch.object(import_flow, 'LOG') as mock_log:
+            self.assertRaises(exception.LimitExceeded,
+                              import_flow.assert_quota,
+                              ignored, task_repo, task_id,
+                              ['store1'], wrapper, enforce_fn)
+        task_repo.get.assert_called_once_with('some-task')
+        task_repo.save.assert_called_once_with(task_repo.get.return_value)
+        wrapper.drop_lock_for_task.assert_called_once()
+        mock_log.warning.assert_called_once()
 
 
 class TestImageLock(test_utils.BaseTestCase):
@@ -755,6 +825,24 @@ class TestImportActionWrapper(test_utils.BaseTestCase):
         self.assertEqual('foo', mock_image.status)
         self.assertEqual(123, mock_image.virtual_size)
         self.assertEqual(64, mock_image.size)
+
+    def test_wrapper_save_retries_on_db_lock(self):
+        mock_repo = mock.MagicMock()
+        mock_image = mock_repo.get.return_value
+        mock_image.extra_properties = {'os_glance_import_task': TASK_ID1}
+        mock_image.status = 'importing'
+        mock_repo.save.side_effect = [
+            sqlalchemy_exc.OperationalError(
+                'statement', {},
+                sqlite3.OperationalError('database is locked')),
+            None,
+        ]
+        wrapper = import_flow.ImportActionWrapper(mock_repo, IMAGE_ID1,
+                                                  TASK_ID1)
+        with wrapper as action:
+            action.set_image_attribute(status='queued')
+        self.assertEqual(2, mock_repo.save.call_count)
+        self.assertEqual('queued', mock_image.status)
 
     def test_set_image_attribute_disallowed(self):
         mock_repo = mock.MagicMock()
