@@ -13,11 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import sqlite3
 from unittest import mock
 
 import futurist
 import glance_store
 from oslo_config import cfg
+from sqlalchemy import exc as sqlalchemy_exc
 from taskflow import engines
 
 import glance.async_
@@ -116,7 +118,49 @@ class TestTaskExecutor(test_utils.BaseTestCase):
         self.assertEqual('failure', self.task.status)
         self.task_repo.save.assert_called_with(self.task)
 
-    def test_task_fail_upload(self):
+    def test_task_init_fail(self):
+        with mock.patch.object(self.executor, '_get_flow') as get_flow_mock:
+            get_flow_mock.side_effect = RuntimeError('db locked')
+            self.task_repo.get.return_value = self.task
+            self.executor.begin_processing(self.task.task_id)
+        self.assertEqual('failure', self.task.status)
+        self.task_repo.save.assert_called_with(self.task)
+
+    def test_fail_task_already_terminal(self):
+        self.task.fail('already failed')
+        self.task_repo.get.return_value = self.task
+        self.task_repo.reset_mock()
+        self.executor._fail_task(self.task, 'another failure')
+        self.task_repo.save.assert_not_called()
+
+    def test_fail_task_retries_db_lock(self):
+        self.task_repo.get.return_value = self.task
+        self.task_repo.save.side_effect = [
+            sqlalchemy_exc.OperationalError(
+                'statement', {},
+                sqlite3.OperationalError('database is locked')),
+            None,
+        ]
+        self.executor._fail_task(self.task, 'failed')
+        self.assertEqual('failure', self.task.status)
+        self.assertEqual(2, self.task_repo.save.call_count)
+
+    def test_task_init_retries_db_lock(self):
+        flow = mock.Mock()
+        with mock.patch.object(self.executor, '_get_flow') as get_flow_mock:
+            get_flow_mock.side_effect = [
+                sqlalchemy_exc.OperationalError(
+                    'statement', {},
+                    sqlite3.OperationalError('database is locked')),
+                flow,
+            ]
+            with mock.patch.object(engines, 'load') as load_mock:
+                engine = mock.Mock()
+                load_mock.return_value = engine
+                self.task_repo.get.return_value = self.task
+                self.executor._run(self.task.task_id, self.task.type)
+        self.assertEqual(2, get_flow_mock.call_count)
+        self.assertEqual(1, engine.run.call_count)
         with mock.patch.object(image_import, 'set_image_data') as import_mock:
             import_mock.side_effect = IOError  # noqa
 

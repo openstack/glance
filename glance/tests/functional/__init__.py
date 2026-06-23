@@ -36,6 +36,7 @@ import webob
 
 from glance.api import common as api_common
 import glance.async_
+import glance.async_.taskflow_executor  # noqa: register taskflow_executor opts
 from glance.common import config
 from glance.common import utils
 from glance.common import wsgi_app
@@ -51,7 +52,7 @@ CONF = cfg.CONF
 # load_paste_app() does not run wsgi_app.init_app(); set pool size once for
 # functional tests (default task_pool_threads is 16).
 glance.async_.set_threadpool_model('native')
-api_common.DEFAULT_POOL_SIZE = 16
+api_common.DEFAULT_POOL_SIZE = 4
 
 
 class SynchronousAPIBase(test_utils.BaseTestCase):
@@ -513,6 +514,9 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                     group='oslo_policy')
         self.config(enforce_scope=True,
                     group='oslo_policy')
+        # Serialize taskflow execution to reduce sqlite lock contention
+        # during functional tests. Production uWSGI uses parallel mode.
+        self.config(engine_mode='serial', group='taskflow_executor')
 
     def start_scrubber(self, daemon=False, wakeup_time=300,
                        restore=None, raise_error=True):
@@ -917,6 +921,26 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.fail('Timed out waiting for task %s status %s (last status=%s)'
                   % (task_id, expected_status, last_status))
 
+    def _wait_for_task_status_in(self, task_id, expected_statuses,
+                                 max_sec=2, delay_sec=0.1):
+        """Wait until task has one of the expected statuses."""
+        if isinstance(expected_statuses, str):
+            expected_statuses = (expected_statuses,)
+        done_time = time.time() + max_sec
+        task = None
+        while time.time() <= done_time:
+            task = self._get_task_by_id(task_id)
+            if task is None:
+                task = self.api_get('/v2/tasks/%s' % task_id).json
+            if task['status'] in expected_statuses:
+                return task
+            time.sleep(delay_sec)
+
+        last_status = task['status'] if task else 'unknown'
+        self.fail('Timed out waiting for task %s status in %s '
+                  '(last status=%s)'
+                  % (task_id, expected_statuses, last_status))
+
     def _wait_for_task_failure(self, image_id, max_sec=40, delay_sec=0.2,
                                start_delay_sec=0.1):
         """Wait for import task to fail.
@@ -957,6 +981,37 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
             pass
         self.fail('Timed out waiting for import failure on image %s '
                   '(last status=%s)' % (image_id, last_status))
+
+    def _wait_for_import_lock_clear(self, image_id, max_sec=5,
+                                    delay_sec=0.1):
+        """Wait until os_glance_import_task is cleared from the image."""
+        done_time = time.time() + max_sec
+        image = None
+        while time.time() <= done_time:
+            image = self.api_get('/v2/images/%s' % image_id).json
+            if not image.get('os_glance_import_task'):
+                return image
+            time.sleep(delay_sec)
+
+        self.assertEqual('', image.get('os_glance_import_task', ''),
+                         'Timed out waiting for import lock to clear on '
+                         'image %s' % image_id)
+        return image
+
+    def _wait_for_image_status(self, image_id, expected_status, max_sec=10,
+                               delay_sec=0.1):
+        """Wait until image has expected status."""
+        done_time = time.time() + max_sec
+        image = None
+        while time.time() <= done_time:
+            image = self.api_get('/v2/images/%s' % image_id).json
+            if image['status'] == expected_status:
+                return image
+            time.sleep(delay_sec)
+
+        last_status = image['status'] if image else 'unknown'
+        self.fail('Timed out waiting for image %s status %s (last status=%s)'
+                  % (image_id, expected_status, last_status))
 
     def _create(self):
         return self.api_post('/v2/images',

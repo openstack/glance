@@ -17,6 +17,7 @@
 import io
 import ipaddress
 import socket
+import sqlite3
 import tempfile
 from unittest import mock
 from urllib.parse import urlparse
@@ -25,6 +26,7 @@ import glance_store as store
 from glance_store._drivers import cinder
 from oslo_config import cfg
 from oslo_log import log as logging
+from sqlalchemy import exc as sqlalchemy_exc
 import webob
 
 from glance.common import exception
@@ -1772,3 +1774,50 @@ class S3CredentialUpdateTestCase(test_utils.BaseTestCase):
             location['url'],
             's3://new_key1:new_secret1@s3.amazonaws.com/bucket1/object')
         self.image_repo.save.assert_called_once_with(self.image)
+
+
+class TestRetryOnDbLock(test_utils.BaseTestCase):
+
+    def _sqlalchemy_lock_error(self):
+        return sqlalchemy_exc.OperationalError(
+            'statement', {},
+            sqlite3.OperationalError('database is locked'))
+
+    def test_retry_on_db_lock_succeeds_after_lock(self):
+        calls = {'count': 0}
+
+        def func():
+            calls['count'] += 1
+            if calls['count'] == 1:
+                raise sqlite3.OperationalError('database is locked')
+            return 'ok'
+
+        self.assertEqual('ok', utils.retry_on_db_lock(func, timeout=1.0))
+        self.assertEqual(2, calls['count'])
+
+    def test_retry_on_db_lock_succeeds_after_sqlalchemy_lock(self):
+        calls = {'count': 0}
+
+        def func():
+            calls['count'] += 1
+            if calls['count'] == 1:
+                raise self._sqlalchemy_lock_error()
+            return 'ok'
+
+        self.assertEqual('ok', utils.retry_on_db_lock(func, timeout=1.0))
+        self.assertEqual(2, calls['count'])
+
+    def test_retry_on_db_lock_reraises_other_errors(self):
+        def func():
+            raise ValueError('bad value')
+
+        self.assertRaises(ValueError, utils.retry_on_db_lock, func)
+
+    def test_retry_on_db_lock_reraises_other_sqlalchemy_errors(self):
+        def func():
+            raise sqlalchemy_exc.OperationalError(
+                'statement', {},
+                sqlite3.OperationalError('no such table: missing'))
+
+        self.assertRaises(sqlalchemy_exc.OperationalError,
+                          utils.retry_on_db_lock, func)
