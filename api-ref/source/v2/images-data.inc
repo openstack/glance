@@ -117,8 +117,32 @@ Download binary image data
 Downloads binary image data.
 *(Since Image API v2.0)*
 
+Starting with the 2026.1 (Gazpacho) release, a store preference feature
+is introduced to allow services to suggest which stores to try when
+downloading images. This enables services like Nova and Cinder to prefer
+stores that are close to them or have better performance characteristics.
+
+An optional ``prefer`` query parameter may be added to the request. When
+present, it contains a comma-separated list of store identifiers
+suggesting the ordering of stores to try when downloading the image.
+Glance will try stores from the list in order. If the image is not found
+in any of the specified stores, the system will fall back to the default
+behavior (trying all stores).
+
+* Store identifiers are site-specific. Use the :ref:`Store Discovery
+  <store-discovery-call>` call to determine what stores are available
+  in a particular cloud.
+* Store preference parameters only apply when fetching images from
+  backend stores, not when serving from cache. Cached images bypass
+  the store preference logic entirely.
+* If you do not have a need to use a particular store, simply omit
+  this parameter and the default behavior will be used.
+
 Example call: ``curl -i -X GET -H "X-Auth-Token: $token"
 $image_url/v2/images/{image_id}/file``
+
+Example call with store preference: ``curl -i -X GET -H "X-Auth-Token: $token"
+$image_url/v2/images/{image_id}/file?prefer=local-store,backup-store``
 
 The response body contains the raw binary data that represents the
 actual virtual disk. The ``Content-Type`` header contains the
@@ -154,6 +178,17 @@ Normal response codes: 200, 204, 206
 
 Error response codes: 400, 403, 404, 416
 
+**Error Responses**
+
+- **400 (Bad Request)**: Returned if an invalid store name is specified in
+  the ``prefer`` parameter or if the parameter format is invalid.
+- **400 (Bad Request)**: If multistore is disabled and ``prefer`` parameter
+  is specified.
+- **403 (Forbidden)**: Returned if the user does not have permission to use
+  the store preference feature. The ``download_from_store`` policy controls
+  who can use store preference parameters when downloading images.
+- **404 (Not Found)**: Returned if the image does not exist.
+
 
 Request
 -------
@@ -162,6 +197,7 @@ Request
 
    - image_id: image_id-in-path
    - Range: Range
+   - prefer: prefer-in-query
 
 Response
 --------
