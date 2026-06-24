@@ -2001,18 +2001,18 @@ the ``failure`` state.
   Optional. Default: ``48``
 
   The config value ``task_executor`` is used to determine which executor
-  should be used by the Glance service to process the task. The currently
-  available implementation is: ``taskflow``.
+  should be used by the Glance service to process the task. Only
+  ``taskflow`` is supported.
 
-``task_executor=<executor_type>``
+``task_executor=taskflow``
   Optional. Default: ``taskflow``
 
   The ``taskflow`` engine has its own set of configuration options,
   under the ``taskflow_executor`` section, that can be tuned to improve
   the task execution process. Among the available options, you may find
   ``engine_mode`` and ``max_workers``. The former allows for selecting
-  an execution model and the available options are ``serial``,
-  ``parallel`` and ``worker-based``. The ``max_workers`` option,
+  an execution model and the available options are ``serial`` and
+  ``parallel``. The ``max_workers`` option,
   instead, allows for controlling the number of workers that will be
   instantiated per executor instance.
 

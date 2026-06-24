@@ -38,7 +38,7 @@ def run(t_id, context, task_repo, image_repo, image_factory):
 
 # NOTE(nikhil): This lock prevents more than N number of threads to be spawn
 # simultaneously. The number N represents the number of threads in the
-# executor pool. The value is set to 10 in the eventlet executor.
+# executor pool. The value is set by [taskflow_executor] max_workers.
 @lockutils.synchronized("glance_image_import")
 def _execute(t_id, task_repo, image_repo, image_factory):
     task = script_utils.get_task(task_repo, t_id)

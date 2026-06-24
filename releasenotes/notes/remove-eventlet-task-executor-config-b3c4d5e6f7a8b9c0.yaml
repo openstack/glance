@@ -1,0 +1,7 @@
+---
+upgrade:
+  - |
+    The legacy ``[task] task_executor = eventlet`` setting is no longer
+    accepted; use ``taskflow`` (the default). The deprecated
+    ``[task] eventlet_executor_pool_size`` alias has been removed; configure
+    concurrency with ``[taskflow_executor] max_workers`` instead.

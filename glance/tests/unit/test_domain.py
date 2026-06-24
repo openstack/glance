@@ -18,16 +18,13 @@ import datetime
 from unittest import mock
 import uuid
 
-from oslo_config import cfg
-import oslo_utils.importutils
-from oslo_utils import timeutils
-import testtools
-
 import glance.async_
-from glance.async_ import taskflow_executor
 from glance.common import exception
 from glance import domain
 import glance.tests.utils as test_utils
+from oslo_config import cfg
+import oslo_utils.importutils
+from oslo_utils import timeutils
 
 
 CONF = cfg.CONF
@@ -614,16 +611,7 @@ class TestTaskExecutorFactory(test_utils.BaseTestCase):
                               task_executor_factory.new_task_executor,
                               context)
 
-    @testtools.skip("Eventlet support is deprecated")
-    def test_new_task_eventlet_backwards_compatibility(self):
-        context = mock.MagicMock()
-
-        self.config(task_executor='eventlet', group='task')
-
-        task_executor_factory = domain.TaskExecutorFactory(self.task_repo,
-                                                           self.image_repo,
-                                                           self.image_factory)
-
-        # NOTE(flaper87): "eventlet" executor. short name to avoid > 79.
-        te_evnt = task_executor_factory.new_task_executor(context)
-        self.assertIsInstance(te_evnt, taskflow_executor.TaskExecutor)
+    def test_task_executor_eventlet_rejected(self):
+        self.assertRaises(ValueError,
+                          self.config,
+                          task_executor='eventlet', group='task')
