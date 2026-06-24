@@ -21,6 +21,7 @@ from glance_store import location
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
+from oslo_utils import units
 import webob.exc
 
 import glance.api.policy
@@ -105,8 +106,10 @@ class ImageDataController(object):
 
     @utils.mutating
     def upload(self, req, image_id, data, size):
+        quota_delta = 0 if size is None else size // units.Mi
         try:
-            ks_quota.enforce_image_size_total(req.context, req.context.owner)
+            ks_quota.enforce_image_size_total(req.context, req.context.owner,
+                                              delta=quota_delta)
         except exception.LimitExceeded as e:
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
                                                       request=req)
@@ -321,9 +324,11 @@ class ImageDataController(object):
     def stage(self, req, image_id, data, size):
         if size is None:
             size = 0
+        quota_delta = size // units.Mi
         try:
             ks_quota.enforce_image_staging_total(req.context,
-                                                 req.context.owner)
+                                                 req.context.owner,
+                                                 delta=quota_delta)
         except exception.LimitExceeded as e:
             raise webob.exc.HTTPRequestEntityTooLarge(explanation=str(e),
                                                       request=req)

@@ -40,6 +40,15 @@ subsequent operations. There are object-focused quotas that can help
 operators limit the damage caused by multiple large competing data
 streams. Those details are covered below.
 
+Even when clients provide the image size up front (for example, via the
+``x-openstack-image-size`` request header), quota checks still happen per
+request and are not globally serialized across workers. This affects both
+``image_size_total`` and ``image_stage_total``. As a result, multiple
+concurrent asynchronous operations can pass their individual pre-checks and
+collectively push usage above a configured limit. In this case, quota
+enforcement is best-effort and the overage is typically corrected by denying
+subsequent requests.
+
 .. note::
 
   Glance also has legacy global resource limits that may be ignored if
