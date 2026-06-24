@@ -20,7 +20,6 @@ import futurist
 import glance_store as store
 from oslo_config import cfg
 from taskflow.patterns import linear_flow
-import testtools
 
 import glance.async_
 from glance.async_.flows import api_image_import
@@ -216,12 +215,6 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
 
 @mock.patch('glance.async_._THREADPOOL_MODEL', new=None)
 class TestSystemThreadPoolModel(test_utils.BaseTestCase):
-    @testtools.skip("Eventlet support is deprecated")
-    def test_eventlet_model(self):
-        model_cls = glance.async_.EventletThreadPoolModel
-        self.assertEqual(futurist.GreenThreadPoolExecutor,
-                         model_cls.get_threadpool_executor_class())
-
     def test_native_model(self):
         model_cls = glance.async_.NativeThreadPoolModel
         self.assertEqual(futurist.ThreadPoolExecutor,
@@ -267,11 +260,10 @@ class TestSystemThreadPoolModel(test_utils.BaseTestCase):
         self.assertEqual(glance.async_.NativeThreadPoolModel,
                          glance.async_._THREADPOOL_MODEL)
 
-    @testtools.skip("Eventlet support is deprecated")
-    def test_set_threadpool_model_eventlet(self):
-        glance.async_.set_threadpool_model('eventlet')
-        self.assertEqual(glance.async_.EventletThreadPoolModel,
-                         glance.async_._THREADPOOL_MODEL)
+    def test_set_threadpool_model_eventlet_rejected(self):
+        self.assertRaises(RuntimeError,
+                          glance.async_.set_threadpool_model,
+                          'eventlet')
 
     def test_set_threadpool_model_unknown(self):
         # Unknown threadpool models are not tolerated
@@ -291,12 +283,11 @@ class TestSystemThreadPoolModel(test_utils.BaseTestCase):
                           glance.async_.set_threadpool_model,
                           'danthread9000')
 
-    @testtools.skip("Eventlet support is deprecated")
     def test_set_threadpool_model_log(self):
         with mock.patch.object(glance.async_, 'LOG') as mock_log:
-            glance.async_.set_threadpool_model('eventlet')
+            glance.async_.set_threadpool_model('native')
             mock_log.info.assert_called_once_with(
-                'Threadpool model set to %r', 'EventletThreadPoolModel')
+                'Threadpool model set to %r', 'NativeThreadPoolModel')
 
     def test_get_threadpool_model(self):
         glance.async_.set_threadpool_model('native')
