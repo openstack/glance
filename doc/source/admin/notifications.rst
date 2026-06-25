@@ -73,6 +73,14 @@ Notification Types
 
   Emitted when an image deleted from Glance.
 
+* ``task.create``
+
+  Emitted when a new task is created.
+
+* ``task.delete``
+
+  Emitted when a task is deleted.
+
 * ``task.run``
 
   Emitted when a task is picked up by the executor to be run.
@@ -88,6 +96,87 @@ Notification Types
 * ``task.failure``
 
   Emitted when a task fails.
+
+* ``image.member.create``
+
+  Emitted when an image member is created (member added to an image).
+
+* ``image.member.update``
+
+  Emitted when an image member is updated (e.g. status change).
+
+* ``image.member.delete``
+
+  Emitted when an image member is removed from an image.
+
+* ``metadef_namespace.create``
+
+  Emitted when a metadata definition namespace is created.
+
+* ``metadef_namespace.update``
+
+  Emitted when a metadata definition namespace is updated.
+
+* ``metadef_namespace.delete``
+
+  Emitted when a metadata definition namespace is deleted.
+
+* ``metadef_namespace.delete_objects``
+
+  Emitted when all objects in a metadata definition namespace are deleted.
+
+* ``metadef_namespace.delete_properties``
+
+  Emitted when all properties in a metadata definition namespace are deleted.
+
+* ``metadef_namespace.delete_tags``
+
+  Emitted when all tags in a metadata definition namespace are deleted.
+
+* ``metadef_object.create``
+
+  Emitted when a metadata definition object is created.
+
+* ``metadef_object.update``
+
+  Emitted when a metadata definition object is updated.
+
+* ``metadef_object.delete``
+
+  Emitted when a metadata definition object is deleted.
+
+* ``metadef_property.create``
+
+  Emitted when a metadata definition property is created.
+
+* ``metadef_property.update``
+
+  Emitted when a metadata definition property is updated.
+
+* ``metadef_property.delete``
+
+  Emitted when a metadata definition property is deleted.
+
+* ``metadef_resource_type.create``
+
+  Emitted when a metadata definition resource type is created or associated
+  with a namespace.
+
+* ``metadef_resource_type.delete``
+
+  Emitted when a metadata definition resource type association is deleted.
+
+* ``metadef_tag.create``
+
+  Emitted when a metadata definition tag is created.
+
+* ``metadef_tag.update``
+
+  Emitted when a metadata definition tag is updated.
+
+* ``metadef_tag.delete``
+
+  Emitted when a metadata definition tag is deleted.
 
 Content
 -------
@@ -168,6 +257,17 @@ Payload
   For INFO events, it is the image id.
   WARN and ERROR events contain a text message in the payload.
 
+* task.create
+
+  For INFO events, it is the task dict with result and message as None.
+  WARN and ERROR events contain a text message in the payload.
+
+* task.delete
+
+  For INFO events, it is the task dict with ``deleted`` set to True
+  and ``deleted_at`` set to the deletion timestamp.
+  WARN and ERROR events contain a text message in the payload.
+
 * task.run
 
   The payload for INFO, WARN, and ERROR events contain the following:
@@ -213,4 +313,63 @@ Payload
 
   For INFO events, it is the task dict with result as None and message is
   text.
+  WARN and ERROR events contain a text message in the payload.
+
+* image.member.create
+
+  For INFO events, it is the image member metadata (e.g. image_id,
+  member_id, status, created_at, updated_at).
+  WARN and ERROR events contain a text message in the payload.
+
+* image.member.update
+
+  For INFO events, it is the image member metadata.
+  WARN and ERROR events contain a text message in the payload.
+
+* image.member.delete
+
+  For INFO events, it is the image member metadata.
+  WARN and ERROR events contain a text message in the payload.
+
+* metadef_namespace.create
+* metadef_namespace.update
+* metadef_namespace.delete
+* metadef_namespace.delete_objects
+* metadef_namespace.delete_properties
+* metadef_namespace.delete_tags
+
+  For INFO events, the payload is the relevant metadata definition
+  namespace or operation context (e.g. namespace, display_name,
+  visibility, created_at, updated_at).
+  WARN and ERROR events contain a text message in the payload.
+
+* metadef_object.create
+* metadef_object.update
+* metadef_object.delete
+
+  For INFO events, the payload is the metadata definition object
+  (e.g. namespace, name, description, properties).
+  WARN and ERROR events contain a text message in the payload.
+
+* metadef_property.create
+* metadef_property.update
+* metadef_property.delete
+
+  For INFO events, the payload is the metadata definition property
+  (e.g. namespace, name, type, title, description).
+  WARN and ERROR events contain a text message in the payload.
+
+* metadef_resource_type.create
+* metadef_resource_type.delete
+
+  For INFO events, the payload is the metadata definition resource type
+  or association (e.g. namespace, name, prefix, properties_target).
+  WARN and ERROR events contain a text message in the payload.
+
+* metadef_tag.create
+* metadef_tag.update
+* metadef_tag.delete
+
+  For INFO events, the payload is the metadata definition tag
+  (e.g. namespace, name, created_at, updated_at).
   WARN and ERROR events contain a text message in the payload.
