@@ -596,8 +596,9 @@ Here is a list of useful image properties and the values they expect.
   contains logic that takes different actions
   depending on the value of the ``os_type`` parameter of the image.
   For example, for ``os_type=windows`` images, it creates a FAT32-based
-  swap partition instead of a Linux swap partition, and it limits the
-  injected host name to less than 16 characters.
+  swap partition instead of a Linux swap partition, limits the
+  injected host name to less than 16 characters and applies
+  `Hyper-V Enlightenments <https://www.qemu.org/docs/master/system/i386/hyperv.html>`_.
 
   Only supported by the libvirt driver.
 
