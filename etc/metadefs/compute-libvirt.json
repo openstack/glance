@@ -37,7 +37,7 @@
             "title": "Hardware Memory Encryption Model",
             "description": "The hardware feature name to encrypt guest memory, if there are compute hosts available which support this. See https://docs.openstack.org/nova/latest/admin/sev.html for details.",
             "type": "string",
-            "enum": ["amd-sev", "amd-sev-es"]
+            "enum": ["amd-sev", "amd-sev-es", "amd-sev-snp"]
         },
         "virtio_packed_ring": {
             "title": "Virtio Packed Ring",

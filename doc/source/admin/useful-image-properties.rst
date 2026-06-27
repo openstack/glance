@@ -465,6 +465,7 @@ Here is a list of useful image properties and the values they expect.
 
   - ``amd-sev``
   - ``amd-sev-es``
+  - ``amd-sev-snp``
 
 ``hw_virtio_packed_ring``
   :Type: bool

@@ -1,0 +1,12 @@
+---
+features:
+  - |
+    The following metadata definitions have been modified in the Hibiscus
+    release:
+
+    * Updated ``hw_memory_encryption_model`` enumerations to support
+      ``amd-sev-snp``.
+
+    You may upgrade these definitions using:
+
+    ``glance-manage db load_metadefs [--path <path>] [--merge] [--prefer_new]``
