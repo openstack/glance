@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    The ``glance-api`` WSGI application now suppports generating GMR (Guru
+    Meditation Report). This was supported by the standalone ``glance-api``
+    service which was removed. Note that it supports only file trigger, due to
+    the limitation WSGI applications.
