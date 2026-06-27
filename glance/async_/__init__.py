@@ -90,7 +90,7 @@ class ThreadPoolModel(object):
     @staticmethod
     def get_threadpool_executor_class():
         """Returns a concurrent.futures.ThreadPoolExecutor class."""
-        pass
+        raise NotImplementedError()
 
     def __init__(self, size=None):
         if size is None:
