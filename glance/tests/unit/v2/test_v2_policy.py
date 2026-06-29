@@ -143,7 +143,6 @@ class APIImagePolicy(APIPolicyBase):
 
     def test_delete_locations_falls_back_to_legacy(self):
         self.config(enforce_new_defaults=False, group='oslo_policy')
-        self.config(enforce_scope=False, group='oslo_policy')
 
         # As admin, image is mutable even if owner does not match
         self.context.is_admin = True
@@ -167,10 +166,8 @@ class APIImagePolicy(APIPolicyBase):
             self.policy.delete_locations()
             m.assert_called_once_with(self.context, self.image)
 
-        # Make sure we are not checking it if enforce_new_defaults=True and
-        # enforce_scope=True
+        # Make sure we are not checking it if enforce_new_defaults=True
         self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_scope=True, group='oslo_policy')
         with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
             self.policy.delete_locations()
             self.assertFalse(m.called)
@@ -239,7 +236,6 @@ class APIImagePolicy(APIPolicyBase):
 
     def test_add_image_falls_back_to_legacy(self):
         self.config(enforce_new_defaults=False, group='oslo_policy')
-        self.config(enforce_scope=False, group='oslo_policy')
 
         self.context.is_admin = False
         self.policy = policy.ImageAPIPolicy(self.context, {'owner': 'else'},
@@ -257,7 +253,6 @@ class APIImagePolicy(APIPolicyBase):
         # secure_rbac is being used. We won't fail the check because
         # our enforcer is a mock, just make sure we don't call that handler.
         self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_scope=True, group='oslo_policy')
         with mock.patch('glance.api.v2.policy.check_admin_or_same_owner') as m:
             self.policy.add_image()
             m.assert_not_called()
@@ -293,7 +288,6 @@ class APIImagePolicy(APIPolicyBase):
 
     def test_delete_image_falls_back_to_legacy(self):
         self.config(enforce_new_defaults=False, group='oslo_policy')
-        self.config(enforce_scope=False, group='oslo_policy')
         # As admin, image is mutable even if owner does not match
         self.context.is_admin = True
         self.context.owner = 'someuser'
@@ -316,10 +310,8 @@ class APIImagePolicy(APIPolicyBase):
             self.policy.delete_image()
             m.assert_called_once_with(self.context, self.image)
 
-        # Make sure we are not checking it if enforce_new_defaults=True and
-        # enforce_scope=True
+        # Make sure we are not checking it if enforce_new_defaults=True
         self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_scope=True, group='oslo_policy')
         with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
             self.policy.delete_image()
             self.assertFalse(m.called)
@@ -332,7 +324,6 @@ class APIImagePolicy(APIPolicyBase):
 
     def test_upload_image_falls_back_to_legacy(self):
         self.config(enforce_new_defaults=False, group='oslo_policy')
-        self.config(enforce_scope=False, group='oslo_policy')
 
         # As admin, image is mutable even if owner does not match
         self.context.is_admin = True
@@ -356,10 +347,8 @@ class APIImagePolicy(APIPolicyBase):
             self.policy.upload_image()
             m.assert_called_once_with(self.context, self.image)
 
-        # Make sure we are not checking it if enforce_new_defaults=True and
-        # enforce_scope=True
+        # Make sure we are not checking it if enforce_new_defaults=True
         self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_scope=True, group='oslo_policy')
         with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
             self.policy.upload_image()
             self.assertFalse(m.called)
@@ -384,7 +373,6 @@ class APIImagePolicy(APIPolicyBase):
 
     def test_modify_image_falls_back_to_legacy(self):
         self.config(enforce_new_defaults=False, group='oslo_policy')
-        self.config(enforce_scope=False, group='oslo_policy')
 
         # As admin, image is mutable even if owner does not match
         self.context.is_admin = True
@@ -408,10 +396,8 @@ class APIImagePolicy(APIPolicyBase):
             self.policy.modify_image()
             m.assert_called_once_with(self.context, self.image)
 
-        # Make sure we are not checking it if enforce_new_defaults=True and
-        # enforce_scope=True
+        # Make sure we are not checking it if enforce_new_defaults=True
         self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_scope=True, group='oslo_policy')
         with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
             self.policy.modify_image()
             self.assertFalse(m.called)
@@ -424,7 +410,6 @@ class APIImagePolicy(APIPolicyBase):
 
     def test_deactivate_image_falls_back_to_legacy(self):
         self.config(enforce_new_defaults=False, group='oslo_policy')
-        self.config(enforce_scope=False, group='oslo_policy')
 
         # As admin, image is mutable even if owner does not match
         self.context.is_admin = True
@@ -448,10 +433,8 @@ class APIImagePolicy(APIPolicyBase):
             self.policy.deactivate_image()
             m.assert_called_once_with(self.context, self.image)
 
-        # Make sure we are not checking it if enforce_new_defaults=Truei and
-        # enforce_scope=True
+        # Make sure we are not checking it if enforce_new_defaults=True
         self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_scope=True, group='oslo_policy')
         with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
             self.policy.deactivate_image()
             self.assertFalse(m.called)
@@ -464,7 +447,6 @@ class APIImagePolicy(APIPolicyBase):
 
     def test_reactivate_image_falls_back_to_legacy(self):
         self.config(enforce_new_defaults=False, group='oslo_policy')
-        self.config(enforce_scope=False, group='oslo_policy')
 
         # As admin, image is mutable even if owner does not match
         self.context.is_admin = True
@@ -488,10 +470,8 @@ class APIImagePolicy(APIPolicyBase):
             self.policy.reactivate_image()
             m.assert_called_once_with(self.context, self.image)
 
-        # Make sure we are not checking it if enforce_new_defaults=True and
-        # enforce_scope=True
+        # Make sure we are not checking it if enforce_new_defaults=True
         self.config(enforce_new_defaults=True, group='oslo_policy')
-        self.config(enforce_scope=True, group='oslo_policy')
         with mock.patch('glance.api.v2.policy.check_is_image_mutable') as m:
             self.policy.reactivate_image()
             self.assertFalse(m.called)
