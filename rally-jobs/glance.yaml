@@ -6,7 +6,7 @@
       title: Test Glance upload and list image performance
       scenario:
         GlanceImages.create_and_list_image:
-          image_location: "~/.rally/extra/fake.img"
+          image_location: "~/.rally/extra/dummy_image.raw"
           container_format: "bare"
           # Synthetic fake.img is not qcow2; Glance format inspection treats the
           # stream as raw on many backends, which yields InvalidImageData and
