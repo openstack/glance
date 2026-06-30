@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    The ``eventlet`` library is no longer a direct dependency of Glance.
+    Glance must be deployed under a WSGI server (for example uWSGI) using
+    native threading. Standalone eventlet-based deployment is not supported.
