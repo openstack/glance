@@ -355,8 +355,7 @@ def execute(cmd,
 
     # Long-lived children (expect_exit=False) must not use PIPE for
     # stdout/stderr without a reader: the buffer fills and the child blocks on
-    # write. Eventlet's monkey-patched Popen masked this; stdlib subprocess
-    # does not. Discard I/O so daemons (e.g. glance-scrubber --daemon) run.
+    # write. Discard I/O so daemons (e.g. glance-scrubber --daemon) run.
 
     env = os.environ.copy()
     if exec_env is not None:

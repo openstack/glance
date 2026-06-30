@@ -40,7 +40,14 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
     def _test_import_copy(self, warp_time=False):
         self.start_server()
         state = {'want_run': True}
+        try:
+            return self._run_import_copy(warp_time, state)
+        finally:
+            # Stop the slow_fake_set_data spinner so native-thread import
+            # tasks cannot outlive the test and block later functional tests.
+            state['want_run'] = False
 
+    def _run_import_copy(self, warp_time, state):
         # Create and import an image with no pipeline stall
         image_id = self._create_and_import(stores=['store1'])
 

@@ -17,41 +17,32 @@ import atexit
 import builtins
 import logging
 
-import futurist._thread as futurist_thread
-
+from glance.api import common as api_common
 import glance.async_
 # NOTE(akekane): Use native threading in tests, same as uWSGI production.
-# Standalone glance-api still uses eventlet but that is not common.
 glance.async_.set_threadpool_model('native')
 
 
-def _patched_clean_up():
-    """Join futurist worker threads with timeout at test exit.
+def _shutdown_cached_thread_pools():
+    """Shut down cached thread pools at process exit.
 
-    Without timeout, join() can hang if workers are still running.
+    Replaces the futurist atexit hack removed in 992633. Functional tests use
+    load_paste_app() rather than init_app(), so tasks_pool is not drained
+    unless tearDown or this handler runs.
     """
-    futurist_thread._dying = True
-    threads_to_wait_for = []
-    while futurist_thread._to_be_cleaned:
-        worker, _ = futurist_thread._to_be_cleaned.popitem()
-        worker.stop()
-        threads_to_wait_for.append(worker)
-
-    for worker in threads_to_wait_for:
-        try:
-            worker.join(timeout=0.1)
-        except Exception:
-            pass
+    try:
+        for name in list(api_common._CACHED_THREAD_POOL):
+            pool_model = api_common._CACHED_THREAD_POOL.pop(name)
+            pool = pool_model.pool
+            try:
+                pool.shutdown(wait=False, cancel_futures=True)
+            except TypeError:
+                pool.shutdown(wait=False)
+    except Exception:
+        pass
 
 
-# NOTE(akekane): Replace futurist atexit handler. Only needed for tests.
-try:
-    atexit.unregister(futurist_thread._clean_up)
-except ValueError:
-    pass
-
-# Use patched version with join timeout to avoid hang
-atexit.register(_patched_clean_up)
+atexit.register(_shutdown_cached_thread_pools)
 
 # See http://code.google.com/p/python-nose/issues/detail?id=373
 # The code below enables tests to work with i18n _() blocks

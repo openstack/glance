@@ -139,7 +139,6 @@ class ApiTest(test_utils.BaseTestCase):
             'boto=WARN',
             'suds=INFO',
             'keystone=INFO',
-            'eventlet.wsgi.server=DEBUG'
         ])
 
     def _setup_database(self):

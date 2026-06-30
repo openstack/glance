@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import futurist
+import concurrent.futures
 from oslo_log import log as logging
 
 from glance.i18n import _LE
@@ -89,7 +89,7 @@ class ThreadPoolModel(object):
 
     @staticmethod
     def get_threadpool_executor_class():
-        """Returns a futurist.ThreadPoolExecutor class."""
+        """Returns a concurrent.futures.ThreadPoolExecutor class."""
         pass
 
     def __init__(self, size=None):
@@ -133,7 +133,7 @@ class NativeThreadPoolModel(ThreadPoolModel):
 
     @staticmethod
     def get_threadpool_executor_class():
-        return futurist.ThreadPoolExecutor
+        return concurrent.futures.ThreadPoolExecutor
 
 
 _THREADPOOL_MODEL = None

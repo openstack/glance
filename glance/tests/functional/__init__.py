@@ -463,6 +463,20 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                 except Exception:
                     pass
                 cached_images.WORKER = None
+        # NOTE(pdeore): load_paste_app() does not run wsgi_app.init_app(), so
+        # tasks_pool is never drained via atexit. Shut down and drop the cached
+        # pool after each test so import task threads from the previous test
+        # cannot block the next one (see 992633 / concurrent.futures).
+        try:
+            pool_model = api_common._CACHED_THREAD_POOL.pop('tasks_pool', None)
+            if pool_model is not None:
+                pool = pool_model.pool
+                try:
+                    pool.shutdown(wait=False, cancel_futures=True)
+                except TypeError:
+                    pool.shutdown(wait=False)
+        except Exception:
+            pass
         super(SynchronousAPIBase, self).tearDown()
 
     def copy_data_file(self, file_name, dst_dir):

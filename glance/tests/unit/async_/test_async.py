@@ -16,7 +16,7 @@
 
 from unittest import mock
 
-import futurist
+import concurrent.futures
 import glance_store as store
 from oslo_config import cfg
 from taskflow.patterns import linear_flow
@@ -217,7 +217,7 @@ class TestImportTaskFlow(test_utils.BaseTestCase):
 class TestSystemThreadPoolModel(test_utils.BaseTestCase):
     def test_native_model(self):
         model_cls = glance.async_.NativeThreadPoolModel
-        self.assertEqual(futurist.ThreadPoolExecutor,
+        self.assertEqual(concurrent.futures.ThreadPoolExecutor,
                          model_cls.get_threadpool_executor_class())
 
     @mock.patch('glance.async_.ThreadPoolModel.get_threadpool_executor_class')
