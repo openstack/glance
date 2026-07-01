@@ -676,12 +676,14 @@ CONF.register_opts(wsgi_opts, group='wsgi')
 CONF.register_opts(store_opts)
 
 
-def parse_args(args=None, usage=None, default_config_files=None):
+def parse_args(args=None, usage=None, default_config_files=None,
+               default_config_dirs=None):
     CONF(args=args,
          project='glance',
          version=version.cached_version_string(),
          usage=usage,
-         default_config_files=default_config_files)
+         default_config_files=default_config_files,
+         default_config_dirs=default_config_dirs)
 
 
 def parse_cache_args(args=None):
