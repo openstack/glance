@@ -570,7 +570,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
     def test_image_convert_interpreter_configured(self):
         # By default, wsgi.python_interpreter is None; if it is
         # overridden, we should take the interpreter from config.
-        fake_interpreter = '/usr/bin/python2.7'
+        fake_interpreter = '/usr/bin/python3.10'
         self.config(python_interpreter=fake_interpreter,
                     group='wsgi')
         convert = image_conversion._ConvertImage(self.context,
