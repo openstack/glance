@@ -34,7 +34,6 @@ from glance.async_.flows.plugins import plugin_opts
 import glance.async_.taskflow_executor
 import glance.common.config
 import glance.common.property_utils
-import glance.common.wsgi
 import glance.image_cache
 import glance.image_cache.drivers.sqlite
 import glance.notifier
@@ -47,9 +46,6 @@ _api_opts = [
         glance.api.versions.versions_opts,
         glance.common.config.common_opts,
         glance.common.property_utils.property_opts,
-        glance.common.wsgi.bind_opts,
-        glance.common.wsgi.eventlet_opts,
-        glance.common.wsgi.socket_opts,
         glance.common.config.store_opts,
         glance.image_cache.drivers.sqlite.sqlite_opts,
         glance.image_cache.image_cache_opts,

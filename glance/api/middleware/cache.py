@@ -279,11 +279,11 @@ class CacheFilter(wsgi.Middleware):
         if version:
             method = getattr(self, '_get_%s_image_metadata' % version)
             image, metadata = method(resp.request, image_id)
-        # NOTE(zhiyan): image_cache return a generator object and set to
-        # response.app_iter, it will be called by eventlet.wsgi later.
-        # So we need enforce policy firstly but do it by application
-        # since eventlet.wsgi could not catch webob.exc.HTTPForbidden and
-        # return 403 error to client then.
+        # NOTE(zhiyan): image_cache returns a generator set on
+        # response.app_iter, which the WSGI server iterates when sending
+        # the response body. Enforce policy here in application code because
+        # exceptions raised while iterating app_iter may not be converted to
+        # HTTP error responses.
         # FIXME(abhishekk): This policy check here is not necessary as this
         # will hit only during first image download i.e. while image is not
         # present in cache. We already enforced same check in API layer and

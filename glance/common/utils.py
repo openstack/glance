@@ -538,7 +538,7 @@ def get_test_suite_socket():
     if GLANCE_TEST_SOCKET_FD_STR in os.environ:
         fd = int(os.environ[GLANCE_TEST_SOCKET_FD_STR])
         sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)
-        sock.listen(CONF.backlog)
+        sock.listen(4096)
         del os.environ[GLANCE_TEST_SOCKET_FD_STR]
         os.close(fd)
         return sock
@@ -640,21 +640,6 @@ def no_4byte_params(f):
         _check_dict(kwargs)
         return f(*args, **kwargs)
     return wrapper
-
-
-def stash_conf_values():
-    """
-    Make a copy of some of the current global CONF's settings.
-    Allows determining if any of these values have changed
-    when the config is reloaded.
-    """
-    conf = {
-        'bind_host': CONF.bind_host,
-        'bind_port': CONF.bind_port,
-        'backlog': CONF.backlog,
-    }
-
-    return conf
 
 
 def split_filter_op(expression):
