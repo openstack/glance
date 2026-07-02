@@ -359,14 +359,7 @@ class TestPolicyEnforcer(base.IsolatedUnitTest):
         # Make sure we raise an exception if the context scope doesn't match
         # the scope of the rule when oslo.policy is configured to raise an
         # exception.
-        self.config(enforce_scope=True, group='oslo_policy')
         self.assertRaises(exception.Forbidden, self._test_enforce_scope)
-
-    def test_policy_enforcer_does_not_raise_forbidden(self):
-        # Make sure we don't raise an exception for mismatched scopes unless
-        # oslo.policy is configured to do so.
-        self.config(enforce_scope=False, group='oslo_policy')
-        self.assertTrue(self._test_enforce_scope())
 
     def test_ensure_context_object_is_passed_to_policy_enforcement(self):
         # The oslo.policy Enforcer does some useful translation for us if we

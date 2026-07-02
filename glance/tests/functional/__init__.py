@@ -526,8 +526,6 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                                          conf_file=self.paste_config)
         self.config(enforce_new_defaults=True,
                     group='oslo_policy')
-        self.config(enforce_scope=True,
-                    group='oslo_policy')
         # Serialize taskflow execution to reduce sqlite lock contention
         # during functional tests. Production uWSGI uses parallel mode.
         self.config(engine_mode='serial', group='taskflow_executor')
