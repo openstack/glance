@@ -393,6 +393,13 @@ class LimitingReader(object):
         return result
 
 
+def wrap_data_for_store_upload(data, size_cap=None):
+    """Wrap an image data iterator for backend store upload."""
+    if size_cap is None:
+        size_cap = CONF.image_size_cap
+    return LimitingReader(CooperativeReader(data), size_cap)
+
+
 def image_meta_to_http_headers(image_meta):
     """
     Returns a set of image metadata into a dict

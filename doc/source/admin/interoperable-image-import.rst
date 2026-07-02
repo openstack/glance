@@ -359,12 +359,117 @@ The status of the image is set to ``active`` according to the value of
 * If set to True (default): the status is set to ``active`` only when all
   stores have been successfully treated.
 
+Parallel store imports
+~~~~~~~~~~~~~~~~~~~~~~
+
+When multiple backends are enabled, operators can set
+``max_parallel_stores`` in the ``[image_import_opts]`` section of
+``glance-image-import.conf``. The default is ``1``, which keeps the
+sequential per-store import behavior. A value greater than ``1`` allows
+Glance to copy staged image data to several target stores at the same time,
+up to that limit, for glance-direct, web-download, and glance-download
+imports. The ``copy-image`` method is not supported: multi-store copy-image
+imports always use the sequential per-store path, even when
+``max_parallel_stores`` is greater than ``1``.
+
+A value of ``3`` is a reasonable starting point for most deployments. With
+that setting, Glance may copy the staged image to up to three stores at the
+same time, which usually shortens total import time compared with sequential
+imports (``max_parallel_stores = 1``), while using less concurrent network
+and disk I/O than a much higher limit would. Increase the value when your
+backends and network can handle more parallel writes; lower it when imports
+compete for bandwidth or import workers show high CPU, memory, or I/O
+pressure.
+
+While import is in progress, per-store rows in the ``image_locations`` table
+may use ``pending`` (queued) and ``uploading`` status values. These rows are
+not exposed in the image API until they become ``active``.
+
+The parallel import flow runs two Taskflow tasks in order:
+
+#. **Verify staged signature** (only when the image has all signature-related
+   extra properties: ``img_signature``, ``img_signature_certificate_uuid``,
+   ``img_signature_hash_method``, and ``img_signature_key_type``). Glance
+   reads the staged file once and verifies the signature before any store
+   copy starts. Unsigned images skip this task immediately.
+
+#. **Parallel store import** copies the staged file to each target store using
+   a bounded worker pool (up to ``max_parallel_stores`` workers at a time).
+
+Staging (glance-direct ``/stage``, web-download, or glance-download) writes
+the file to the staging store and records ``image.size`` there. Staging does
+not run in-flight format inspection for ``bare`` images.
+
+Each target store gets its own copy of the staged image.
+
+For signed images, Glance verifies the signature once on the staged file
+before any copy starts. Other checks on the staged file — matching its size
+to ``image.size`` when that is already known, and validating disk format for
+``bare`` images — run again for every store copy. Each parallel worker opens
+the staged file, runs those checks, then uploads. Sequential multi-store
+import does the same thing: one ``set_data`` call (and one read of staging)
+per store.
+
+After each upload, Glance checks that the store's reported size, checksum,
+and ``os_hash_value`` match the image metadata when those fields are already
+set on the image.
+
+Failure and recovery
+~~~~~~~~~~~~~~~~~~~~
+
+Parallel import uses the same ``all_stores_must_succeed`` request parameter
+as sequential multi-store import:
+
+* When ``all_stores_must_succeed`` is ``True`` (default): if any target
+  store fails, Glance stops starting new store jobs, cancels in-flight work
+  where possible, deletes image data already written to backends that had
+  succeeded, removes in-progress ``image_locations`` rows for this import,
+  and fails the import task. The image usually stays in ``importing`` until
+  the operator resolves the failure (for example by fixing the backend or
+  retrying import). If the ``image_conversion`` import plugin is enabled and
+  the import fails after conversion, the image may be reverted to ``queued``
+  instead (see plugin documentation).
+
+* When ``all_stores_must_succeed`` is ``False``: stores that fail are
+  recorded in the ``os_glance_failed_import`` image property and their
+  partial backend data is cleaned up for that store; other stores keep
+  running. The image can become ``active`` as soon as the first store
+  succeeds, while remaining stores finish in the background.
+
+If staged signature verification fails, Glance reverts the verify task:
+the image returns to ``queued``, requested stores are recorded in
+``os_glance_failed_import``, importing store markers are cleared, and
+staged data is removed. No backend copies are started.
+
+When Taskflow reverts the parallel import task (for example after a worker
+crash or an explicit task failure), Glance deletes backend objects for
+stores that had completed successfully in that task, using the location URIs
+recorded during the import. This matches the cleanup behavior operators
+expect from the serial import path.
+
+Orphan data and planned cleanup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a glance-api or import worker process dies after data was uploaded to a
+backend but before the import task finishes, the image may be left with
+``pending`` or ``uploading`` location rows (often with a placeholder URL in
+the database) while the real object already exists on the store. Those rows
+are not returned in the image locations API until they are ``active``.
+
+Operators can identify such rows in the database (for example by location
+metadata that marks parallel import and by ``store`` in metadata). A future
+release is expected to add automated cleanup (for example a periodic job or
+``glance-manage`` command) to remove orphan backend objects and stale
+location rows. A follow-on enhancement may also expose ``pending`` and
+``uploading`` location status through the API for progress monitoring.
+
 Check progress
 ~~~~~~~~~~~~~~
 
-As each store is treated sequentially, it can take quite some time for the
-workflow to complete depending on the size of the image and the number of
-stores to import data to.
+When ``max_parallel_stores`` is ``1``, each store is treated sequentially and
+it can take quite some time for the workflow to complete depending on the
+size of the image and the number of stores to import data to. With parallel
+imports enabled, several stores may be in progress at once.
 It is possible to follow task progress by looking at 2 reserved image
 properties:
 

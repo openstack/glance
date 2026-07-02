@@ -33,6 +33,7 @@ from taskflow import task
 
 from glance.api import common as api_common
 import glance.async_.flows._internal_plugins as internal_plugins
+from glance.async_.flows import parallel_api_image_import as parallel_import
 import glance.async_.flows.plugins as import_plugins
 from glance.async_ import utils
 from glance.common import exception
@@ -77,6 +78,22 @@ Possible values:
       plugin has been executed)
     * Any provided Task object name to be included
       in to the flow.
+""")),
+    cfg.IntOpt('max_parallel_stores',
+               default=1,
+               min=1,
+               help=_("""
+Maximum number of target stores to import to at the same time for one
+image import task.
+
+When this value is 1, store imports run sequentially. When it is
+greater than 1 and more than one store is requested, Glance uses a bounded
+worker pool and per-store work queue for copying the data from staging to
+target stores (glance-direct, web-download, glance-download) with multi-backend
+enabled.
+
+Possible values:
+    * A positive integer (1 means sequential imports)
 """)),
 ]
 
@@ -982,22 +999,31 @@ def get_flow(**kwargs):
     else:
         LOG.debug("Skipping plugins on 'copy-image' job.")
 
-    for idx, store in enumerate(stores, 1):
-        set_active = (not all_stores_must_succeed) or (idx == len(stores))
-        if import_method == 'copy-image':
-            set_active = False
-        task_name = task_type + "-" + (store or "")
-        import_task = lf.Flow(task_name)
-        import_to_store = _ImportToStore(task_id,
-                                         task_name,
-                                         task_repo,
-                                         action_wrapper,
-                                         file_uri,
-                                         store,
-                                         all_stores_must_succeed,
-                                         set_active)
-        import_task.add(import_to_store)
-        flow.add(import_task)
+    # NOTE(abhishekk): Use parallel import to store if enabled and more than
+    # one store is requested.
+    if parallel_import.should_use_parallel_store_import(import_method, stores):
+        parallel_import.add_parallel_store_import_tasks(
+            flow, task_id, task_type, task_repo, action_wrapper, file_uri,
+            stores, all_stores_must_succeed, import_method, context,
+            image_repo)
+    else:
+        # NOTE(abhishekk): Serial import to store when max_parallel_stores=1.
+        for idx, store in enumerate(stores, 1):
+            set_active = (not all_stores_must_succeed) or (idx == len(stores))
+            if import_method == 'copy-image':
+                set_active = False
+            task_name = task_type + "-" + (store or "")
+            import_task = lf.Flow(task_name)
+            import_to_store = _ImportToStore(task_id,
+                                             task_name,
+                                             task_repo,
+                                             action_wrapper,
+                                             file_uri,
+                                             store,
+                                             all_stores_must_succeed,
+                                             set_active)
+            import_task.add(import_to_store)
+            flow.add(import_task)
 
     delete_task = lf.Flow(task_type).add(_DeleteFromFS(task_id, task_type))
     flow.add(delete_task)

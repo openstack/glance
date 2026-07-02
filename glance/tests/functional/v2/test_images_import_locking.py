@@ -113,6 +113,11 @@ class TestImageImportLocking(functional.SynchronousAPIBase):
             time.sleep(0.2)
         else:
             self.assertEqual(409, resp.status_code)
+            # Stop the stalled import so its set_data() thread cannot hold
+            # sqlite locks for later tests in this worker process.
+            state['want_run'] = False
+            first_import_task = self._wait_for_task_status_in(
+                first_import_task['id'], ('failure', 'success'), max_sec=10)
 
         self.addDetail('First task', ttc.text_content(str(first_import_task)))
 

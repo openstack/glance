@@ -19,6 +19,7 @@ import glance_store as store_api
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from glance.common import utils as common_utils
 import glance.db as db_api
 from glance.i18n import _LE, _LW
 from glance import scrubber
@@ -62,8 +63,9 @@ def safe_delete_from_backend(context, image_id, location):
 
         location['status'] = 'deleted'
         if 'id' in location:
-            db_api.get_api().image_location_delete(context, image_id,
-                                                   location['id'], 'deleted')
+            common_utils.retry_on_db_lock(
+                lambda: db_api.get_api().image_location_delete(
+                    context, image_id, location['id'], 'deleted'))
         return ret
     except store_api.NotFound:
         msg = ("The image data for %(iid)s was not found in the store. "
@@ -99,9 +101,9 @@ def schedule_delayed_delete_from_backend(context, image_id, location):
         if 'id' in location:
             # NOTE(zhiyan): New added image location entry will has no 'id'
             # field since it has not been saved to DB.
-            db_api.get_api().image_location_delete(context, image_id,
-                                                   location['id'],
-                                                   'pending_delete')
+            common_utils.retry_on_db_lock(
+                lambda: db_api.get_api().image_location_delete(
+                    context, image_id, location['id'], 'pending_delete'))
         else:
             db_api.get_api().image_location_add(context, image_id, location)
 

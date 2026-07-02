@@ -124,6 +124,42 @@ class TestApiImageImportTask(test_utils.BaseTestCase):
         self.assertIn('os_glance_import_task',
                       self.mock_image.extra_properties)
 
+    @mock.patch('glance.async_.flows.parallel_api_image_import.'
+                'add_parallel_store_import_tasks')
+    @mock.patch('glance.common.store_utils.get_dir_separator')
+    def test_get_flow_uses_parallel_path_when_enabled(self, mock_sep,
+                                                      mock_parallel):
+        mock_sep.return_value = ('/', 'file:///staging')
+        self.config(enabled_backends={'a': 'file', 'b': 'file'})
+        self.config(max_parallel_stores=2, group='image_import_opts')
+        import_flow.get_flow(
+            task_id=TASK_ID1, task_type=TASK_TYPE,
+            task_repo=self.mock_task_repo,
+            image_repo=self.mock_image_repo,
+            image_id=IMAGE_ID1,
+            context=mock.MagicMock(),
+            backend=['a', 'b'],
+            import_req=self.gd_task_input['import_req'])
+        mock_parallel.assert_called_once()
+
+    @mock.patch('glance.async_.flows.parallel_api_image_import.'
+                'add_parallel_store_import_tasks')
+    @mock.patch('glance.common.store_utils.get_dir_separator')
+    def test_get_flow_keeps_serial_path_when_parallel_disabled(
+            self, mock_sep, mock_parallel):
+        mock_sep.return_value = ('/', 'file:///staging')
+        self.config(enabled_backends={'a': 'file', 'b': 'file'})
+        self.config(max_parallel_stores=1, group='image_import_opts')
+        import_flow.get_flow(
+            task_id=TASK_ID1, task_type=TASK_TYPE,
+            task_repo=self.mock_task_repo,
+            image_repo=self.mock_image_repo,
+            image_id=IMAGE_ID1,
+            context=mock.MagicMock(),
+            backend=['a', 'b'],
+            import_req=self.gd_task_input['import_req'])
+        mock_parallel.assert_not_called()
+
     def test_assert_quota_no_task(self):
         ignored = mock.MagicMock()
         task_repo = mock.MagicMock()
