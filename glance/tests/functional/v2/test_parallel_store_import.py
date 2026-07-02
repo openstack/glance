@@ -155,6 +155,11 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
                 return True
         return False
 
+    def _delete_imported_image(self, image_id):
+        """Delete after import task completes (avoids sqlite lock races)."""
+        self._wait_for_import_task_success(image_id, start_delay_sec=0)
+        self.api_methods.delete_image(image_id)
+
     def _wait_for_import_task_success(self, image_id, max_sec=40,
                                       delay_sec=0.2, start_delay_sec=1):
         start_time = time.time()
@@ -262,7 +267,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
                 self._store_has_image_data(store),
                 'Expected image data on store %s' % store)
 
-        self.api_methods.delete_image(image_id)
+        self._delete_imported_image(image_id)
 
     def test_parallel_glance_direct_two_stores_bounded_workers(self):
         self._enable_parallel_import(max_parallel_stores=2)
@@ -276,7 +281,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
         self.api_methods.verify_image_stores(
             image_id, expected_stores=stores)
 
-        self.api_methods.delete_image(image_id)
+        self._delete_imported_image(image_id)
 
     def test_parallel_web_download_multi_store(self):
         self._enable_parallel_import(max_parallel_stores=3)
@@ -305,7 +310,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
             self.api_methods.httpd.shutdown()
             self.api_methods.httpd.server_close()
 
-        self.api_methods.delete_image(image_id)
+        self._delete_imported_image(image_id)
 
     def test_multi_store_serial_when_max_parallel_stores_is_one(self):
         self._enable_parallel_import(max_parallel_stores=1)
@@ -318,7 +323,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
         self.api_methods.verify_image_stores(
             image_id, expected_stores=['store1', 'store2'])
 
-        self.api_methods.delete_image(image_id)
+        self._delete_imported_image(image_id)
 
     def test_parallel_single_store_uses_serial_path(self):
         """One target store never selects the parallel import flow."""
@@ -332,7 +337,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
         self.api_methods.verify_image_stores(
             image_id, expected_stores=['store1'])
 
-        self.api_methods.delete_image(image_id)
+        self._delete_imported_image(image_id)
 
     def test_parallel_all_stores_must_succeed_failure(self):
         """Fatal parallel failure without import plugins (default config)."""
@@ -403,7 +408,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
         self.assertTrue(self._store_has_image_data('store1'))
         self.assertFalse(self._store_has_image_data('store2'))
 
-        self.api_methods.delete_image(image_id)
+        self._delete_imported_image(image_id)
 
     def test_parallel_bare_raw_multi_store_success(self):
         """Bare/raw staged data uses the same upload pipeline as set_data."""
@@ -413,7 +418,6 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
         image_id, image_data = self._create_staged_bare_raw_image()
         self._import_glance_direct(
             image_id, AVAILABLE_STORES, all_stores_must_succeed=True)
-        self._wait_for_import_task_success(image_id)
         self.api_methods.verify_image_import_status(image_id, data=image_data)
         self.api_methods.verify_image_stores(
             image_id, expected_stores=AVAILABLE_STORES)
@@ -421,7 +425,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
         for store in AVAILABLE_STORES:
             self.assertTrue(self._store_has_image_data(store))
 
-        self.api_methods.delete_image(image_id)
+        self._delete_imported_image(image_id)
 
     def test_parallel_signed_import_success(self):
         """Signed images verify once on staging before parallel store copy."""
@@ -444,13 +448,12 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
 
             self._import_glance_direct(
                 image_id, AVAILABLE_STORES, all_stores_must_succeed=True)
-            self._wait_for_import_task_success(image_id)
             self.api_methods.verify_image_import_status(
                 image_id, data=IMAGE_DATA)
             self.api_methods.verify_image_stores(
                 image_id, expected_stores=AVAILABLE_STORES)
 
-            self.api_methods.delete_image(image_id)
+            self._delete_imported_image(image_id)
 
     def test_parallel_signed_import_invalid_signature_fails(self):
         with mock.patch(SIGNATURE_PATCH,
@@ -533,7 +536,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
         self.api_methods.verify_image_stores(
             image_id, expected_stores=AVAILABLE_STORES)
 
-        self.api_methods.delete_image(image_id)
+        self._delete_imported_image(image_id)
 
     def test_parallel_all_target_stores_fail(self):
         self._enable_parallel_import(max_parallel_stores=3)
