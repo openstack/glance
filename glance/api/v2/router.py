@@ -654,5 +654,21 @@ class API(wsgi.Router):
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='GET')
+        mapper.connect('/cache/clean',
+                       controller=cache_manage_resource,
+                       action='clean_cache',
+                       conditions={'method': ['POST']})
+        mapper.connect('/cache/clean',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='POST')
+        mapper.connect('/cache/prune',
+                       controller=cache_manage_resource,
+                       action='prune_cache',
+                       conditions={'method': ['POST']})
+        mapper.connect('/cache/prune',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='POST')
 
         super(API, self).__init__(mapper)

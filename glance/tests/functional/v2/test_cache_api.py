@@ -12,11 +12,14 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import datetime
+import os
 import time
 from unittest import mock
 import uuid
 
 import oslo_policy.policy
+from oslo_utils import units
 
 from glance.api import policy
 from glance.api.v2 import cached_images
@@ -112,6 +115,33 @@ class TestImageCache(functional.SynchronousAPIBase):
             self.assertEqual(expected_code, response.status_code)
         else:
             self.assertEqual(expected_code, response.status_code)
+
+    def cache_clean(self, expected_code=200):
+        path = '/v2/cache/clean'
+        response = self.api_post(path)
+        self.assertEqual(expected_code, response.status_code)
+        if response.status_code == 200:
+            # Response body may be empty, return empty dict if so
+            try:
+                return response.json if response.json else {}
+            except (ValueError, AttributeError):
+                return {}
+        return None
+
+    def cache_prune(self, expected_code=200):
+        path = '/v2/cache/prune'
+        response = self.api_post(path)
+        self.assertEqual(expected_code, response.status_code)
+        if response.status_code == 200:
+            # Response should always have JSON body
+            try:
+                return response.json if response.json else {}
+            except (ValueError, AttributeError):
+                # Handle empty response body
+                if response.body:
+                    return {}
+                return {}
+        return None
 
     def wait_for_caching(self, image_id, max_sec=10, delay_sec=0.2,
                          start_delay_sec=None):
@@ -457,3 +487,155 @@ class TestImageCache(functional.SynchronousAPIBase):
         self.cache_delete(images['public'], expected_code=403)
         self.cache_clear(expected_code=403)
         self.cache_clear(target='both', expected_code=403)
+
+    def test_cache_clean(self):
+        self.start_server(enable_cache=True)
+        self.load_data()
+
+        # Get the cache directory
+        cache_dir = self._store_dir('cache')
+        invalid_dir = os.path.join(cache_dir, 'invalid')
+        incomplete_dir = os.path.join(cache_dir, 'incomplete')
+
+        # Ensure directories exist
+        os.makedirs(invalid_dir, exist_ok=True)
+        os.makedirs(incomplete_dir, exist_ok=True)
+
+        # Create an invalid cache file
+        invalid_file_path = os.path.join(invalid_dir, 'invalid-image-id')
+        with open(invalid_file_path, 'wb') as f:
+            f.write(b'invalid cache data')
+        self.assertTrue(os.path.exists(invalid_file_path))
+
+        # Create a stalled incomplete file (older than default stall time)
+        stalled_file_path = os.path.join(incomplete_dir, 'stalled-image-id')
+        with open(stalled_file_path, 'wb') as f:
+            f.write(b'incomplete cache data')
+        # Set file timestamp to 2 days ago (older than default 24h stall time)
+        mtime = os.path.getmtime(stalled_file_path)
+        past_time = (datetime.datetime.fromtimestamp(mtime) -
+                     datetime.timedelta(days=2))
+        atime = int(time.mktime(past_time.timetuple()))
+        mtime = atime
+        os.utime(stalled_file_path, (atime, mtime))
+        self.assertTrue(os.path.exists(stalled_file_path))
+
+        # Create a recent incomplete file (should NOT be cleaned)
+        recent_file_path = os.path.join(incomplete_dir, 'recent-image-id')
+        with open(recent_file_path, 'wb') as f:
+            f.write(b'recent incomplete data')
+        self.assertTrue(os.path.exists(recent_file_path))
+
+        # Clean cache - should remove invalid and stalled files
+        self.cache_clean()
+
+        # Verify invalid file was removed
+        self.assertFalse(os.path.exists(invalid_file_path),
+                         "Invalid cache file should have been cleaned")
+
+        # Verify stalled incomplete file was removed
+        self.assertFalse(os.path.exists(stalled_file_path),
+                         "Stalled incomplete file should have been cleaned")
+
+        # Verify recent incomplete file was NOT removed
+        self.assertTrue(os.path.exists(recent_file_path),
+                        "Recent incomplete file should NOT have been cleaned")
+
+    def test_cache_prune(self):
+        # Set a small max cache size (100KB) to force pruning
+        self.config(image_cache_max_size=100 * units.Ki)
+        self.start_server(enable_cache=True)
+        self.load_data()
+
+        # Prune cache when empty - should return zeros
+        result = self.cache_prune()
+        self.assertIsNotNone(result)
+        self.assertEqual(0, result['total_files_pruned'])
+        self.assertEqual(0, result['total_bytes_pruned'])
+
+        # Cache multiple images to exceed the max size limit
+        # Each image is ~9 bytes (b'IMAGEDATA'), so we need many images
+        # Let's cache 20 images which should exceed 100KB when considering
+        # overhead, but let's be safe and cache more
+        cached_image_ids = []
+        for i in range(15):
+            # Create and upload a new image for each iteration
+            path = "/v2/images"
+            data = {
+                'name': 'prune-test-image-%d' % i,
+                'container_format': 'bare',
+                'disk_format': 'raw'
+            }
+            response = self.api_post(path, json=data)
+            self.assertEqual(201, response.status_code)
+            image_id = response.json['id']
+
+            # Upload data to make it cacheable (larger than 9 bytes)
+            # Use 10KB per image to ensure we exceed 100KB with 15 images
+            image_data = b'X' * (10 * units.Ki)
+            response = self.api_put(
+                '/v2/images/%s/file' % image_id,
+                headers={'Content-Type': 'application/octet-stream'},
+                data=image_data)
+            self.assertEqual(204, response.status_code)
+
+            # Queue for caching
+            self.cache_queue(image_id)
+            cached_image_ids.append(image_id)
+
+        # Wait for all images to be cached
+        for image_id in cached_image_ids:
+            self.wait_for_caching(image_id)
+
+        # Verify all images are cached
+        output = self.list_cache()
+        self.assertEqual(len(cached_image_ids), len(output['cached_images']))
+
+        # Get the cache directory to verify files exist
+        cache_dir = self._store_dir('cache')
+
+        # Verify all cached image files exist before pruning
+        for image_id in cached_image_ids:
+            image_file_path = os.path.join(cache_dir, image_id)
+            self.assertTrue(os.path.exists(image_file_path),
+                            "Image %s should be cached before prune" %
+                            image_id)
+
+        # Prune cache - should remove some images to get under limit
+        result = self.cache_prune()
+
+        # Verify that the pruned files no longer exist on disk and
+        # calculate bytes
+        pruned_count = 0
+        pruned_bytes = 0
+        for image_id in cached_image_ids:
+            image_file_path = os.path.join(cache_dir, image_id)
+            if not os.path.exists(image_file_path):
+                pruned_count += 1
+                # Each image is 10KB
+                pruned_bytes += 10 * units.Ki
+
+        # Verify that the API result matches the actual count and bytes
+        # of removed files
+        self.assertEqual(pruned_count, result['total_files_pruned'],
+                         "Number of removed files should match pruned count")
+        self.assertEqual(pruned_bytes, result['total_bytes_pruned'],
+                         "Number of bytes pruned should match actual "
+                         "bytes removed")
+
+        # Verify that the cache list reflects the pruned count
+        output_after = self.list_cache()
+        expected_remaining = (len(cached_image_ids) -
+                              result['total_files_pruned'])
+        self.assertEqual(len(output_after['cached_images']),
+                         expected_remaining,
+                         "Cache list should show exactly the remaining "
+                         "images")
+
+    def test_cache_clean_disabled(self):
+        self.start_server(enable_cache=False)
+        self.cache_clean(expected_code=404)
+
+    def test_cache_prune_disabled(self):
+        self.start_server(enable_cache=False)
+        self.cache_prune(expected_code=404)

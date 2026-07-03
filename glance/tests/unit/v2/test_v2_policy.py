@@ -836,6 +836,24 @@ class TestCacheImageAPIPolicy(utils.BaseTestCase):
                                                       'list_cached_nodes',
                                                       mock.ANY)
 
+    def test_cache_clean(self):
+        self.policy = policy.CacheImageAPIPolicy(
+            self.context, enforcer=self.enforcer,
+            policy_str='cache_clean')
+        self.policy.manage_image_cache()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'cache_clean',
+                                                      mock.ANY)
+
+    def test_cache_prune(self):
+        self.policy = policy.CacheImageAPIPolicy(
+            self.context, enforcer=self.enforcer,
+            policy_str='cache_prune')
+        self.policy.manage_image_cache()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'cache_prune',
+                                                      mock.ANY)
+
 
 class TestDiscoveryAPIPolicy(APIPolicyBase):
     def setUp(self):

@@ -1,0 +1,17 @@
+---
+features:
+  - |
+    Image API version 2.18 adds ``POST /v2/cache/clean`` and
+    ``POST /v2/cache/prune`` for image cache maintenance. This API version
+    is available when image caching is enabled. These endpoints provide the
+    same functionality as the deprecated ``glance-cache-cleaner`` and
+    ``glance-cache-pruner`` command-line tools, allowing cache management
+    operations to be performed via the REST API. The ``POST /v2/cache/clean``
+    endpoint removes invalid cache entries and stalled incomplete images. The
+    ``POST /v2/cache/prune`` endpoint removes least recently accessed images
+    when the cache size exceeds the maximum configured size and returns a
+    JSON response with the number of files and bytes pruned. Both endpoints
+    are thread-safe and serialize concurrent requests to prevent race
+    conditions. New policies ``cache_clean`` and ``cache_prune`` have been
+    added to control access to these endpoints, defaulting to admin-only
+    access.
