@@ -541,7 +541,7 @@ class _VerifyStaging(task.Task):
         except ValueError:
             msg = (_("%(task_id)s of %(task_type)s not configured "
                      "properly. Value of node_staging_uri must be "
-                     " in format 'file://<absolute-path>'") %
+                     "in format 'file://<absolute-path>'") %
                    {'task_id': self.task_id,
                     'task_type': self.task_type})
             raise exception.BadTaskConfiguration(msg)
