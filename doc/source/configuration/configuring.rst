@@ -135,52 +135,18 @@ Glance has a few command-line options that are common to all Glance programs:
 Configuring Server Startup Options
 ----------------------------------
 
-You can put the following options in the ``glance-api.conf`` file, under
-the ``[DEFAULT]`` section. They enable startup and binding behaviour for
-the API servers, respectively.
-
-``bind_host=ADDRESS``
-  The address of the host to bind to.
-
-  Optional. Default: ``0.0.0.0``
-
-``bind_port=PORT``
-  The port the server should bind to.
-
-  Optional. Default: ``9292`` for the API server
-
-``backlog=REQUESTS``
-  Number of backlog requests to configure the socket with.
-
-  Optional. Default: ``4096``
-
-``tcp_keepidle=SECONDS``
-  Sets the value of TCP_KEEPIDLE in seconds for each server socket.
-  Not supported on OS X.
-
-  Optional. Default: ``600``
-
-``client_socket_timeout=SECONDS``
-  Timeout for client connections' socket operations.  If an incoming
-  connection is idle for this period it will be closed.  A value of `0`
-  means wait forever.
-
-  Optional. Default: ``900``
-
-``workers=PROCESSES``
-  Number of Glance API worker processes to start. Each worker process will
-  listen on the same port. Increasing this value may increase performance
-  (especially if using SSL with compression enabled). Typically it is
-  recommended to have one worker process per CPU. The value `0` will prevent
-  any new worker processes from being created.
-
-  Optional. Default: The number of CPUs available will be used by default.
+Glance is deployed under a WSGI server (for example uWSGI). Binding, worker
+processes, and socket tuning are configured in the WSGI server, not in
+``glance-api.conf``. The former standalone/eventlet server options
+(``bind_host``, ``bind_port``, ``workers``, ``backlog``, ``tcp_keepidle``,
+``client_socket_timeout``, ``http_keepalive``, and ``max_header_line``) have
+been removed.
 
 ``max_request_id_length=LENGTH``
   Limits the maximum size of the x-openstack-request-id header which is
   logged. Affects only if context middleware is configured in pipeline.
 
-  Optional. Default: ``64`` (Limited by max_header_line default: 16384)
+  Optional. Default: ``64``
 
 Configuring Logging in Glance
 -----------------------------

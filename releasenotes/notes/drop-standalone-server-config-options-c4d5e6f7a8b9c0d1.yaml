@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    Configuration options for the removed standalone glance-api HTTP server
+    have been dropped: ``bind_host``, ``bind_port``, ``workers``, ``backlog``,
+    ``tcp_keepidle``, ``client_socket_timeout``, ``http_keepalive``, and
+    ``max_header_line``. Configure binding and concurrency in your WSGI server
+    instead.

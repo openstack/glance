@@ -183,7 +183,6 @@ class VersionsTest(base.IsolatedUnitTest):
     def test_get_version_list(self):
         req = webob.Request.blank('/', base_url='http://127.0.0.1:9292/')
         req.accept = 'application/json'
-        self.config(bind_host='127.0.0.1', bind_port=9292)
         res = versions.Controller().index(req)
         self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
@@ -209,8 +208,7 @@ class VersionsTest(base.IsolatedUnitTest):
     def test_get_version_list_public_endpoint(self):
         req = webob.Request.blank('/', base_url='http://127.0.0.1:9292/')
         req.accept = 'application/json'
-        self.config(bind_host='127.0.0.1', bind_port=9292,
-                    public_endpoint='https://example.com:9292')
+        self.config(public_endpoint='https://example.com:9292')
         res = versions.Controller().index(req)
         self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)
@@ -236,7 +234,6 @@ class VersionsTest(base.IsolatedUnitTest):
     def test_get_version_list_for_external_app(self):
         url = 'http://customhost:9292/app/api'
         req = webob.Request.blank('/', base_url=url)
-        self.config(bind_host='127.0.0.1', bind_port=9292)
         res = versions.Controller().index(req)
         self.assertEqual(http.MULTIPLE_CHOICES, res.status_int)
         self.assertEqual('application/json', res.content_type)

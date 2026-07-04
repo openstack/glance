@@ -11,10 +11,7 @@ patterns for running Glance with Apache HTTPD with uWSGI.
 .. versionchanged:: 15.0.0
 
    Added the ``glance-wsgi-api`` WSGI script, which can be used with
-   uWSGI using the ``[uwsgi] wsgi-file`` configuration option. This
-   can be used for the basic API service, though not all functionality
-   is currently supported and standalone (eventlet) mode is still
-   recommended for production environments.
+   uWSGI using the ``[uwsgi] wsgi-file`` configuration option.
 
 .. versionchanged:: 21.0.0 (Victoria)
 

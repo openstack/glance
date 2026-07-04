@@ -313,7 +313,7 @@
     timeout: 7800
     description: |
       Rally benchmarks against Glance as deployed by DevStack, which runs
-      the image API under uWSGI (native threading, no eventlet WSGI server).
+      the image API under uWSGI with native threading.
     required-projects:
       - name: openstack/devstack
       - name: openstack/rally

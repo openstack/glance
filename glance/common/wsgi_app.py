@@ -12,6 +12,7 @@
 
 import atexit
 import os
+import socket
 import threading
 
 import glance_store
@@ -76,7 +77,7 @@ def _setup_os_profiler():
                                               context={},
                                               project='glance',
                                               service='api',
-                                              host=CONF.bind_host)
+                                              host=socket.gethostname())
 
 
 def drain_workers():
@@ -113,8 +114,7 @@ def init_app():
          default_config_files=config_files)
     logging.setup(CONF, "glance")
 
-    # NOTE(danms): We are running inside uwsgi or mod_wsgi, so no eventlet;
-    # use native threading instead.
+    # NOTE(danms): Running under uWSGI or mod_wsgi; use native threading.
     glance.async_.set_threadpool_model('native')
     if uwsgi:
         uwsgi.atexit = drain_workers
