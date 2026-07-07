@@ -186,6 +186,44 @@ def normalize_hostname(host):
     return host
 
 
+def _is_restricted_import_host(normalized_host):
+    """Return True if host is or resolves to a restricted address.
+
+    Blocks loopback and link-local addresses (including cloud metadata
+    endpoints such as 169.254.169.254). Private RFC1918 ranges are not
+    blocked so private clouds can import from internal hosts. IPv4-mapped
+    IPv6 addresses are checked against the embedded IPv4 address. For
+    hostnames, any resolved address that is restricted causes rejection
+    (fail closed on DNS errors).
+    """
+    try:
+        addresses = [ipaddress.ip_address(normalized_host)]
+    except ValueError:
+        testhost = normalized_host if normalized_host.endswith('.') else (
+            normalized_host + '.')
+        try:
+            addresses = []
+            for result in socket.getaddrinfo(testhost, None):
+                ip = result[4][0]
+                if not ip:
+                    return True
+                if '%' in ip:
+                    ip = ip.split('%', 1)[0]
+                try:
+                    addresses.append(ipaddress.ip_address(ip))
+                except ValueError:
+                    return True
+        except socket.gaierror:
+            return True
+
+    for addr in addresses:
+        if isinstance(addr, ipaddress.IPv6Address) and addr.ipv4_mapped:
+            addr = addr.ipv4_mapped
+        if addr.is_loopback or addr.is_link_local:
+            return True
+    return False
+
+
 def validate_import_uri(uri):
     """Validate requested uri for Image Import web-download.
 
@@ -229,6 +267,11 @@ def validate_import_uri(uri):
     if not normalized_host or (
             (wl_hosts and normalized_host not in wl_hosts) or
             normalized_host in bl_hosts):
+        return False
+
+    host_is_whitelisted = bool(wl_hosts and normalized_host in wl_hosts)
+    if not host_is_whitelisted and _is_restricted_import_host(
+            normalized_host):
         return False
 
     if port and ((wl_ports and port not in wl_ports) or

@@ -77,7 +77,7 @@ class TestImportTask(test_utils.BaseTestCase):
                                                 container_format='bare')
 
         task_input = {
-            "import_from": "http://198.51.100.1/image.qcow2",
+            "import_from": "http://93.184.216.34/image.qcow2",
             "import_from_format": "qcow2",
             "image_properties": {'disk_format': 'qcow2',
                                  'container_format': 'bare'}
