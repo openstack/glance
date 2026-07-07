@@ -77,7 +77,8 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
     @mock.patch.object(filesystem.Store, 'add')
     @mock.patch('glance.async_.utils.get_glance_endpoint')
     def test_glance_download(self, mock_gge, mock_add, mock_getaddrinfo):
-        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        mock_getaddrinfo.return_value = [
+            ('', '', '', '', ('93.184.216.34', 80))]
         mock_gge.return_value = 'https://other.cloud.foo/image'
         glance_download_task = glance_download._DownloadGlanceImage(
             self.context, self.task.task_id, self.task_type,
@@ -105,7 +106,8 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
     @mock.patch('glance.async_.utils.get_glance_endpoint')
     def test_glance_download_failed(self, mock_gge, mock_add,
                                     mock_getaddrinfo):
-        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        mock_getaddrinfo.return_value = [
+            ('', '', '', '', ('93.184.216.34', 80))]
         mock_gge.return_value = 'https://other.cloud.foo/image'
         glance_download_task = glance_download._DownloadGlanceImage(
             self.context, self.task.task_id, self.task_type,
@@ -145,7 +147,8 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
     @mock.patch('glance.async_.utils.get_glance_endpoint')
     def test_glance_download_size_mismatch(self, mock_gge, mock_add,
                                            mock_getaddrinfo):
-        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        mock_getaddrinfo.return_value = [
+            ('', '', '', '', ('93.184.216.34', 80))]
         mock_gge.return_value = 'https://other.cloud.foo/image'
         glance_download_task = glance_download._DownloadGlanceImage(
             self.context, self.task.task_id, self.task_type,
@@ -193,7 +196,8 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
                                                  mock_request,
                                                  mock_getaddrinfo):
         """Test redirect destinations are validated during image download."""
-        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        mock_getaddrinfo.return_value = [
+            ('', '', '', '', ('93.184.216.34', 80))]
         mock_gge.return_value = 'https://other.cloud.foo/image'
         glance_download_task = glance_download._DownloadGlanceImage(
             self.context, self.task.task_id, self.task_type,
@@ -226,7 +230,8 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
     def test_glance_download_uses_safe_redirect_handler(
             self, mock_gge, mock_request, mock_add, mock_getaddrinfo):
         """Test that SafeRedirectHandler is used and allows valid execution."""
-        mock_getaddrinfo.return_value = [('', '', '', '', ('', 80))]
+        mock_getaddrinfo.return_value = [
+            ('', '', '', '', ('93.184.216.34', 80))]
         mock_gge.return_value = 'https://other.cloud.foo/image'
         glance_download_task = glance_download._DownloadGlanceImage(
             self.context, self.task.task_id, self.task_type,

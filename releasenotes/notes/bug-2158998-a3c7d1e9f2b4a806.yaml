@@ -1,0 +1,23 @@
+---
+security:
+  - |
+    Fixed a Server-Side Request Forgery (SSRF) vulnerability in the
+    ``web-download`` image import method. With the default
+    ``import_filtering_opts`` configuration, authenticated users could
+    supply URIs targeting loopback or link-local addresses (for example
+    cloud metadata at ``169.254.169.254``) and read the response through
+    the imported image data.
+
+    Glance now rejects import URIs that target loopback or link-local
+    IP addresses unless the host is explicitly listed in
+    ``allowed_hosts``. Hostnames that resolve to any of those address
+    types are also rejected. Private RFC1918 addresses are not blocked
+    by this check so private clouds can continue to import from
+    internal hosts.
+
+fixes:
+  - |
+    `Bug 2158998 <https://bugs.launchpad.net/glance/+bug/2158998>`_:
+    Block loopback and link-local destination addresses during
+    web-download URI validation to prevent SSRF against local services
+    and cloud metadata endpoints.
