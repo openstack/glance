@@ -1,6 +1,6 @@
-====================
-Images and instances
-====================
+==============================
+Images, instances, and volumes
+==============================
 
 Virtual machine images contain a virtual disk that holds a
 bootable operating system on it. Disk images provide templates for
@@ -118,6 +118,77 @@ unchanged throughout this process.
 
 |
 
+Images and volumes
+~~~~~~~~~~~~~~~~~~
+
+The Image service and the Block Storage service (Cinder) work together in
+several ways involving bootable volumes and volume-backed images. The
+following sections point to the main procedures; for full detail, see the
+`Block Storage <https://docs.openstack.org/cinder/latest/admin/index.html>`__
+and `Compute <https://docs.openstack.org/nova/latest/admin/index.html>`__
+documentation.
+
+**Creating a bootable volume**
+   You can create a volume from an image and then boot an instance from
+   that volume (boot from volume). The Compute service can create a
+   volume from an image and attach it as the root disk when launching an
+   instance. For procedures and configuration, see the Block Storage
+   documentation on `Boot from volume
+   <https://docs.openstack.org/cinder/latest/admin/boot-from-volume.html>`__
+   and the Compute documentation on `Launch an instance from a volume
+   <https://docs.openstack.org/nova/latest/user/launch-instance-from-volume.html>`__
+   (e.g. using ``--block-device-mapping`` or volume-backed boot).
+
+**Uploading a volume as an image**
+   You can create an image from an existing Cinder volume (upload volume
+   to image). The volume data can be registered in Glance as a
+   volume-backed image, or copied into the Image service. For
+   configuration and procedures, see the Block Storage documentation on
+   `Volume-backed image
+   <https://docs.openstack.org/cinder/latest/admin/volume-backed-image.html>`__.
+
+**Uploading an encrypted volume as an image**
+   When the Block Storage service uploads an *encrypted* volume as an
+   image, it stores the encryption key in the OpenStack Key Management
+   service (Barbican) and records two image properties on the Glance
+   image:
+
+   - **cinder_encryption_key_id** — The identifier in the Key Management
+     service for the secret used to encrypt the volume. Cinder sets this
+     automatically when it creates the image.
+
+   - **cinder_encryption_key_deletion_policy** — Controls whether Glance
+     asks the Key Management service to delete that secret when the
+     image is deleted. Allowed values are ``on_image_deletion`` (delete
+     the secret when the image is deleted) or ``do_not_delete`` (do not
+     delete). Cinder typically sets this to ``on_image_deletion`` for
+     images it creates from encrypted volumes.
+
+   When an image with these properties is deleted, Glance will request
+   deletion of the Barbican secret only if
+   ``cinder_encryption_key_deletion_policy`` is ``on_image_deletion``.
+   If the property is missing or has any other value, Glance does not
+   delete the key. This uses the Castellan key manager interface, so it
+   works with all key-manager back ends supported by Glance (e.g.
+   Barbican).
+
+   Important points:
+
+   - Images created by the Block Storage service from an encrypted
+     volume have these properties set automatically. Do not use
+     ``cinder_encryption_key_id`` or the associated secret for any other
+     purpose, or you may cause data loss.
+
+   - Manual use of the ``cinder_encryption_key_*`` properties is not
+     recommended.
+
+   For Cinder-side configuration and usage of encrypted volumes and
+   upload-to-image, see the Block Storage documentation (e.g.
+   `Volume-backed image
+   <https://docs.openstack.org/cinder/latest/admin/volume-backed-image.html>`__
+   and encryption/Key Management sections).
+
+|
 
 Image properties and property protection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
