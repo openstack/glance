@@ -183,6 +183,7 @@ class TestImagesMultipleBackend(functional.SynchronousAPIBase):
 
     def test_image_import_using_web_download(self):
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         self.start_server()
 
         # Image list should be empty
@@ -235,6 +236,7 @@ class TestImagesMultipleBackend(functional.SynchronousAPIBase):
 
     def test_image_import_using_web_download_different_backend(self):
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         self.start_server()
 
         # Image list should be empty
@@ -294,6 +296,7 @@ class TestImagesMultipleBackend(functional.SynchronousAPIBase):
 
     def test_image_import_multi_stores(self):
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         self.start_server()
 
         # Image list should be empty
@@ -352,6 +355,7 @@ class TestImagesMultipleBackend(functional.SynchronousAPIBase):
 
     def test_copy_image_lifecycle(self):
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         self.start_server()
 
         # Image list should be empty
@@ -466,6 +470,7 @@ class TestImagesMultipleBackend(functional.SynchronousAPIBase):
         # should delete the data from only stores to which it is
         # copied and not from the existing stores.
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         self.start_server()
         # Image list should be empty
         self.start_server()
@@ -612,6 +617,7 @@ class TestImagesMultipleBackend(functional.SynchronousAPIBase):
 
     def test_image_import_multi_stores_specifying_all_stores(self):
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         self.start_server()
         # Image list should be empty
         self.start_server()

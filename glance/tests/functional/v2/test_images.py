@@ -462,6 +462,7 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
 
     def test_image_import_using_web_download(self):
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         self.start_server()
 
         # Initial checks: Image list should be empty
@@ -506,6 +507,8 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
     def test_web_download_redirect_validation(self):
         """Test that redirect destinations are validated."""
         self.config(allowed_ports=[80], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'],
+                    group='import_filtering_opts')
         self.config(disallowed_hosts=['127.0.0.1'],
                     group='import_filtering_opts')
         self.start_server()
@@ -547,6 +550,26 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         self.assertIsNone(image.get('size'))
 
         # Clean up
+        self.api_methods.delete_image(image_id)
+
+    def test_web_download_blocks_restricted_hosts(self):
+        """Test that restricted addresses are rejected at import time."""
+        self.start_server()
+
+        image_id = self.api_methods.create_and_verify_image(
+            name='ssrf-test', type='kernel',
+            disk_format='aki', container_format='aki')
+
+        data = {'method': {
+            'name': 'web-download',
+            'uri': 'http://169.254.169.254/latest/meta-data/'
+        }}
+        path = f'/v2/images/{image_id}/import'
+        headers = self.api_methods._headers(
+            {'content-type': 'application/json', 'X-Roles': 'admin'})
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
+
         self.api_methods.delete_image(image_id)
 
     def test_web_download_ip_normalization(self):
@@ -3176,6 +3199,7 @@ class TestCopyImagePermissions(functional.SynchronousAPIBase):
 
     def start_server(self):
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         with mock.patch.object(policy, 'Enforcer') as mock_enf:
             mock_enf.return_value = self.policy
             super().start_server()

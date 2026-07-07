@@ -57,7 +57,7 @@ class TestTaskExecutor(test_utils.BaseTestCase):
         self.image_factory = mock.Mock()
 
         task_input = {
-            "import_from": "http://198.51.100.1/image.qcow2",
+            "import_from": "http://93.184.216.34/image.qcow2",
             "import_from_format": "qcow2",
             "image_properties": {'disk_format': 'qcow2',
                                  'container_format': 'bare'}
@@ -83,7 +83,7 @@ class TestTaskExecutor(test_utils.BaseTestCase):
 
         self._addrinfo_patcher = mock.patch(
             'glance.common.utils.socket.getaddrinfo',
-            return_value=[(None, None, None, None, ('203.0.113.1', 80))])
+            return_value=[(None, None, None, None, ('93.184.216.34', 80))])
         self._addrinfo_patcher.start()
         self.addCleanup(self._addrinfo_patcher.stop)
 
@@ -192,7 +192,7 @@ class TestTaskExecutor(test_utils.BaseTestCase):
                          'image_factory': self.image_factory,
                          'backend': None,
                          'admin_repo': admin_repo,
-                         'uri': 'http://198.51.100.1/image.qcow2'})
+                         'uri': 'http://93.184.216.34/image.qcow2'})
 
     @mock.patch('stevedore.driver.DriverManager')
     @mock.patch.object(taskflow_executor, 'LOG')
