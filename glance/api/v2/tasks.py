@@ -16,6 +16,7 @@
 
 import copy
 import http.client as http
+import urllib.error
 import urllib.parse as urlparse
 
 import debtcollector
@@ -30,6 +31,7 @@ from glance.api import common
 from glance.api import policy
 from glance.api.v2 import policy as api_policy
 from glance.common import exception
+from glance.common.scripts import utils as script_utils
 from glance.common import timeutils
 from glance.common import wsgi
 import glance.db
@@ -73,6 +75,10 @@ class TasksController(object):
         executor_factory = self.gateway.get_task_executor_factory(ctxt)
         task_repo = self.gateway.get_task_repo(ctxt)
         try:
+            if task.get('type') == 'import':
+                task_input = task.get('input') or {}
+                script_utils.validate_legacy_import_from_uri(
+                    task_input.get('import_from'))
             new_task = task_factory.new_task(
                 task_type=task['type'],
                 owner=ctxt.owner,
@@ -89,6 +95,12 @@ class TasksController(object):
                    % {'reason': e})
             LOG.warning(msg)
             raise webob.exc.HTTPForbidden(explanation=e.msg)
+        except exception.BadStoreUri as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
+        except exception.Invalid as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.msg)
+        except urllib.error.URLError as e:
+            raise webob.exc.HTTPBadRequest(explanation=str(e.reason))
         return new_task
 
     @debtcollector.removals.remove(message=_DEPRECATION_MESSAGE)

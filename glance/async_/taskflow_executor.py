@@ -124,7 +124,7 @@ class TaskExecutor(glance.async_.TaskExecutor):
                 kwds['admin_repo'] = self.admin_repo
 
             if task.type == "import":
-                uri = script_utils.validate_location_uri(
+                uri = script_utils.validate_legacy_import_from_uri(
                     task_input.get('import_from'))
                 kwds['uri'] = uri
             if task.type == 'api_image_import':

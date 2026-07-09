@@ -52,7 +52,8 @@ def _execute(t_id, task_repo, image_repo, image_factory):
     try:
         task_input = script_utils.unpack_task_input(task)
 
-        uri = script_utils.validate_location_uri(task_input.get('import_from'))
+        uri = script_utils.validate_legacy_import_from_uri(
+            task_input.get('import_from'))
         image_id = import_image(image_repo, image_factory, task_input, t_id,
                                 uri)
 
