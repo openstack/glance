@@ -159,7 +159,7 @@
     timeout: 2400
     description: Abstract job for Glance vs. cursive and related libs
     required-projects:
-      - name: x/cursive
+      - name: openstack/cursive
       - name: openstack/python-barbicanclient
       - name: openstack/castellan
 
@@ -399,6 +399,7 @@
         # Nova and glance scope and new defaults are enabled by default in
         # Devstack so we do not need to explicitly set that to True.
         CINDER_ENFORCE_SCOPE: true
+        TEMPEST_VENV_UPPER_CONSTRAINTS: '/opt/stack/requirements/upper-constraints.txt'
 
 # NOTE(gmann): Remove this job once Glance remove the RBAC old defaults.
 - job:
@@ -449,8 +450,6 @@
             irrelevant-files: *tempest-irrelevant-files
         - glance-multistore-cinder-import:
             irrelevant-files: *tempest-irrelevant-files
-        - grenade:
-            irrelevant-files: *tempest-irrelevant-files
         - tempest-ipv6-only:
             irrelevant-files: *tempest-irrelevant-files
         - nova-ceph-multistore:
@@ -481,8 +480,6 @@
         - tempest-integrated-storage-import:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import-standalone:
-            irrelevant-files: *tempest-irrelevant-files
-        - grenade:
             irrelevant-files: *tempest-irrelevant-files
         - grenade-skip-level:
             irrelevant-files: *tempest-irrelevant-files
