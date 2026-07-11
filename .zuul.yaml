@@ -159,7 +159,7 @@
     timeout: 2400
     description: Abstract job for Glance vs. cursive and related libs
     required-projects:
-      - name: x/cursive
+      - name: openstack/cursive
       - name: openstack/python-barbicanclient
       - name: openstack/castellan
 
@@ -409,8 +409,10 @@
         - glance-grenade-centralized-cache:
             voting: false
             irrelevant-files: *tempest-irrelevant-files
-        - glance-secure-rbac-protection-functional
-
+        - glance-secure-rbac-protection-functional:
+            required-projects:
+              - name: openstack/glance-tempest-plugin
+                override-checkout: 2024.1-last
     gate:
       jobs:
         - openstack-tox-functional-py39
@@ -431,7 +433,10 @@
             irrelevant-files: *tempest-irrelevant-files
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
-        - glance-secure-rbac-protection-functional
+        - glance-secure-rbac-protection-functional:
+            required-projects:
+              - name: openstack/glance-tempest-plugin
+                override-checkout: 2024.1-last
     experimental:
       jobs:
         - glance-tox-py39-glance_store-tips
