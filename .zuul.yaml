@@ -109,7 +109,7 @@
     timeout: 2400
     description: Abstract job for Glance vs. cursive and related libs
     required-projects:
-      - name: x/cursive
+      - name: openstack/cursive
       - name: openstack/python-barbicanclient
       - name: openstack/castellan
 
