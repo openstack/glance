@@ -408,8 +408,6 @@
         - glance-tox-functional-py313-glance_store-tips
         - barbican-tempest-plugin-simple-crypto
         - grenade-multinode
-        - tempest-pg-full:
-            irrelevant-files: *tempest-irrelevant-files
         - glance-multistore-cinder-import-fips:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-rbac-old-defaults
