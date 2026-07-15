@@ -27,6 +27,7 @@ import urllib
 import urllib.error
 import urllib.request
 
+from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import timeutils
 
@@ -34,6 +35,7 @@ from glance.common import exception
 from glance.common import utils as common_utils
 from glance.i18n import _, _LE
 
+CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
@@ -172,7 +174,10 @@ def get_image_data_iter(uri):
         # We're not using StringIO or other tools to avoid reading everything
         # into memory. Some images may be quite heavy.
         size = os.path.getsize(uri)
-        return open(uri, "rb"), size
+        data = open(uri, "rb")
+        return common_utils.LimitingReader(
+            common_utils.CooperativeReader(data),
+            CONF.image_size_cap), size
 
     opener = urllib.request.build_opener(SafeRedirectHandler)
     urlopen = opener.open(uri)
@@ -181,7 +186,9 @@ def get_image_data_iter(uri):
     except (KeyError, ValueError, TypeError):
         pass
 
-    return urlopen, size
+    return common_utils.LimitingReader(
+        common_utils.CooperativeReader(urlopen),
+        CONF.image_size_cap), size
 
 
 class CallbackIterator(object):
