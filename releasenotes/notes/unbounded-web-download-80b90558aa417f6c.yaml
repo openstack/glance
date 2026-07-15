@@ -1,0 +1,9 @@
+---
+security:
+  - |
+    A bug in the web-download import plugin was fixed which would allow a
+    remote URI to omit the Content-Length header and feed glance data forever
+    until the staging disk filled. We now honor the image_size_cap limit for
+    these streams. Note that the default value for this limit is 1TiB, which
+    may be higher than is reasonable for some deployments. Operators should
+    take this opportunity to review that setting for correctness.
