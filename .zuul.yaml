@@ -278,23 +278,6 @@
             glance_store:
               rbd_thin_provisioning: True
 
-# TODO(pdeore): Remove this jobs once Cinder enable the RBAC new defaults
-# by default. All other services including glance enable new defaults by
-# default.
-- job:
-    name: tempest-integrated-storage-enforce-scope-new-defaults
-    parent: tempest-integrated-storage
-    description: |
-      This job runs the Tempest tests with scope and new defaults enabled
-      Glance services.
-    timeout: 10800
-    vars:
-      tempest_concurrency: 3
-      devstack_localrc:
-        # Nova and glance scope and new defaults are enabled by default in
-        # Devstack so we do not need to explicitly set that to True.
-        CINDER_ENFORCE_SCOPE: true
-
 # NOTE(gmann): Remove this job once Glance remove the RBAC old defaults.
 - job:
     name: tempest-integrated-storage-rbac-old-defaults
@@ -305,7 +288,7 @@
     vars:
       tempest_concurrency: 3
       devstack_localrc:
-        GLANCE_ENFORCE_SCOPE: false
+        GLANCE_ENFORCE_NEW_DEFAULTS: false
 
 - job:
     name: glance-rally-task-uwsgi
@@ -356,8 +339,6 @@
               - ^tox.ini$
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
-        - tempest-integrated-storage-enforce-scope-new-defaults:
-            irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import-standalone:
@@ -386,8 +367,6 @@
         - openstack-tox-functional-py311
         - openstack-tox-functional-py313
         - tempest-integrated-storage:
-            irrelevant-files: *tempest-irrelevant-files
-        - tempest-integrated-storage-enforce-scope-new-defaults:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import:
             irrelevant-files: *tempest-irrelevant-files
