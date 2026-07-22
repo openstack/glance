@@ -80,6 +80,9 @@ class TestImages(functional.FunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
+        # Location fixtures use 127.0.0.1 with ephemeral ports. Whitelist
+        # those hosts so SSRF filtering does not break fixture URLs.
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         node_staging_uri = 'file://%s' % os.path.join(self.test_dir, 'staging')
         utils.safe_mkdirs(node_staging_uri[7:])
         self.config(node_staging_uri=node_staging_uri)
@@ -526,6 +529,8 @@ class TestImages(functional.FunctionalTest):
 
     def test_web_download_ip_normalization(self):
         """Test that encoded IP addresses are normalized and blocked."""
+        # Clear fixture whitelist so loopback encodings are blocked.
+        self.allowed_hosts = []
         self.config(allowed_ports=[80], group='import_filtering_opts')
         self.config(disallowed_hosts=['127.0.0.1'],
                     group='import_filtering_opts')
@@ -3905,6 +3910,76 @@ class TestImages(functional.FunctionalTest):
         response = requests.patch(path, headers=headers, data=data)
         self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
 
+        self.stop_servers()
+
+    def test_add_location_blocks_restricted_http_hosts(self):
+        """HTTP locations targeting loopback/link-local are rejected early."""
+        # Drop fixture whitelist so restricted addresses are blocked.
+        self.allowed_hosts = []
+        self.start_servers(**self.__dict__.copy())
+
+        for url in ('http://127.0.0.1:80/secret',
+                    'http://169.254.169.254/latest/meta-data/'):
+            path = self._url('/v2/images')
+            headers = self._headers({'content-type': 'application/json'})
+            data = jsonutils.dumps({'name': 'ssrf-location',
+                                    'disk_format': 'aki',
+                                    'container_format': 'aki'})
+            response = requests.post(path, headers=headers, data=data)
+            self.assertEqual(http.CREATED, response.status_code)
+            image_id = jsonutils.loads(response.text)['id']
+
+            path = self._url('/v2/images/%s/locations' % image_id)
+            headers = self._headers()
+            response = requests.post(path, headers=headers,
+                                     json={'url': url})
+            self.assertEqual(http.BAD_REQUEST, response.status_code,
+                             response.text)
+            path = self._url('/v2/images/%s' % image_id)
+            image = requests.get(path, headers=headers).json()
+            self.assertEqual('queued', image['status'])
+            self.assertIsNone(image.get('checksum'))
+            self.assertIsNone(image.get('size'))
+            response = requests.delete(path, headers=headers)
+            self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        self.stop_servers()
+
+    def test_update_locations_blocks_restricted_http_hosts(self):
+        """Old PATCH locations API also blocks restricted HTTP hosts."""
+        self.allowed_hosts = []
+        self.api_server.show_multiple_locations = True
+        self.start_servers(**self.__dict__.copy())
+
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({'name': 'ssrf-patch-location',
+                                'disk_format': 'aki',
+                                'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+        image_id = jsonutils.loads(response.text)['id']
+
+        path = self._url('/v2/images/%s' % image_id)
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        data = jsonutils.dumps([{
+            'op': 'replace',
+            'path': '/locations',
+            'value': [{
+                'url': 'http://169.254.169.254/latest/meta-data/',
+                'metadata': {}
+            }]
+        }])
+        response = requests.patch(path, headers=headers, data=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
+
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        self.stop_servers()
+
     def test_add_location_with_do_secure_hash_true_negative(self):
         self.start_servers(**self.__dict__.copy())
 
@@ -4570,6 +4645,7 @@ class TestImageLocationSelectionStrategy(functional.FunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server.deployment_flavor = 'noauth'
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
                                                "foo_image%d" % i)
@@ -5112,6 +5188,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.cleanup()
         self.include_scrubber = False
         self.api_server_multiple_backend.deployment_flavor = 'noauth'
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         for i in range(3):
             ret = test_utils.start_http_server("foo_image_id%d" % i,
                                                "foo_image%d" % i)
@@ -8065,6 +8142,9 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         self.start_server()
 
     def start_server(self):
+        self.config(allowed_hosts=['127.0.0.1', 'localhost'],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[], group='import_filtering_opts')
         with mock.patch.object(policy, 'Enforcer') as mock_enf:
             mock_enf.return_value = self.policy
             super(TestMultipleBackendsLocationApi, self).start_server()
