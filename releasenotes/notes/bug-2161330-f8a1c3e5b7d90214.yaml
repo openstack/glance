@@ -1,0 +1,23 @@
+---
+security:
+  - |
+    Fixed a Server-Side Request Forgery (SSRF) vulnerability when adding
+    HTTP(S) image locations. Authenticated users could supply location URLs
+    targeting loopback or link-local addresses (for example cloud metadata
+    at ``169.254.169.254``). Glance would fetch those URLs from glance-api
+    during location validation and hashing.
+
+    HTTP(S) locations are now checked with the same
+    ``import_filtering_opts`` host filtering used for web-download. Glance
+    validates the URI before contacting the backend so restricted destinations
+    never trigger an outbound request from the location-add path.
+
+    This applies to ``POST /v2/images/{id}/locations`` and the legacy PATCH
+    locations API when HTTP store is enabled.
+
+fixes:
+  - |
+    `Bug 2161330 <https://bugs.launchpad.net/glance/+bug/2161330>`_:
+    Block restricted destination addresses when adding HTTP(S) image
+    locations to prevent SSRF against local services and cloud metadata
+    endpoints.
