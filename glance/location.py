@@ -141,6 +141,12 @@ def _check_location_uri(context, store_api, store_utils, uri,
     :param backend: A backend name for the store
     """
 
+    # NOTE(abhishekk): Validate before contacting the backend so restricted
+    # HTTP(S) URIs never trigger an outbound request (SSRF).
+    if not store_utils.validate_external_location(uri):
+        reason = _('Invalid location')
+        raise exception.BadStoreUri(message=reason)
+
     try:
         # NOTE(zhiyan): Some stores return zero when it catch exception
         if CONF.enabled_backends:
@@ -150,8 +156,7 @@ def _check_location_uri(context, store_api, store_utils, uri,
             size_from_backend = store_api.get_size_from_backend(
                 uri, context=context)
 
-        is_ok = (store_utils.validate_external_location(uri) and
-                 size_from_backend > 0)
+        is_ok = size_from_backend > 0
     except (store.UnknownScheme, store.NotFound, store.BadStoreUri):
         is_ok = False
     if not is_ok:

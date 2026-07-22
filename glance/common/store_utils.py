@@ -140,6 +140,10 @@ def validate_external_location(uri):
     see LP bug #942118, 1400966, 'swift+config://' is also
     absent for security reasons, see LP bug #1334196.
 
+    HTTP(S) locations are additionally checked with the same
+    ``import_filtering_opts`` host/port rules used for web-download
+    (see LP bug #2161330).
+
     :param uri: The URI of external image location.
     :returns: Whether given URI of external image location are OK.
     """
@@ -153,8 +157,17 @@ def validate_external_location(uri):
     if CONF.enabled_backends:
         known_schemes = store_api.get_known_schemes_for_multi_store()
 
-    return (scheme in known_schemes and
-            scheme not in RESTRICTED_URI_SCHEMAS)
+    if (scheme not in known_schemes or
+            scheme in RESTRICTED_URI_SCHEMAS):
+        return False
+
+    # NOTE(abhishekk): Apply import host filtering to HTTP(S) locations so
+    # location add cannot SSRF glance-api into loopback/link-local targets
+    # (or other hosts blocked by import_filtering_opts).
+    if scheme in ('http', 'https'):
+        return common_utils.validate_uri(uri)
+
+    return True
 
 
 def _get_store_id_from_uri(uri):

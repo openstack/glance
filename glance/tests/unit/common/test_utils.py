@@ -962,47 +962,47 @@ class EvaluateFilterOpTestCase(test_utils.BaseTestCase):
 class ImportURITestCase(test_utils.BaseTestCase):
 
     @mock.patch("glance.common.utils.socket.getaddrinfo")
-    def test_validate_import_uri(self, mock_getaddrinfo):
-        # This avoid internet access in validate_import_uri()
+    def test_validate_uri(self, mock_getaddrinfo):
+        # This avoid internet access in validate_uri()
         # (ie: DNS resolution of foo.com)
         mock_getaddrinfo.return_value = [
             (socket.AF_INET, socket.SOCK_STREAM, 6, '',
              ('93.184.216.34', 80))
         ]
 
-        self.assertTrue(utils.validate_import_uri("http://foo.com"))
+        self.assertTrue(utils.validate_uri("http://foo.com"))
 
         self.config(allowed_schemes=['http'],
                     group='import_filtering_opts')
         self.config(allowed_hosts=['example.com'],
                     group='import_filtering_opts')
-        self.assertTrue(utils.validate_import_uri("http://example.com"))
+        self.assertTrue(utils.validate_uri("http://example.com"))
 
         self.config(allowed_ports=['8080'],
                     group='import_filtering_opts')
-        self.assertTrue(utils.validate_import_uri("http://example.com:8080"))
+        self.assertTrue(utils.validate_uri("http://example.com:8080"))
 
     # No mock for getaddrinfo: ftp:// cases fail on disallowed scheme before
     # host normalization; localhost typically resolves from /etc/hosts.
     def test_invalid_import_uri(self):
-        self.assertFalse(utils.validate_import_uri(""))
+        self.assertFalse(utils.validate_uri(""))
 
-        self.assertFalse(utils.validate_import_uri("fake_uri"))
+        self.assertFalse(utils.validate_uri("fake_uri"))
         self.config(disallowed_schemes=['ftp'],
                     group='import_filtering_opts')
-        self.assertFalse(utils.validate_import_uri("ftp://example.com"))
+        self.assertFalse(utils.validate_uri("ftp://example.com"))
 
         self.config(disallowed_hosts=['foo.com'],
                     group='import_filtering_opts')
-        self.assertFalse(utils.validate_import_uri("ftp://foo.com"))
+        self.assertFalse(utils.validate_uri("ftp://foo.com"))
 
         self.config(disallowed_ports=['8484'],
                     group='import_filtering_opts')
-        self.assertFalse(utils.validate_import_uri("http://localhost:8484"))
+        self.assertFalse(utils.validate_uri("http://localhost:8484"))
 
     @mock.patch("glance.common.utils.socket.getaddrinfo")
     def test_ignored_filtering_options(self, mock_getaddrinfo):
-        # This avoid internet access in validate_import_uri()
+        # This avoid internet access in validate_uri()
         # (ie: DNS resolution of foo.com)
         mock_getaddrinfo.return_value = [
             (socket.AF_INET, socket.SOCK_STREAM, 6, '',
@@ -1015,7 +1015,7 @@ class ImportURITestCase(test_utils.BaseTestCase):
                         group='import_filtering_opts')
             self.config(disallowed_schemes=['ftp'],
                         group='import_filtering_opts')
-            self.assertTrue(utils.validate_import_uri("ftp://foo.com"))
+            self.assertTrue(utils.validate_uri("ftp://foo.com"))
             mock_run.assert_called_once()
         with mock.patch.object(LOG, 'debug') as mock_run:
             self.config(allowed_schemes=[],
@@ -1026,7 +1026,7 @@ class ImportURITestCase(test_utils.BaseTestCase):
                         group='import_filtering_opts')
             self.config(disallowed_hosts=['foo.com'],
                         group='import_filtering_opts')
-            self.assertTrue(utils.validate_import_uri("ftp://foo.com"))
+            self.assertTrue(utils.validate_uri("ftp://foo.com"))
             mock_run.assert_called_once()
         with mock.patch.object(LOG, 'debug') as mock_run:
             self.config(allowed_hosts=[],
@@ -1037,35 +1037,36 @@ class ImportURITestCase(test_utils.BaseTestCase):
                         group='import_filtering_opts')
             self.config(disallowed_ports=[8484],
                         group='import_filtering_opts')
-            self.assertTrue(utils.validate_import_uri("ftp://foo.com:8484"))
+            self.assertTrue(utils.validate_uri("ftp://foo.com:8484"))
             mock_run.assert_called_once()
 
-    def test_validate_import_uri_ip_rejection(self):
+    def test_validate_uri_ip_rejection(self):
         """Test that encoded IP addresses are rejected (not normalized)."""
         self.config(allowed_ports=[80], group='import_filtering_opts')
         # Loopback and link-local addresses are blocked by default
-        self.assertFalse(utils.validate_import_uri("http://127.0.0.1:80/"))
-        self.assertFalse(utils.validate_import_uri("http://169.254.169.254/"))
+        self.assertFalse(utils.validate_uri("http://127.0.0.1:80/"))
+        self.assertFalse(
+            utils.validate_uri("http://169.254.169.254/"))
         # Private RFC1918 addresses are allowed by default
-        self.assertTrue(utils.validate_import_uri("http://10.0.0.1/"))
-        self.assertTrue(utils.validate_import_uri("http://192.168.1.1/"))
+        self.assertTrue(utils.validate_uri("http://10.0.0.1/"))
+        self.assertTrue(utils.validate_uri("http://192.168.1.1/"))
 
         # Test that encoded IP (decimal) is rejected
-        result = utils.validate_import_uri("http://2130706433:80/")
+        result = utils.validate_uri("http://2130706433:80/")
         self.assertFalse(result)
 
         # Test that shorthand IP addresses are rejected
-        self.assertFalse(utils.validate_import_uri("http://127.1:80/"))
-        self.assertFalse(utils.validate_import_uri("http://10.1:80/"))
-        self.assertFalse(utils.validate_import_uri("http://192.168.1:80/"))
+        self.assertFalse(utils.validate_uri("http://127.1:80/"))
+        self.assertFalse(utils.validate_uri("http://10.1:80/"))
+        self.assertFalse(utils.validate_uri("http://192.168.1:80/"))
 
         # Test with allowed host - loopback may be allowed via whitelist
         self.config(disallowed_hosts=[],
                     group='import_filtering_opts')
         self.config(allowed_hosts=['127.0.0.1'],
                     group='import_filtering_opts')
-        self.assertTrue(utils.validate_import_uri("http://127.0.0.1:80/"))
-        self.assertFalse(utils.validate_import_uri("http://2130706433:80/"))
+        self.assertTrue(utils.validate_uri("http://127.0.0.1:80/"))
+        self.assertFalse(utils.validate_uri("http://2130706433:80/"))
 
     @mock.patch('glance.common.utils.socket.getaddrinfo')
     def test_normalize_hostname(self, mock_getaddrinfo):
@@ -1177,7 +1178,7 @@ class ImportURITestCase(test_utils.BaseTestCase):
         mock_getaddrinfo.assert_called_once_with(
             "invalid-hostname-12345.", 80)
 
-    def test_validate_import_uri_ipv6_validation(self):
+    def test_validate_uri_ipv6_validation(self):
         """Test IPv6 addresses are properly validated against blacklist."""
         # Test that IPv6 localhost is blocked when in blacklist
         self.config(disallowed_hosts=['::1'],
@@ -1187,7 +1188,7 @@ class ImportURITestCase(test_utils.BaseTestCase):
         # IPv6 addresses in URLs are in brackets, but urlparse removes them
         # So we test with the hostname directly
         self.assertFalse(
-            utils.validate_import_uri("http://[::1]:80/"))
+            utils.validate_uri("http://[::1]:80/"))
 
         # Test that IPv6 localhost is blocked by default
         self.config(disallowed_hosts=[],
@@ -1196,14 +1197,15 @@ class ImportURITestCase(test_utils.BaseTestCase):
                     group='import_filtering_opts')
         self.config(allowed_ports=[80],
                     group='import_filtering_opts')
-        self.assertFalse(utils.validate_import_uri("http://[::1]:80/"))
+        self.assertFalse(utils.validate_uri("http://[::1]:80/"))
 
         # Test that IPv6 address not in blacklist is allowed when whitelisted
         self.config(disallowed_hosts=[],
                     group='import_filtering_opts')
         self.config(allowed_hosts=['2001:db8::1'],
                     group='import_filtering_opts')
-        self.assertTrue(utils.validate_import_uri("http://[2001:db8::1]:80/"))
+        self.assertTrue(
+            utils.validate_uri("http://[2001:db8::1]:80/"))
 
         # Test that IPv6 localhost can be blocked separately from IPv4
         # This ensures IPv6 addresses are properly normalized and can be
@@ -1216,25 +1218,27 @@ class ImportURITestCase(test_utils.BaseTestCase):
                     group='import_filtering_opts')
         # IPv6 localhost is blocked by default even when only IPv4 is listed
         # in disallowed_hosts
-        result = utils.validate_import_uri("http://[::1]:80/")
+        result = utils.validate_uri("http://[::1]:80/")
         self.assertFalse(result)
 
         # Test that IPv6 can be blacklisted separately
         self.config(disallowed_hosts=['127.0.0.1', '::1'],
                     group='import_filtering_opts')
-        self.assertFalse(utils.validate_import_uri("http://[::1]:80/"))
+        self.assertFalse(utils.validate_uri("http://[::1]:80/"))
 
     @mock.patch("glance.common.utils.socket.getaddrinfo")
-    def test_validate_import_uri_blocks_dns_rebinding(self, mock_getaddrinfo):
+    def test_validate_uri_blocks_dns_rebinding(
+            self, mock_getaddrinfo):
         """Hostnames resolving to restricted addresses are rejected."""
         mock_getaddrinfo.return_value = [
             (socket.AF_INET, socket.SOCK_STREAM, 6, '',
              ('169.254.169.254', 80))
         ]
-        self.assertFalse(utils.validate_import_uri("http://metadata.example/"))
+        self.assertFalse(
+            utils.validate_uri("http://metadata.example/"))
 
     @mock.patch("glance.common.utils.socket.getaddrinfo")
-    def test_validate_import_uri_blocks_disallowed_resolved_ip(
+    def test_validate_uri_blocks_disallowed_resolved_ip(
             self, mock_getaddrinfo):
         """Hostnames resolving to disallowed public IPs are rejected."""
         mock_getaddrinfo.return_value = [
@@ -1244,16 +1248,17 @@ class ImportURITestCase(test_utils.BaseTestCase):
         self.config(disallowed_hosts=['93.184.216.34'],
                     group='import_filtering_opts')
         self.config(allowed_ports=[80], group='import_filtering_opts')
-        self.assertFalse(utils.validate_import_uri("http://blocked.example/"))
+        self.assertFalse(
+            utils.validate_uri("http://blocked.example/"))
 
     @mock.patch("glance.common.utils.socket.getaddrinfo")
-    def test_resolve_pinned_import_address(self, mock_getaddrinfo):
+    def test_resolve_pinned_address(self, mock_getaddrinfo):
         """Pinned address comes from validated DNS resolution."""
         mock_getaddrinfo.return_value = [
             (socket.AF_INET, socket.SOCK_STREAM, 6, '',
              ('93.184.216.34', 80))
         ]
-        pinned = utils.resolve_pinned_import_address('example.com', 80)
+        pinned = utils.resolve_pinned_address('example.com', 80)
         self.assertEqual(pinned, '93.184.216.34')
 
 

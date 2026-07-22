@@ -222,29 +222,32 @@ def normalize_hostname(host):
     return host
 
 
-def default_import_port(scheme):
-    """Return the default port for an import URI scheme."""
+def default_port(scheme):
+    """Return the default port for an external HTTP(S) URI scheme."""
     return 443 if scheme == 'https' else 80
 
 
-def resolve_pinned_import_address(hostname, port):
-    """Resolve hostname and return the first import-allowed IP address.
+def resolve_pinned_address(hostname, port):
+    """Resolve hostname and return the first allowed IP address.
 
     Blocks loopback and link-local addresses (including cloud metadata
     endpoints such as 169.254.169.254) unless the host is listed in
     allowed_hosts. Private RFC1918 ranges are not blocked so private
-    clouds can import from internal hosts. IPv4-mapped IPv6 addresses
+    clouds can fetch from internal hosts. IPv4-mapped IPv6 addresses
     are checked against the embedded IPv4 address. Matching
     disallowed_hosts IP entries also reject resolved addresses.
 
-    :param hostname: hostname or IP from the import URI
-    :param port: destination port from the import URI
+    Used for web-download import and other external HTTP(S) fetches that
+    apply ``import_filtering_opts`` (for example HTTP image locations).
+
+    :param hostname: hostname or IP from the external URI
+    :param port: destination port from the external URI
     :returns: IP address string to connect to
-    :raises ValueError: if the host cannot be used for import
+    :raises ValueError: if the host cannot be used for an external fetch
     """
     normalized_host = normalize_hostname(hostname)
     if not normalized_host:
-        raise ValueError('invalid import host: %s' % hostname)
+        raise ValueError('invalid external host: %s' % hostname)
 
     bl_hosts = list(CONF.import_filtering_opts.disallowed_hosts)
     wl_hosts = CONF.import_filtering_opts.allowed_hosts
@@ -269,7 +272,7 @@ def resolve_pinned_import_address(hostname, port):
                 if addr not in addresses:
                     addresses.append(addr)
     except (socket.gaierror, ValueError) as exc:
-        raise ValueError('failed to resolve import host %s: %s' %
+        raise ValueError('failed to resolve external host %s: %s' %
                          (hostname, exc))
 
     for addr in addresses:
@@ -298,17 +301,18 @@ def resolve_pinned_import_address(hostname, port):
         if not blocked:
             return str(addr)
 
-    raise ValueError('no allowed addresses for import host: %s' % hostname)
+    raise ValueError('no allowed addresses for external host: %s' % hostname)
 
 
-def get_validated_import_address(uri):
-    """Validate an import URI and return a pinned destination IP.
+def get_validated_address(uri):
+    """Validate an external URI and return a pinned destination IP.
 
-    Applies scheme/host/port filtering, resolves DNS, and returns the first
-    allowed address. Raises ValueError if the URI must not be fetched.
+    Applies ``import_filtering_opts`` scheme/host/port filtering, resolves
+    DNS, and returns the first allowed address. Raises ValueError if the
+    URI must not be fetched.
     """
     if not uri:
-        raise ValueError('empty import URI')
+        raise ValueError('empty external URI')
 
     parsed_uri = urllib.parse.urlparse(uri)
     scheme = parsed_uri.scheme
@@ -338,26 +342,26 @@ def get_validated_import_address(uri):
 
     if not scheme or ((wl_schemes and scheme not in wl_schemes) or
                       parsed_uri.scheme in bl_schemes):
-        raise ValueError('scheme not allowed for import URI: %s' % uri)
+        raise ValueError('scheme not allowed for external URI: %s' % uri)
 
     normalized_host = normalize_hostname(host)
     if not normalized_host or (
             (wl_hosts and normalized_host not in wl_hosts) or
             normalized_host in bl_hosts):
-        raise ValueError('host not allowed for import URI: %s' % uri)
+        raise ValueError('host not allowed for external URI: %s' % uri)
 
     if port and ((wl_ports and port not in wl_ports) or
                  port in bl_ports):
-        raise ValueError('port not allowed for import URI: %s' % uri)
+        raise ValueError('port not allowed for external URI: %s' % uri)
 
-    resolve_port = port or default_import_port(scheme)
-    return resolve_pinned_import_address(normalized_host, resolve_port)
+    resolve_port = port or default_port(scheme)
+    return resolve_pinned_address(normalized_host, resolve_port)
 
 
-def validate_import_uri(uri):
-    """Return True if the URI passes image-import filtering."""
+def validate_uri(uri):
+    """Return True if the URI passes ``import_filtering_opts`` filtering."""
     try:
-        get_validated_import_address(uri)
+        get_validated_address(uri)
         return True
     except ValueError:
         return False

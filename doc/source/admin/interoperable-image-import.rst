@@ -192,6 +192,12 @@ You can do this by configuring options in the
 ``[import_filtering_opts]`` section of the **glance-image-import.conf** file.
 
 .. note::
+   The same ``import_filtering_opts`` host filtering also applies to HTTP(S)
+   image locations added via ``POST /v2/images/{image_id}/locations`` or the
+   legacy PATCH locations API. Operators who enable the HTTP store should
+   configure these options for location adds as well as web-download.
+
+.. note::
    The **glance-image-import.conf** is an optional file.  (See below for a
    discussion of the default settings if you don't include this file.)
 

@@ -399,6 +399,13 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
             overwrite=True)
 
     def start_server(self):
+        # Location fixtures use 127.0.0.1 with ephemeral ports. Whitelist
+        # those hosts with an empty port list (any port) so SSRF filtering
+        # does not break fixture URLs. Tests that need a tighter filter can
+        # override import_filtering_opts after start_server().
+        self.config(allowed_hosts=['127.0.0.1', 'localhost'],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[], group='import_filtering_opts')
         with mock.patch.object(policy, 'Enforcer') as mock_enf:
             mock_enf.return_value = self.policy
             super(TestImagesSingleStore, self).start_server()
@@ -507,12 +514,13 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
 
     def test_web_download_redirect_validation(self):
         """Test that redirect destinations are validated."""
-        self.config(allowed_ports=[80], group='import_filtering_opts')
+        self.start_server()
+        # Only allow the redirect hop host; reject loopback redirect target.
         self.config(allowed_hosts=['localhost'],
                     group='import_filtering_opts')
         self.config(disallowed_hosts=['127.0.0.1'],
                     group='import_filtering_opts')
-        self.start_server()
+        self.config(allowed_ports=[], group='import_filtering_opts')
 
         # Create an image
         image_id = self.api_methods.create_and_verify_image(
@@ -556,6 +564,8 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
     def test_web_download_blocks_restricted_hosts(self):
         """Test that restricted addresses are rejected at import time."""
         self.start_server()
+        # Clear the fixture host whitelist so restricted IPs are blocked.
+        self.config(allowed_hosts=[], group='import_filtering_opts')
 
         image_id = self.api_methods.create_and_verify_image(
             name='ssrf-test', type='kernel',
@@ -575,10 +585,11 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
 
     def test_web_download_ip_normalization(self):
         """Test that encoded IP addresses are normalized and blocked."""
+        self.start_server()
+        self.config(allowed_hosts=[], group='import_filtering_opts')
         self.config(allowed_ports=[80], group='import_filtering_opts')
         self.config(disallowed_hosts=['127.0.0.1'],
                     group='import_filtering_opts')
-        self.start_server()
 
         # Create an image
         image_id = self.api_methods.create_and_verify_image(
@@ -2369,6 +2380,54 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         response = self.api_patch(path, data, headers=headers)
         self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
 
+    def test_add_location_blocks_restricted_http_hosts(self):
+        """HTTP locations targeting loopback/link-local are rejected early."""
+        self.start_server()
+        # Drop fixture whitelist so restricted addresses are blocked.
+        self.config(allowed_hosts=[], group='import_filtering_opts')
+
+        for url in ('http://127.0.0.1:80/secret',
+                    'http://169.254.169.254/latest/meta-data/'):
+            image_id = self.api_methods.create_and_verify_image(
+                'ssrf-location', disk_format='aki', container_format='aki')
+            path = '/v2/images/%s/locations' % image_id
+            headers = self._headers()
+            response = self.api_post(path, headers=headers, json={'url': url})
+            self.assertEqual(http.BAD_REQUEST, response.status_code,
+                             response.text)
+            image = self.api_get('/v2/images/%s' % image_id,
+                                 headers=headers).json
+            self.assertEqual('queued', image['status'])
+            self.assertIsNone(image.get('checksum'))
+            self.assertIsNone(image.get('size'))
+            self.api_methods.delete_image(image_id)
+
+    def test_update_locations_blocks_restricted_http_hosts(self):
+        """Old PATCH locations API also blocks restricted HTTP hosts."""
+        self.config(show_multiple_locations=True)
+        self.start_server()
+        self.config(allowed_hosts=[], group='import_filtering_opts')
+
+        image_id = self.api_methods.create_and_verify_image(
+            'ssrf-patch-location', disk_format='aki', container_format='aki',
+            show_locations=True)
+
+        path = '/v2/images/%s' % image_id
+        media_type = 'application/openstack-images-v2.1-json-patch'
+        headers = self._headers({'content-type': media_type})
+        data = [{
+            'op': 'replace',
+            'path': '/locations',
+            'value': [{
+                'url': 'http://169.254.169.254/latest/meta-data/',
+                'metadata': {}
+            }]
+        }]
+        response = self.api_patch(path, data, headers=headers)
+        self.assertEqual(http.BAD_REQUEST, response.status_code, response.text)
+
+        self.api_methods.delete_image(image_id)
+
     def test_add_location_with_do_secure_hash_true_negative(self):
         # Create an image
         self.start_server()
@@ -3070,6 +3129,9 @@ class TestImageLocationSelectionStrategy(functional.SynchronousAPIBase):
         self.config(show_image_direct_url=True)
         self.config(show_multiple_locations=True)
         self.config(image_location_quota=10)
+        self.config(allowed_hosts=['127.0.0.1', 'localhost'],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[], group='import_filtering_opts')
 
         self.start_server()
 
@@ -3933,6 +3995,9 @@ class TestMultipleBackendsLocationApi(functional.SynchronousAPIBase):
         self.start_server()
 
     def start_server(self):
+        self.config(allowed_hosts=['127.0.0.1', 'localhost'],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[], group='import_filtering_opts')
         with mock.patch.object(policy, 'Enforcer') as mock_enf:
             mock_enf.return_value = self.policy
             super(TestMultipleBackendsLocationApi, self).start_server()
