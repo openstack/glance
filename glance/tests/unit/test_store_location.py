@@ -82,3 +82,14 @@ class TestStoreLocation(base.StoreClearingUnitTest):
         locations = glance.location.StoreLocations(image2, [loc1])
         self.assertRaises(exception.BadStoreUri, locations.insert, 0, loc2)
         self.assertNotIn(loc2, locations)
+
+    def test_add_http_location_blocks_restricted_hosts(self):
+        """HTTP locations to loopback/link-local are rejected before fetch."""
+        image = TestStoreLocation.FakeImageProxy()
+        locations = glance.location.StoreLocations(image, [])
+        for url in ('http://127.0.0.1/secret',
+                    'http://169.254.169.254/latest/meta-data/'):
+            loc = {'url': url, 'metadata': {}}
+            self.assertRaises(exception.BadStoreUri,
+                              locations.insert, 0, loc)
+            self.assertNotIn(loc, locations)
