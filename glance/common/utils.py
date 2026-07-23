@@ -186,51 +186,93 @@ def normalize_hostname(host):
     return host
 
 
-def _is_restricted_import_host(normalized_host):
-    """Return True if host is or resolves to a restricted address.
+def default_import_port(scheme):
+    """Return the default port for an import URI scheme."""
+    return 443 if scheme == 'https' else 80
+
+
+def resolve_pinned_import_address(hostname, port):
+    """Resolve hostname and return the first import-allowed IP address.
 
     Blocks loopback and link-local addresses (including cloud metadata
-    endpoints such as 169.254.169.254). Private RFC1918 ranges are not
-    blocked so private clouds can import from internal hosts. IPv4-mapped
-    IPv6 addresses are checked against the embedded IPv4 address. For
-    hostnames, any resolved address that is restricted causes rejection
-    (fail closed on DNS errors).
+    endpoints such as 169.254.169.254) unless the host is listed in
+    allowed_hosts. Private RFC1918 ranges are not blocked so private
+    clouds can import from internal hosts. IPv4-mapped IPv6 addresses
+    are checked against the embedded IPv4 address. Matching
+    disallowed_hosts IP entries also reject resolved addresses.
+
+    :param hostname: hostname or IP from the import URI
+    :param port: destination port from the import URI
+    :returns: IP address string to connect to
+    :raises ValueError: if the host cannot be used for import
     """
+    normalized_host = normalize_hostname(hostname)
+    if not normalized_host:
+        raise ValueError('invalid import host: %s' % hostname)
+
+    bl_hosts = list(CONF.import_filtering_opts.disallowed_hosts)
+    wl_hosts = CONF.import_filtering_opts.allowed_hosts
+    if wl_hosts and bl_hosts:
+        bl_hosts = []
+    host_is_whitelisted = bool(wl_hosts and normalized_host in wl_hosts)
+
     try:
-        addresses = [ipaddress.ip_address(normalized_host)]
-    except ValueError:
-        testhost = normalized_host if normalized_host.endswith('.') else (
-            normalized_host + '.')
         try:
+            addresses = [ipaddress.ip_address(normalized_host)]
+        except ValueError:
+            testhost = (normalized_host if normalized_host.endswith('.')
+                        else normalized_host + '.')
             addresses = []
-            for result in socket.getaddrinfo(testhost, None):
+            for result in socket.getaddrinfo(testhost, port):
                 ip = result[4][0]
                 if not ip:
-                    return True
+                    raise ValueError('empty address in getaddrinfo result')
                 if '%' in ip:
                     ip = ip.split('%', 1)[0]
-                try:
-                    addresses.append(ipaddress.ip_address(ip))
-                except ValueError:
-                    return True
-        except socket.gaierror:
-            return True
+                addr = ipaddress.ip_address(ip)
+                if addr not in addresses:
+                    addresses.append(addr)
+    except (socket.gaierror, ValueError) as exc:
+        raise ValueError('failed to resolve import host %s: %s' %
+                         (hostname, exc))
 
     for addr in addresses:
+        if host_is_whitelisted:
+            return str(addr)
+
+        check = addr
         if isinstance(addr, ipaddress.IPv6Address) and addr.ipv4_mapped:
-            addr = addr.ipv4_mapped
-        if addr.is_loopback or addr.is_link_local:
-            return True
-    return False
+            check = addr.ipv4_mapped
+        if check.is_loopback or check.is_link_local:
+            continue
+
+        addr_str = str(addr)
+        blocked = False
+        for blocked_host in bl_hosts:
+            if blocked_host == normalized_host:
+                continue
+            try:
+                if addr == ipaddress.ip_address(blocked_host):
+                    blocked = True
+                    break
+            except ValueError:
+                if addr_str == blocked_host:
+                    blocked = True
+                    break
+        if not blocked:
+            return str(addr)
+
+    raise ValueError('no allowed addresses for import host: %s' % hostname)
 
 
-def validate_import_uri(uri):
-    """Validate requested uri for Image Import web-download.
+def get_validated_import_address(uri):
+    """Validate an import URI and return a pinned destination IP.
 
-    :param uri: target uri to be validated
+    Applies scheme/host/port filtering, resolves DNS, and returns the first
+    allowed address. Raises ValueError if the URI must not be fetched.
     """
     if not uri:
-        return False
+        raise ValueError('empty import URI')
 
     parsed_uri = urllib.parse.urlparse(uri)
     scheme = parsed_uri.scheme
@@ -260,25 +302,29 @@ def validate_import_uri(uri):
 
     if not scheme or ((wl_schemes and scheme not in wl_schemes) or
                       parsed_uri.scheme in bl_schemes):
-        return False
+        raise ValueError('scheme not allowed for import URI: %s' % uri)
 
     normalized_host = normalize_hostname(host)
-
     if not normalized_host or (
             (wl_hosts and normalized_host not in wl_hosts) or
             normalized_host in bl_hosts):
-        return False
-
-    host_is_whitelisted = bool(wl_hosts and normalized_host in wl_hosts)
-    if not host_is_whitelisted and _is_restricted_import_host(
-            normalized_host):
-        return False
+        raise ValueError('host not allowed for import URI: %s' % uri)
 
     if port and ((wl_ports and port not in wl_ports) or
                  port in bl_ports):
-        return False
+        raise ValueError('port not allowed for import URI: %s' % uri)
 
-    return True
+    resolve_port = port or default_import_port(scheme)
+    return resolve_pinned_import_address(normalized_host, resolve_port)
+
+
+def validate_import_uri(uri):
+    """Return True if the URI passes image-import filtering."""
+    try:
+        get_validated_import_address(uri)
+        return True
+    except ValueError:
+        return False
 
 
 class CooperativeReader(object):

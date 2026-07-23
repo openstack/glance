@@ -1226,6 +1226,29 @@ class ImportURITestCase(test_utils.BaseTestCase):
         ]
         self.assertFalse(utils.validate_import_uri("http://metadata.example/"))
 
+    @mock.patch("glance.common.utils.socket.getaddrinfo")
+    def test_validate_import_uri_blocks_disallowed_resolved_ip(
+            self, mock_getaddrinfo):
+        """Hostnames resolving to disallowed public IPs are rejected."""
+        mock_getaddrinfo.return_value = [
+            (socket.AF_INET, socket.SOCK_STREAM, 6, '',
+             ('93.184.216.34', 80))
+        ]
+        self.config(disallowed_hosts=['93.184.216.34'],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[80], group='import_filtering_opts')
+        self.assertFalse(utils.validate_import_uri("http://blocked.example/"))
+
+    @mock.patch("glance.common.utils.socket.getaddrinfo")
+    def test_resolve_pinned_import_address(self, mock_getaddrinfo):
+        """Pinned address comes from validated DNS resolution."""
+        mock_getaddrinfo.return_value = [
+            (socket.AF_INET, socket.SOCK_STREAM, 6, '',
+             ('93.184.216.34', 80))
+        ]
+        pinned = utils.resolve_pinned_import_address('example.com', 80)
+        self.assertEqual(pinned, '93.184.216.34')
+
 
 class S3CredentialUpdateTestCase(test_utils.BaseTestCase):
 

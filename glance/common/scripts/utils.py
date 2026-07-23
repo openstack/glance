@@ -20,9 +20,11 @@ __all__ = [
     'validate_location_uri',
     'validate_legacy_import_from_uri',
     'get_image_data_iter',
+    'open_external_uri',
     'SafeRedirectHandler',
 ]
 
+import http.client
 import urllib
 import urllib.error
 import urllib.request
@@ -147,8 +149,94 @@ class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         if not common_utils.validate_import_uri(newurl):
             msg = (_("Redirect to disallowed URL: %s") % newurl)
-            raise exception.ImportTaskError(msg)
+            raise exception.InvalidRedirect(msg)
         return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+class _PinnedHTTPConnection(http.client.HTTPConnection):
+    """HTTP connection that connects to a pre-validated IP address."""
+
+    def __init__(self, host, port=None, *, pinned_ip=None, **kwargs):
+        self._pinned_ip = pinned_ip
+        super().__init__(host, port=port, **kwargs)
+
+    def connect(self):
+        if self._pinned_ip:
+            self.sock = self._create_connection(
+                (self._pinned_ip, self.port), self.timeout,
+                self.source_address)
+            return
+        super().connect()
+
+
+class _PinnedHTTPSConnection(http.client.HTTPSConnection):
+    """HTTPS connection that connects to a pre-validated IP address."""
+
+    def __init__(self, host, port=None, *, pinned_ip=None, **kwargs):
+        self._pinned_ip = pinned_ip
+        super().__init__(host, port=port, **kwargs)
+
+    def connect(self):
+        if self._pinned_ip:
+            sock = self._create_connection(
+                (self._pinned_ip, self.port), self.timeout,
+                self.source_address)
+            if self._tunnel_host:
+                self.sock = sock
+                self._tunnel()
+            else:
+                self.sock = self._context.wrap_socket(
+                    sock, server_hostname=self.host)
+            return
+        super().connect()
+
+
+def _pinned_ip_for_request(req):
+    """Return a pinned destination IP for an external HTTP(S) URI."""
+    try:
+        return common_utils.get_validated_import_address(req.full_url)
+    except ValueError as exc:
+        msg = (_("URI does not pass filtering: %s") % req.full_url)
+        LOG.debug("%s (%s)", msg, exc)
+        raise exception.Invalid(msg)
+
+
+class _ValidatedExternalHTTPHandler(urllib.request.HTTPHandler):
+    """Open HTTP URIs using validated, pinned destination addresses."""
+
+    def http_open(self, req):
+        pinned_ip = _pinned_ip_for_request(req)
+        return self.do_open(
+            lambda host, **kwargs: _PinnedHTTPConnection(
+                host, pinned_ip=pinned_ip, **kwargs),
+            req)
+
+
+class _ValidatedExternalHTTPSHandler(urllib.request.HTTPSHandler):
+    """Open HTTPS URIs using validated, pinned destination addresses."""
+
+    def https_open(self, req):
+        pinned_ip = _pinned_ip_for_request(req)
+        return self.do_open(
+            lambda host, **kwargs: _PinnedHTTPSConnection(
+                host, pinned_ip=pinned_ip, **kwargs),
+            req)
+
+
+def open_external_uri(uri_or_request):
+    """Open an external URL string or Request with validation and IP pinning.
+
+    The destination is re-checked at fetch time and the TCP connection is
+    pinned to the validated address so DNS cannot rebind mid-download.
+    Suitable for import downloads and other outbound HTTP(S) fetches that
+    need the same host filtering protections.
+    """
+    opener = urllib.request.build_opener(
+        SafeRedirectHandler,
+        _ValidatedExternalHTTPHandler,
+        _ValidatedExternalHTTPSHandler,
+    )
+    return opener.open(uri_or_request)
 
 
 def get_image_data_iter(uri):
@@ -156,11 +244,10 @@ def get_image_data_iter(uri):
 
     :param uri: uri (remote or local) to the datasource we want to iterate
 
-    Validation/sanitization of the uri is expected to happen before we get
-    here.
+    Remote HTTP(S) URIs are validated and resolved at fetch time. The
+    connection is pinned to the validated destination address to close the
+    DNS rebinding window between API validation and worker download.
     """
-    # NOTE(flaper87): This is safe because the input uri is already
-    # verified before the task is created.
     if uri.startswith("file://"):
         uri = uri.split("file://")[-1]
         # NOTE(flaper87): The caller of this function expects to have
@@ -175,8 +262,7 @@ def get_image_data_iter(uri):
         data = open(uri, "rb")
         return _size_limited_reader(data)
 
-    opener = urllib.request.build_opener(SafeRedirectHandler)
-    return _size_limited_reader(opener.open(uri))
+    return _size_limited_reader(open_external_uri(uri))
 
 
 def _size_limited_reader(data):

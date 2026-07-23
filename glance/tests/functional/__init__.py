@@ -1525,6 +1525,29 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         dst_file_name = os.path.join(dst_dir, file_name)
         return dst_file_name
 
+    def _mock_localhost_dns(self):
+        """Force localhost to resolve to 127.0.0.1 only.
+
+        Test HTTP servers bind to 127.0.0.1. On hosts where getaddrinfo
+        returns ::1 first, DNS-pinned connections fail with ECONNREFUSED.
+        """
+        # Patch the socket used by glance.common.utils. After eventlet
+        # monkey-patching, mock.patch('socket.getaddrinfo') does not affect
+        # the pin-download path.
+        real_getaddrinfo = utils.socket.getaddrinfo
+
+        def _ipv4_only(host, port, *args, **kwargs):
+            results = real_getaddrinfo(host, port, *args, **kwargs)
+            if host in ('localhost', 'localhost.'):
+                results = [r for r in results if r[0] == socket.AF_INET]
+            return results
+
+        patcher = mock.patch(
+            'glance.common.utils.socket.getaddrinfo',
+            side_effect=_ipv4_only)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def start_server(self, enable_cache=True, set_worker_url=True,
                      use_fake_auth=False, run_staging_cleaner=False,
                      enable_cors=False):

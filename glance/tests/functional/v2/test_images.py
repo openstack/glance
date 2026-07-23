@@ -380,6 +380,7 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
 
     def setUp(self):
         super(TestImagesSingleStore, self).setUp(single_store=True)
+        self._mock_localhost_dns()
         self.api_methods = ImageAPIHelper(self.api_get, self.api_post,
                                           self.api_put, self.api_delete)
         self.http_servers = []
@@ -4091,6 +4092,7 @@ class TestCopyImagePermissions(functional.SynchronousAPIBase):
 
     def setUp(self):
         super(TestCopyImagePermissions, self).setUp()
+        self._mock_localhost_dns()
         self.api_methods = ImageAPIHelper(self.api_get, self.api_post,
                                           self.api_put, self.api_delete)
         self.policy = policy.Enforcer(suppress_deprecation_warnings=True)

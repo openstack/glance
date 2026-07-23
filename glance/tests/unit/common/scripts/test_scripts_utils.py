@@ -296,9 +296,9 @@ class TestSafeRedirectHandler(test_utils.BaseTestCase):
         fp = mock.Mock()
         headers = mock.Mock()
 
-        # Redirect to disallowed URL should raise ImportTaskError
+        # Redirect to disallowed URL should raise InvalidRedirect
         self.assertRaises(
-            exception.ImportTaskError,
+            exception.InvalidRedirect,
             handler.redirect_request,
             req, fp, 302, 'Found', headers, 'http://127.0.0.1:5000/'
         )
