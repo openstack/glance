@@ -18,7 +18,6 @@ import shutil
 import tarfile
 import tempfile
 from unittest import mock
-import urllib.error
 
 from defusedxml.ElementTree import ParseError
 
@@ -167,55 +166,38 @@ class TestOvfProcessTask(test_utils.BaseTestCase):
         with open(ova_file_path, 'rb') as ova_file:
             self.assertRaises(ParseError, iextractor._parse_OVF, ova_file)
 
-    @mock.patch('glance.common.utils.validate_import_uri')
-    def test_get_ova_iter_objects_uri_validation_fails(self, mock_validate):
-        """Test that disallowed URIs raise ImportTaskError"""
-        mock_validate.return_value = False
+    @mock.patch('glance.common.scripts.utils.open_external_uri')
+    def test_get_ova_iter_objects_uri_validation_fails(self, mock_open):
+        """Test that disallowed URIs raise Invalid"""
+        mock_open.side_effect = exception.Invalid(
+            'URI does not pass filtering')
         oprocess = ovf_process._OVF_Process('task_id', 'ovf_proc',
                                             self.img_repo)
-        self.assertRaises(exception.ImportTaskError,
+        self.assertRaises(exception.Invalid,
                           oprocess._get_ova_iter_objects,
                           'http://127.0.0.1:5000/package.ova')
-        mock_validate.assert_called_once_with(
-            'http://127.0.0.1:5000/package.ova')
+        mock_open.assert_called_once_with('http://127.0.0.1:5000/package.ova')
 
-    @mock.patch('urllib.request')
-    @mock.patch('glance.common.utils.validate_import_uri')
-    def test_get_ova_iter_objects_uri_validation_passes(self, mock_validate,
-                                                        mock_request):
-        """Test that allowed URIs use SafeRedirectHandler"""
-        mock_validate.return_value = True
-        mock_opener = mock.MagicMock()
+    @mock.patch('glance.common.scripts.utils.open_external_uri')
+    def test_get_ova_iter_objects_uri_validation_passes(self, mock_open):
+        """Test that allowed URIs use open_external_uri"""
         mock_response = mock.MagicMock()
-        mock_opener.open.return_value = mock_response
-        mock_request.build_opener.return_value = mock_opener
+        mock_open.return_value = mock_response
         oprocess = ovf_process._OVF_Process('task_id', 'ovf_proc',
                                             self.img_repo)
         result = oprocess._get_ova_iter_objects(
             'http://example.com/package.ova')
         self.assertEqual(mock_response, result)
-        mock_validate.assert_called_once_with(
-            'http://example.com/package.ova')
-        mock_request.build_opener.assert_called_once()
+        mock_open.assert_called_once_with('http://example.com/package.ova')
 
-    @mock.patch('urllib.request')
-    @mock.patch('glance.common.utils.validate_import_uri')
-    def test_get_ova_iter_objects_redirect_validation(self, mock_validate,
-                                                      mock_request):
+    @mock.patch('glance.common.scripts.utils.open_external_uri')
+    def test_get_ova_iter_objects_redirect_validation(self, mock_open):
         """Test that redirects to disallowed URLs are blocked"""
-        # First call (initial URL) passes validation
-        # Second call (redirect destination) fails validation
-        mock_validate.side_effect = [True, False]
-        mock_opener = mock.MagicMock()
-        # Simulate redirect to disallowed URL
-        mock_opener.open.side_effect = urllib.error.URLError(
+        mock_open.side_effect = exception.InvalidRedirect(
             "Redirect to disallowed URL: http://127.0.0.1:5000/package.ova")
-        mock_request.build_opener.return_value = mock_opener
         oprocess = ovf_process._OVF_Process('task_id', 'ovf_proc',
                                             self.img_repo)
-        self.assertRaises(urllib.error.URLError,
+        self.assertRaises(exception.InvalidRedirect,
                           oprocess._get_ova_iter_objects,
                           'http://example.com/package.ova')
-        mock_validate.assert_called_once_with(
-            'http://example.com/package.ova')
-        mock_request.build_opener.assert_called_once()
+        mock_open.assert_called_once_with('http://example.com/package.ova')

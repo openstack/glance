@@ -21,6 +21,7 @@ This module provides SynchronousAPIBase, the base class for functional testing.
 
 import os
 import shutil
+import socket
 import sys
 from testtools import content as ttc
 import textwrap
@@ -484,6 +485,24 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         shutil.copy(src_file_name, dst_dir)
         dst_file_name = os.path.join(dst_dir, file_name)
         return dst_file_name
+
+    def _mock_localhost_dns(self):
+        """Force localhost to resolve to 127.0.0.1 only.
+
+        Test HTTP servers bind to 127.0.0.1. On hosts where getaddrinfo
+        returns ::1 first, DNS-pinned connections fail with ECONNREFUSED.
+        """
+        real_getaddrinfo = socket.getaddrinfo
+
+        def _ipv4_only(host, port, *args, **kwargs):
+            results = real_getaddrinfo(host, port, *args, **kwargs)
+            if host in ('localhost', 'localhost.'):
+                results = [r for r in results if r[0] == socket.AF_INET]
+            return results
+
+        patcher = mock.patch('socket.getaddrinfo', side_effect=_ipv4_only)
+        patcher.start()
+        self.addCleanup(patcher.stop)
 
     def start_server(self, enable_cache=True, set_worker_url=True,
                      use_fake_auth=False, run_staging_cleaner=False,

@@ -27,7 +27,6 @@ import taskflow
 import glance.async_.flows.api_image_import as import_flow
 from glance.common import exception
 from glance.common.scripts.image_import import main as image_import
-from glance.common.scripts import utils as script_utils
 from glance import context
 from glance.domain import ExtraProperties
 from glance import gateway
@@ -1416,41 +1415,27 @@ class TestImportMetadata(test_utils.BaseTestCase):
             'os_hash': 'hash'
         })
 
-    @mock.patch('urllib.request')
+    @mock.patch('glance.common.scripts.utils.open_external_uri')
     @mock.patch('glance.async_.utils.get_glance_endpoint')
     def test_import_metadata_redirect_validation(self, mock_gge,
-                                                 mock_request):
+                                                 mock_open_external_uri):
         """Test redirect destinations are validated during metadata fetch."""
         mock_gge.return_value = 'https://other.cloud.foo/image'
         task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
                                            self.context, self.wrapper,
                                            self.import_req)
-        mock_opener = mock.MagicMock()
-        # Simulate redirect to disallowed URL
-        mock_opener.open.side_effect = exception.ImportTaskError(
+        mock_open_external_uri.side_effect = exception.InvalidRedirect(
             "Redirect to disallowed URL: http://127.0.0.1:5000/")
-        mock_request.build_opener.return_value = mock_opener
-        self.assertRaises(exception.ImportTaskError, task.execute)
-        # Verify SafeRedirectHandler is used
-        mock_request.build_opener.assert_called_once()
-        # Verify the handler passed is SafeRedirectHandler
-        call_args = mock_request.build_opener.call_args
-        # Check if SafeRedirectHandler class or instance is in args
-        found_handler = (
-            any(isinstance(arg, script_utils.SafeRedirectHandler)
-                for arg in call_args.args) or
-            script_utils.SafeRedirectHandler in call_args.args)
-        self.assertTrue(
-            found_handler,
-            "SafeRedirectHandler should be used for redirect validation")
+        self.assertRaises(exception.InvalidRedirect, task.execute)
+        mock_open_external_uri.assert_called_once()
 
-    @mock.patch('urllib.request')
+    @mock.patch('glance.common.scripts.utils.open_external_uri')
     @mock.patch('glance.async_.flows.api_image_import.json')
     @mock.patch('glance.async_.utils.get_glance_endpoint')
-    def test_import_metadata_uses_safe_redirect_handler(self, mock_gge,
-                                                        mock_json,
-                                                        mock_request):
-        """Test that SafeRedirectHandler is used and allows valid redirects."""
+    def test_import_metadata_uses_external_uri_opener(self, mock_gge,
+                                                      mock_json,
+                                                      mock_open_external_uri):
+        """Test metadata fetch uses open_external_uri for HTTP(S)."""
         mock_gge.return_value = 'https://other.cloud.foo/image'
         mock_json.loads.return_value = {
             'status': 'active',
@@ -1458,27 +1443,15 @@ class TestImportMetadata(test_utils.BaseTestCase):
             'container_format': 'bare',
             'size': '12345'
         }
-        mock_opener = mock.MagicMock()
         mock_payload = mock.MagicMock()
         mock_payload.read.return_value = b'{"status": "active"}'
-        mock_opener.open.return_value.__enter__.return_value = mock_payload
-        mock_request.build_opener.return_value = mock_opener
+        mock_open_external_uri.return_value.__enter__.return_value = (
+            mock_payload)
         task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
                                            self.context, self.wrapper,
                                            self.import_req)
-        # Execute should succeed with valid redirect
         result = task.execute()
-        # Verify build_opener was called with SafeRedirectHandler
-        mock_request.build_opener.assert_called_once()
-        call_args = mock_request.build_opener.call_args
-        found_handler = (
-            any(isinstance(arg, script_utils.SafeRedirectHandler)
-                for arg in call_args.args) or
-            script_utils.SafeRedirectHandler in call_args.args)
-        self.assertTrue(
-            found_handler,
-            "SafeRedirectHandler should be passed to build_opener")
-        # Verify execution succeeded (handler allows valid redirects)
+        mock_open_external_uri.assert_called_once()
         self.assertEqual(12345, result)
 
     def test_revert_rollback_metadata_value(self):
