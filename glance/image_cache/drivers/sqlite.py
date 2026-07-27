@@ -435,7 +435,10 @@ class Driver(base.Driver):
         files = [f for f in self.get_cache_files(self.queue_dir)]
         items = []
         for path in files:
-            mtime = os.path.getmtime(path)
+            try:
+                mtime = os.path.getmtime(path)
+            except FileNotFoundError:
+                continue
             items.append((mtime, os.path.basename(path)))
 
         items.sort()
@@ -449,8 +452,11 @@ class Driver(base.Driver):
         """
         for fname in os.listdir(basepath):
             path = os.path.join(basepath, fname)
-            if path != self.db_path and os.path.isfile(path):
-                yield path
+            try:
+                if path != self.db_path and os.path.isfile(path):
+                    yield path
+            except FileNotFoundError:
+                continue
 
 
 def delete_cached_file(path):
