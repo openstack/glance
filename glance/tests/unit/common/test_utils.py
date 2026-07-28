@@ -799,16 +799,19 @@ class TestUtils(test_utils.BaseTestCase):
                           utils.get_stores_from_request, req, body)
 
     def test_single_store_http_enabled_and_http_not_in_url(self):
+        store.register_opts(CONF)
         self.config(stores="http,file", group="glance_store")
         loc_url = "rbd://aaaaaaaa/images/id"
         self.assertFalse(utils.is_http_store_configured(loc_url))
 
     def test_single_store_http_disabled_and_http_in_url(self):
+        store.register_opts(CONF)
         self.config(stores="rbd,file", group="glance_store")
         loc_url = BASE_URI
         self.assertFalse(utils.is_http_store_configured(loc_url))
 
     def test_single_store_http_enabled_and_http_in_url(self):
+        store.register_opts(CONF)
         self.config(stores="http,file", group="glance_store")
         loc_url = BASE_URI
         self.assertTrue(utils.is_http_store_configured(loc_url))
