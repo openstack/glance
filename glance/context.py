@@ -73,7 +73,6 @@ class RequestContext(context.RequestContext):
     def to_dict(self):
         d = super(RequestContext, self).to_dict()
         d.update({
-            'roles': self.roles,
             'service_catalog': self.service_catalog,
         })
         return d
