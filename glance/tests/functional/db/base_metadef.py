@@ -759,7 +759,7 @@ class MetadefTagTests(object):
 class MetadefLoadUnloadTests:
 
     # if additional default schemas are added, you need to update this
-    _namespace_count = 33
+    _namespace_count = 32
     _namespace_object_counts = {
         'OS::Compute::Quota': 3,
         'OS::Software::WebServers': 3,
@@ -785,10 +785,9 @@ class MetadefLoadUnloadTests:
         'OS::OperatingSystem': 3,
         'OS::Compute::AggregateDiskFilter': 1,
         'OS::Compute::AggregateNumInstancesFilter': 1,
-        'OS::Compute::CPUMode': 1,
         'OS::Compute::HostCapabilities': 7,
         'OS::Compute::VirtCPUTopology': 6,
-        'OS::Glance::CommonImageProperties': 10,
+        'OS::Glance::CommonImageProperties': 9,
         'OS::Compute::GuestShutdownBehavior': 1,
         'OS::Compute::VMwareFlavor': 2,
         'OS::Compute::TPM': 2,
