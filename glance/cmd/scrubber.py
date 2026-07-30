@@ -35,10 +35,13 @@ if os.path.exists(os.path.join(possible_topdir, 'glance', '__init__.py')):
 import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_reports import guru_meditation_report as gmr
+from oslo_reports import opts as gmr_opts
 
 from glance.common import config
 from glance.common import exception
 from glance import scrubber
+from glance import version
 
 
 CONF = cfg.CONF
@@ -53,6 +56,9 @@ def main():
 
         config.parse_args()
         logging.setup(CONF, 'glance')
+        gmr_opts.set_defaults(CONF)
+        gmr.TextGuruMeditation.setup_autorun(version, conf=CONF)
+
         CONF.import_opt('enabled_backends', 'glance.common.config')
 
         if CONF.enabled_backends:

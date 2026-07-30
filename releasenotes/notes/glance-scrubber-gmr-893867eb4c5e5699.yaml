@@ -1,0 +1,5 @@
+---
+features:
+  - |
+    The ``glance-scrubber`` command now supports generating GMR (Guru
+    Meditation Report) while it is running.
