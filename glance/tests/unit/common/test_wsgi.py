@@ -669,7 +669,7 @@ class Test_UwsgiChunkedFile(test_utils.BaseTestCase):
             return next(values)
 
         def values_read_count_get():
-            nonlocal values_read_count, values_read_count_prev
+            nonlocal values_read_count_prev
             res = values_read_count - values_read_count_prev
             values_read_count_prev = values_read_count
             return res

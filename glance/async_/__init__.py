@@ -185,6 +185,5 @@ def get_threadpool_model():
 
     :raises: AssertionError if the model has not yet been set.
     """
-    global _THREADPOOL_MODEL
     assert _THREADPOOL_MODEL
     return _THREADPOOL_MODEL
