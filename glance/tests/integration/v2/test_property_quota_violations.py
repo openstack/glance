@@ -26,15 +26,11 @@ CONF = cfg.CONF
 class TestPropertyQuotaViolations(base.ApiTest):
     def __init__(self, *args, **kwargs):
         super(TestPropertyQuotaViolations, self).__init__(*args, **kwargs)
-        self.api_flavor = 'noauth'
+        self.api_flavor = 'fakeauth'
 
     def _headers(self, custom_headers=None):
         base_headers = {
-            'X-Identity-Status': 'Confirmed',
-            'X-Auth-Token': '932c5c84-02ac-4fe5-a9ba-620af0e2bb96',
-            'X-User-Id': 'f9a41d13-0c13-47e9-bee2-ce4e8bfe958e',
-            'X-Tenant-Id': "foo",
-            'X-Roles': 'member',
+            'X-Auth-Token': 'user:tenant:admin',
         }
         base_headers.update(custom_headers or {})
         return base_headers
