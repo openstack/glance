@@ -18,6 +18,8 @@ import threading
 import glance_store
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_reports import guru_meditation_report as gmr
+from oslo_reports import opts as gmr_opts
 import osprofiler.initializer
 
 from glance.api import common
@@ -28,6 +30,7 @@ from glance import housekeeping
 from glance.i18n import _, _LW
 from glance import notifier
 from glance import sqlite_migration
+from glance import version
 
 CONF = cfg.CONF
 CONF.import_group("profiler", "glance.common.wsgi")
@@ -113,6 +116,9 @@ def init_app():
     CONF([], project='glance', prog='glance-api',
          default_config_files=config_files)
     logging.setup(CONF, "glance")
+    gmr_opts.set_defaults(CONF)
+    gmr.TextGuruMeditation.setup_autorun(
+        version, conf=CONF, setup_signal=False)
 
     # NOTE(danms): Running under uWSGI or mod_wsgi; use native threading.
     glance.async_.set_threadpool_model('native')
