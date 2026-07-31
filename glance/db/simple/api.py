@@ -608,14 +608,12 @@ def image_member_create(context, values):
                                   values.get('can_share', False),
                                   values.get('status', 'pending'),
                                   values.get('deleted', False))
-    global DATA
     DATA['members'].append(member)
     return copy.deepcopy(member)
 
 
 @log_call
 def image_member_update(context, member_id, values):
-    global DATA
     for member in DATA['members']:
         if member['id'] == member_id:
             member.update(values)
@@ -627,7 +625,6 @@ def image_member_update(context, member_id, values):
 
 @log_call
 def image_member_delete(context, member_id):
-    global DATA
     for i, member in enumerate(DATA['members']):
         if member['id'] == member_id:
             del DATA['members'][i]
@@ -766,7 +763,6 @@ def _normalize_locations(context, image, force_show_deleted=False):
 
 @log_call
 def image_create(context, image_values, v1_mode=False):
-    global DATA
     image_id = image_values.get('id', str(uuid.uuid4()))
 
     if image_id in DATA['images']:
@@ -800,7 +796,6 @@ def image_create(context, image_values, v1_mode=False):
 @log_call
 def image_update(context, image_id, image_values, purge_props=False,
                  from_state=None, v1_mode=False, atomic_props=None):
-    global DATA
     try:
         image = DATA['images'][image_id]
     except KeyError:
@@ -838,7 +833,6 @@ def image_update(context, image_id, image_values, purge_props=False,
 
 @log_call
 def image_destroy(context, image_id):
-    global DATA
     try:
         delete_time = oslo_timeutils.utcnow()
         DATA['images'][image_id]['deleted'] = True
@@ -886,21 +880,18 @@ def image_tag_get(context, image_id, value):
 
 @log_call
 def image_tag_set_all(context, image_id, values):
-    global DATA
     DATA['tags'][image_id] = list(values)
 
 
 @log_call
 @utils.no_4byte_params
 def image_tag_create(context, image_id, value):
-    global DATA
     DATA['tags'][image_id].append(value)
     return value
 
 
 @log_call
 def image_tag_delete(context, image_id, value):
-    global DATA
     try:
         DATA['tags'][image_id].remove(value)
     except ValueError:
@@ -930,8 +921,6 @@ def user_get_storage_usage(context, owner_id, image_id=None, session=None):
 @log_call
 def task_create(context, values):
     """Create a task object"""
-    global DATA
-
     task_values = copy.deepcopy(values)
     task_id = task_values.get('id', str(uuid.uuid4()))
     required_attributes = ['type', 'status', 'input']
@@ -963,7 +952,6 @@ def task_create(context, values):
 @log_call
 def task_update(context, task_id, values):
     """Update a task object"""
-    global DATA
     task_values = copy.deepcopy(values)
     task_info_values = _pop_task_info_values(task_values)
     try:
@@ -1011,7 +999,6 @@ def _task_get(context, task_id, force_show_deleted=False):
 
 @log_call
 def task_delete(context, task_id):
-    global DATA
     try:
         DATA['tasks'][task_id]['deleted'] = True
         DATA['tasks'][task_id]['deleted_at'] = oslo_timeutils.utcnow()
@@ -1024,7 +1011,6 @@ def task_delete(context, task_id):
 
 def _task_soft_delete(context):
     """Scrub task entities which are expired """
-    global DATA
     now = oslo_timeutils.utcnow()
     tasks = DATA['tasks'].values()
 
@@ -1143,7 +1129,6 @@ def _paginate_tasks(context, tasks, marker, limit, show_deleted):
 
 def _task_info_create(task_id, values):
     """Create a Task Info for Task with given task ID"""
-    global DATA
     task_info = _task_info_format(task_id, **values)
     DATA['task_info'][task_id] = task_info
 
@@ -1152,7 +1137,6 @@ def _task_info_create(task_id, values):
 
 def _task_info_update(task_id, values):
     """Update Task Info for Task with given task ID and updated values"""
-    global DATA
     try:
         task_info = DATA['task_info'][task_id]
     except KeyError:
@@ -1167,7 +1151,6 @@ def _task_info_update(task_id, values):
 
 def _task_info_get(task_id):
     """Get Task Info for Task with given task ID"""
-    global DATA
     try:
         task_info = DATA['task_info'][task_id]
     except KeyError:
@@ -1179,7 +1162,6 @@ def _task_info_get(task_id):
 
 
 def _metadef_delete_namespace_content(get_func, key, context, namespace_name):
-    global DATA
     metadefs = get_func(context, namespace_name)
     data = DATA[key]
     for metadef in metadefs:
@@ -1191,8 +1173,6 @@ def _metadef_delete_namespace_content(get_func, key, context, namespace_name):
 @utils.no_4byte_params
 def metadef_namespace_create(context, values):
     """Create a namespace object"""
-    global DATA
-
     namespace_values = copy.deepcopy(values)
     namespace_name = namespace_values.get('namespace')
     required_attributes = ['namespace', 'owner']
@@ -1225,7 +1205,6 @@ def metadef_namespace_create(context, values):
 @utils.no_4byte_params
 def metadef_namespace_update(context, namespace_id, values):
     """Update a namespace object"""
-    global DATA
     namespace_values = copy.deepcopy(values)
 
     namespace = metadef_namespace_get_by_id(context, namespace_id)
@@ -1322,8 +1301,6 @@ def metadef_namespace_get_all(context,
 @log_call
 def metadef_namespace_delete(context, namespace_name):
     """Delete a namespace object"""
-    global DATA
-
     namespace = metadef_namespace_get(context, namespace_name)
     DATA['metadef_namespaces'].remove(namespace)
 
@@ -1333,7 +1310,6 @@ def metadef_namespace_delete(context, namespace_name):
 @log_call
 def metadef_namespace_delete_content(context, namespace_name):
     """Delete a namespace content"""
-    global DATA
     namespace = metadef_namespace_get(context, namespace_name)
     namespace_id = namespace['id']
 
@@ -1413,8 +1389,6 @@ def metadef_object_get_all(context, namespace_name):
 @utils.no_4byte_params
 def metadef_object_create(context, namespace_name, values):
     """Create a metadef object"""
-    global DATA
-
     object_values = copy.deepcopy(values)
     object_name = object_values['name']
     required_attributes = ['name']
@@ -1454,8 +1428,6 @@ def metadef_object_create(context, namespace_name, values):
 @utils.no_4byte_params
 def metadef_object_update(context, namespace_name, object_id, values):
     """Update a metadef object"""
-    global DATA
-
     namespace = metadef_namespace_get(context, namespace_name)
 
     _check_namespace_visibility(context, namespace, namespace_name)
@@ -1489,8 +1461,6 @@ def metadef_object_update(context, namespace_name, object_id, values):
 @log_call
 def metadef_object_delete(context, namespace_name, object_name):
     """Delete a metadef object"""
-    global DATA
-
     object = metadef_object_get(context, namespace_name, object_name)
     DATA['metadef_objects'].remove(object)
 
@@ -1537,8 +1507,6 @@ def metadef_property_count(context, namespace_name):
 @utils.no_4byte_params
 def metadef_property_create(context, namespace_name, values):
     """Create a metadef property"""
-    global DATA
-
     property_values = copy.deepcopy(values)
     property_name = property_values['name']
     required_attributes = ['name']
@@ -1581,8 +1549,6 @@ def metadef_property_create(context, namespace_name, values):
 @utils.no_4byte_params
 def metadef_property_update(context, namespace_name, property_id, values):
     """Update a metadef property"""
-    global DATA
-
     namespace = metadef_namespace_get(context, namespace_name)
 
     _check_namespace_visibility(context, namespace, namespace_name)
@@ -1670,8 +1636,6 @@ def metadef_property_get(context, namespace_name, property_name):
 @log_call
 def metadef_property_delete(context, namespace_name, property_name):
     """Delete a metadef property"""
-    global DATA
-
     property = metadef_property_get(context, namespace_name, property_name)
     DATA['metadef_properties'].remove(property)
 
@@ -1688,8 +1652,6 @@ def metadef_property_delete_namespace_content(context, namespace_name):
 @log_call
 def metadef_resource_type_create(context, values):
     """Create a metadef resource type"""
-    global DATA
-
     resource_type_values = copy.deepcopy(values)
     resource_type_name = resource_type_values['name']
 
@@ -1735,8 +1697,6 @@ def metadef_resource_type_get(context, resource_type_name):
 @log_call
 def metadef_resource_type_association_create(context, namespace_name,
                                              values):
-    global DATA
-
     association_values = copy.deepcopy(values)
 
     namespace = metadef_namespace_get(context, namespace_name)
@@ -1810,8 +1770,6 @@ def metadef_resource_type_association_get_all_by_namespace(context,
 @log_call
 def metadef_resource_type_association_delete(context, namespace_name,
                                              resource_type_name):
-    global DATA
-
     resource_type = metadef_resource_type_association_get(context,
                                                           namespace_name,
                                                           resource_type_name)
@@ -1873,8 +1831,6 @@ def metadef_tag_get_all(context, namespace_name, filters=None, marker=None,
 @utils.no_4byte_params
 def metadef_tag_create(context, namespace_name, values):
     """Create a metadef tag"""
-    global DATA
-
     tag_values = copy.deepcopy(values)
     tag_name = tag_values['name']
     required_attributes = ['name']
@@ -1912,8 +1868,6 @@ def metadef_tag_create(context, namespace_name, values):
 def metadef_tag_create_tags(context, namespace_name, tag_list,
                             can_append=False):
     """Create a metadef tag"""
-    global DATA
-
     namespace = metadef_namespace_get(context, namespace_name)
     _check_namespace_visibility(context, namespace, namespace_name)
 
@@ -1963,8 +1917,6 @@ def metadef_tag_create_tags(context, namespace_name, tag_list,
 @utils.no_4byte_params
 def metadef_tag_update(context, namespace_name, id, values):
     """Update a metadef tag"""
-    global DATA
-
     namespace = metadef_namespace_get(context, namespace_name)
 
     _check_namespace_visibility(context, namespace, namespace_name)
@@ -1993,8 +1945,6 @@ def metadef_tag_update(context, namespace_name, id, values):
 @log_call
 def metadef_tag_delete(context, namespace_name, name):
     """Delete a metadef tag"""
-    global DATA
-
     tags = metadef_tag_get(context, namespace_name, name)
     DATA['metadef_tags'].remove(tags)
 
@@ -2156,7 +2106,6 @@ def _cached_image_format(cached_image):
 
 @log_call
 def node_reference_get_by_url(context, node_reference_url):
-    global DATA
     db_data = DATA['node_reference']
     for node_reference in db_data:
         if db_data[node_reference]['node_reference_url'] == node_reference_url:
@@ -2167,7 +2116,6 @@ def node_reference_get_by_url(context, node_reference_url):
 
 @log_call
 def node_reference_create(context, node_reference_url, **values):
-    global DATA
     node_reference_id = values.get('node_reference_id', 1)
 
     if node_reference_id in DATA['node_reference']:
@@ -2184,7 +2132,6 @@ def node_reference_create(context, node_reference_url, **values):
 
 @log_call
 def get_hit_count(context, image_id, node_reference_url):
-    global DATA
     if image_id not in DATA['cached_images']:
         return 0
 
@@ -2194,7 +2141,6 @@ def get_hit_count(context, image_id, node_reference_url):
 
 @log_call
 def get_cached_nodes(context, image_id):
-    global DATA
     all_images = DATA['cached_images']
     node_references = DATA['node_reference']
     cached_nodes = []
@@ -2212,7 +2158,6 @@ def get_cached_nodes(context, image_id):
 
 @log_call
 def get_cached_images(context, node_reference_url):
-    global DATA
     node_reference = node_reference_get_by_url(context, node_reference_url)
     all_images = DATA['cached_images']
     cached_images = []
@@ -2226,7 +2171,6 @@ def get_cached_images(context, node_reference_url):
 
 @log_call
 def delete_all_cached_images(context, node_reference_url):
-    global DATA
     node_reference = node_reference_get_by_url(context, node_reference_url)
     all_images = all_images = tuple(DATA['cached_images'].keys())
     for image_id in all_images:
@@ -2237,7 +2181,6 @@ def delete_all_cached_images(context, node_reference_url):
 
 @log_call
 def delete_cached_image(context, image_id, node_reference_url):
-    global DATA
     node_reference = node_reference_get_by_url(context, node_reference_url)
     all_images = tuple(DATA['cached_images'].keys())
     for image in all_images:
@@ -2250,7 +2193,6 @@ def delete_cached_image(context, image_id, node_reference_url):
 
 @log_call
 def get_least_recently_accessed(context, node_reference_url):
-    global DATA
     all_images = get_cached_images(context, node_reference_url)
     if all_images:
         return all_images[0]['image_id']
@@ -2259,7 +2201,6 @@ def get_least_recently_accessed(context, node_reference_url):
 
 @log_call
 def is_image_cached_for_node(context, node_reference_url, image_id):
-    global DATA
     node_reference = node_reference_get_by_url(context, node_reference_url)
     all_images = DATA['cached_images']
     for image_id in all_images:
@@ -2274,7 +2215,6 @@ def is_image_cached_for_node(context, node_reference_url, image_id):
 def insert_cache_details(context, node_reference_url, image_id,
                          size, checksum=None, last_accessed=None,
                          last_modified=None, hits=None):
-    global DATA
     node_reference = node_reference_get_by_url(context, node_reference_url)
     accessed = last_accessed or oslo_timeutils.utcnow()
     modified = last_modified or oslo_timeutils.utcnow()
@@ -2298,7 +2238,6 @@ def insert_cache_details(context, node_reference_url, image_id,
 
 @log_call
 def update_hit_count(context, image_id, node_reference_url):
-    global DATA
     last_hit_count = get_hit_count(context, image_id, node_reference_url)
     node_reference = node_reference_get_by_url(context, node_reference_url)
     all_images = DATA['cached_images']

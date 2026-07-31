@@ -541,7 +541,6 @@ def setup_remote_pydev_debug(host, port):
 
 
 def get_test_suite_socket():
-    global GLANCE_TEST_SOCKET_FD_STR
     if GLANCE_TEST_SOCKET_FD_STR in os.environ:
         fd = int(os.environ[GLANCE_TEST_SOCKET_FD_STR])
         sock = socket.fromfd(fd, socket.AF_INET, socket.SOCK_STREAM)

@@ -308,8 +308,6 @@ def add_command_parsers(subparsers):
 
 
 def main():
-    global exitcode
-
     opts = [
         cfg.SubCommandOpt('server',
                           title='Server types',

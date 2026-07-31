@@ -75,7 +75,6 @@ def _get_context():
 
 
 def _get_main_context_manager():
-    global _main_context_lock
     global _main_context_manager
 
     with _main_context_lock:
@@ -127,7 +126,6 @@ def clear_db_env():
     """
     Unset global configuration variables for database.
     """
-    global _main_context_lock
     global _main_context_manager
 
     with _main_context_lock:
