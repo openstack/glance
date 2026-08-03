@@ -14,7 +14,6 @@
     # defined in openstack/openstack-zuul-jobs/zuul.d/jobs.yaml
     required-projects:
       - name: openstack/debtcollector
-      - name: openstack/futurist
       - name: openstack/oslo.concurrency
       - name: openstack/oslo.config
       - name: openstack/oslo.context
