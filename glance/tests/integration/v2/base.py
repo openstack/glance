@@ -84,8 +84,7 @@ paste.app_factory = glance.api.versions:create_resource
 paste.app_factory = glance.api.v2.router:API.factory
 
 [filter:versionnegotiation]
-paste.filter_factory =
- glance.api.middleware.version_negotiation:VersionNegotiationFilter.factory
+paste.filter_factory = glance.api.middleware.version_negotiation:VersionNegotiationFilter.factory
 
 [filter:gzip]
 paste.filter_factory = glance.api.middleware.gzip:GzipMiddleware.factory
@@ -94,19 +93,17 @@ paste.filter_factory = glance.api.middleware.gzip:GzipMiddleware.factory
 paste.filter_factory = glance.api.middleware.cache:CacheFilter.factory
 
 [filter:cache_manage]
-paste.filter_factory =
- glance.api.middleware.cache_manage:CacheManageFilter.factory
+paste.filter_factory = glance.api.middleware.cache_manage:CacheManageFilter.factory
 
 [filter:context]
 paste.filter_factory = glance.api.middleware.context:ContextMiddleware.factory
 
 [filter:unauthenticated-context]
-paste.filter_factory =
- glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
+paste.filter_factory = glance.api.middleware.context:UnauthenticatedContextMiddleware.factory
 
 [filter:fakeauth]
 paste.filter_factory = glance.tests.utils:FakeAuthMiddleware.factory
-"""
+"""  # noqa: E501
 
 CONF = cfg.CONF
 
