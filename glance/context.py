@@ -63,6 +63,8 @@ class RequestContext(context.RequestContext):
 
     """
 
+    FROM_DICT_EXTRA_KEYS = ['service_catalog', 'policy_enforcer']
+
     def __init__(self, service_catalog=None, policy_enforcer=None, **kwargs):
         super(RequestContext, self).__init__(**kwargs)
         self.service_catalog = service_catalog
@@ -73,14 +75,9 @@ class RequestContext(context.RequestContext):
     def to_dict(self):
         d = super(RequestContext, self).to_dict()
         d.update({
-            'roles': self.roles,
             'service_catalog': self.service_catalog,
         })
         return d
-
-    @classmethod
-    def from_dict(cls, values):
-        return cls(**values)
 
     @property
     def owner(self):
