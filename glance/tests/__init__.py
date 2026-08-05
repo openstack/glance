@@ -17,6 +17,13 @@ import atexit
 import builtins
 import logging
 
+from oslo_service.backend import BackendType
+from oslo_service.backend import register_backend_default_hook
+
+# NOTE(abhishekk): Ensure the threading backend is selected before tests
+# import dependencies that would otherwise default oslo.service to eventlet.
+register_backend_default_hook(lambda: BackendType.THREADING)
+
 from glance.api import common as api_common
 import glance.async_
 # NOTE(akekane): Use native threading in tests, same as uWSGI production.

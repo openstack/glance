@@ -22,10 +22,17 @@ import os
 
 from oslo_config import cfg
 from oslo_middleware import cors
+from oslo_service.backend import BackendType
+from oslo_service.backend import register_backend_default_hook
 from paste import deploy
 
 from glance.i18n import _
 from glance.version import version_info as version
+
+# NOTE(abhishekk): Prefer the threading backend for oslo.service when
+# nothing else has selected one yet. Without this, oslo.service defaults
+# to eventlet.
+register_backend_default_hook(lambda: BackendType.THREADING)
 
 paste_deploy_opts = [
     cfg.StrOpt('flavor',
