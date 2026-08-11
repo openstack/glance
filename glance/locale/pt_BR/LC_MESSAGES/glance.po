@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2025-07-08 07:42+0000\n"
+"POT-Creation-Date: 2026-08-10 12:34+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -272,11 +272,6 @@ msgstr "URL construída: %s"
 msgid "Corrupt image download for image %(image_id)s"
 msgstr "Download de imagem corrompido para a imagem %(image_id)s"
 
-#, python-format
-msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
-msgstr ""
-"Não foi possível ligar a %(host)s:%(port)s depois de tentar por 30 segundos"
-
 msgid "Could not find OVF file in OVA archive file."
 msgstr "Não foi possível localizar o arquivo OVF no archive OVA."
 
@@ -382,9 +377,11 @@ msgstr ""
 "Erro na configuração do armazenamento. A inclusão de imagens para "
 "armazenamento está desativada."
 
+#, python-brace-format
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "O membro era esperado no formato: {\"member\": \"image_id\"}"
 
+#, python-brace-format
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "O estado era esperado no formato: {\"status\": \"status\"}"
 
@@ -1529,6 +1526,7 @@ msgstr ""
 "fornecer um parâmetro cert_file ou configurar a variável de ambiente "
 "GLANCE_CLIENT_CERT_FILE"
 
+#, python-brace-format
 msgid ""
 "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
 "fA-F]){12}$"
@@ -1552,11 +1550,6 @@ msgstr ""
 msgid "custom properties (%(props)s) conflict with base properties"
 msgstr ""
 "conflito de propriedades customizadas (%(props)s) com propriedades de base"
-
-msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
-msgstr ""
-"nem o hub 'poll' nem o 'selects' do eventlet estão disponíveis nesta "
-"plataforma"
 
 msgid "limit param must be an integer"
 msgstr "o parâmetro limit deve ser um número inteiro"

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2025-07-08 07:42+0000\n"
+"POT-Creation-Date: 2026-08-10 12:34+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -262,11 +262,6 @@ msgstr "Сформированный URL: %s"
 msgid "Corrupt image download for image %(image_id)s"
 msgstr "Образ %(image_id)s скачан поврежденным"
 
-#, python-format
-msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
-msgstr ""
-"Не удалось выполнить связывание с %(host)s:%(port)s в течение 30 секунд"
-
 msgid "Could not find OVF file in OVA archive file."
 msgstr "Не найден файл OVF в файле архива OVA."
 
@@ -369,9 +364,11 @@ msgid "Error in store configuration. Adding images to store is disabled."
 msgstr ""
 "Ошибка в конфигурации хранилища. Добавление образов в хранилище отключено."
 
+#, python-brace-format
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "Элемент должен быть задан в формате: {\"member\": \"image_id\"}"
 
+#, python-brace-format
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "Состояние должно быть указано в формате: {\"status\": \"status\"}"
 
@@ -1503,6 +1500,7 @@ msgstr ""
 "удалось ни предоставить параметр cert_file, ни задать переменную среды "
 "GLANCE_CLIENT_CERT_FILE"
 
+#, python-brace-format
 msgid ""
 "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
 "fA-F]){12}$"
@@ -1525,11 +1523,6 @@ msgstr ""
 #, python-format
 msgid "custom properties (%(props)s) conflict with base properties"
 msgstr "настраиваемые свойства (%(props)s) конфликтуют с базовыми свойствами"
-
-msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
-msgstr ""
-"Для этой платформы отсутствуют центры обработки событий poll и selects "
-"библиотеки eventlet"
 
 msgid "limit param must be an integer"
 msgstr "Параметр limit должен быть целым числом"

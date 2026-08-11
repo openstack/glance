@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2025-07-08 07:42+0000\n"
+"POT-Creation-Date: 2026-08-10 12:34+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -248,10 +248,6 @@ msgstr "已建構 URL：%s"
 msgid "Corrupt image download for image %(image_id)s"
 msgstr "映像檔 %(image_id)s 的映像檔下載已毀損"
 
-#, python-format
-msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
-msgstr "嘗試 30 秒鐘後仍無法連結至 %(host)s:%(port)s"
-
 msgid "Could not find OVF file in OVA archive file."
 msgstr "在 OVA 保存檔中找不到 OVF 檔。"
 
@@ -351,9 +347,11 @@ msgstr "提取映像檔 %(image_id)s 的成員時發生錯誤：%(inner_msg)s"
 msgid "Error in store configuration. Adding images to store is disabled."
 msgstr "儲存庫配置發生錯誤。已停用新增映像檔至儲存庫。"
 
+#, python-brace-format
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "預期成員的格式為：{\"member\": \"image_id\"}"
 
+#, python-brace-format
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "預期狀態的格式為：{\"status\": \"status\"}"
 
@@ -1406,6 +1404,7 @@ msgstr ""
 "您已選取在連接時使用 SSL，並且提供了金鑰，但未提供 cert_file 參數，也沒有設"
 "定 GLANCE_CLIENT_CERT_FILE 環境變數"
 
+#, python-brace-format
 msgid ""
 "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
 "fA-F]){12}$"
@@ -1426,9 +1425,6 @@ msgstr "更新時無法從 %(current)s 轉移至 %(next)s（需要 from_state = 
 #, python-format
 msgid "custom properties (%(props)s) conflict with base properties"
 msgstr "自訂內容 (%(props)s) 與基本內容相衝突"
-
-msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
-msgstr "此平台上無法使用 eventlet 'poll' 及 'selects' 中心。"
 
 msgid "limit param must be an integer"
 msgstr "限制參數必須是整數"

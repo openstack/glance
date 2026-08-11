@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2025-07-08 07:42+0000\n"
+"POT-Creation-Date: 2026-08-10 12:34+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -271,11 +271,6 @@ msgid "Corrupt image download for image %(image_id)s"
 msgstr ""
 "Esecuzione del download immagine danneggiato per l'immagine %(image_id)s"
 
-#, python-format
-msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
-msgstr ""
-"Impossibile collegarsi a %(host)s:%(port)s dopo aver tentato per 30 secondi"
-
 msgid "Could not find OVF file in OVA archive file."
 msgstr "Impossibile trovare il file OVD nel file di archivio OVA."
 
@@ -383,9 +378,11 @@ msgstr ""
 "Errore nella configurazione dell'archivio. L'aggiunta di immagini a questo "
 "archivio non è consentita."
 
+#, python-brace-format
 msgid "Expected a member in the form: {\"member\": \"image_id\"}"
 msgstr "Previsto un membro nel formato: {\"member\": \"image_id\"}"
 
+#, python-brace-format
 msgid "Expected a status in the form: {\"status\": \"status\"}"
 msgstr "Previsto uno stato nel formato: {\"status\": \"status\"}"
 
@@ -1554,6 +1551,7 @@ msgstr ""
 "tuttavia non è stato fornito un parametro cert_file parameter o la variabile "
 "di ambiente GLANCE_CLIENT_CERT_FILE non è stata impostata"
 
+#, python-brace-format
 msgid ""
 "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
 "fA-F]){12}$"
@@ -1578,10 +1576,6 @@ msgid "custom properties (%(props)s) conflict with base properties"
 msgstr ""
 "le proprietà personalizzate (%(props)s) sono in conflitto con le proprietà "
 "di base"
-
-msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
-msgstr ""
-"Su questa piattaforma non sono disponibili hub 'poll' e 'selects' eventlog"
 
 msgid "limit param must be an integer"
 msgstr "parametro limite deve essere un numero intero"

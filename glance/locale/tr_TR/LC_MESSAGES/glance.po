@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2025-07-08 07:42+0000\n"
+"POT-Creation-Date: 2026-08-10 12:34+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -223,10 +223,6 @@ msgstr "URL inşa edildi: %s"
 #, python-format
 msgid "Corrupt image download for image %(image_id)s"
 msgstr "%(image_id)s imajı için bozuk imaj indir"
-
-#, python-format
-msgid "Could not bind to %(host)s:%(port)s after trying for 30 seconds"
-msgstr "30 saniyelik denemeden sonra %(host)s:%(port)s bağlanamadı"
 
 #, python-format
 msgid "Could not find metadata object %s"
@@ -1325,6 +1321,7 @@ msgstr ""
 "cert_file parametresi sağlamayı ya da GLANCE_CLIENT_CERT_FILE değişkeni "
 "ayarlama işlemini başaramadınız."
 
+#, python-brace-format
 msgid ""
 "^([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-"
 "fA-F]){12}$"
@@ -1347,10 +1344,6 @@ msgstr ""
 #, python-format
 msgid "custom properties (%(props)s) conflict with base properties"
 msgstr "özel özellikler (%(props)s) temel özellikler ile çatışır"
-
-msgid "eventlet 'poll' nor 'selects' hubs are available on this platform"
-msgstr ""
-"bu platformda eventlet 'poll' ya da 'selects' havuzları kullanılabilirdir"
 
 msgid "limit param must be an integer"
 msgstr "Sınır parametresi tam sayı olmak zorunda"
