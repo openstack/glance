@@ -203,7 +203,7 @@ metadef_policies = [
         operations=[
             {'path': '/v2/metadefs/namespaces/{namespace_name}/resource_types'
                      '/{name}',
-             'method': 'POST'}
+             'method': 'DELETE'}
         ],
     ),
 
@@ -248,7 +248,7 @@ metadef_policies = [
         operations=[
             {'path': '/v2/metadefs/namespaces/{namespace_name}/properties'
                      '/{property_name}',
-             'method': 'GET'}
+             'method': 'PUT'}
         ],
     ),
     policy.DocumentedRuleDefault(
