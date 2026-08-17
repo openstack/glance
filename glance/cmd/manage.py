@@ -21,10 +21,6 @@
 Glance Management Utility
 """
 
-# FIXME(sirp): When we have glance-admin we can consider merging this into it
-# Perhaps for consistency with Nova, we would then rename glance-admin ->
-# glance-manage (or the other way around)
-
 import os
 import sys
 import time
