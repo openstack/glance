@@ -1287,8 +1287,8 @@ class TestImageDataDeserializer(test_utils.BaseTestCase):
                           req)
 
     def test_stage_raises_invalid_content_type(self):
-        # TODO(abhishekk): change this when import methods are
-        # listed in the config file
+        # Relies on the default enabled_import_methods,
+        # which includes 'glance-direct';
         req = unit_test_utils.get_fake_request()
         req.headers['Content-Type'] = 'application/json'
         exc = self.assertRaises(webob.exc.HTTPUnsupportedMediaType,
