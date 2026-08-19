@@ -665,9 +665,18 @@ class ImageProxy(glance.domain.proxy.Image):
         except format_inspector.SafetyCheckFailed as e:
             nonfatal = set(CONF.image_format.gpt_safety_checks_nonfatal)
             fatal = e.failures.keys() - nonfatal
+            if self.image.disk_format in ('aki', 'ari'):
+                # For image formats that may have an
+                # intentionally-invalid GPT/MBR header, we always treat the
+                # MBR check as non-fatal. Things like kernel images may
+                # contain an intentionally-invalid but recognizeable MBR
+                # header which this check would reject. For things we expect
+                # to be GPT (including raw) we want that check to fail but
+                # we can be tolerant for the non-disk-image types.
+                fatal.discard('mbr')
             if inspector.NAME == 'gpt' and not fatal:
-                # All the failures were non-fatal (per config) so log them and
-                # continue
+                # All the failures were non-fatal (per config or policy) so
+                # log them and continue
                 LOG.warning('Non-fatal %s', e)
             else:
                 LOG.warning('Image %s %s', format, e)
