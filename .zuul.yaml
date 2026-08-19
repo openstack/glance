@@ -240,6 +240,28 @@
               store_weight_enabled: True
 
 - job:
+    name: glance-multistore-add-location-do-secure-hash-false
+    parent: glance-s3-multistore
+    description: |
+      Like glance-s3-multistore but with do_secure_hash disabled in Glance
+      and Tempest so the add-location API tests for the no-hash path run
+      LocationImportTest.test_add_location_with_do_secure_hash_false and
+      MultistoreLocationImportTest.test_add_location_with_do_secure_hash_false.
+      The do_secure_hash=True API path stays covered by
+      tempest-integrated-storage-import (single store) and glance-s3-multistore.
+      Scenario hash tests require do_secure_hash=True and skip here.
+    vars:
+      devstack_local_conf:
+        post-config:
+          $GLANCE_API_CONF:
+            DEFAULT:
+              do_secure_hash: False
+        test-config:
+          "$TEMPEST_CONFIG":
+            image-feature-enabled:
+              do_secure_hash: False
+
+- job:
     name: glance-multistore-cinder-import-fips
     parent: tempest-integrated-storage-import
     description: |
@@ -351,6 +373,9 @@
         - nova-ceph-multistore:
             irrelevant-files: *tempest-irrelevant-files
         - glance-s3-multistore:
+            voting: false
+            irrelevant-files: *tempest-irrelevant-files
+        - glance-multistore-add-location-do-secure-hash-false:
             voting: false
             irrelevant-files: *tempest-irrelevant-files
         - glance-secure-rbac-protection-functional
