@@ -23,6 +23,7 @@ from alembic import script as alembic_script
 from oslo_db.sqlalchemy import enginefacade
 from oslo_db.sqlalchemy import test_fixtures
 from oslo_db.sqlalchemy import test_migrations
+import sqlalchemy
 from sqlalchemy import sql
 import sqlalchemy.types as types
 
@@ -254,6 +255,65 @@ class ModelsMigrationSyncMixin(object):
         if name in ['migrate_version'] and type_ == 'table':
             return False
         return True
+
+    def filter_metadata_diff(self, diff):
+        """Filter out allowed differences between DB ORM model and actual DB.
+
+        Alembic 1.19.0 started comparing CHECK constraints in autogenerate.
+        Glance's initial migrations create Boolean/deleted columns with
+        create_constraint=True (glance.db.sqlalchemy.schema.Boolean), but
+        the models do not declare those constraints (SQLAlchemy 1.4+ defaults
+        create_constraint to False).  Autogenerate therefore reports them as
+        extras on the database.  Dropping them would ALTER many tables for no
+        functional gain, so we filter them out here.
+
+        The diff is a list of directives that can be tuples or lists of tuples:
+        https://alembic.sqlalchemy.org/en/latest/api/autogenerate.html#getting-diffs
+        """
+        # Tables whose Boolean CHECKs come from the original create migrations
+        check_constraint_tables = frozenset({
+            'image_locations',
+            'image_members',
+            'image_properties',
+            'image_tags',
+            'images',
+            'metadef_namespaces',
+            'metadef_resource_types',
+            'tasks',
+        })
+
+        def ignore_check_constraints(element):
+            if element[0] != 'remove_constraint':
+                return False
+            constraint = element[1]
+            if not isinstance(constraint, sqlalchemy.CheckConstraint):
+                return False
+            return constraint.table.name in check_constraint_tables
+
+        def include_element(element):
+            """Determine whether a diff element should be kept."""
+            if ignore_check_constraints(element):
+                return False
+            return True
+
+        def filter_directive(diff_directive):
+            """Filter a single diff directive (tuple or list of tuples).
+
+            Returns None when the directive should be dropped entirely.
+            """
+            if isinstance(diff_directive, list):
+                return [element for element in diff_directive
+                        if include_element(element)]
+            if include_element(diff_directive):
+                return diff_directive
+            return None
+
+        result = []
+        for directive in diff:
+            remaining = filter_directive(directive)
+            if remaining:
+                result.append(remaining)
+        return result
 
 
 class ModelsMigrationsSyncMysql(ModelsMigrationSyncMixin,
