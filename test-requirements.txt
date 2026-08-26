@@ -5,7 +5,6 @@ hacking>=8.1.0,<8.2.0 # Apache-2.0
 coverage!=4.4,>=4.0 # Apache-2.0
 ddt>=1.0.1 # MIT
 fixtures>=3.0.0 # Apache-2.0/BSD
-requests>=2.18.0 # Apache-2.0
 testtools>=2.2.0 # MIT
 psutil>=3.2.2 # BSD
 oslotest>=3.2.0 # Apache-2.0
