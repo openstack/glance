@@ -743,6 +743,17 @@ class TestImagesController(base.StoreClearingUnitTest):
                           self.controller.upload,
                           request, unit_test_utils.UUID2, 'YY', 2)
 
+    def test_upload_storage_timeout(self):
+        request = unit_test_utils.get_fake_request(
+            user=unit_test_utils.USER3, roles=['admin', 'member'])
+        image = FakeImage()
+        image.set_data = Raise(
+            glance_store.exceptions.TimeoutError(timeout=30))
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                          self.controller.upload,
+                          request, unit_test_utils.UUID2, 'YY', 2)
+
     def test_upload_storage_store_disabled(self):
         """Test that uploading an image file raises StoreDisabled exception"""
         request = unit_test_utils.get_fake_request(
@@ -818,6 +829,19 @@ class TestImagesController(base.StoreClearingUnitTest):
     @mock.patch.object(filesystem.Store, 'add')
     def test_restore_image_when_staging_failed(self, mock_store_add):
         mock_store_add.side_effect = glance_store.StorageWriteDenied()
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image_id = str(uuid.uuid4())
+        image = FakeImage('fake')
+        self.image_repo.result = image
+        self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                          self.controller.stage,
+                          request, image_id, 'YYYYYYY', 7)
+        self.assertEqual('queued', self.image_repo.saved_image.status)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    def test_restore_image_when_staging_timeout(self, mock_store_add):
+        mock_store_add.side_effect = glance_store.exceptions.TimeoutError(
+            timeout=30)
         request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
         image_id = str(uuid.uuid4())
         image = FakeImage('fake')

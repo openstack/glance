@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    Glance now returns HTTP 503 Service Unavailable when a filesystem store
+    operation times out. This supports the ``filesystem_store_timeout``,
+    ``filesystem_store_thread_pool_size``, and
+    ``filesystem_store_threadpool_threshold`` options provided by the
+    ``glance_store`` filesystem driver. Timeout protection is disabled by
+    default (``filesystem_store_timeout = 0``).

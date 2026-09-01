@@ -291,6 +291,12 @@ class ImageDataController(object):
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
                                                    request=req)
 
+        except glance_store.exceptions.TimeoutError as e:
+            LOG.error(_("Filesystem store operation timed out: %s"), e.msg)
+            self._restore(image_repo, image)
+            raise webob.exc.HTTPServiceUnavailable(explanation=e.msg,
+                                                   request=req)
+
         except glance_store.Invalid as e:
             LOG.error(e.message)
             if image.status not in ('queued', 'deleted'):
@@ -452,6 +458,12 @@ class ImageDataController(object):
             LOG.error(msg)
             self._unstage(image_repo, image, staging_store)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg,
+                                                   request=req)
+
+        except glance_store.exceptions.TimeoutError as e:
+            LOG.error(_("Filesystem store operation timed out: %s"), e.msg)
+            self._unstage(image_repo, image, staging_store)
+            raise webob.exc.HTTPServiceUnavailable(explanation=e.msg,
                                                    request=req)
 
         except exception.InvalidImageStatusTransition as e:

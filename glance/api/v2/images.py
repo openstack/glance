@@ -122,6 +122,10 @@ class ImagesController(object):
             raise webob.exc.HTTPConflict(explanation=e.msg)
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
+        except glance_store.exceptions.TimeoutError as e:
+            LOG.error(_("Filesystem store operation timed out: %s"), e.msg)
+            raise webob.exc.HTTPServiceUnavailable(explanation=e.msg,
+                                                   request=req)
         except TypeError as e:
             LOG.debug(str(e))
             raise webob.exc.HTTPBadRequest(explanation=e)
@@ -643,6 +647,10 @@ class ImagesController(object):
                 explanation=e.msg, request=req, content_type='text/plain')
         except exception.NotAuthenticated as e:
             raise webob.exc.HTTPUnauthorized(explanation=e.msg)
+        except glance_store.exceptions.TimeoutError as e:
+            LOG.error(_("Filesystem store operation timed out: %s"), e.msg)
+            raise webob.exc.HTTPServiceUnavailable(explanation=e.msg,
+                                                   request=req)
 
         return image
 
@@ -803,6 +811,12 @@ class ImagesController(object):
                                                       "exc": e.msg})
             LOG.warning(msg)
             raise webob.exc.HTTPConflict(explanation=msg)
+        except glance_store.exceptions.TimeoutError as e:
+            msg = (_("The data for Image %(id)s could not be deleted "
+                     "because the filesystem store operation timed out: "
+                     "%(exc)s") % {"id": image_id, "exc": e.msg})
+            LOG.error(msg)
+            raise webob.exc.HTTPServiceUnavailable(explanation=msg)
         except Exception as e:
             raise webob.exc.HTTPInternalServerError(
                 explanation=str(e))
@@ -935,6 +949,12 @@ class ImagesController(object):
             raise webob.exc.HTTPConflict(explanation=msg)
         except glance_store.exceptions.HasSnapshot as e:
             raise webob.exc.HTTPConflict(explanation=e.msg)
+        except glance_store.exceptions.TimeoutError as e:
+            msg = (_("Image %(id)s could not be deleted because the "
+                     "filesystem store operation timed out: %(exc)s") %
+                   {"id": image_id, "exc": e.msg})
+            LOG.error(msg)
+            raise webob.exc.HTTPServiceUnavailable(explanation=msg)
         except exception.InvalidImageStatusTransition as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
         except exception.NotAuthenticated as e:
