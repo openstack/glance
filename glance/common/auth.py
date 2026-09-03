@@ -29,7 +29,6 @@ Keystone (an identity management system).
 
 """
 
-import http.client as http
 import urllib.parse as urlparse
 
 import httplib2
@@ -77,55 +76,24 @@ class KeystoneStrategy(BaseStrategy):
         super(KeystoneStrategy, self).__init__()
 
     def check_auth_params(self):
-        # Ensure that supplied credential parameters are as required
-        for required in ('username', 'password', 'auth_url',
-                         'strategy'):
+        for required in ('username', 'password', 'auth_url', 'project',
+                         'strategy', 'user_domain_id', 'project_domain_id'):
             if self.creds.get(required) is None:
                 raise exception.MissingCredentialError(required=required)
         if self.creds['strategy'] != 'keystone':
             raise exception.BadAuthStrategy(expected='keystone',
                                             received=self.creds['strategy'])
-        # For v2.0 also check tenant is present
-        if self.creds['auth_url'].rstrip('/').endswith('v2.0'):
-            if self.creds.get("tenant") is None:
-                raise exception.MissingCredentialError(required='tenant')
-
-        # For v3 also check project is present
-        if self.creds['auth_url'].rstrip('/').endswith('v3'):
-            if self.creds.get("project") is None:
-                raise exception.MissingCredentialError(required='project')
 
     def authenticate(self):
         """Authenticate with the Keystone service.
-
-        There are a few scenarios to consider here:
-
-        1. Which version of Keystone are we using? v1 which uses headers to
-           pass the credentials, or v2 which uses a JSON encoded request body?
-
-        2. Keystone may respond back with a redirection using a 305 status
-           code.
-
-        3. We may attempt a v1 auth when v2 is what's called for. In this
-           case, we rewrite the url to contain /v2.0/ and retry using the v2
-           protocol.
         """
         def _authenticate(auth_url):
             # If OS_AUTH_URL is missing a trailing slash add one
             if not auth_url.endswith('/'):
                 auth_url += '/'
 
-            token_url = urlparse.urljoin(auth_url, "tokens")
-            # 1. Check Keystone version
-            is_v2 = auth_url.rstrip('/').endswith('v2.0')
-            is_v3 = auth_url.rstrip('/').endswith('v3')
-            if is_v3:
-                token_url = urlparse.urljoin(auth_url, "auth/tokens")
-                self._v3_auth(token_url)
-            elif is_v2:
-                self._v2_auth(token_url)
-            else:
-                self._v1_auth(token_url)
+            token_url = urlparse.urljoin(auth_url, "auth/tokens")
+            self._auth(token_url)
 
         self.check_auth_params()
         auth_url = self.creds['auth_url']
@@ -133,14 +101,8 @@ class KeystoneStrategy(BaseStrategy):
             try:
                 _authenticate(auth_url)
             except exception.AuthorizationRedirect as e:
-                # 2. Keystone may redirect us
+                # Keystone may redirect us
                 auth_url = e.url
-            except exception.AuthorizationFailure:
-                # 3. In some configurations nova makes redirection to
-                # v2.0 keystone endpoint. Also, new location does not
-                # contain real endpoint, only hostname and port.
-                if 'v2.0' not in auth_url:
-                    auth_url = urlparse.urljoin(auth_url, 'v2.0/')
             else:
                 # If we successfully auth'd, then memorize the correct auth_url
                 # for future use.
@@ -150,37 +112,7 @@ class KeystoneStrategy(BaseStrategy):
             # Guard against a redirection loop
             raise exception.MaxRedirectsExceeded(redirects=self.MAX_REDIRECTS)
 
-    def _v1_auth(self, token_url):
-        creds = self.creds
-
-        headers = {
-            'X-Auth-User': creds['username'],
-            'X-Auth-Key': creds['password']
-        }
-
-        tenant = creds.get('tenant')
-        if tenant:
-            headers['X-Auth-Tenant'] = tenant
-
-        resp, resp_body = self._do_request(token_url, 'GET', headers=headers)
-
-        if resp.status in (http.OK, http.NO_CONTENT):
-            try:
-                self.auth_token = resp['x-auth-token']
-            except KeyError:
-                raise exception.AuthorizationFailure()
-        elif resp.status == http.USE_PROXY:
-            raise exception.AuthorizationRedirect(uri=resp['location'])
-        elif resp.status == http.BAD_REQUEST:
-            raise exception.AuthBadRequest(url=token_url)
-        elif resp.status == http.UNAUTHORIZED:
-            raise exception.NotAuthenticated()
-        elif resp.status == http.NOT_FOUND:
-            raise exception.AuthUrlNotFound(url=token_url)
-        else:
-            raise Exception(_('Unexpected response: %s') % resp.status)
-
-    def _v3_auth(self, token_url):
+    def _auth(self, token_url):
         creds = {
             "auth": {
                 "identity": {
@@ -207,53 +139,19 @@ class KeystoneStrategy(BaseStrategy):
         headers = {'Content-Type': 'application/json'}
         req_body = jsonutils.dumps(creds)
 
-        resp, resp_body = self._do_request(
+        resp, _ = self._do_request(
             token_url, 'POST', headers=headers, body=req_body)
-        resp_body = jsonutils.loads(resp_body)
 
         if resp.status == 201:
-            resp_auth = resp['x-subject-token']
-            self.auth_token = resp_auth
+            self.auth_token = resp['x-subject-token']
         elif resp.status == 305:
             raise exception.RedirectException(resp['location'])
         elif resp.status == 400:
             raise exception.AuthBadRequest(url=token_url)
         elif resp.status == 401:
-            raise Exception(_('Unexpected response: %s') % resp.status)
-
-    def _v2_auth(self, token_url):
-
-        creds = self.creds
-
-        creds = {
-            "auth": {
-                "tenantName": creds['tenant'],
-                "passwordCredentials": {
-                    "username": creds['username'],
-                    "password": creds['password']
-                }
-            }
-        }
-
-        headers = {'Content-Type': 'application/json'}
-        req_body = jsonutils.dumps(creds)
-
-        resp, resp_body = self._do_request(
-            token_url, 'POST', headers=headers, body=req_body)
-
-        if resp.status == http.OK:
-            resp_auth = jsonutils.loads(resp_body)['access']
-            self.auth_token = resp_auth['token']['id']
-        elif resp.status == http.USE_PROXY:
-            raise exception.RedirectException(resp['location'])
-        elif resp.status == http.BAD_REQUEST:
-            raise exception.AuthBadRequest(url=token_url)
-        elif resp.status == http.UNAUTHORIZED:
             raise exception.NotAuthenticated()
-        elif resp.status == http.NOT_FOUND:
-            raise exception.AuthUrlNotFound(url=token_url)
         else:
-            raise Exception(_('Unexpected response: %s') % resp.status)
+            raise Exception(_('Unknown response code: %d') % resp.status)
 
     @property
     def is_authenticated(self):
