@@ -24,7 +24,6 @@ from glance.async_.flows._internal_plugins import base_download
 from glance.async_ import utils
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
-from glance.common import utils as common_utils
 from glance.i18n import _, _LI, _LE
 
 LOG = logging.getLogger(__name__)
@@ -56,19 +55,11 @@ class _DownloadGlanceImage(base_download.BaseDownload):
                 self.glance_service_interface)
             image_download_url = '%s/v2/images/%s/file' % (
                 glance_endpoint, self.glance_image_id)
-            if not common_utils.validate_import_uri(image_download_url):
-                LOG.debug("Processed URI for glance-download does not pass "
-                          "filtering: %s", image_download_url)
-                msg = (_("Processed URI for glance-download does not pass "
-                         "filtering: %s") % image_download_url)
-                raise exception.ImportTaskError(msg)
             LOG.info(_LI("Downloading glance image %s"), image_download_url)
             token = self.context.auth_token
             request = urllib.request.Request(image_download_url,
                                              headers={'X-Auth-Token': token})
-            opener = urllib.request.build_opener(
-                script_utils.SafeRedirectHandler)
-            data = opener.open(request)
+            data = script_utils.open_external_uri(request)
         except Exception as e:
             with excutils.save_and_reraise_exception():
                 LOG.error(

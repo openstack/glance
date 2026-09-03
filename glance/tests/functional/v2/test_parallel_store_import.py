@@ -51,6 +51,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
 
     def setUp(self):
         super(TestParallelStoreImport, self).setUp()
+        self._mock_localhost_dns()
         self.api_methods = test_images.ImageAPIHelper(
             self.api_get, self.api_post, self.api_put, self.api_delete)
 
