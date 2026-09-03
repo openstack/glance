@@ -966,7 +966,8 @@ class ImportURITestCase(test_utils.BaseTestCase):
         # This avoid internet access in validate_import_uri()
         # (ie: DNS resolution of foo.com)
         mock_getaddrinfo.return_value = [
-            (None, None, None, None, ("127.0.0.1", 80))
+            (socket.AF_INET, socket.SOCK_STREAM, 6, '',
+             ('93.184.216.34', 80))
         ]
 
         self.assertTrue(utils.validate_import_uri("http://foo.com"))
@@ -1004,7 +1005,8 @@ class ImportURITestCase(test_utils.BaseTestCase):
         # This avoid internet access in validate_import_uri()
         # (ie: DNS resolution of foo.com)
         mock_getaddrinfo.return_value = [
-            (None, None, None, None, ("127.0.0.1", 80))
+            (socket.AF_INET, socket.SOCK_STREAM, 6, '',
+             ('93.184.216.34', 80))
         ]
 
         LOG = logging.getLogger('glance.common.utils')
@@ -1040,12 +1042,13 @@ class ImportURITestCase(test_utils.BaseTestCase):
 
     def test_validate_import_uri_ip_rejection(self):
         """Test that encoded IP addresses are rejected (not normalized)."""
-        # Test that standard IP is blocked when in blacklist
-        self.config(disallowed_hosts=['127.0.0.1'],
-                    group='import_filtering_opts')
-        self.config(allowed_ports=[80],
-                    group='import_filtering_opts')
+        self.config(allowed_ports=[80], group='import_filtering_opts')
+        # Loopback and link-local addresses are blocked by default
         self.assertFalse(utils.validate_import_uri("http://127.0.0.1:80/"))
+        self.assertFalse(utils.validate_import_uri("http://169.254.169.254/"))
+        # Private RFC1918 addresses are allowed by default
+        self.assertTrue(utils.validate_import_uri("http://10.0.0.1/"))
+        self.assertTrue(utils.validate_import_uri("http://192.168.1.1/"))
 
         # Test that encoded IP (decimal) is rejected
         result = utils.validate_import_uri("http://2130706433:80/")
@@ -1056,7 +1059,7 @@ class ImportURITestCase(test_utils.BaseTestCase):
         self.assertFalse(utils.validate_import_uri("http://10.1:80/"))
         self.assertFalse(utils.validate_import_uri("http://192.168.1:80/"))
 
-        # Test with allowed host - encoded IP should still be rejected
+        # Test with allowed host - loopback may be allowed via whitelist
         self.config(disallowed_hosts=[],
                     group='import_filtering_opts')
         self.config(allowed_hosts=['127.0.0.1'],
@@ -1186,7 +1189,16 @@ class ImportURITestCase(test_utils.BaseTestCase):
         self.assertFalse(
             utils.validate_import_uri("http://[::1]:80/"))
 
-        # Test that IPv6 address not in blacklist is allowed
+        # Test that IPv6 localhost is blocked by default
+        self.config(disallowed_hosts=[],
+                    group='import_filtering_opts')
+        self.config(allowed_hosts=[],
+                    group='import_filtering_opts')
+        self.config(allowed_ports=[80],
+                    group='import_filtering_opts')
+        self.assertFalse(utils.validate_import_uri("http://[::1]:80/"))
+
+        # Test that IPv6 address not in blacklist is allowed when whitelisted
         self.config(disallowed_hosts=[],
                     group='import_filtering_opts')
         self.config(allowed_hosts=['2001:db8::1'],
@@ -1202,17 +1214,24 @@ class ImportURITestCase(test_utils.BaseTestCase):
                     group='import_filtering_opts')
         self.config(allowed_ports=[80],
                     group='import_filtering_opts')
-        # IPv6 localhost should pass if not in blacklist (no whitelist)
-        # The fix ensures IPv6 is normalized and can be blacklisted separately
+        # IPv6 localhost is blocked by default even when only IPv4 is listed
+        # in disallowed_hosts
         result = utils.validate_import_uri("http://[::1]:80/")
-        # If ::1 is not in blacklist and no whitelist, it will pass
-        # Administrators should add both IPv4 and IPv6 to blacklist if needed
-        self.assertTrue(result)
+        self.assertFalse(result)
 
         # Test that IPv6 can be blacklisted separately
         self.config(disallowed_hosts=['127.0.0.1', '::1'],
                     group='import_filtering_opts')
         self.assertFalse(utils.validate_import_uri("http://[::1]:80/"))
+
+    @mock.patch("glance.common.utils.socket.getaddrinfo")
+    def test_validate_import_uri_blocks_dns_rebinding(self, mock_getaddrinfo):
+        """Hostnames resolving to restricted addresses are rejected."""
+        mock_getaddrinfo.return_value = [
+            (socket.AF_INET, socket.SOCK_STREAM, 6, '',
+             ('169.254.169.254', 80))
+        ]
+        self.assertFalse(utils.validate_import_uri("http://metadata.example/"))
 
 
 class S3MigrationTestCase(test_utils.BaseTestCase):

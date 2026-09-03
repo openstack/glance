@@ -189,6 +189,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
     def test_decompress_gzip_with_web_download(self):
         """Test GZIP decompression during web-download import."""
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         self.start_server(enable_cache=False)
 
         original_content = b'Y' * 15000
@@ -268,6 +269,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
     def test_decompress_zip_with_web_download(self):
         """Test ZIP decompression during web-download import."""
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
         self.start_server(enable_cache=False)
 
         original_content = b'W' * 12000

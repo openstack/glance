@@ -16,6 +16,7 @@
 
 import datetime
 import http.client as http
+import socket
 import time
 from unittest import mock
 import uuid
@@ -324,7 +325,8 @@ class TestTasksController(test_utils.BaseTestCase):
                     mock_get_task_factory, mock_get_thread_pool,
                     mock_getaddrinfo):
         mock_getaddrinfo.return_value = [
-            (None, None, None, None, ('203.0.113.1', 80))]
+            (socket.AF_INET, socket.SOCK_STREAM, 6, '',
+             ('93.184.216.34', 80))]
         # setup
         request = unit_test_utils.get_fake_request()
         task = {
@@ -466,7 +468,7 @@ class TestTasksController(test_utils.BaseTestCase):
 
         with mock.patch('glance.common.utils.socket.getaddrinfo',
                         return_value=[(None, None, None, None,
-                                       ('203.0.113.1', 80))]):
+                                       ('93.184.216.34', 80))]):
             task = {
                 "type": "import",
                 "input": {
@@ -487,7 +489,8 @@ class TestTasksController(test_utils.BaseTestCase):
     def test_notifications_on_create(self, mock_get_task_factory,
                                      mock_getaddrinfo):
         mock_getaddrinfo.return_value = [
-            (None, None, None, None, ('203.0.113.1', 80))]
+            (socket.AF_INET, socket.SOCK_STREAM, 6, '',
+             ('93.184.216.34', 80))]
         request = unit_test_utils.get_fake_request()
 
         new_task = mock.MagicMock(type='import')

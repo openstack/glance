@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import socket
 from unittest import mock
 import urllib
 import urllib.error
@@ -157,7 +158,8 @@ class TestScriptsUtils(test_utils.BaseTestCase):
     @mock.patch('glance.common.utils.socket.getaddrinfo')
     def test_validate_legacy_import_from_uri_ok(self, mock_getaddrinfo):
         mock_getaddrinfo.return_value = [
-            (None, None, None, None, ('203.0.113.1', 80))]
+            (socket.AF_INET, socket.SOCK_STREAM, 6, '',
+             ('93.184.216.34', 80))]
         uri = 'http://example.com/img'
         self.assertEqual(
             uri, script_utils.validate_legacy_import_from_uri(uri))
@@ -166,10 +168,7 @@ class TestScriptsUtils(test_utils.BaseTestCase):
     def test_validate_legacy_import_from_uri_filtered(self, mock_getaddrinfo):
         mock_getaddrinfo.return_value = [
             (None, None, None, None, ('127.0.0.1', 80))]
-        self.config(disallowed_hosts=['127.0.0.1'],
-                    group='import_filtering_opts')
-        self.config(allowed_ports=[80],
-                    group='import_filtering_opts')
+        self.config(allowed_ports=[80], group='import_filtering_opts')
         self.assertRaises(exception.Invalid,
                           script_utils.validate_legacy_import_from_uri,
                           'http://127.0.0.1:80/x')

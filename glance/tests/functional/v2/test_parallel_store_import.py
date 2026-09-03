@@ -71,6 +71,7 @@ class TestParallelStoreImport(functional.SynchronousAPIBase):
         self.config(max_parallel_stores=max_parallel_stores,
                     group='image_import_opts')
         self.config(allowed_ports=[], group='import_filtering_opts')
+        self.config(allowed_hosts=['localhost'], group='import_filtering_opts')
 
     def _enable_image_conversion(self, output_format='raw'):
         from glance.async_.flows.plugins import image_conversion  # noqa: F401
