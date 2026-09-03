@@ -260,7 +260,7 @@ class TestSafeRedirectHandler(test_utils.BaseTestCase):
     def setUp(self):
         super(TestSafeRedirectHandler, self).setUp()
 
-    @mock.patch('glance.common.utils.validate_import_uri')
+    @mock.patch('glance.common.utils.validate_uri')
     def test_redirect_to_allowed_url(self, mock_validate):
         """Test redirect to allowed URL is accepted."""
         mock_validate.return_value = True
@@ -285,7 +285,7 @@ class TestSafeRedirectHandler(test_utils.BaseTestCase):
         # Should return a request object (not None)
         self.assertIsNotNone(result)
 
-    @mock.patch('glance.common.utils.validate_import_uri')
+    @mock.patch('glance.common.utils.validate_uri')
     def test_redirect_to_disallowed_url(self, mock_validate):
         """Test redirect to disallowed URL raises error."""
         mock_validate.return_value = False

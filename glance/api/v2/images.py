@@ -460,7 +460,7 @@ class ImagesController(object):
             ctxt, admin_context=admin_context)
 
         if (import_method == 'web-download' and
-                not utils.validate_import_uri(uri)):
+                not utils.validate_uri(uri)):
             LOG.debug("URI for web-download does not pass filtering: %s", uri)
             msg = (_("URI for web-download does not pass filtering: %s") % uri)
             raise webob.exc.HTTPBadRequest(explanation=msg)
@@ -1188,6 +1188,17 @@ class ImagesController(object):
 
             if validation_data is not None:
                 self._validate_hashing_data(validation_data)
+
+            # NOTE(abhishekk): Reject restricted HTTP(S) hosts before
+            # spawning the async location_import task (same filter as
+            # web-download).
+            scheme = urlparse.urlparse(url).scheme
+            if scheme in ('http', 'https') and not utils.validate_uri(url):
+                LOG.debug("URI for add location does not pass filtering: %s",
+                          url)
+                msg = (_("URI for add location does not pass filtering: %s")
+                       % url)
+                raise webob.exc.HTTPBadRequest(explanation=msg)
 
             if 'os_glance_import_task' in image.extra_properties:
                 # NOTE(pdeore): This will raise exception.Conflict if the

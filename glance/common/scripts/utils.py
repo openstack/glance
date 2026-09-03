@@ -137,7 +137,7 @@ def validate_location_uri(location):
 def validate_legacy_import_from_uri(location):
     """Validate legacy ``import_from`` URI (scheme + import filter)."""
     uri = validate_location_uri(location)
-    if not common_utils.validate_import_uri(uri):
+    if not common_utils.validate_uri(uri):
         msg = (_("URI for legacy import task does not pass filtering: %s") %
                uri)
         raise exception.Invalid(msg)
@@ -147,7 +147,7 @@ def validate_legacy_import_from_uri(location):
 class SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
     """HTTP redirect handler that validates redirect destinations."""
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        if not common_utils.validate_import_uri(newurl):
+        if not common_utils.validate_uri(newurl):
             msg = (_("Redirect to disallowed URL: %s") % newurl)
             raise exception.InvalidRedirect(msg)
         return super().redirect_request(req, fp, code, msg, headers, newurl)
@@ -194,7 +194,7 @@ class _PinnedHTTPSConnection(http.client.HTTPSConnection):
 def _pinned_ip_for_request(req):
     """Return a pinned destination IP for an external HTTP(S) URI."""
     try:
-        return common_utils.get_validated_import_address(req.full_url)
+        return common_utils.get_validated_address(req.full_url)
     except ValueError as exc:
         msg = (_("URI does not pass filtering: %s") % req.full_url)
         LOG.debug("%s (%s)", msg, exc)
