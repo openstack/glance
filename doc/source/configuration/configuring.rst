@@ -268,6 +268,41 @@ Configuring the Filesystem Storage Backend
   may improve the throughput but it may also slightly increase the memory
   usage when handling a large number of requests.
 
+``filesystem_store_timeout=SECONDS``
+  Optional. Default: ``0``
+
+  Can only be specified in configuration files.
+
+  `This option is specific to the filesystem storage backend.`
+
+  Timeout for filesystem store operations such as delete, get size, and
+  capacity checks. Set to ``0`` to disable timeout protection and use normal
+  blocking I/O. Set to a positive integer to enable timeout protection using
+  a thread pool. When an operation exceeds the timeout, Glance returns HTTP
+  503 Service Unavailable. Recommended values are 30 seconds for network
+  storage, or higher for slow networks.
+
+``filesystem_store_thread_pool_size=SIZE``
+  Optional. Default: ``10``
+
+  Can only be specified in configuration files.
+
+  `This option is specific to the filesystem storage backend.`
+
+  Thread pool size for timeout-protected filesystem operations. Only used when
+  ``filesystem_store_timeout`` is greater than zero.
+
+``filesystem_store_threadpool_threshold=PERCENT``
+  Optional. Default: ``75``
+
+  Can only be specified in configuration files.
+
+  `This option is specific to the filesystem storage backend.`
+
+  Thread pool usage threshold, as a percentage, at which a warning is logged
+  indicating the pool is getting busy and may start blocking. Only used when
+  ``filesystem_store_timeout`` is greater than zero.
+
 Configuring the Filesystem Storage Backend with multiple stores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

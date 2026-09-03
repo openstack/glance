@@ -449,6 +449,10 @@ class ImageProxy(NotificationProxy, domain_proxy.Image):
             msg = _("Insufficient permissions on image storage media: %s") % e
             _send_notification(notify_error, 'image.upload', msg)
             raise webob.exc.HTTPServiceUnavailable(explanation=msg)
+        except glance_store.exceptions.TimeoutError as e:
+            msg = _("Filesystem store operation timed out: %s") % e.msg
+            _send_notification(notify_error, 'image.upload', msg)
+            raise webob.exc.HTTPServiceUnavailable(explanation=msg)
         except ValueError as e:
             msg = (_("Cannot save data for image %(image_id)s: %(error)s") %
                    {'image_id': self.repo.image_id,

@@ -6754,6 +6754,18 @@ class TestMultiImagesController(base.MultiIsolatedUnitTest):
         self.assertEqual(1, len(image.locations))
         self.assertEqual("cheap", image.locations[0]['metadata']['store'])
 
+    def test_delete_from_store_timeout(self):
+        def fake_delete_image_location_from_backend(context, image_id,
+                                                    location):
+            raise store.exceptions.TimeoutError(timeout=30)
+        self.mock_object(store_utils,
+                         'delete_image_location_from_backend',
+                         fake_delete_image_location_from_backend)
+        request = unit_test_utils.get_fake_request(is_admin=True)
+        self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                          self.controller.delete_from_store,
+                          request, "fast", UUID6)
+
     def test_image_lazy_loading_store(self):
         # assert existing image does not have store in metadata
         existing_image = self.images[1]
