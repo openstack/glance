@@ -1254,7 +1254,22 @@ class ImportURITestCase(test_utils.BaseTestCase):
              ('93.184.216.34', 80))
         ]
         pinned = utils.resolve_pinned_address('example.com', 80)
-        self.assertEqual(pinned, '93.184.216.34')
+        self.assertEqual(pinned, ['93.184.216.34'])
+
+    @mock.patch("glance.common.utils.socket.getaddrinfo")
+    def test_resolve_pinned_address_dualstack(self, mock_getaddrinfo):
+        """Pinned address comes from validated DNS resolution."""
+        mock_getaddrinfo.return_value = [
+            (socket.AF_INET, socket.SOCK_STREAM, 6, '',
+             ('93.184.216.34', 80)),
+            (socket.AF_INET6, socket.SOCK_STREAM, 6, '',
+             ('2607:f298:6:a014::c3e:9bd6', 80, 0, 0)),
+        ]
+        pinned = utils.resolve_pinned_address('example.com', 80)
+        self.assertEqual(
+            ['93.184.216.34', '2607:f298:6:a014::c3e:9bd6'],
+            pinned,
+        )
 
 
 class S3CredentialUpdateTestCase(test_utils.BaseTestCase):

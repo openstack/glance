@@ -239,9 +239,10 @@ def resolve_pinned_address(hostname, port):
         raise ValueError('failed to resolve external host %s: %s' %
                          (hostname, exc))
 
+    filtered = []
     for addr in addresses:
         if host_is_whitelisted:
-            return str(addr)
+            filtered.append(str(addr))
 
         check = addr
         if isinstance(addr, ipaddress.IPv6Address) and addr.ipv4_mapped:
@@ -263,9 +264,13 @@ def resolve_pinned_address(hostname, port):
                     blocked = True
                     break
         if not blocked:
-            return str(addr)
+            filtered.append(str(addr))
 
-    raise ValueError('no allowed addresses for external host: %s' % hostname)
+    if not filtered:
+        raise ValueError(
+            'no allowed addresses for external host: %s' % hostname
+        )
+    return filtered
 
 
 def get_validated_address(uri):
