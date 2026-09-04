@@ -195,10 +195,20 @@ class _ValidatedExternalHTTPHandler(urllib.request.HTTPHandler):
 
     def http_open(self, req):
         pinned_ip = _pinned_ip_for_request(req)
-        return self.do_open(
-            lambda host, **kwargs: _PinnedHTTPConnection(
-                host, pinned_ip=pinned_ip, **kwargs),
-            req)
+        for addr in pinned_ip:
+            try:
+                return self.do_open(
+                    lambda host, **kwargs: _PinnedHTTPConnection(
+                        host, pinned_ip=addr, **kwargs),
+                    req)
+            except Exception as exc:  # noqa
+                LOG.warning("Failed to import image %(url)s using IP %(ip)s: "
+                            "%(exc)s",
+                            {"url": req.full_url, "ip": addr, "exc": exc})
+                continue
+        raise exception.ImportTaskError(
+            "Exhausted allowed addresses when importing image."
+        )
 
 
 class _ValidatedExternalHTTPSHandler(urllib.request.HTTPSHandler):
@@ -206,10 +216,20 @@ class _ValidatedExternalHTTPSHandler(urllib.request.HTTPSHandler):
 
     def https_open(self, req):
         pinned_ip = _pinned_ip_for_request(req)
-        return self.do_open(
-            lambda host, **kwargs: _PinnedHTTPSConnection(
-                host, pinned_ip=pinned_ip, **kwargs),
-            req)
+        for addr in pinned_ip:
+            try:
+                return self.do_open(
+                    lambda host, **kwargs: _PinnedHTTPSConnection(
+                        host, pinned_ip=addr, **kwargs),
+                    req)
+            except Exception as exc:  # noqa
+                LOG.warning("Failed to import image %(url)s using IP %(ip)s: "
+                            "%(exc)s",
+                            {"url": req.full_url, "ip": addr, "exc": exc})
+                continue
+        raise exception.ImportTaskError(
+            "Exhausted allowed addresses when importing image."
+        )
 
 
 def open_external_uri(uri_or_request):
