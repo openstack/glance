@@ -1,0 +1,11 @@
+---
+fixes:
+  - |
+    Fix a regression introduced when fixing CVE-2026-71197.
+    Now during image import via web-download, if the image host is resolved
+    to several IP addresses by DNS, all of them that pass filtering critera
+    will be tried one by one.
+
+    This among others ensures that if DNS resolves to both IPv4 and IPv6
+    addresses but Glance itself is running in a single stack network,
+    the correct IP address that Glance can connect to will eventually be tried.
