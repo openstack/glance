@@ -20,6 +20,7 @@ import urllib.request
 
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
+from glance.common import utils as common_utils
 import glance.tests.utils as test_utils
 
 
@@ -312,29 +313,40 @@ class TestGetImageDataIter(test_utils.BaseTestCase):
     def setUp(self):
         super(TestGetImageDataIter, self).setUp()
 
+    @mock.patch.object(common_utils, 'LimitingReader')
+    @mock.patch.object(common_utils, 'CooperativeReader')
     @mock.patch('builtins.open', create=True)
     @mock.patch('glance.common.scripts.utils.os.path.getsize')
-    def test_get_image_data_iter_file_uri(self, mock_getsize, mock_open):
+    def test_get_image_data_iter_file_uri(self, mock_getsize, mock_open,
+                                          mock_coop, mock_limit):
         """Test file:// URI handling."""
         mock_file = mock.Mock()
         mock_open.return_value = mock_file
         mock_getsize.return_value = 42
 
-        result = script_utils.get_image_data_iter("file:///tmp/test.img")
+        data, size = script_utils.get_image_data_iter("file:///tmp/test.img")
 
         mock_getsize.assert_called_once_with("/tmp/test.img")
         mock_open.assert_called_once_with("/tmp/test.img", "rb")
-        self.assertEqual(result, (mock_file, 42))
+        mock_coop.assert_called_once_with(mock_file)
+        mock_limit.assert_called_once_with(mock_coop.return_value,
+                                           script_utils.CONF.image_size_cap)
+        self.assertEqual(data, mock_limit.return_value)
+        self.assertEqual(size, 42)
 
+    @mock.patch.object(common_utils, 'LimitingReader')
+    @mock.patch.object(common_utils, 'CooperativeReader')
     @mock.patch('urllib.request.build_opener')
-    def test_get_image_data_iter_http_uri(self, mock_build_opener):
+    def test_get_image_data_iter_http_uri(self, mock_build_opener,
+                                          mock_coop, mock_limit):
         """Test HTTP URI handling with redirect validation."""
         mock_opener = mock.Mock()
         mock_response = mock.Mock()
         mock_opener.open.return_value = mock_response
         mock_build_opener.return_value = mock_opener
 
-        result = script_utils.get_image_data_iter("http://example.com/image")
+        data, size = script_utils.get_image_data_iter(
+            "http://example.com/image")
 
         # Should use build_opener with SafeRedirectHandler
         mock_build_opener.assert_called_once()
@@ -361,6 +373,8 @@ class TestGetImageDataIter(test_utils.BaseTestCase):
             "SafeRedirectHandler should be passed to build_opener")
 
         mock_opener.open.assert_called_once_with("http://example.com/image")
-        self.assertEqual(len(result), 2)
-        self.assertEqual(result[0], mock_response)
-        self.assertEqual(result[1], 0)
+        mock_coop.assert_called_once_with(mock_response)
+        mock_limit.assert_called_once_with(mock_coop.return_value,
+                                           script_utils.CONF.image_size_cap)
+        self.assertEqual(data, mock_limit.return_value)
+        self.assertEqual(size, 0)

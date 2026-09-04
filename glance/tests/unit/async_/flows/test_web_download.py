@@ -22,6 +22,7 @@ from glance.async_.flows._internal_plugins import web_download
 from glance.async_.flows import api_image_import
 import glance.common.exception
 import glance.common.scripts.utils as script_utils
+from glance.common import utils as common_utils
 from glance import domain
 import glance.tests.utils as test_utils
 
@@ -159,3 +160,21 @@ class TestWebDownloadTask(test_utils.BaseTestCase):
             mock_iter.return_value = (data_mock, 4)
             self.assertRaises(glance.common.exception.ImportTaskError,
                               self.web_download_task.execute)
+
+    @mock.patch.object(filesystem.Store, 'add')
+    @mock.patch('urllib.request.build_opener')
+    def test_web_download_data_is_size_limited(self, mock_build_opener,
+                                               mock_add):
+        mock_response = mock.MagicMock()
+        mock_response.headers = {'content-length': '4'}
+        mock_opener = mock.MagicMock()
+        mock_opener.open.return_value = mock_response
+        mock_build_opener.return_value = mock_opener
+        mock_add.return_value = ["path", 4]
+
+        self.web_download_task.uri = 'http://example.com/image.qcow2'
+        self.web_download_task.execute()
+
+        data_arg = mock_add.call_args[0][1]
+        self.assertIsInstance(data_arg, common_utils.LimitingReader)
+        self.assertEqual(data_arg.limit, CONF.image_size_cap)
