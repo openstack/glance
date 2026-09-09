@@ -813,9 +813,7 @@ class _ImportMetadata(task.Task):
             token = self.context.auth_token
             request = urllib.request.Request(image_download_metadata_url,
                                              headers={'X-Auth-Token': token})
-            opener = urllib.request.build_opener(
-                script_utils.SafeRedirectHandler)
-            with opener.open(request) as payload:
+            with script_utils.open_external_uri(request) as payload:
                 data = json.loads(payload.read().decode('utf-8'))
 
             if data.get('status') != 'active':

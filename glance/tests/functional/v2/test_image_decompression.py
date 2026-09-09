@@ -39,6 +39,7 @@ class TestImageDecompression(functional.SynchronousAPIBase):
 
     def setUp(self, single_store=True):
         super(TestImageDecompression, self).setUp(single_store=single_store)
+        self._mock_localhost_dns()
         # Import to register image_import_opts config group otherwise tests
         # will fail with NoSuchOptGroup error.
         from glance.async_.flows import api_image_import  # noqa
