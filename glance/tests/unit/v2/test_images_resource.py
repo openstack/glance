@@ -17,7 +17,7 @@ import datetime
 import hashlib
 import http.client as http
 import os
-import requests
+import socket
 from unittest import mock
 import uuid
 
@@ -27,6 +27,7 @@ from oslo_config import cfg
 from oslo_serialization import jsonutils
 from oslo_utils import fixture
 from oslo_utils import timeutils
+import requests
 import testtools
 import webob
 import webob.exc
@@ -219,6 +220,13 @@ class TestImagesController(base.IsolatedUnitTest):
         self.controller.gateway.store_utils = self.store_utils
         self.controller._key_manager = fake_keymgr.fake_api()
         store.create_stores()
+        # Avoid real DNS for HTTP location URI filtering in controller tests.
+        getaddrinfo = mock.patch(
+            'glance.common.utils.socket.getaddrinfo',
+            return_value=[(socket.AF_INET, socket.SOCK_STREAM, 6, '',
+                           ('93.184.216.34', 0))])
+        getaddrinfo.start()
+        self.addCleanup(getaddrinfo.stop)
 
     def _create_images(self):
         self.images = [
@@ -4016,6 +4024,24 @@ class TestImagesController(base.IsolatedUnitTest):
                                      image_id=image_id,
                                      user_id=request.context.user_id,
                                      request_id=request.context.request_id)
+
+    def test_add_location_blocks_restricted_http_hosts(self):
+        self.config(default_store='http', group='glance_store')
+        image_id = str(uuid.uuid4())
+        self.images = [
+            _db_fixture(image_id, owner=TENANT1,
+                        name='1',
+                        disk_format='raw',
+                        container_format='bare',
+                        status='queued'),
+        ]
+        self.db.image_create(None, self.images[0])
+        request = unit_test_utils.get_fake_request()
+        for url in ('http://127.0.0.1:80/secret',
+                    'http://169.254.169.254/latest/meta-data/'):
+            self.assertRaises(webob.exc.HTTPBadRequest,
+                              self.controller.add_location,
+                              request, image_id, {'url': url})
 
     @mock.patch.object(glance.notifier.TaskFactoryProxy, 'new_task')
     def test_add_location_with_service_role(self, mock_task):
