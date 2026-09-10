@@ -225,8 +225,14 @@ Validation of a URI happens as follows:
 
    a. missing hostname: reject
    b. If there's a whitelist, and the host is not in it: reject.  Otherwise,
-      skip c and continue on to 3.
+      skip c and d and continue on to 3.
    c. If there's a blacklist, and the host is in it: reject.
+
+   d. Unless the host is listed in ``allowed_hosts``, reject URIs that
+      target loopback or link-local IP addresses (for example
+      ``127.0.0.1`` or cloud metadata at ``169.254.169.254``). Hostnames
+      that resolve to any of those address types are also rejected.
+      Private RFC1918 addresses are not blocked by this check.
 
 3. If there's a port in the URI, the port is checked.
 
@@ -254,10 +260,21 @@ settings for these options:
 * ``allowed_ports`` - ``[80, 443]``
 * ``disallowed_ports`` - empty list
 
+In addition to the host allow/deny lists above, Glance always rejects
+import URIs that target loopback or link-local IP addresses unless the
+host is explicitly listed in ``allowed_hosts``. Hostnames that resolve
+to any of those address types are also rejected. Private RFC1918
+addresses (for example ``10.0.0.0/8`` or ``192.168.0.0/16``) are not
+blocked by default.
+
 Thus if you use the defaults, end users will only be able to access URIs
-using the http or https scheme.  The only ports users will be able to specify
-are 80 and 443.  (Users do not have to specify a port, but if they do, it must
-be either 80 or 443.)
+using the http or https scheme. The only ports users will be able to
+specify are 80 and 443.  (Users do not have to specify a port, but if
+they do, it must be either 80 or 443.) Loopback and link-local
+destinations remain blocked unless listed in ``allowed_hosts``.
+
+To permit imports from loopback or link-local image sources, add the
+trusted hostnames or IP addresses to ``allowed_hosts``.
 
 .. note::
    The **glance-image-import.conf** is an optional file.  You can find an

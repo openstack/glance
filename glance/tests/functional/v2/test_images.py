@@ -253,6 +253,7 @@ class TestImages(functional.FunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download(self):
+        self.allowed_hosts = ['localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -397,6 +398,7 @@ class TestImages(functional.FunctionalTest):
     def test_web_download_redirect_validation(self):
         """Test that redirect destinations are validated."""
         self.config(allowed_ports=[80], group='import_filtering_opts')
+        self.allowed_hosts = ['localhost']
         self.config(disallowed_hosts=['127.0.0.1'],
                     group='import_filtering_opts')
         self.start_servers(**self.__dict__.copy())
@@ -435,7 +437,7 @@ class TestImages(functional.FunctionalTest):
         redirect_thread.daemon = True
         redirect_thread.start()
 
-        redirect_uri = 'http://127.0.0.1:%s/' % redirect_port
+        redirect_uri = 'http://localhost:%s/' % redirect_port
         path = self._url('/v2/images/%s/import' % image_id)
         headers = self._headers({
             'content-type': 'application/json',
@@ -484,6 +486,37 @@ class TestImages(functional.FunctionalTest):
         self.assertIsNone(image.get('size'))
 
         # Clean up
+        path = self._url('/v2/images/%s' % image_id)
+        response = requests.delete(path, headers=self._headers())
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        self.stop_servers()
+
+    def test_web_download_blocks_restricted_hosts(self):
+        """Test that restricted addresses are rejected at import time."""
+        self.start_servers(**self.__dict__.copy())
+
+        path = self._url('/v2/images')
+        headers = self._headers({'content-type': 'application/json'})
+        data = jsonutils.dumps({
+            'name': 'ssrf-test', 'type': 'kernel',
+            'disk_format': 'aki', 'container_format': 'aki'})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.CREATED, response.status_code)
+        image_id = jsonutils.loads(response.text)['id']
+
+        path = self._url('/v2/images/%s/import' % image_id)
+        headers = self._headers({
+            'content-type': 'application/json',
+            'X-Roles': 'admin',
+        })
+        data = jsonutils.dumps({'method': {
+            'name': 'web-download',
+            'uri': 'http://169.254.169.254/latest/meta-data/'
+        }})
+        response = requests.post(path, headers=headers, data=data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
+
         path = self._url('/v2/images/%s' % image_id)
         response = requests.delete(path, headers=self._headers())
         self.assertEqual(http.NO_CONTENT, response.status_code)
@@ -5437,6 +5470,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download(self):
+        self.allowed_hosts = ['localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -5601,6 +5635,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download_different_backend(self):
+        self.allowed_hosts = ['localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -5766,6 +5801,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_multi_stores(self):
+        self.allowed_hosts = ['localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -5930,6 +5966,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_copy_image_lifecycle(self):
+        self.allowed_hosts = ['localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -6156,6 +6193,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # Test if copying task fails in between then the rollback
         # should delete the data from only stores to which it is
         # copied and not from the existing stores.
+        self.allowed_hosts = ['localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -6415,6 +6453,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_multi_stores_specifying_all_stores(self):
+        self.allowed_hosts = ['localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -7415,6 +7454,7 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
         return image_id
 
     def _test_copy_public_image_as_non_admin(self):
+        self.allowed_hosts = ['localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Create a publicly-visible image as TENANT1

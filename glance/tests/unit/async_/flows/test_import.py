@@ -77,7 +77,7 @@ class TestImportTask(test_utils.BaseTestCase):
                                                 container_format='bare')
 
         task_input = {
-            "import_from": "http://cloud.foo/image.qcow2",
+            "import_from": "http://93.184.216.34/image.qcow2",
             "import_from_format": "qcow2",
             "image_properties": {'disk_format': 'qcow2',
                                  'container_format': 'bare'}
@@ -458,10 +458,10 @@ class TestImportTask(test_utils.BaseTestCase):
                                               self.task_type)
 
         data = [b"test"]
-
+        image_size = len(b"test")
         store = glance_store.get_store_from_scheme('file')
         path = glance_store.store_add_to_backend(mock.sentinel.image_id, data,
-                                                 mock.sentinel.image_size,
+                                                 image_size,
                                                  store, context=None)[0]
 
         path_wo_scheme = path.split("file://")[1]

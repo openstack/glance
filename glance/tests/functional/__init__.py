@@ -117,6 +117,11 @@ class BaseServer(metaclass=abc.ABCMeta):
         if kwargs:
             conf_override.update(**kwargs)
 
+        # HostAddress ListOpt expects [host1,host2] without quotes.
+        allowed_hosts = conf_override.get('allowed_hosts')
+        if isinstance(allowed_hosts, (list, tuple)):
+            conf_override['allowed_hosts'] = '[%s]' % ','.join(allowed_hosts)
+
         # A config file and paste.ini to use just for this test...we don't want
         # to trample on currently-running Glance servers, now do we?
 
@@ -342,6 +347,8 @@ class ApiServer(Server):
         self.node_staging_uri = 'file://%s' % os.path.join(
             self.test_dir, 'staging')
 
+        self.allowed_hosts = []
+
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG,stevedore.extension=INFO
@@ -380,6 +387,7 @@ flavor = %(deployment_flavor)s
 filesystem_store_datadir=%(image_dir)s
 default_store = %(default_store)s
 [import_filtering_opts]
+allowed_hosts = %(allowed_hosts)s
 allowed_ports = []
 """
         self.paste_conf_base = """[composite:glance-api]
@@ -524,6 +532,8 @@ class ApiServerForMultipleBackend(Server):
         self.user_storage_quota = '0'
         self.lock_path = self.test_dir
 
+        self.allowed_hosts = []
+
         self.conf_base = """[DEFAULT]
 debug = %(debug)s
 default_log_levels = eventlet.wsgi.server=DEBUG,stevedore.extension=INFO
@@ -567,6 +577,7 @@ filesystem_store_datadir=%(image_dir_backend_2)s
 [file3]
 filesystem_store_datadir=%(image_dir_backend_3)s
 [import_filtering_opts]
+allowed_hosts = %(allowed_hosts)s
 allowed_ports = []
 [os_glance_staging_store]
 filesystem_store_datadir=%(staging_dir)s
