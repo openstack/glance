@@ -682,6 +682,12 @@ def db_sync(version='heads', engine=None):
 
 
 def start_standalone_http_server():
+    """Serve fixture image data on an ephemeral IPv4 port.
+
+    The server binds 127.0.0.1 only. Web-download tests must use that
+    address in the import URI so pin-download does not connect to ::1 on
+    dual-stack hosts.
+    """
     def _get_http_handler_class():
         class StaticHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             def do_GET(self):

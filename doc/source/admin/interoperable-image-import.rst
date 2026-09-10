@@ -242,6 +242,14 @@ Validation of a URI happens as follows:
 
 4. The URI is accepted as valid.
 
+When Glance later downloads the image data, the URI is validated again and
+DNS is resolved at fetch time. Every returned address is checked against the
+same host filtering rules, including ``disallowed_hosts`` entries that list
+IP addresses. The HTTP connection is pinned to the validated destination
+address so a DNS change between API validation and worker download cannot
+redirect the fetch to a different target. Redirect destinations are
+validated and pinned on each hop.
+
 Note that if you allow a scheme, either by whitelisting it or by not
 blacklisting it, any URI that uses the default port for that scheme by not
 including a port in the URI is allowed.  If it does include a port in the URI,

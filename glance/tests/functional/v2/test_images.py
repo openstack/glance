@@ -253,7 +253,7 @@ class TestImages(functional.FunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download(self):
-        self.allowed_hosts = ['localhost']
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -348,7 +348,7 @@ class TestImages(functional.FunctionalTest):
         # Start http server locally
         thread, httpd, port = test_utils.start_standalone_http_server()
 
-        image_data_uri = 'http://localhost:%s/' % port
+        image_data_uri = 'http://127.0.0.1:%s/' % port
         data = jsonutils.dumps({'method': {
             'name': 'web-download',
             'uri': image_data_uri
@@ -398,6 +398,7 @@ class TestImages(functional.FunctionalTest):
     def test_web_download_redirect_validation(self):
         """Test that redirect destinations are validated."""
         self.config(allowed_ports=[80], group='import_filtering_opts')
+        # Keep 127.0.0.1 off the whitelist so the redirect hop is rejected.
         self.allowed_hosts = ['localhost']
         self.config(disallowed_hosts=['127.0.0.1'],
                     group='import_filtering_opts')
@@ -5470,7 +5471,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download(self):
-        self.allowed_hosts = ['localhost']
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -5582,7 +5583,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # Start http server locally
         thread, httpd, port = test_utils.start_standalone_http_server()
 
-        image_data_uri = 'http://localhost:%s/' % port
+        image_data_uri = 'http://127.0.0.1:%s/' % port
         data = jsonutils.dumps({'method': {
             'name': 'web-download',
             'uri': image_data_uri
@@ -5635,7 +5636,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_using_web_download_different_backend(self):
-        self.allowed_hosts = ['localhost']
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -5747,7 +5748,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # Start http server locally
         thread, httpd, port = test_utils.start_standalone_http_server()
 
-        image_data_uri = 'http://localhost:%s/' % port
+        image_data_uri = 'http://127.0.0.1:%s/' % port
         data = jsonutils.dumps({'method': {
             'name': 'web-download',
             'uri': image_data_uri
@@ -5801,7 +5802,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_multi_stores(self):
-        self.allowed_hosts = ['localhost']
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -5912,7 +5913,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # Start http server locally
         thread, httpd, port = test_utils.start_standalone_http_server()
 
-        image_data_uri = 'http://localhost:%s/' % port
+        image_data_uri = 'http://127.0.0.1:%s/' % port
         data = jsonutils.dumps(
             {'method': {'name': 'web-download', 'uri': image_data_uri},
              'stores': ['file1', 'file2']})
@@ -5966,7 +5967,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_copy_image_lifecycle(self):
-        self.allowed_hosts = ['localhost']
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -6077,7 +6078,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # Start http server locally
         thread, httpd, port = test_utils.start_standalone_http_server()
 
-        image_data_uri = 'http://localhost:%s/' % port
+        image_data_uri = 'http://127.0.0.1:%s/' % port
         data = jsonutils.dumps(
             {'method': {'name': 'web-download', 'uri': image_data_uri},
              'stores': ['file1']})
@@ -6193,7 +6194,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # Test if copying task fails in between then the rollback
         # should delete the data from only stores to which it is
         # copied and not from the existing stores.
-        self.allowed_hosts = ['localhost']
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -6304,7 +6305,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # Start http server locally
         thread, httpd, port = test_utils.start_standalone_http_server()
 
-        image_data_uri = 'http://localhost:%s/' % port
+        image_data_uri = 'http://127.0.0.1:%s/' % port
         data = jsonutils.dumps(
             {'method': {'name': 'web-download', 'uri': image_data_uri},
              'stores': ['file1']})
@@ -6453,7 +6454,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         self.stop_servers()
 
     def test_image_import_multi_stores_specifying_all_stores(self):
-        self.allowed_hosts = ['localhost']
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Image list should be empty
@@ -6564,7 +6565,7 @@ class TestImagesMultipleBackend(functional.MultipleBackendFunctionalTest):
         # Start http server locally
         thread, httpd, port = test_utils.start_standalone_http_server()
 
-        image_data_uri = 'http://localhost:%s/' % port
+        image_data_uri = 'http://127.0.0.1:%s/' % port
         data = jsonutils.dumps(
             {'method': {'name': 'web-download', 'uri': image_data_uri},
              'all_stores': True})
@@ -7419,7 +7420,7 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
         # Start http server locally
         thread, httpd, port = test_utils.start_standalone_http_server()
 
-        image_data_uri = 'http://localhost:%s/' % port
+        image_data_uri = 'http://127.0.0.1:%s/' % port
         data = jsonutils.dumps(
             {'method': {'name': 'web-download', 'uri': image_data_uri},
              'stores': ['file1']})
@@ -7454,7 +7455,7 @@ class TestCopyImagePermissions(functional.MultipleBackendFunctionalTest):
         return image_id
 
     def _test_copy_public_image_as_non_admin(self):
-        self.allowed_hosts = ['localhost']
+        self.allowed_hosts = ['127.0.0.1', 'localhost']
         self.start_servers(**self.__dict__.copy())
 
         # Create a publicly-visible image as TENANT1
