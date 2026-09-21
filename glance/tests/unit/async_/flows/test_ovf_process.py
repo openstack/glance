@@ -19,7 +19,11 @@ import tarfile
 import tempfile
 from unittest import mock
 
-from defusedxml.ElementTree import ParseError
+import pyexpat
+if pyexpat.version_info >= (2, 7, 2):
+    from xml.etree.ElementTree import ParseError
+else:
+    from defusedxml.ElementTree import ParseError
 
 from glance.async_.flows import ovf_process
 from glance.common import exception

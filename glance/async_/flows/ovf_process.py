@@ -18,7 +18,11 @@ import re
 import shutil
 import tarfile
 
-from defusedxml import ElementTree as etree
+import pyexpat
+if pyexpat.version_info >= (2, 7, 2):
+    from xml.etree import ElementTree as etree
+else:
+    from defusedxml import ElementTree as etree
 
 from oslo_config import cfg
 from oslo_log import log as logging
