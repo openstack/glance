@@ -29,14 +29,14 @@
       - name: openstack/taskflow
 
 - job:
-    name: glance-tox-functional-py313-oslo-tips
+    name: glance-tox-functional-py314-oslo-tips
     parent: glance-tox-oslo-tips-base
     nodeset: debian-trixie-8GB
     description: |
-      Glance py313 functional tests vs. oslo libraries masters
+      Glance py314 functional tests vs. oslo libraries masters
     vars:
-      python_version: 3.13
-      tox_envlist: functional-py313
+      python_version: 3.14
+      tox_envlist: functional-py314
 
 - job:
     name: glance-tox-keystone-tips-base
@@ -51,24 +51,24 @@
       - name: openstack/python-keystoneclient
 
 - job:
-    name: glance-tox-py313-keystone-tips
+    name: glance-tox-py314-keystone-tips
     parent: glance-tox-keystone-tips-base
     nodeset: debian-trixie-8GB
     description: |
-      Glance py313 unit tests vs. keystone masters
+      Glance py314 unit tests vs. keystone masters
     vars:
-      python_version: 3.13
-      tox_envlist: py313
+      python_version: 3.14
+      tox_envlist: py314
 
 - job:
-    name: glance-tox-functional-py313-keystone-tips
+    name: glance-tox-functional-py314-keystone-tips
     parent: glance-tox-keystone-tips-base
     nodeset: debian-trixie-8GB
     description: |
-      Glance py313 functional tests vs. keystone masters
+      Glance py314 functional tests vs. keystone masters
     vars:
-      python_version: 3.13
-      tox_envlist: functional-py313
+      python_version: 3.14
+      tox_envlist: functional-py314
 
 - job:
     name: glance-tox-glance_store-tips-base
@@ -81,24 +81,24 @@
       - name: openstack/glance_store
 
 - job:
-    name: glance-tox-py313-glance_store-tips
+    name: glance-tox-py314-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     nodeset: debian-trixie-8GB
     description: |
-      Glance py313 unit tests vs. glance_store master
+      Glance py314 unit tests vs. glance_store master
     vars:
-      python_version: 3.13
-      tox_envlist: py313
+      python_version: 3.14
+      tox_envlist: py314
 
 - job:
-    name: glance-tox-functional-py313-glance_store-tips
+    name: glance-tox-functional-py314-glance_store-tips
     parent: glance-tox-glance_store-tips-base
     nodeset: debian-trixie-8GB
     description: |
-      Glance py313 functional tests vs. glance_store master
+      Glance py314 functional tests vs. glance_store master
     vars:
-      python_version: 3.13
-      tox_envlist: functional-py313
+      python_version: 3.14
+      tox_envlist: functional-py314
 
 - job:
     name: glance-tox-cursive-tips-base
@@ -113,24 +113,24 @@
       - name: openstack/castellan
 
 - job:
-    name: glance-tox-py313-cursive-tips
+    name: glance-tox-py314-cursive-tips
     parent: glance-tox-cursive-tips-base
     nodeset: debian-trixie-8GB
     description: |
-      Glance py313 unit tests vs. cursive (and related libs) master
+      Glance py314 unit tests vs. cursive (and related libs) master
     vars:
-      python_version: 3.13
-      tox_envlist: py313
+      python_version: 3.14
+      tox_envlist: py314
 
 - job:
-    name: glance-tox-functional-py313-cursive-tips
+    name: glance-tox-functional-py314-cursive-tips
     parent: glance-tox-cursive-tips-base
     nodeset: debian-trixie-8GB
     description: |
-      Glance py313 functional tests vs. cursive (and related libs) master
+      Glance py314 functional tests vs. cursive (and related libs) master
     vars:
-      python_version: 3.13
-      tox_envlist: functional-py313
+      python_version: 3.14
+      tox_envlist: functional-py314
 
 - job:
     name: tempest-integrated-storage-import
@@ -344,7 +344,7 @@
     check:
       jobs:
         - openstack-tox-functional-py311
-        - openstack-tox-functional-py313
+        - openstack-tox-functional-py314
         - glance-ceph-thin-provisioning:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
@@ -389,7 +389,7 @@
     gate:
       jobs:
         - openstack-tox-functional-py311
-        - openstack-tox-functional-py313
+        - openstack-tox-functional-py314
         - tempest-integrated-storage:
             irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-import:
@@ -407,8 +407,8 @@
         - glance-secure-rbac-protection-functional
     experimental:
       jobs:
-        - glance-tox-py313-glance_store-tips
-        - glance-tox-functional-py313-glance_store-tips
+        - glance-tox-py314-glance_store-tips
+        - glance-tox-functional-py314-glance_store-tips
         - barbican-tempest-plugin-simple-crypto
         - grenade-multinode
         - glance-multistore-cinder-import-fips:
@@ -428,19 +428,19 @@
         # to define these jobs in the openstack/project-config repo.
         # That would make us less agile in adjusting these tests, so we
         # aren't doing that either.
-        - glance-tox-functional-py313-oslo-tips:
+        - glance-tox-functional-py314-oslo-tips:
             branches: master
-        - glance-tox-py313-keystone-tips:
+        - glance-tox-py314-keystone-tips:
             branches: master
-        - glance-tox-functional-py313-keystone-tips:
+        - glance-tox-functional-py314-keystone-tips:
             branches: master
-        - glance-tox-py313-glance_store-tips:
+        - glance-tox-py314-glance_store-tips:
             branches: master
-        - glance-tox-functional-py313-glance_store-tips:
+        - glance-tox-functional-py314-glance_store-tips:
             branches: master
-        - glance-tox-py313-cursive-tips:
+        - glance-tox-py314-cursive-tips:
             branches: master
-        - glance-tox-functional-py313-cursive-tips:
+        - glance-tox-functional-py314-cursive-tips:
             branches: master
         - glance-multistore-cinder-import-fips:
             branches: master
