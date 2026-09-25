@@ -18,11 +18,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2026-08-10 12:34+0000\n"
+"POT-Creation-Date: 2026-09-22 22:39+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2026-08-08 09:51+0000\n"
+"PO-Revision-Date: 2026-09-24 07:31+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language: en_GB\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -3097,6 +3097,10 @@ msgstr ""
 "data."
 
 #, python-format
+msgid "Filesystem store operation timed out: %s"
+msgstr "Filesystem store operation timed out: %s"
+
+#, python-format
 msgid "Forbidding request, metadata definition namespace=%s is not visible."
 msgstr "Forbidding request, metadata definition namespace=%s is not visible."
 
@@ -3162,6 +3166,14 @@ msgstr "If true, namespace will not be deletable."
 #, python-format
 msgid "Image %(id)s could not be deleted because it is in use: %(exc)s"
 msgstr "Image %(id)s could not be deleted because it is in use: %(exc)s"
+
+#, python-format
+msgid ""
+"Image %(id)s could not be deleted because the filesystem store operation "
+"timed out: %(exc)s"
+msgstr ""
+"Image %(id)s could not be deleted because the filesystem store operation "
+"timed out: %(exc)s"
 
 #, python-format
 msgid "Image %(iid)s is not stored in store %(sid)s."
@@ -3622,14 +3634,6 @@ msgstr "Missing required credential: %(required)s"
 msgid "Multi backend is not supported at this site."
 msgstr "Multi backend is not supported at this site."
 
-#, python-format
-msgid ""
-"Multiple 'image' service matches for region %(region)s. This generally means "
-"that a region is required and you have not supplied one."
-msgstr ""
-"Multiple 'image' service matches for region %(region)s. This generally means "
-"that a region is required and you have not supplied one."
-
 msgid "Must supply a non-negative value for age."
 msgstr "Must supply a non-negative value for age."
 
@@ -3901,9 +3905,6 @@ msgstr ""
 "possible: https://docs.openstack.org/heat/latest/template_guide/openstack."
 "html"
 
-msgid "Response from Keystone does not contain a Glance endpoint."
-msgstr "Response from Keystone does not contain a Glance endpoint."
-
 msgid "Rolling upgrades are currently supported only for MySQL and Sqlite"
 msgstr "Rolling upgrades are currently supported only for MySQL and Sqlite"
 
@@ -4088,6 +4089,14 @@ msgstr "The cert file you specified %s does not exist"
 
 msgid "The current status of this task"
 msgstr "The current status of this task"
+
+#, python-format
+msgid ""
+"The data for Image %(id)s could not be deleted because the filesystem store "
+"operation timed out: %(exc)s"
+msgstr ""
+"The data for Image %(id)s could not be deleted because the filesystem store "
+"operation timed out: %(exc)s"
 
 #, python-format
 msgid ""
@@ -4400,8 +4409,12 @@ msgstr ""
 "Total size is %(size)d bytes (%(human_size)s) across %(img_count)d images"
 
 #, python-format
-msgid "URI for OVF processing does not pass filtering: %s"
-msgstr "URI for OVF processing does not pass filtering: %s"
+msgid "URI does not pass filtering: %s"
+msgstr "URI does not pass filtering: %s"
+
+#, python-format
+msgid "URI for add location does not pass filtering: %s"
+msgstr "URI for add location does not pass filtering: %s"
 
 #, python-format
 msgid "URI for legacy import task does not pass filtering: %s"
@@ -4490,10 +4503,6 @@ msgid "Unexpected exception when deleting from store foo."
 msgstr "Unexpected exception when deleting from store foo."
 
 #, python-format
-msgid "Unexpected response: %s"
-msgstr "Unexpected response: %s"
-
-#, python-format
 msgid "Unknown auth strategy '%s'"
 msgstr "Unknown auth strategy '%s'"
 
@@ -4504,6 +4513,10 @@ msgstr "Unknown command: %s"
 #, python-format
 msgid "Unknown import method name '%s'."
 msgstr "Unknown import method name '%s'."
+
+#, python-format
+msgid "Unknown response code: %d"
+msgstr "Unknown response code: %d"
 
 msgid "Unknown sort direction, must be 'desc' or 'asc'"
 msgstr "Unknown sort direction, must be 'desc' or 'asc'"

@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: glance VERSION\n"
 "Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
-"POT-Creation-Date: 2026-08-10 12:34+0000\n"
+"POT-Creation-Date: 2026-09-22 22:39+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -908,14 +908,6 @@ msgstr "id=%s のメタデータ定義タグが見つかりません"
 msgid "Missing required credential: %(required)s"
 msgstr "必須の資格情報がありません: %(required)s"
 
-#, python-format
-msgid ""
-"Multiple 'image' service matches for region %(region)s. This generally means "
-"that a region is required and you have not supplied one."
-msgstr ""
-"領域 %(region)s に対して複数の「イメージ」サービスが一致します。これは一般"
-"に、領域が必要であるのに、領域を指定していないことを意味します。"
-
 msgid "Must supply a non-negative value for age."
 msgstr "存続期間には負ではない値を指定してください。"
 
@@ -1120,9 +1112,6 @@ msgstr "失効した pid ファイル %s を削除中"
 
 msgid "Request body must be a JSON array of operation objects."
 msgstr "要求本文は、操作オブジェクトの JSON 配列でなければなりません。"
-
-msgid "Response from Keystone does not contain a Glance endpoint."
-msgstr "Keystone からの応答に Glance エンドポイントが含まれていません。"
 
 msgid "Rolling upgrades are currently supported only for MySQL and Sqlite"
 msgstr ""
@@ -1613,10 +1602,6 @@ msgstr "%s の paste 設定ファイルが見つかりません。"
 
 msgid "Unexpected body type. Expected list/dict."
 msgstr "予期しない本文タイプ。予期されたのはリストまたは辞書です。"
-
-#, python-format
-msgid "Unexpected response: %s"
-msgstr "予期しない応答: %s"
 
 #, python-format
 msgid "Unknown auth strategy '%s'"
