@@ -1323,7 +1323,13 @@ class TestImageFactory(unit_test_base.StoreClearingUnitTest):
         self.assertEqual('private', image.visibility)
         self.assertEqual([], image.locations)
 
-    def test_new_image_with_location(self):
+    @mock.patch("glance.common.utils.socket.getaddrinfo")
+    def test_new_image_with_location(self, mock_getaddrinfo):
+        # This avoid internet access in validate_external_location()
+        # (ie: DNS resolution of storeurl.com)
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ('93.184.216.34', 80))
+        ]
         locations = [{'url': '%s/%s' % (BASE_URI, UUID1),
                       'metadata': {}}]
         image = self.image_factory.new_image(locations=locations)
