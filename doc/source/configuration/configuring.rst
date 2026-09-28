@@ -2125,3 +2125,31 @@ done by setting the ``disk_formats`` parameter which is found in the
 
 ``disk_formats=<Comma separated list of disk formats>``
   Optional. Default: ``ami,ari,aki,vhd,vhdx,vmdk,raw,qcow2,vdi,iso,ploop``
+
+``allowed_upload_formats=<Comma separated list of disk formats>``
+  Optional. Default: empty (no extra restriction).
+
+  When empty or unset, traditional upload (``PUT /v2/images/{id}/file``)
+  works for any ``disk_format`` allowed at create time via ``disk_formats``.
+  When set to a non-empty list, Glance rejects traditional upload unless
+  the image ``disk_format`` is in this list. Interoperable image import
+  (stage + import) is not affected.
+
+  Use this together with ``disk_formats`` and
+  ``[image_conversion]/output_format`` when you want users to declare
+  formats such as ``qcow2`` for import and conversion, but not upload
+  those formats with traditional ``PUT /file``. Example for a raw
+  backend::
+
+      [image_format]
+      disk_formats = raw,qcow2
+      allowed_upload_formats = raw
+
+      [image_conversion]
+      output_format = raw
+
+  Creating a ``qcow2`` image and using ``PUT /file`` is rejected; creating
+  ``qcow2`` and importing with conversion remains allowed. Restricting
+  *who* may call traditional upload is still done with the
+  ``upload_image`` policy; this option only limits which formats may use
+  ``PUT /file`` when the list is non-empty.
