@@ -274,6 +274,64 @@ class TestCalculateHashTask(test_utils.BaseTestCase):
 
     @mock.patch.object(task_tracker, 'signal_finished')
     @mock.patch.object(task_tracker, 'register_operation')
+    def test_execute_hash_calculation_aborts_on_size_cap_exceeded(
+            self, mock_register_operation, mock_signal_finished):
+        # A malicious or misbehaving location can keep producing data
+        # indefinitely. Hash calculation must abort once it has read more
+        # than CONF.image_size_cap bytes, rather than reading forever.
+        self.loc_url = "cinder://image/fake_location"
+        self.hash_task_input.update(loc_url=self.loc_url)
+        self.image.status = 'queued'
+        self.image.checksum = None
+        self.image.os_hash_value = None
+
+        location_update = import_flow._UpdateLocationTask(
+            TASK_ID1, TASK_TYPE, self.image_repo, IMAGE_ID1, self.loc_url,
+            self.context)
+
+        location_update.execute()
+        self.assertEqual(1, self.image.locations.append.call_count)
+
+        # Since Image is mocked here, self.image.locations will not be
+        # set hence setting it here to check that it's popped out after
+        # CalculateHash aborts (same cleanup behavior as any other
+        # unrecoverable hash-calculation failure).
+        self.image.locations = [{'url': 'cinder://image/fake_location'}]
+
+        # Configure a tiny size cap and make the (mocked) remote data
+        # source exceed it.
+        self.config(image_size_cap=units.Ki)
+        oversized_data = b"*" * (2 * units.Ki)
+        self.image.get_data.return_value = io.BytesIO(oversized_data)
+
+        hashing_algo = CONF.hashing_algorithm
+        hash_calculation = import_flow._CalculateHash(TASK_ID1, TASK_TYPE,
+                                                      self.image_repo,
+                                                      IMAGE_ID1,
+                                                      hashing_algo,
+                                                      status='importing')
+
+        with mock.patch.object(import_flow.LOG, 'warning') as mock_warn:
+            self.assertRaises(exception.ImageSizeLimitExceeded,
+                              hash_calculation.execute)
+            mock_warn.assert_called_once()
+
+        # This is not a transient failure like IOError, so it must not be
+        # retried.
+        self.assertEqual(1, self.image.get_data.call_count)
+        self.assertEqual(CONF.hashing_algorithm, self.image.os_hash_algo)
+        self.assertIsNone(self.image.checksum)
+        self.assertIsNone(self.image.os_hash_value)
+        self.assertEqual('importing', self.image.status)
+        self.assertEqual(1, len(self.image.locations))
+
+        hash_calculation.revert(None)
+        self.assertIsNone(self.image.os_hash_algo)
+        self.assertEqual('queued', self.image.status)
+        self.assertEqual(0, len(self.image.locations))
+
+    @mock.patch.object(task_tracker, 'signal_finished')
+    @mock.patch.object(task_tracker, 'register_operation')
     def test_execute_hash_calculation_fails_if_image_data_deleted(
             self, mock_register_operation, mock_signal_finished):
         self.loc_url = '%s/fake_location_1' % (BASE_URI)

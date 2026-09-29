@@ -15,9 +15,12 @@
 
 import hashlib
 import http.client as http
+from http.server import BaseHTTPRequestHandler
+from http.server import HTTPServer
 import os
 import subprocess
 import tempfile
+import threading
 from unittest import mock
 import urllib
 import uuid
@@ -416,6 +419,42 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
                 server.shutdown()
                 server.server_close()
         super().tearDown()
+
+    def _start_mismatched_size_http_server(self, declared_size,
+                                           actual_size):
+        """Start a lab HTTP server whose HEAD and GET responses disagree.
+
+        HEAD reports ``declared_size`` bytes (so location validation and
+        the size check performed when the location is added both
+        succeed), while GET actually returns ``actual_size`` bytes. This
+        simulates a malicious or misbehaving remote location and is used
+        to verify that hash calculation independently bounds how much
+        data it reads instead of trusting the declared size.
+
+        :returns: the port the server is listening on.
+        """
+        class MismatchedSizeHandler(BaseHTTPRequestHandler):
+            def do_HEAD(self):
+                self.send_response(http.OK)
+                self.send_header('Content-Length', str(declared_size))
+                self.end_headers()
+
+            def do_GET(self):
+                self.send_response(http.OK)
+                self.end_headers()
+                self.wfile.write(b'A' * actual_size)
+
+            def log_message(self, *args, **kwargs):
+                # Keep test output quiet.
+                pass
+
+        server = HTTPServer(('127.0.0.1', 0), MismatchedSizeHandler)
+        port = server.server_address[1]
+        thread = threading.Thread(target=server.serve_forever)
+        thread.daemon = True
+        thread.start()
+        self.http_servers.append(server)
+        return port
 
     def _headers(self, custom_headers=None):
         base_headers = {
@@ -2587,6 +2626,78 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         image = jsonutils.loads(resp.text)
         self.assertEqual(expect_c, image['checksum'])
         self.assertEqual(expect_h, image['os_hash_value'])
+
+    def test_add_location_hash_calculation_aborts_on_size_cap_exceeded(
+            self):
+        # A malicious/misbehaving remote location can report a small
+        # size on HEAD (satisfying location validation and the add-time
+        # size check), while GET actually returns far more data.
+        # Configure image_size_cap between the two so background hash
+        # calculation is forced to abort partway through instead of
+        # reading the whole object.
+        self.config(image_size_cap=1024)
+        self.start_server()
+        port = self._start_mismatched_size_http_server(
+            declared_size=4, actual_size=4096)
+
+        image_id = self.api_methods.create_and_verify_image(
+            'image-1', disk_format='aki', container_format='aki'
+        )
+
+        # Add location without validation_data: the image is activated
+        # immediately and hash calculation runs afterwards in the
+        # background (see location_import.get_flow).
+        path = '/v2/images/%s/locations' % image_id
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        url = 'http://127.0.0.1:%s/oversized_image' % port
+        data = {'url': url}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+
+        image = self._wait_for_import_lock_clear(image_id)
+
+        # The image is (and stays) active, but the hash fields must never
+        # be populated, because hash calculation aborted once it read more
+        # than image_size_cap bytes rather than reading the whole object.
+        self.assertEqual('active', image['status'])
+        self.assertIsNone(image['checksum'])
+        self.assertIsNone(image['os_hash_value'])
+
+    def test_add_location_with_validation_data_aborts_on_size_cap_exceeded(
+            self):
+        # Same as above, but via the 'importing' code path used when
+        # validation_data is supplied: hash calculation must abort before
+        # the image can be activated, and the import must revert the image
+        # back to 'queued' instead of leaving it stuck 'importing' or
+        # falsely marking it 'active'.
+        self.config(image_size_cap=1024)
+        self.start_server()
+        port = self._start_mismatched_size_http_server(
+            declared_size=4, actual_size=4096)
+
+        image_id = self.api_methods.create_and_verify_image(
+            'image-1', disk_format='aki', container_format='aki'
+        )
+
+        path = '/v2/images/%s/locations' % image_id
+        headers = self._headers({'X-Tenant-Id': TENANT1})
+        url = 'http://127.0.0.1:%s/oversized_image' % port
+        # The actual hash value doesn't matter here: the size cap is hit,
+        # and hash calculation aborts, before validation data is ever
+        # checked.
+        validation_data = {
+            'os_hash_algo': 'sha512',
+            'os_hash_value': hashlib.sha512(b'unused').hexdigest(),
+        }
+        data = {'url': url, 'validation_data': validation_data}
+        response = self.api_post(path, headers=headers, json=data)
+        self.assertEqual(http.ACCEPTED, response.status_code, response.text)
+
+        image = self._wait_for_import_lock_clear(image_id)
+
+        self.assertEqual('queued', image['status'])
+        self.assertIsNone(image['checksum'])
+        self.assertIsNone(image['os_hash_value'])
 
     def test_add_location_with_do_secure_hash_false(self):
         self.config(do_secure_hash=False)
