@@ -24,11 +24,13 @@ from glance.async_.flows._internal_plugins import base_download
 from glance.async_ import utils
 from glance.common import exception
 from glance.common.scripts import utils as script_utils
+from glance.common import utils as common_utils
 from glance.i18n import _, _LI, _LE
 
 LOG = logging.getLogger(__name__)
 
 CONF = cfg.CONF
+CONF.import_opt('image_size_cap', 'glance.common.config')
 
 
 class _DownloadGlanceImage(base_download.BaseDownload):
@@ -68,7 +70,19 @@ class _DownloadGlanceImage(base_download.BaseDownload):
                         "task_id": self.task_id
                     })
 
-        self._path, bytes_written = self.store.add(self.image_id, data, 0)[0:2]
+        # NOTE: Bound the amount of remote data we are willing to read
+        # here, mirroring the image_size_cap enforcement already applied
+        # by get_image_data_iter() for the web-download import method
+        # (see bug 2160020). Without this, a malicious or misbehaving
+        # remote Glance region can keep this task, and the worker
+        # running it, busy indefinitely by never terminating the
+        # /v2/images/{id}/file response - regardless of what size it
+        # declared on the earlier, independent metadata call.
+        limited_data = common_utils.LimitingReader(
+            common_utils.CooperativeReader(data), CONF.image_size_cap)
+
+        self._path, bytes_written = self.store.add(
+            self.image_id, limited_data, 0)[0:2]
         if bytes_written != image_size:
             msg = (_("Task %(task_id)s failed because downloaded data "
                      "size %(data_size)i is different from expected %("

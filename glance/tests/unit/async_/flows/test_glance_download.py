@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import io
 import socket
 from unittest import mock
 import urllib.error
@@ -20,10 +21,12 @@ import urllib.error
 from glance_store._drivers import filesystem
 from oslo_config import cfg
 from oslo_utils.fixture import uuidsentinel
+from oslo_utils import units
 
 from glance.async_.flows._internal_plugins import glance_download
 from glance.async_.flows import api_image_import
 from glance.common import exception
+from glance.common import utils as common_utils
 import glance.context
 from glance import domain
 import glance.tests.utils as test_utils
@@ -91,9 +94,14 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
             mock_request.build_opener.return_value = mock_opener
             mock_add.return_value = ["path", 12345]
             self.assertEqual(glance_download_task.execute(12345), "path")
-            mock_add.assert_called_once_with(
-                self.image_id,
-                mock_response, 0)
+            mock_add.assert_called_once()
+            call_args = mock_add.call_args[0]
+            self.assertEqual(self.image_id, call_args[0])
+            data_arg = call_args[1]
+            self.assertIsInstance(data_arg, common_utils.LimitingReader)
+            self.assertEqual(CONF.image_size_cap, data_arg.limit)
+            self.assertIs(mock_response, data_arg.data.fd)
+            self.assertEqual(0, call_args[2])
             mock_request.Request.assert_called_once_with(
                 'https://other.cloud.foo/image/v2/images/%s/file' % (
                     uuidsentinel.remote_image),
@@ -162,9 +170,12 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
             mock_add.return_value = ["path", 1]
             self.assertRaises(glance.common.exception.ImportTaskError,
                               glance_download_task.execute, 12345)
-            mock_add.assert_called_once_with(
-                self.image_id,
-                mock_response, 0)
+            mock_add.assert_called_once()
+            call_args = mock_add.call_args[0]
+            self.assertEqual(self.image_id, call_args[0])
+            self.assertIsInstance(call_args[1], common_utils.LimitingReader)
+            self.assertIs(mock_response, call_args[1].data.fd)
+            self.assertEqual(0, call_args[2])
             mock_request.Request.assert_called_once_with(
                 'https://other.cloud.foo/image/v2/images/%s/file' % (
                     uuidsentinel.remote_image),
@@ -230,3 +241,79 @@ class TestGlanceDownloadTask(test_utils.BaseTestCase):
         result = glance_download_task.execute(12345)
         mock_open_external_uri.assert_called_once()
         self.assertEqual("path", result)
+        data_arg = mock_add.call_args[0][1]
+        self.assertIsInstance(data_arg, common_utils.LimitingReader)
+        self.assertIs(mock_response, data_arg.data.fd)
+
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
+    @mock.patch.object(filesystem.Store, 'add')
+    @mock.patch('glance.async_.utils.get_glance_endpoint')
+    def test_glance_download_data_is_size_limited(self, mock_gge, mock_add,
+                                                  mock_getaddrinfo):
+        """Test that the fetched stream is wrapped with image_size_cap.
+
+        This mirrors the same protection already applied to web-download
+        (see bug 2160020): without it, a malicious or misbehaving remote
+        Glance region could keep streaming data past whatever size it
+        declared on the metadata call, holding this task (and its
+        worker) busy indefinitely.
+        """
+        mock_getaddrinfo.return_value = [
+            ('', '', '', '', ('93.184.216.34', 80))]
+        mock_gge.return_value = 'https://other.cloud.foo/image'
+        glance_download_task = glance_download._DownloadGlanceImage(
+            self.context, self.task.task_id, self.task_type,
+            self.action_wrapper, ['foo'],
+            'RegionTwo', uuidsentinel.remote_image, 'public')
+        with mock.patch('urllib.request') as mock_request:
+            mock_opener = mock.MagicMock()
+            mock_response = mock.MagicMock()
+            mock_opener.open.return_value = mock_response
+            mock_request.build_opener.return_value = mock_opener
+            mock_add.return_value = ["path", 12345]
+            glance_download_task.execute(12345)
+
+            data_arg = mock_add.call_args[0][1]
+            self.assertIsInstance(data_arg, common_utils.LimitingReader)
+            self.assertEqual(CONF.image_size_cap, data_arg.limit)
+            self.assertIs(mock_response, data_arg.data.fd)
+
+    @mock.patch('glance.common.utils.socket.getaddrinfo')
+    @mock.patch.object(filesystem.Store, 'add')
+    @mock.patch('glance.async_.utils.get_glance_endpoint')
+    def test_glance_download_aborts_on_size_cap_exceeded(
+            self, mock_gge, mock_add, mock_getaddrinfo):
+        """Test the fetch aborts once more than image_size_cap is read.
+
+        Simulates a remote region that never stops streaming data: the
+        wrapping LimitingReader must raise ImageSizeLimitExceeded once
+        it has read past the configured cap, rather than allowing
+        store.add() to read forever.
+        """
+        mock_getaddrinfo.return_value = [
+            ('', '', '', '', ('93.184.216.34', 80))]
+        mock_gge.return_value = 'https://other.cloud.foo/image'
+        self.config(image_size_cap=units.Ki)
+        glance_download_task = glance_download._DownloadGlanceImage(
+            self.context, self.task.task_id, self.task_type,
+            self.action_wrapper, ['foo'],
+            'RegionTwo', uuidsentinel.remote_image, 'public')
+
+        def consume_fully(image_id, data, size):
+            # Simulate what a real store.add() implementation does:
+            # read the data until it is exhausted (or raises).
+            total = 0
+            for chunk in data:
+                total += len(chunk)
+            return ["path", total]
+
+        mock_add.side_effect = consume_fully
+
+        with mock.patch('urllib.request') as mock_request:
+            mock_opener = mock.MagicMock()
+            # An oversized, finite response - larger than image_size_cap.
+            mock_opener.open.return_value = io.BytesIO(
+                b"*" * (2 * units.Ki))
+            mock_request.build_opener.return_value = mock_opener
+            self.assertRaises(exception.ImageSizeLimitExceeded,
+                              glance_download_task.execute, 12345)
