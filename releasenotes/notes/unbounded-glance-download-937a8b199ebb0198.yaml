@@ -1,0 +1,27 @@
+---
+security:
+  - |
+    A bug in the ``glance-download`` import method (used to copy an image
+    from another Glance region, ``POST /v2/images/{image_id}/import``) was
+    fixed which allowed an unbounded amount of data to be read from the
+    remote region's ``/v2/images/{image_id}/file`` endpoint. A malicious
+    or misbehaving remote region could report a small, believable size on
+    the earlier, independent image metadata call, but then return far
+    more data (or never terminate its response) when the file itself was
+    fetched, keeping a task worker busy indefinitely and consuming
+    unbounded local staging space. The download now honors the existing
+    ``image_size_cap`` limit, aborting once more than that many bytes
+    have been read, the same protection already applied to other
+    image-data ingestion paths (see the ``web-download`` fix in
+    `bug 2160020 <https://bugs.launchpad.net/glance/+bug/2160020>`_).
+    Note that the default value for this limit is 1TiB, which may be
+    higher than is reasonable for some deployments. Operators should
+    take this opportunity to review that setting for correctness.
+  - |
+    Also fixed a related bug in the ``glance-download`` import flow's
+    failure handling: if the download step failed after the image
+    metadata step had already run, reverting the flow could raise an
+    unrelated ``InvalidImageStatusTransition`` error (attempting to move
+    the image from ``queued`` to ``queued``), which masked the real
+    failure reason in the task record. The image now reverts to
+    ``queued`` cleanly regardless of ordering.

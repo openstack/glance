@@ -884,8 +884,17 @@ class _ImportMetadata(task.Task):
                 if image_property not in self.old_properties:
                     action.pop_extra_property(image_property)
             action.set_image_extra_properties(self.old_properties)
-            action.set_image_attribute(status='queued',
-                                       **self.old_attributes)
+            attrs = dict(self.old_attributes)
+            # NOTE: A later task in the flow (e.g. the glance-download
+            # plugin's BaseDownload.revert()) may already have moved the
+            # image back to 'queued' by the time we get here, since
+            # taskflow reverts tasks in the reverse of their execution
+            # order. Only request the transition if it is still needed;
+            # 'queued' -> 'queued' is not a valid state transition and
+            # would otherwise mask the real revert/failure reason.
+            if action.image_status != 'queued':
+                attrs['status'] = 'queued'
+            action.set_image_attribute(**attrs)
 
 
 def assert_quota(context, task_repo, task_id, stores,

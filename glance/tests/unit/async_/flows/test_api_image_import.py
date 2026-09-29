@@ -1456,6 +1456,7 @@ class TestImportMetadata(test_utils.BaseTestCase):
 
     def test_revert_rollback_metadata_value(self):
         action = self.wrapper.__enter__.return_value
+        action.image_status = 'importing'
         task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
                                            self.context, self.wrapper,
                                            self.import_req)
@@ -1471,3 +1472,25 @@ class TestImportMetadata(test_utils.BaseTestCase):
         action.pop_extra_property.assert_called_once_with('prop2')
         action.set_image_extra_properties.assert_called_once_with(
             task.old_properties)
+
+    def test_revert_skips_status_when_already_queued(self):
+        """A later task's revert() (e.g. glance-download's
+        BaseDownload.revert()) may already have moved the image back to
+        'queued' by the time ours runs, since taskflow reverts tasks in
+        the reverse of their execution order. In that case we must not
+        try to set status='queued' again: 'queued' -> 'queued' is not a
+        valid transition and would mask the real revert/failure reason.
+        """
+        action = self.wrapper.__enter__.return_value
+        action.image_status = 'queued'
+        task = import_flow._ImportMetadata(TASK_ID1, TASK_TYPE,
+                                           self.context, self.wrapper,
+                                           self.import_req)
+        task.properties = {}
+        task.old_properties = {}
+        task.old_attributes = {'container_format': 'bare',
+                               'disk_format': 'qcow2'}
+        task.revert(None)
+        action.set_image_attribute.assert_called_once_with(
+            container_format='bare',
+            disk_format='qcow2')
