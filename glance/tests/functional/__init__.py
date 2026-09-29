@@ -1494,6 +1494,22 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
         self.fail('Timed out waiting for import failure on image %s '
                   '(last status=%s)' % (image_id, last_status))
 
+    def _wait_for_import_lock_clear(self, image_id, max_sec=5,
+                                    delay_sec=0.1):
+        """Wait until os_glance_import_task is cleared from the image."""
+        done_time = time.time() + max_sec
+        image = None
+        while time.time() <= done_time:
+            image = self.api_get('/v2/images/%s' % image_id).json
+            if not image.get('os_glance_import_task'):
+                return image
+            time.sleep(delay_sec)
+
+        self.assertEqual('', image.get('os_glance_import_task', ''),
+                         'Timed out waiting for import lock to clear on '
+                         'image %s' % image_id)
+        return image
+
     def _create(self):
         return self.api_post('/v2/images',
                              json={'name': 'foo',
