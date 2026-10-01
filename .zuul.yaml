@@ -36,6 +36,7 @@
       Glance py314 functional tests vs. oslo libraries masters
     vars:
       python_version: 3.14
+      python_use_pyenv: True
       tox_envlist: functional-py314
 
 - job:
@@ -58,6 +59,7 @@
       Glance py314 unit tests vs. keystone masters
     vars:
       python_version: 3.14
+      python_use_pyenv: True
       tox_envlist: py314
 
 - job:
@@ -68,6 +70,7 @@
       Glance py314 functional tests vs. keystone masters
     vars:
       python_version: 3.14
+      python_use_pyenv: True
       tox_envlist: functional-py314
 
 - job:
@@ -88,6 +91,7 @@
       Glance py314 unit tests vs. glance_store master
     vars:
       python_version: 3.14
+      python_use_pyenv: True
       tox_envlist: py314
 
 - job:
@@ -98,6 +102,7 @@
       Glance py314 functional tests vs. glance_store master
     vars:
       python_version: 3.14
+      python_use_pyenv: True
       tox_envlist: functional-py314
 
 - job:
@@ -120,6 +125,7 @@
       Glance py314 unit tests vs. cursive (and related libs) master
     vars:
       python_version: 3.14
+      python_use_pyenv: True
       tox_envlist: py314
 
 - job:
@@ -130,6 +136,7 @@
       Glance py314 functional tests vs. cursive (and related libs) master
     vars:
       python_version: 3.14
+      python_use_pyenv: True
       tox_envlist: functional-py314
 
 - job:
