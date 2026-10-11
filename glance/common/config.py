@@ -523,37 +523,6 @@ Related options:
     * None
 
 """)),
-    cfg.StrOpt('digest_algorithm',
-               default='sha256',
-               deprecated_for_removal=True,
-               deprecated_since="Dalmatian",
-               deprecated_reason=_("""
-This option has had no effect since the removal of native SSL support.
-"""),
-               help=_("""
-Digest algorithm to use for digital signature.
-
-Provide a string value representing the digest algorithm to
-use for generating digital signatures. By default, ``sha256``
-is used.
-
-To get a list of the available algorithms supported by the version
-of OpenSSL on your platform, run the command:
-``openssl list-message-digest-algorithms``.
-Examples are 'sha1', 'sha256', and 'sha512'.
-
-NOTE: ``digest_algorithm`` is not related to Glance's image signing
-and verification. It is only used to sign the universally unique
-identifier (UUID) as a part of the certificate file and key file
-validation.
-
-Possible values:
-    * An OpenSSL message digest algorithm identifier
-
-Related options:
-    * None
-
-""")),
     cfg.StrOpt('node_staging_uri',
                default='file:///tmp/staging/',
                help=_("""

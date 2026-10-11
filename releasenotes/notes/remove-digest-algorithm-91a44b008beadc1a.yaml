@@ -1,0 +1,4 @@
+---
+upgrade:
+  - |
+    The ``digest_algorithm`` option has been removed, as it had no effect.
