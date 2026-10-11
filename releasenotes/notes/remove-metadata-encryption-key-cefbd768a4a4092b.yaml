@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    The ``metadata_encryption_key`` option and its underlying feature has
+    been removed. It had been deprecated in the `D` release and was supposed
+    to be removed in the `F` release.

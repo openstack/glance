@@ -22,7 +22,6 @@ from oslo_utils import importutils
 from wsme.rest import json
 
 from glance.api.v2.model.metadef_property_type import PropertyType
-from glance.common import crypt
 from glance.common import exception
 from glance.common import utils as common_utils
 import glance.domain
@@ -31,7 +30,6 @@ from glance.i18n import _
 
 CONF = cfg.CONF
 CONF.import_opt('image_size_cap', 'glance.common.config')
-CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 
 
 def get_api():
@@ -101,10 +99,6 @@ class ImageRepo(object):
                 properties[prop['name']] = prop['value']
         locations = [loc for loc in db_image['locations']
                      if loc['status'] == 'active']
-        if CONF.metadata_encryption_key:
-            key = CONF.metadata_encryption_key
-            for location in locations:
-                location['url'] = crypt.urlsafe_decrypt(key, location['url'])
 
         # NOTE(danms): If the image is shared and we are not the
         # owner, we must have found it because we are a member. Set
@@ -143,17 +137,6 @@ class ImageRepo(object):
         )
 
     def _format_image_to_db(self, image):
-        locations = image.locations
-        if CONF.metadata_encryption_key:
-            key = CONF.metadata_encryption_key
-            ld = []
-            for loc in locations:
-                url = crypt.urlsafe_encrypt(key, loc['url'])
-                ld.append({'url': url, 'metadata': loc['metadata'],
-                           'status': loc['status'],
-                           # NOTE(zhiyan): New location has no ID field.
-                           'id': loc.get('id')})
-            locations = ld
         return {
             'id': image.image_id,
             'name': image.name,
@@ -162,7 +145,7 @@ class ImageRepo(object):
             'min_disk': image.min_disk,
             'min_ram': image.min_ram,
             'protected': image.protected,
-            'locations': locations,
+            'locations': image.locations,
             'checksum': image.checksum,
             'os_hash_algo': image.os_hash_algo,
             'os_hash_value': image.os_hash_value,

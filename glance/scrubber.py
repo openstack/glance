@@ -21,7 +21,6 @@ from glance_store import exceptions as store_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
 
-from glance.common import crypt
 from glance.common import exception
 from glance.common import timeutils
 from glance import context
@@ -169,7 +168,6 @@ Possible values:
 
 CONF = cfg.CONF
 CONF.register_opts(scrubber_opts)
-CONF.import_opt('metadata_encryption_key', 'glance.common.config')
 REASONABLE_DB_PAGE_SIZE = 1000
 
 
@@ -177,7 +175,6 @@ class ScrubDBQueue(object):
     """Database-based image scrub queue class."""
     def __init__(self):
         self.scrub_time = CONF.scrub_time
-        self.metadata_encryption_key = CONF.metadata_encryption_key
         self.admin_context = context.get_admin_context(show_deleted=True)
 
     def add_location(self, image_id, location):
@@ -246,19 +243,13 @@ class ScrubDBQueue(object):
                 if loc['status'] != 'pending_delete':
                     continue
 
-                if self.metadata_encryption_key:
-                    uri = crypt.urlsafe_decrypt(self.metadata_encryption_key,
-                                                loc['url'])
-                else:
-                    uri = loc['url']
-
                 # if multi-store is enabled then we need to pass backend
                 # to delete the image.
                 backend = loc['metadata'].get('store')
                 if CONF.enabled_backends:
-                    ret.append((image['id'], loc['id'], uri, backend))
+                    ret.append((image['id'], loc['id'], loc['url'], backend))
                 else:
-                    ret.append((image['id'], loc['id'], uri))
+                    ret.append((image['id'], loc['id'], loc['url']))
         return ret
 
     def has_image(self, image_id):

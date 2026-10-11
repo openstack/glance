@@ -75,12 +75,6 @@ so we only point out a few of them here.
     time in seconds between runs when the scrubber is run in daemon mode
     (ignored if the scrubber is not being run in daemon mode)
 
-``metadata_encryption_key``
-    If your **glance-api.conf** sets a value for this option (the default is to
-    leave it unset), you must include the same setting in your
-    **glance-scrubber.conf** or the scrubber won't be able to determine the
-    locations of your image data.
-
 ``restore``
     reset the specified image's status from'pending_delete' to 'active' when
     the image is deleted by mistake.

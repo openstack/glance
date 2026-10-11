@@ -523,34 +523,6 @@ Related options:
     * None
 
 """)),
-    cfg.StrOpt('metadata_encryption_key',
-               deprecated_for_removal=True,
-               deprecated_since="Dalmatian",
-               deprecated_reason=_("""
-This option doesnt serves the purpose of encryption of location metadata,
-whereas it encrypts location url only for specific APIs. Also if enabled
-this during an upgrade may disrupt existing deployments, as it does not
-support/provide db upgrade script to encrypt existing location URLs.
-Moreover, its functionality for encrypting location URLs is inconsistent
-which is resulting in download failures.
-"""),
-               secret=True,
-               help=_("""
-AES key for encrypting store location metadata.
-
-Provide a string value representing the AES cipher to use for
-encrypting Glance store metadata.
-
-NOTE: The AES key to use must be set to a random string of length
-16, 24 or 32 bytes.
-
-Possible values:
-    * String value representing a valid AES key
-
-Related options:
-    * None
-
-""")),
     cfg.StrOpt('digest_algorithm',
                default='sha256',
                deprecated_for_removal=True,
