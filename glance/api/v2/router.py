@@ -595,6 +595,15 @@ class API(wsgi.Router):
                        controller=reject_method_resource,
                        action='reject',
                        allowed_methods='GET')
+        mapper.connect('/info/import/detail',
+                       controller=info_resource,
+                       action='get_image_import_detail',
+                       conditions={'method': ['GET']},
+                       body_reject=True)
+        mapper.connect('/info/import/detail',
+                       controller=reject_method_resource,
+                       action='reject',
+                       allowed_methods='GET')
         mapper.connect('/info/stores',
                        controller=info_resource,
                        action='get_stores',

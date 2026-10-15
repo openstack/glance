@@ -1,0 +1,34 @@
+{
+    "import-methods": {
+        "description": "Import methods available.",
+        "type": "array",
+        "value": [
+            "glance-direct",
+            "web-download",
+            "copy-image"
+        ]
+    },
+    "plugins": [
+        {
+            "name": "inject_image_metadata",
+            "properties": {
+                "ignore_user_roles": [
+                    "admin"
+                ],
+                "inject": {
+                    "os_distro": "fedora"
+                }
+            }
+        },
+        {
+            "name": "image_conversion",
+            "properties": {
+                "output_format": "raw"
+            }
+        },
+        {
+            "name": "image_decompression",
+            "properties": {}
+        }
+    ]
+}

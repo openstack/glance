@@ -166,3 +166,54 @@ class TestDiscovery(functional.SynchronousAPIBase):
         response = self.api_get('/v2/info/stores/detail',
                                 headers={'X-Roles': 'member'})
         self.assertEqual(http.FORBIDDEN, response.status_code)
+
+    def test_import_info_detail(self):
+        # NOTE(abhishekk): This test is not testing the import plugins.
+        # It is only testing the import info detail. Also we need to import
+        # the plugins explicitly otherwise they will not loaded and test
+        # will fail with no such group [image_import_opts].
+        from glance.async_.flows import api_image_import  # noqa
+        from glance.async_.flows.plugins import image_conversion  # noqa
+        from glance.async_.flows.plugins import inject_image_metadata  # noqa
+
+        self.config(image_import_plugins=['inject_image_metadata',
+                                          'image_conversion',
+                                          'image_decompression'],
+                    group='image_import_opts')
+        self.config(ignore_user_roles=['admin'],
+                    group='inject_metadata_properties')
+        self.config(inject={'os_distro': 'fedora'},
+                    group='inject_metadata_properties')
+        self.config(output_format='qcow2', group='image_conversion')
+        self.start_server()
+
+        response = self.api_get('/v2/info/import/detail')
+        expected = {
+            'import-methods': {
+                'description': 'Import methods available.',
+                'type': 'array',
+                'value': ['glance-direct', 'web-download', 'copy-image']
+            },
+            'plugins': [
+                {
+                    'name': 'inject_image_metadata',
+                    'properties': {
+                        'ignore_user_roles': ['admin'],
+                        'inject': {'os_distro': 'fedora'}
+                    }
+                },
+                {
+                    'name': 'image_conversion',
+                    'properties': {'output_format': 'qcow2'}
+                },
+                {
+                    'name': 'image_decompression',
+                    'properties': {}
+                }
+            ]
+        }
+        self.assertEqual(expected, response.json)
+
+        response = self.api_get('/v2/info/import/detail',
+                                headers={'X-Roles': 'member'})
+        self.assertEqual(http.FORBIDDEN, response.status_code)

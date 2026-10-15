@@ -132,6 +132,9 @@ class DiscoveryAPIPolicy(APIPolicyBase):
     def stores_info_detail(self):
         self._enforce('stores_info_detail')
 
+    def import_info_detail(self):
+        self._enforce('import_info_detail')
+
 
 class ImageAPIPolicy(APIPolicyBase):
     def __init__(self, context, image, enforcer=None):

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from unittest import mock
+
 import glance.api.v2.discovery
 import glance.tests.unit.utils as unit_test_utils
 import glance.tests.utils as test_utils
@@ -42,3 +44,41 @@ class TestInfoControllers(test_utils.BaseTestCase):
         self.assertIn('import-methods', output)
         self.assertEqual(default_import_methods,
                          output['import-methods']['value'])
+
+    def test_get_import_info_detail(self):
+        controller = glance.api.v2.discovery.InfoController(
+            policy_enforcer=mock.Mock())
+        self.config(image_import_plugins=['inject_image_metadata',
+                                          'image_conversion',
+                                          'image_decompression'],
+                    group='image_import_opts')
+        self.config(ignore_user_roles=['admin'],
+                    group='inject_metadata_properties')
+        self.config(inject={'os_distro': 'fedora'},
+                    group='inject_metadata_properties')
+        self.config(output_format='qcow2', group='image_conversion')
+
+        req = unit_test_utils.get_fake_request(is_admin=True, roles=['admin'])
+        output = controller.get_image_import_detail(req)
+
+        self.assertEqual(['glance-direct', 'web-download', 'copy-image'],
+                         output['import-methods']['value'])
+        self.assertEqual(
+            [
+                {
+                    'name': 'inject_image_metadata',
+                    'properties': {
+                        'ignore_user_roles': ['admin'],
+                        'inject': {'os_distro': 'fedora'}
+                    }
+                },
+                {
+                    'name': 'image_conversion',
+                    'properties': {'output_format': 'qcow2'}
+                },
+                {
+                    'name': 'image_decompression',
+                    'properties': {}
+                }
+            ],
+            output['plugins'])
