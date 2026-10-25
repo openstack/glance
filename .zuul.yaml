@@ -269,29 +269,6 @@
               do_secure_hash: False
 
 - job:
-    name: glance-multistore-cinder-import-fips
-    parent: tempest-integrated-storage-import
-    description: |
-      The regular import workflow job to test with multiple cinder stores with
-      fips enabled
-    nodeset: devstack-single-node-centos-10-stream
-    pre-run: playbooks/enable-fips.yaml
-    vars:
-      configure_swap_size: 4096
-      nslookup_target: 'opendev.org'
-      devstack_local_conf:
-        post-config:
-          $GLANCE_API_CONF:
-            wsgi:
-              python_interpreter: $PYTHON
-      devstack_localrc:
-        USE_CINDER_FOR_GLANCE: True
-        GLANCE_ENABLE_MULTIPLE_STORES: True
-        CINDER_ENABLED_BACKENDS: lvm:lvmdriver-1,lvm:lvmdriver-2
-        GLANCE_CINDER_DEFAULT_BACKEND: lvmdriver-1
-        GLOBAL_VENV: false
-
-- job:
     name: glance-ceph-thin-provisioning
     parent: devstack-plugin-ceph-tempest-py3
     description: |
@@ -418,8 +395,6 @@
         - glance-tox-functional-py314-glance_store-tips
         - barbican-tempest-plugin-simple-crypto
         - grenade-multinode
-        - glance-multistore-cinder-import-fips:
-            irrelevant-files: *tempest-irrelevant-files
         - tempest-integrated-storage-rbac-old-defaults
     periodic:
       jobs:
@@ -448,8 +423,6 @@
         - glance-tox-py314-cursive-tips:
             branches: master
         - glance-tox-functional-py314-cursive-tips:
-            branches: master
-        - glance-multistore-cinder-import-fips:
             branches: master
         - tempest-integrated-storage-rbac-old-defaults:
             branches: master

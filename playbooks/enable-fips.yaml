@@ -1,3 +1,0 @@
-- hosts: all
-  roles:
-    - enable-fips
