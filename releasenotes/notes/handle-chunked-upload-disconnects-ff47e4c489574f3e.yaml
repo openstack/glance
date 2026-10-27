@@ -1,0 +1,10 @@
+---
+security:
+  - |
+    Glance now handles client disconnects while reading chunked image
+    uploads. Previously, a socket error raised by uWSGI after the client
+    disconnected was reported as an internal server error. The image is
+    restored to the queued state and the API returns a client error instead.
+    The packaged Apache configuration also answers ``Expect: 100-continue``
+    itself, preventing clients from waiting for uWSGI to send the interim
+    response before streaming a request body.
