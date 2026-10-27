@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    `Bug 2172280 <https://bugs.launchpad.net/glance/+bug/2172280>`_:
+     Fixed ``image_size_cap`` not being honored against the ``virtual_size``
+     of images being converted from such formats to raw. This could allow
+     inflating a very small image into images much larger than the desired
+     limit.

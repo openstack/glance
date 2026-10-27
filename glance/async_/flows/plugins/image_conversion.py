@@ -21,10 +21,12 @@ from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils.imageutils import format_inspector
+from oslo_utils import units
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
 
 from glance.async_ import utils
+from glance.common import exception
 from glance.i18n import _, _LI
 
 LOG = logging.getLogger(__name__)
@@ -170,6 +172,13 @@ class _ConvertImage(task.Task):
             raise RuntimeError('Image metadata disagrees about format')
 
         virtual_size = metadata.get('virtual-size', 0)
+        if virtual_size > CONF.image_size_cap:
+            LOG.error('Image virtual_size of %i MiB exceeds '
+                      'image_size_cap of %i MiB',
+                      virtual_size // units.Mi,
+                      CONF.image_size_cap // units.Mi)
+            raise exception.ImageSizeLimitExceeded(
+                'Virtual size would exceed image_size_cap')
         action.set_image_attribute(virtual_size=virtual_size)
 
         if 'backing-filename' in metadata:
