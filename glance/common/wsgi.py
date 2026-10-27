@@ -248,7 +248,14 @@ class _UWSGIChunkFile(object):
 
         uwsgi_mod = _get_uwsgi()
         while len(self._buffer) < length:
-            data = uwsgi_mod.chunked_read()
+            try:
+                data = uwsgi_mod.chunked_read()
+            except OSError as exc:
+                LOG.warning('Client disconnected during chunked upload: %s',
+                            exc)
+                raise webob.exc.HTTPBadRequest(
+                    explanation=_('Client disconnected during chunked '
+                                  'upload.')) from exc
             if not data:
                 break
             # append the buffer
