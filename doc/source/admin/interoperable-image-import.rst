@@ -781,6 +781,13 @@ as shown below:
 
 .. note::
 
+   While Zip and Gzip files are safe against "Zip bombs", LHA files are not.
+   See bug 2172284_ for more information.
+
+.. _2172284: https://bugs.launchpad.net/glance/+bug/2172284
+
+.. note::
+
   ``image_import_plugins`` config option is a list and multiple plugins can be
   enabled for the import flow. The plugins are not run in parallel. One can
   enable multiple plugins by configuring them in the
