@@ -1,0 +1,7 @@
+---
+security:
+  - |
+    Fix a security issue allowing attackers to decompress "Zip bombs" using
+    the decompression plugin used by the image import workflow.
+    While using Zip and Gzip files is now safe, it is strongly discouraged to
+    use LHA files, as they are still vulnerable.
