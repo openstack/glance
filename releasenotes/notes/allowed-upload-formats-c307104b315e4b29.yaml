@@ -1,0 +1,29 @@
+---
+features:
+  - |
+    A new configuration option ``[image_format]/allowed_upload_formats``
+    controls which disk formats may be used with traditional image upload
+    (``PUT /v2/images/{id}/file``). When left empty (the default), behavior
+    is unchanged: any ``disk_format`` allowed at create time may be uploaded.
+    When set to a non-empty list, traditional upload is rejected with HTTP
+    400 unless the image ``disk_format`` is in that list.
+
+    This lets operators keep formats such as ``qcow2`` in ``disk_formats``
+    so interoperable image import and the image conversion plugin can use
+    them as the declared source format, while blocking those formats on the
+    traditional upload path (which does not run conversion).
+
+    Restricting *who* may call traditional upload remains the role of the
+    ``upload_image`` policy. ``allowed_upload_formats`` only limits formats
+    when configured with a non-empty list. The three related settings work
+    independently:
+
+    * ``[image_format]/disk_formats`` -- formats allowed at image create
+    * ``[image_format]/allowed_upload_formats`` -- formats allowed for
+      ``PUT /file``
+    * ``[image_conversion]/output_format`` -- format stored after conversion
+upgrade:
+  - |
+    No behavior change on upgrade. ``allowed_upload_formats`` defaults to
+    empty, which applies no extra restriction. Operators who want the new
+    behavior must set a non-empty list intentionally.

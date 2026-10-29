@@ -138,6 +138,17 @@ class ImageDataController(object):
             api_pol = api_policy.ImageAPIPolicy(req.context, image,
                                                 self.policy)
             api_pol.upload_image()
+            allowed_formats = CONF.image_format.allowed_upload_formats
+            if (allowed_formats and
+                    image.disk_format not in allowed_formats):
+                msg = _("Traditional upload is not allowed for disk_format "
+                        "'%(fmt)s'. Allowed formats for PUT /file: "
+                        "%(allowed)s. Use the interoperable image import "
+                        "process instead.") % {
+                            'fmt': image.disk_format,
+                            'allowed': ', '.join(allowed_formats)}
+                raise webob.exc.HTTPBadRequest(explanation=msg,
+                                               request=req)
             image.status = 'saving'
             try:
                 # create a trust if backend is registry

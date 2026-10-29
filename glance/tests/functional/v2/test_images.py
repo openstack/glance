@@ -1082,6 +1082,79 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         self.assertEqual(128 * units.Mi, image['virtual_size'])
         self.assertEqual(raw_size, image['size'])
 
+    def test_allowed_upload_formats_rejects_put_import_still_works(self):
+        """Reject PUT /file for unlisted formats; import+conversion still OK.
+
+        With allowed_upload_formats=raw, a qcow2 image cannot use traditional
+        upload, but stage + import with image_conversion still succeeds.
+        """
+        # NOTE(abhishekk): Import to register the image_import_opts and
+        # image_conversion config groups, otherwise self.config() below fails
+        # with NoSuchGroupError.
+        from glance.async_.flows import api_image_import  # noqa: F401
+        from glance.async_.flows.plugins import image_conversion  # noqa: F401
+        self.config(allowed_upload_formats=['raw'], group='image_format')
+        self.config(image_import_plugins=['image_conversion'],
+                    group='image_import_opts')
+        self.config(output_format='raw', group='image_conversion')
+        self.start_server()
+
+        headers = self._headers({'Content-Type': 'application/json'})
+        data = {'name': 'myqcow', 'disk_format': 'qcow2',
+                'container_format': 'bare'}
+        response = self.api_post('/v2/images',
+                                 headers=headers, json=data)
+        self.assertEqual(http.CREATED, response.status_code,
+                         'Failed to create: %s' % response.text)
+        image = jsonutils.loads(response.text)
+        image_id = image['id']
+
+        fn = self.api_methods.create_qcow(128 * units.Mi)
+        try:
+            qcow_data = open(fn, 'rb').read()
+        finally:
+            os.remove(fn)
+
+        # Traditional upload must be rejected for qcow2
+        put_headers = self._headers({
+            'Content-Type': 'application/octet-stream'})
+        response = self.api_put('/v2/images/%s/file' % image_id,
+                                headers=put_headers,
+                                data=qcow_data)
+        self.assertEqual(http.BAD_REQUEST, response.status_code)
+        self.assertIn('Traditional upload is not allowed', response.text)
+
+        # Image remains queued so import can proceed
+        response = self.api_get('/v2/images/%s' % image_id,
+                                headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        image = jsonutils.loads(response.text)
+        self.assertEqual('queued', image['status'])
+        self.assertEqual('qcow2', image['disk_format'])
+
+        # Stage + import with conversion still works
+        stage_headers = self._headers({
+            'Content-Type': 'application/octet-stream'})
+        response = self.api_put('/v2/images/%s/stage' % image_id,
+                                headers=stage_headers,
+                                data=qcow_data)
+        self.assertEqual(http.NO_CONTENT, response.status_code)
+
+        import_data = {'method': {'name': 'glance-direct'}}
+        self.api_methods.import_image(image_id, data=import_data)
+        path = '/v2/images/%s' % image_id
+        func_utils.wait_for_status(self, request_path=path,
+                                   request_headers=self._headers(),
+                                   status='active',
+                                   max_sec=30,
+                                   delay_sec=0.2)
+
+        response = self.api_get(path, headers=self._headers())
+        self.assertEqual(http.OK, response.status_code)
+        image = jsonutils.loads(response.text)
+        self.assertEqual('raw', image['disk_format'])
+        self.assertEqual(128 * units.Mi, image['virtual_size'])
+
     def test_hidden_images(self):
         self.config(show_multiple_locations=True)
         self.start_server()

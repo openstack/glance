@@ -460,6 +460,41 @@ class TestImagesController(base.StoreClearingUnitTest):
         self.assertEqual('YYYY', image.data)
         self.assertEqual(4, image.size)
 
+    def test_upload_allowed_upload_formats_empty_allows_any(self):
+        """Empty allowed_upload_formats does not restrict PUT /file."""
+        self.config(allowed_upload_formats=[], group='image_format')
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd', owner='tenant1', disk_format='qcow2')
+        self.image_repo.result = image
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
+        self.assertEqual('YYYY', image.data)
+
+    def test_upload_allowed_upload_formats_permits_listed(self):
+        """PUT /file succeeds when image disk_format is in the allow list."""
+        self.config(allowed_upload_formats=['raw'], group='image_format')
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd', owner='tenant1', disk_format='raw')
+        self.image_repo.result = image
+        self.controller.upload(request, unit_test_utils.UUID2, 'YYYY', 4)
+        self.assertEqual('YYYY', image.data)
+        self.assertEqual(4, image.size)
+
+    def test_upload_allowed_upload_formats_rejects_unlisted(self):
+        """PUT /file is rejected when disk_format is not in the allow list."""
+        self.config(allowed_upload_formats=['raw'], group='image_format')
+        request = unit_test_utils.get_fake_request(roles=['admin', 'member'])
+        image = FakeImage('abcd', owner='tenant1', disk_format='qcow2')
+        self.image_repo.result = image
+        exc = self.assertRaises(webob.exc.HTTPBadRequest,
+                                self.controller.upload,
+                                request, unit_test_utils.UUID2, 'YYYY', 4)
+        self.assertIn('qcow2', str(exc))
+        self.assertIn('Traditional upload is not allowed', str(exc))
+        self.assertIn('interoperable image import', str(exc))
+        # Rejected before status changes to saving / data is stored
+        self.assertNotEqual('saving', image.status)
+        self.assertIsNone(image.data)
+
     @mock.patch('glance.api.v2.image_data.ks_quota.enforce_image_size_total')
     def test_upload_enforces_quota_with_known_size(self, mock_enforce):
         request = unit_test_utils.get_fake_request(roles=['admin', 'member'])

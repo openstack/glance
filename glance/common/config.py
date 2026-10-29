@@ -104,6 +104,16 @@ image_format_opts = [
                        "image attribute"),
                 deprecated_opts=[cfg.DeprecatedOpt('disk_formats',
                                                    group='DEFAULT')]),
+    cfg.ListOpt('allowed_upload_formats',
+                default=[],
+                help=_("Disk formats allowed for traditional image upload "
+                       "(PUT /v2/images/{id}/file). When empty (the "
+                       "default), no extra restriction is applied and any "
+                       "disk_format allowed at create time may be uploaded. "
+                       "When set to a non-empty list, traditional upload is "
+                       "rejected unless the image disk_format is in this "
+                       "list. This does not affect interoperable image "
+                       "import (stage + import).")),
     cfg.ListOpt('vmdk_allowed_types',
                 default=['streamOptimized', 'monolithicSparse'],
                 help=_("A list of strings describing allowed VMDK "
