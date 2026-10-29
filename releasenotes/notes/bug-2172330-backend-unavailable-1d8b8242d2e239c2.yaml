@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Image download now returns HTTP 503 instead of HTTP 500 when a
+    configured store backend is unavailable.

@@ -1681,6 +1681,21 @@ class TestImageDataSerializer(test_utils.BaseTestCase):
                               self.serializer.download,
                               response, image)
 
+    def test_download_backend_unavailable(self):
+        """Test image download returns HTTPServiceUnavailable."""
+        with mock.patch.object(glance.domain.proxy.Image,
+                               'get_data') as mock_get_data:
+            mock_get_data.side_effect = glance_store.BackendException()
+
+            request = wsgi.Request.blank('/')
+            response = webob.Response()
+            response.request = request
+            image = FakeImage(size=3, data=iter('ZZZ'))
+            image.get_data = mock_get_data
+            self.assertRaises(webob.exc.HTTPServiceUnavailable,
+                              self.serializer.download,
+                              response, image)
+
     def test_download_store_get_not_support(self):
         """Test image download returns HTTPBadRequest.
 

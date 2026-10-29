@@ -690,6 +690,15 @@ class ResponseSerializer(wsgi.JSONResponseSerializer):
             raise webob.exc.HTTPNoContent(explanation=e.msg)
         except glance_store.RemoteServiceUnavailable as e:
             raise webob.exc.HTTPServiceUnavailable(explanation=e.msg)
+        except glance_store.BackendException as e:
+            reason = str(e)
+            if reason:
+                msg = _("Unable to retrieve image data from the image "
+                        "location: %(reason)s") % {'reason': reason}
+            else:
+                msg = _("Unable to retrieve image data from the image "
+                        "location.")
+            raise webob.exc.HTTPServiceUnavailable(explanation=msg)
         except (glance_store.StoreGetNotSupported,
                 glance_store.StoreRandomGetNotSupported) as e:
             raise webob.exc.HTTPBadRequest(explanation=e.msg)
