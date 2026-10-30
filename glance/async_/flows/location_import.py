@@ -25,12 +25,14 @@ from taskflow import task
 import glance.async_.flows.api_image_import as image_import
 from glance.common import exception
 from glance.common import store_utils
+from glance.common import utils as common_utils
 from glance.i18n import _, _LW
 from glance import task_cancellation_tracker as tracker
 
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
+CONF.import_opt('image_size_cap', 'glance.common.config')
 
 
 class _HashCalculationFailed(exception.GlanceException):
@@ -67,7 +69,17 @@ class _CalculateHash(task.Task):
     def _calculate_hash(self, image):
         current_os_hash_value = hashlib.new(self.hashing_algo)
         current_checksum = hashlib.md5(usedforsecurity=False)
-        for chunk in image.get_data():
+        # NOTE: Bound the amount of remote data we are willing to read
+        # here. Without this, a malicious or misbehaving location (for
+        # example an HTTP(S) source that never terminates its response
+        # body, or that lies about Content-Length) can keep this task,
+        # and the worker running it, busy indefinitely walking the
+        # remote object. This mirrors the image_size_cap enforcement
+        # already applied to other image-data ingestion paths (see
+        # glance.common.scripts.utils.get_image_data_iter).
+        limited_data = common_utils.LimitingReader(
+            image.get_data(), CONF.image_size_cap)
+        for chunk in limited_data:
             if tracker.is_canceled(self.task_id):
                 raise _HashCalculationCanceled(
                     _('Hash calculation for image %s has been '
@@ -90,6 +102,16 @@ class _CalculateHash(task.Task):
             except _HashCalculationCanceled as e:
                 with excutils.save_and_reraise_exception():
                     LOG.debug('Hash calculation cancelled: %s', e)
+            except exception.ImageSizeLimitExceeded:
+                # NOTE: This is not a transient error, so retrying will
+                # not help - fail (and let revert() clean up) right away.
+                with excutils.save_and_reraise_exception():
+                    LOG.warning(
+                        'Hash calculation for image %(image_id)s aborted: '
+                        'remote location data exceeded the configured '
+                        'image_size_cap of %(limit)d bytes',
+                        {'image_id': self.image_id,
+                         'limit': CONF.image_size_cap})
             except IOError as e:
                 LOG.debug('[%i/%i] Hash calculation failed due to %s',
                           retries, CONF.http_retries, str(e))
