@@ -551,6 +551,90 @@ class TestImagesSingleStore(functional.SynchronousAPIBase):
         self.api_methods.delete_image(image_id)
         self.api_methods.verify_empty_image_list()
 
+    def test_glance_download_aborts_on_size_cap_exceeded(self):
+        # A compromised or malicious remote Glance region can report a
+        # small, believable size on the image metadata call (satisfying
+        # _ImportMetadata), while its /file endpoint actually returns far
+        # more data. Configure image_size_cap between the two so the
+        # glance-download fetch is forced to abort partway through
+        # instead of reading (and staging) the whole object -- exercising
+        # the LimitingReader wrapper end-to-end via the public import API,
+        # and confirming the overall flow (including _ImportMetadata's
+        # revert()) still cleanly reverts the image back to 'queued'.
+        self.config(enabled_import_methods=[
+            'glance-direct', 'web-download', 'copy-image',
+            'glance-download'])
+        self.config(image_size_cap=1024)
+        self.start_server()
+
+        self.api_methods.verify_discovery_includes_import_method(
+            method='glance-download')
+
+        remote_image_id = str(uuid.uuid4())
+        declared_size = 4
+        actual_size = 4096
+
+        class FakeRemoteGlanceHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.path == '/v2/images/%s' % remote_image_id:
+                    body = jsonutils.dumps({
+                        'status': 'active',
+                        'disk_format': 'raw',
+                        'container_format': 'bare',
+                        'size': declared_size,
+                    }).encode('utf-8')
+                    self.send_response(http.OK)
+                    self.send_header('Content-Type', 'application/json')
+                    self.send_header('Content-Length', str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                elif self.path == '/v2/images/%s/file' % remote_image_id:
+                    # No Content-Length: actual size is unknown/unbounded
+                    # to the client, just like a real misbehaving source.
+                    self.send_response(http.OK)
+                    self.end_headers()
+                    self.wfile.write(b'A' * actual_size)
+                else:
+                    self.send_response(http.NOT_FOUND)
+                    self.end_headers()
+
+            def log_message(self, *args, **kwargs):
+                # Keep test output quiet.
+                pass
+
+        server = HTTPServer(('127.0.0.1', 0), FakeRemoteGlanceHandler)
+        port = server.server_address[1]
+        thread = threading.Thread(target=server.serve_forever)
+        thread.daemon = True
+        thread.start()
+        self.http_servers.append(server)
+        fake_endpoint = 'http://127.0.0.1:%s' % port
+
+        image_id = self.api_methods.create_and_verify_image(
+            'image-1', disk_format='raw', container_format='bare')
+
+        data = {'method': {
+            'name': 'glance-download',
+            'glance_region': 'RegionRemote',
+            'glance_image_id': remote_image_id,
+            'glance_service_interface': 'public',
+        }}
+        with mock.patch('glance.async_.utils.get_glance_endpoint',
+                        return_value=fake_endpoint):
+            self.api_methods.import_image(image_id, data=data)
+
+            # The task must fail (not hang, not succeed).
+            self._wait_for_task_failure(image_id)
+
+        # The import must revert the image back to 'queued' rather than
+        # leaving it stuck 'importing' or falsely 'active', and no
+        # partial hash/size data should have been recorded.
+        image = self._wait_for_image_status(image_id, 'queued', max_sec=10)
+        self.assertIsNone(image.get('checksum'))
+        self.assertIsNone(image.get('size'))
+
+        self.api_methods.delete_image(image_id)
+
     def test_web_download_redirect_validation(self):
         """Test that redirect destinations are validated."""
         self.start_server()
