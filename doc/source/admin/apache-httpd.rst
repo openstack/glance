@@ -55,9 +55,7 @@ Here's a sample uWSGI configuration for Glance API:
 
    [uwsgi]
    socket-timeout = 10
-   http-auto-chunked = true
-   http-chunked-input = true
-   http-raw-body = true
+   chunked-input-limit = 4194304
    chmod-socket = 666
    lazy-apps = true
    add-header = Connection: close
@@ -75,14 +73,41 @@ Here's a sample uWSGI configuration for Glance API:
 Key Configuration Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* ``http-auto-chunked = true`` - Enables automatic chunked transfer
-  encoding support
-* ``http-chunked-input = true`` - Supports chunked input for image
-  uploads
+* ``chunked-input-limit = 4194304`` - Maximum size in bytes of a single
+  chunk of a chunked request body. See :ref:`uwsgi_chunked_input_limit`.
 * ``enable-threads = true`` - Enables native threading for better
   performance
 * ``die-on-term = true`` - Enables graceful shutdown on SIGTERM
 * ``exit-on-reload = true`` - Enables graceful reload on SIGHUP
+
+.. _uwsgi_chunked_input_limit:
+
+Chunked Image Uploads
+~~~~~~~~~~~~~~~~~~~~~
+
+The glance client (python-glanceclient), and therefore Nova when it
+uploads snapshots, sends image data with ``Transfer-Encoding: chunked``
+in chunks of 1 MiB. Glance reads such request bodies through uWSGI's
+chunked input API, which buffers a whole chunk plus its trailing CRLF.
+uWSGI limits that buffer with ``chunked-input-limit``, whose default is
+1 MiB (1048576 bytes), so it rejects a 1 MiB chunk: reading the request
+body fails with ``unable to receive chunked part`` and the upload does
+not complete. Set ``chunked-input-limit`` to at least the largest
+expected chunk size plus 2 bytes; the example above uses 4 MiB.
+
+A reverse proxy in front of uWSGI may forward the request body in
+smaller chunks, which hides the problem. Do not rely on that if clients
+or other services can reach the uWSGI ``http-socket`` directly, for
+example through a load balancer that passes the body through unchanged.
+
+.. note::
+
+   The ``http-auto-chunked``, ``http-chunked-input`` and
+   ``http-raw-body`` options belong to uWSGI's HTTP router (the
+   ``http`` option and plugin), which runs as a separate proxy process
+   in front of the workers. They have no effect when Glance is served
+   with ``http-socket`` and do not change how chunked request bodies
+   are read.
 
 Graceful Shutdown
 ~~~~~~~~~~~~~~~~~
@@ -175,7 +200,8 @@ Monitoring and Troubleshooting
 ------------------------------
 
 * Monitor uWSGI worker processes and memory usage
-* Check logs for any chunked transfer encoding issues
+* Check logs for any chunked transfer encoding issues, such as
+  ``unable to receive chunked part``
 * Verify graceful shutdown behavior during deployments
 * Test interoperable image import functionality
 * Monitor response times for large image operations
