@@ -18,9 +18,16 @@ import os
 import shutil
 import zipfile
 
+from oslo_config import cfg
 from oslo_log import log as logging
 from taskflow.patterns import linear_flow as lf
 from taskflow import task
+
+from glance.common import exception
+from glance.common.utils import LimitingReader
+
+CONF = cfg.CONF
+
 
 LOG = logging.getLogger(__name__)
 
@@ -54,7 +61,8 @@ def _zipfile(src_path, dest_path, image_id):
     """Decompress a ZIP file containing a single file.
 
     Only ZIP archives with exactly one file are supported. Raises an
-    exception if the archive contains multiple files.
+    exception if the archive contains multiple files or the decompressed
+    size is larger than image_size_cap.
 
     :param src_path: Path to the ZIP file
     :param dest_path: Path where the decompressed file should be written
@@ -64,21 +72,28 @@ def _zipfile(src_path, dest_path, image_id):
     """
     try:
         with zipfile.ZipFile(src_path, 'r') as zfd:
-            content = zfd.namelist()
+            content = zfd.infolist()
             if len(content) != 1:
                 raise Exception("Archive contains more than one file.")
-            else:
-                # extract() expects a directory path, not a file path
-                # Extract to parent directory, then move to dest_path
-                extract_dir = os.path.dirname(dest_path)
-                extracted_file = zfd.extract(content[0], extract_dir)
-                # Move extracted file to the desired destination
-                if extracted_file != dest_path:
-                    os.replace(extracted_file, dest_path)
+
+            # Python's zipfile validates the declared file_size
+            # against the actual decompressed output (via CRC check),
+            # so a forged smaller value causes an error rather than a
+            # bypass.
+            if content[0].file_size > CONF.image_size_cap:
+                raise exception.ImageSizeLimitExceeded()
+
+            with zfd.open(content[0]) as src:
+                limited = LimitingReader(src, CONF.image_size_cap)
+                with open(dest_path, 'wb') as dst:
+                    shutil.copyfileobj(limited, dst)
+
     except Exception as e:
         LOG.debug("ZIP: Error decompressing image %(iid)s: %(exc)s", {
                   "iid": image_id,
                   "exc": e})
+        if os.path.exists(dest_path):
+            os.remove(dest_path)
         raise
 
 
@@ -112,8 +127,9 @@ def _lhafile(src_path, dest_path, image_id):
 def _gzipfile(src_path, dest_path, image_id):
     try:
         with gzip.open(src_path, 'r') as gzfd:
+            limited = LimitingReader(gzfd, CONF.image_size_cap)
             with open(dest_path, 'wb') as fd:
-                shutil.copyfileobj(gzfd, fd)
+                shutil.copyfileobj(limited, fd)
     except gzip.BadGzipFile as e:
         LOG.debug("ZIP: Error decompressing image %(iid)s: Bad GZip file: "
                   "%(exc)s", {"iid": image_id,
@@ -123,6 +139,8 @@ def _gzipfile(src_path, dest_path, image_id):
         LOG.debug("GZIP: Error decompressing image %(iid)s: %(exc)s", {
                   "iid": image_id,
                   "exc": e})
+        if os.path.exists(dest_path):
+            os.remove(dest_path)
         raise
 
 

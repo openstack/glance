@@ -18,9 +18,14 @@ import os
 from unittest import mock
 import zipfile
 
+from oslo_config import cfg
+
 import glance.async_.flows.plugins.image_decompression as image_decompression
+from glance.common import exception
 from glance import gateway
 import glance.tests.utils as test_utils
+
+CONF = cfg.CONF
 
 UUID1 = 'c80a1a6c-bd1f-41c5-90ee-81afedb1d58d'
 TENANT1 = '6838eb7b-6ded-434a-882c-b344c77fe8df'
@@ -466,3 +471,34 @@ class TestDecompressImageTask(test_utils.BaseTestCase):
         self.assertEqual(1000, self.image.size)
         # Verify image_repo.save was NOT called
         self.img_repo.save.assert_not_called()
+
+    def test_gzip_exceeding_image_size_cap_rejected(self):
+        """A gzip file whose decompressed content exceeds image_size_cap
+        must be rejected and must not leave a partial file on disk.
+        """
+        self.config(image_size_cap=4096)
+
+        gz_file = self._create_gzip_file(b'x' * 8192, 'big.gz')
+        dest = os.path.join(self.test_dir, 'output.raw')
+
+        self.assertRaises(
+            exception.ImageSizeLimitExceeded,
+            image_decompression._gzipfile, gz_file, dest, self.image_id)
+
+        self.assertFalse(os.path.exists(dest))
+
+    def test_zip_exceeding_image_size_cap_rejected(self):
+        """A ZIP whose decompressed content exceeds image_size_cap must
+        be rejected and must not leave a partial file on disk.
+        """
+        self.config(image_size_cap=4096)
+
+        zip_file = self._create_zip_file(b'x' * 8192, 'big.zip',
+                                         'image.raw')
+        dest = os.path.join(self.test_dir, 'output.raw')
+
+        self.assertRaises(
+            exception.ImageSizeLimitExceeded,
+            image_decompression._zipfile, zip_file, dest, self.image_id)
+
+        self.assertFalse(os.path.exists(dest))
