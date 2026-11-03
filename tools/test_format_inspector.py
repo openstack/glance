@@ -21,22 +21,28 @@
 # test_format_inspector.py -f qcow2 -v -i ~/cirros-0.5.1-x86_64-disk.img
 
 import argparse
+import json
 import logging
+import subprocess
 import sys
 
+from oslo_utils.imageutils import format_inspector
 from oslo_utils import units
 
-from glance.common import format_inspector
-from glance.tests.unit.common import test_format_inspector
+
+def get_size_from_qemu_img(filename):
+    output = subprocess.check_output(
+        ['qemu-img', 'info', '--output=json', filename], text=True)
+    return json.loads(output)['virtual-size']
 
 
 def main():
-    formats = ['raw', 'qcow2', 'vhd', 'vhdx', 'vmdk', 'vdi']
+    formats = sorted(format_inspector.ALL_FORMATS)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--debug', action='store_true')
     parser.add_argument('-f', '--format', default='raw',
-                        help='Format (%s)' % ','.join(sorted(formats)))
+                        help='Format (%s)' % ','.join(formats))
     parser.add_argument('-b', '--block-size', default=65536, type=int,
                         help='Block read size')
     parser.add_argument('--context-limit', default=(1 * 1024), type=int,
@@ -53,31 +59,44 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO)
 
-    fmt = format_inspector.get_inspector(args.format)(tracing=args.debug)
-
     if args.input:
         input_stream = open(args.input, 'rb')
     else:
         input_stream = sys.stdin.buffer
 
-    stream = format_inspector.InfoWrapper(input_stream, fmt)
+    stream = format_inspector.InspectWrapper(
+        input_stream, tracing=args.debug)
     count = 0
     found_size = False
-    while True:
-        chunk = stream.read(int(args.block_size))
-        # This could stream to an output destination or stdin for testing
-        # sys.stdout.write(chunk)
-        if not chunk:
-            break
-        count += len(chunk)
-        if args.format != 'raw' and not found_size and fmt.virtual_size != 0:
-            # Print the point at which we've seen enough of the file to
-            # know what the virtual size is. This is almost always less
-            # than the raw_size
-            print('Determined virtual size at byte %i' % count)
-            found_size = True
+    try:
+        while chunk := stream.read(args.block_size):
+            count += len(chunk)
+            if args.format == 'raw' or found_size:
+                continue
 
-    if fmt.format_match:
+            try:
+                detected_format = stream.format
+            except format_inspector.ImageFormatError:
+                continue
+
+            if (detected_format is not None
+                    and str(detected_format) == args.format
+                    and detected_format.virtual_size):
+                # Print the point at which we've seen enough of the file to
+                # know what the virtual size is. This is almost always less
+                # than the raw_size
+                print('Determined virtual size at byte %i' % count)
+                found_size = True
+    finally:
+        stream.close()
+
+    try:
+        fmt = stream.format
+    except format_inspector.ImageFormatError as error:
+        print('*** Format inspector could not determine format: %s' % error)
+        return 1
+
+    if fmt is not None and str(fmt) == args.format:
         print('Source was %s file, virtual size %i MiB (%i bytes)' % (
             fmt, fmt.virtual_size / units.Mi, fmt.virtual_size))
     else:
@@ -95,15 +114,21 @@ def main():
         print('*** ERROR: Memory footprint exceeded!')
 
     if args.verify and args.input:
-        size = test_format_inspector.get_size_from_qemu_img(args.input)
+        size = get_size_from_qemu_img(args.input)
         if size != fmt.virtual_size:
             print('*** QEMU disagrees with our size of %i: %i' % (
                 fmt.virtual_size, size))
         else:
             print('Confirmed size with qemu-img')
 
-    print('Image safety check: %s' % (
-        fmt.safety_check() and 'passed' or 'FAILED'))
+    try:
+        fmt.safety_check()
+        safety_result = 'passed'
+    except (
+            format_inspector.ImageFormatError,
+            format_inspector.SafetyCheckFailed) as error:
+        safety_result = 'FAILED: %s' % error
+    print('Image safety check: %s' % safety_result)
     if args.input:
         detected_fmt = format_inspector.detect_file_format(args.input)
         print('Detected inspector for image as: %s' % (
