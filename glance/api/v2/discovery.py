@@ -14,15 +14,18 @@
 # limitations under the License.
 
 import copy
+import importlib
 
 import glance_store as g_store
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_serialization.jsonutils as json
+import stevedore
 import webob.exc
 
 from glance.api import policy
 from glance.api.v2 import policy as api_policy
+from glance.async_.flows import api_image_import  # noqa: F401
 from glance.common import exception
 from glance.common import wsgi
 import glance.db
@@ -37,6 +40,8 @@ LOG = logging.getLogger(__name__)
 class InfoController(object):
     def __init__(self, policy_enforcer=None):
         self.policy = policy_enforcer or policy.Enforcer()
+        self._plugin_extensions = stevedore.ExtensionManager(
+            'glance.image_import.plugins')
 
     def get_image_import(self, req):
         # TODO(jokke): All the rest of the boundaries should be implemented.
@@ -49,6 +54,52 @@ class InfoController(object):
         return {
             'import-methods': import_methods
         }
+
+    def _get_plugin_properties(self, plugin_name):
+        try:
+            ext = self._plugin_extensions[plugin_name]
+        except KeyError:
+            return {}
+
+        mod = importlib.import_module(ext.plugin.__module__)
+
+        plugin_opt_names = set()
+        for attr in dir(mod):
+            val = getattr(mod, attr)
+            if isinstance(val, list) and val and isinstance(val[0], cfg.Opt):
+                plugin_opt_names.update(opt.name for opt in val)
+
+        if not plugin_opt_names:
+            return {}
+
+        for name in CONF:
+            group = CONF[name]
+            if not isinstance(group, cfg.ConfigOpts.GroupAttr):
+                continue
+            if plugin_opt_names.issubset(set(group)):
+                return {opt: getattr(group, opt)
+                        for opt in plugin_opt_names}
+
+        return {}
+
+    def get_image_import_detail(self, req):
+        try:
+            api_policy.DiscoveryAPIPolicy(
+                req.context,
+                enforcer=self.policy).import_info_detail()
+        except exception.Forbidden as e:
+            LOG.debug("User not permitted to view import details")
+            raise webob.exc.HTTPForbidden(explanation=e.msg)
+
+        response = self.get_image_import(req)
+        response['plugins'] = [
+            {
+                'name': plugin_name,
+                'properties': self._get_plugin_properties(plugin_name)
+            }
+            for plugin_name in CONF.image_import_opts.image_import_plugins
+        ]
+        return response
 
     def get_stores(self, req):
         # TODO(abhishekk): This will be removed after config options

@@ -19,6 +19,16 @@ from glance.policies import base
 
 discovery_policies = [
     policy.DocumentedRuleDefault(
+        name="import_info_detail",
+        check_str=base.ADMIN_OR_SERVICE_ROLE,
+        scope_types=['project'],
+        description='Expose image import plugin information',
+        operations=[
+            {'path': '/v2/info/import/detail',
+             'method': 'GET'}
+        ],
+    ),
+    policy.DocumentedRuleDefault(
         name="stores_info_detail",
         check_str=base.ADMIN_OR_SERVICE_ROLE,
         scope_types=['project'],

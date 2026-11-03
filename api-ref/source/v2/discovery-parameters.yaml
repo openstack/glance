@@ -1,3 +1,15 @@
+import-plugins:
+  description: |
+    A list of configured image import plugins. Each plugin object contains
+    the following fields:
+
+    ``name``
+        Name of the configured import plugin.
+    ``properties``
+        Configuration details exposed by the plugin.
+  in: body
+  required: true
+  type: array
 stores:
   description: |
     A list of store objects, where each store object may contain the

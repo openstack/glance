@@ -868,3 +868,9 @@ class TestDiscoveryAPIPolicy(APIPolicyBase):
         self.enforcer.enforce.assert_called_once_with(self.context,
                                                       'stores_info_detail',
                                                       mock.ANY)
+
+    def test_import_info_detail(self):
+        self.policy.import_info_detail()
+        self.enforcer.enforce.assert_called_once_with(self.context,
+                                                      'import_info_detail',
+                                                      mock.ANY)

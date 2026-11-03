@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Adds the ``GET /v2/info/import/detail`` API for administrators and
+    service users. The response includes the supported import methods and
+    the configured image import plugins, including safe plugin configuration
+    details exposed by Glance.

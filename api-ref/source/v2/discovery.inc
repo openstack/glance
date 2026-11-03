@@ -58,6 +58,49 @@ Response Example
    :language: json
 
 
+.. _import-detail-discovery-call:
+
+Import methods and plugin discovery
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. rest_method::  GET /v2/info/import/detail
+
+Returns the supported image import methods and the configured image import
+plugins, including supported plugin configuration details. This call is
+restricted to administrators and service users.
+
+Normal response codes: 200
+
+Error response codes: 401, 403
+
+
+Request
+-------
+
+There are no request parameters.
+
+This call does not allow a request body.
+
+
+Response Parameters
+-------------------
+
+.. rest_parameters:: images-parameters.yaml
+
+   - import-methods: import-methods
+
+.. rest_parameters:: discovery-parameters.yaml
+
+   - import-plugins: import-plugins
+
+
+Response Example
+----------------
+
+.. literalinclude:: samples/image-info-import-detail-response.json
+   :language: json
+
+
 .. _store-discovery-call:
 
 List stores
