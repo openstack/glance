@@ -454,9 +454,9 @@ Here is a list of useful image properties and the values they expect.
   :Type: str
 
   The hardware feature name to encrypt guest memory, if there are compute hosts
-  available which support this. See
-  `nova's documentation on configuration of AMD SEV
-  <https://docs.openstack.org/nova/latest/admin/sev.html>`_
+  available which support this. See nova's documentation on configuration of
+  `AMD SEV <https://docs.openstack.org/nova/latest/admin/sev.html>`_ and
+  `Intel TDX <https://docs.openstack.org/nova/latest/admin/tdx.html>`_
   for more details.
 
   Only supported by the libvirt driver with the KVM/QEMU hypervisor.
@@ -466,6 +466,7 @@ Here is a list of useful image properties and the values they expect.
   - ``amd-sev``
   - ``amd-sev-es``
   - ``amd-sev-snp``
+  - ``intel-tdx``
 
 ``hw_virtio_packed_ring``
   :Type: bool

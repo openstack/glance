@@ -5,7 +5,7 @@ features:
     release:
 
     * Updated ``hw_memory_encryption_model`` enumerations to support
-      ``amd-sev-snp``.
+      ``amd-sev-snp`` and ``intel-tdx``.
 
     You may upgrade these definitions using:
 
