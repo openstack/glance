@@ -198,7 +198,7 @@ Here is a list of useful image properties and the values they expect.
   * ``arch`` - Arch Linux. Do not use ``archlinux`` or ``org.archlinux``.
   * ``centos`` - Community Enterprise Operating System. Do not use
     ``org.centos`` or ``CentOS``.
-  * ``debian`` - Debian. Do not use ``Debian` or ``org.debian``.
+  * ``debian`` - Debian. Do not use ``Debian`` or ``org.debian``.
   * ``fedora`` - Fedora. Do not use ``Fedora``, ``org.fedora``, or
     ``org.fedoraproject``.
   * ``freebsd`` - FreeBSD. Do not use ``org.freebsd``, ``freeBSD``, or
