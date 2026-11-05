@@ -195,6 +195,8 @@ Here is a list of useful image properties and the values they expect.
 
   One of:
 
+  * ``almalinux`` - AlmaLinux OS. Do not use ``alma``, ``AlmaLinux``, or
+    ``org.almalinux``.
   * ``arch`` - Arch Linux. Do not use ``archlinux`` or ``org.archlinux``.
   * ``centos`` - Community Enterprise Operating System. Do not use
     ``org.centos`` or ``CentOS``.
