@@ -430,7 +430,7 @@ class TestCachedImagesNegative(test_utils.BaseTestCase):
     def test_get_cached_nodes_centralized_cache_disabled(self):
         """Test that 409 is returned when centralized caching is disabled."""
         self.config(image_cache_dir='fake_cache_directory')
-        self.config(image_cache_driver='sqlite')
+        self.config(image_cache_driver='xattr')
         req = unit_test_utils.get_fake_request()
 
         self.assertRaises(webob.exc.HTTPConflict,

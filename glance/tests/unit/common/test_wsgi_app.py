@@ -185,7 +185,7 @@ class TestWsgiAppInit(test_utils.BaseTestCase):
     def test_sqlite_migrate_not_called(self, mock_migrate,
                                        mock_conf):
         self.config(flavor='keystone+cache', group='paste_deploy')
-        self.config(image_cache_driver='sqlite')
+        self.config(image_cache_driver='xattr')
         self.config(worker_self_reference_url='http://workerx')
         mock_conf.return_value = []
         wsgi_app.init_app()

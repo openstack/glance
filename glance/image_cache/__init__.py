@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 
 image_cache_opts = [
     cfg.StrOpt('image_cache_driver', default='centralized_db',
-               choices=('centralized_db', 'sqlite', 'xattr'), ignore_case=True,
+               choices=('centralized_db', 'xattr'), ignore_case=True,
                help=_("""
 The driver to use for image cache management.
 
@@ -46,25 +46,17 @@ the cache, etc.
 The essential functions of a driver are defined in the base class
 ``glance.image_cache.drivers.base.Driver``. All image-cache drivers (existing
 and prospective) must implement this interface. Currently available drivers
-are ``sqlite`` and ``xattr``. These drivers primarily differ in the way they
-store the information about cached images:
+are ``centralized_db`` and ``xattr``. These drivers primarily differ in the way
+they store the information about cached images:
 
 * The ``centralized_db`` driver uses a central database (which will be common
   for all glance nodes) to track the usage of cached images.
-* The ``sqlite`` (deprecated) driver uses a sqlite database (which sits on
-  every glance node locally) to track the usage of cached images.
 * The ``xattr`` driver uses the extended attributes of files to store this
   information. It also requires a filesystem that sets ``atime`` on the files
   when accessed.
 
-Deprecation warning:
-    * As centralized database will now be used for image cache management, the
-      use of `sqlite` database and driver will be dropped from 'E' (2025.1)
-      development cycle.
-
 Possible values:
     * centralized_db
-    * sqlite
     * xattr
 
 Related options:
@@ -152,9 +144,6 @@ next time cache-prefetcher runs.
 Possible values:
     * A valid path
 
-Related options:
-    * ``image_cache_sqlite_db``
-
 """)),
 ]
 
@@ -184,16 +173,13 @@ class ImageCache(object):
                             "Got error: '%(import_err)s."),
                         {'driver_name': driver_name,
                          'import_err': import_err})
-
-            driver_module = __name__ + '.drivers.sqlite.Driver'
-            LOG.info(_LI("Defaulting to SQLite driver."))
-            self.driver_class = importutils.import_class(driver_module)
+            raise
         self.configure_driver()
 
     def configure_driver(self):
         """
         Configure the driver for the cache and, if it fails to configure,
-        fall back to using the SQLite driver which has no odd dependencies
+        raise BadDriverConfiguration.
         """
         try:
             self.driver = self.driver_class()
@@ -205,11 +191,7 @@ class ImageCache(object):
                             "Got error: '%(config_err)s"),
                         {'driver_module': driver_module,
                          'config_err': config_err})
-            LOG.info(_LI("Defaulting to SQLite driver."))
-            default_module = __name__ + '.drivers.sqlite.Driver'
-            self.driver_class = importutils.import_class(default_module)
-            self.driver = self.driver_class()
-            self.driver.configure()
+            raise
 
     def is_cached(self, image_id):
         """

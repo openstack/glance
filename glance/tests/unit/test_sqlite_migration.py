@@ -98,7 +98,7 @@ class TestMigrate(test_utils.BaseTestCase):
             sq_db.commit()
 
     def test_migrate_if_required_false(self):
-        self.config(image_cache_driver="sqlite")
+        self.config(image_cache_driver="xattr")
         self.assertFalse(sqlite_migration.migrate_if_required())
 
     def test_migrate_if_required_cache_disabled(self):
