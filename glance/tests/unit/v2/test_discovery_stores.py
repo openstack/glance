@@ -12,6 +12,8 @@
 # implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from unittest import mock
+
 import glance_store
 from oslo_config import cfg
 import webob.exc
@@ -130,6 +132,30 @@ class TestInfoControllers(base.MultiStoreClearingUnitTest):
         self.assertRaises(webob.exc.HTTPForbidden,
                           self.controller.get_stores_detail,
                           req)
+
+    def test_get_stores_reports_ranged_read_capability(self):
+        self.config(enabled_backends={'fast': 'file', 'cheap': 'file'})
+        self.config(max_concurrent_range_requests=4)
+
+        capable_store = mock.Mock()
+        capable_store.is_capable.return_value = True
+        incapable_store = mock.Mock()
+        incapable_store.is_capable.return_value = False
+
+        req = unit_test_utils.get_fake_request()
+        with mock.patch.object(
+                glance.api.v2.discovery.g_store,
+                'get_store_from_store_identifier',
+                side_effect=[capable_store, incapable_store]):
+            output = self.controller.get_stores(req)
+
+        stores = {store['id']: store for store in output['stores']}
+        self.assertTrue(stores['fast']['read_random'])
+        self.assertEqual(4,
+                         stores['fast']['max_concurrent_range_requests'])
+        self.assertFalse(stores['cheap']['read_random'])
+        self.assertNotIn('max_concurrent_range_requests',
+                         stores['cheap'])
 
     def test_swift_multitenant_and_conf_file_enabled(self):
         self.config(enabled_backends={'fast-rbd': 'rbd', 'test': 'swift'})

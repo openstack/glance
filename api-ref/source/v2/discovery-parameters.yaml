@@ -27,6 +27,12 @@ stores:
         for more information.)
     ``read-only`` (optional)
         Included only when the store is read only.
+    ``read_random``
+        Whether the store supports ranged reads.
+    ``max_concurrent_range_requests`` (optional)
+        Included only when ``read_random`` is true. It is the per-worker
+        maximum number of concurrent range requests that clients should
+        use.
   in: body
   required: true
   type: array
@@ -49,6 +55,12 @@ stores-detail:
         for more information.)
     ``read-only`` (optional)
         Included only when the store is read only.
+    ``read_random``
+        Whether the store supports ranged reads.
+    ``max_concurrent_range_requests`` (optional)
+        Included only when ``read_random`` is true. It is the per-worker
+        maximum number of concurrent range requests that clients should
+        use.
     ``weight`` (default 0)
         Contains weight (positive integer) to sort image locations for
         preference.

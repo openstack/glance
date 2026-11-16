@@ -1,0 +1,8 @@
+---
+features:
+  - |
+    Store discovery now reports ``read_random`` for each configured backend.
+    For backends that support ranged reads, the response also includes
+    ``max_concurrent_range_requests``. The new
+    ``max_concurrent_range_requests`` option controls the advertised
+    per-worker limit.

@@ -2,21 +2,26 @@
     "stores": [
         {
             "id":"reliable",
-            "description": "More expensive store with data redundancy"
+            "description": "More expensive store with data redundancy",
+            "read_random": false
         },
         {
             "id":"fast",
             "description": "Provides quick access to your image data",
-            "default": "true"
+            "default": "true",
+            "read_random": true,
+            "max_concurrent_range_requests": 8
         },
         {
             "id":"cheap",
-            "description": "Less expensive store for seldom-used images"
+            "description": "Less expensive store for seldom-used images",
+            "read_random": false
         },
         {
             "id":"special",
             "description": "Need a plausible description here that doesn't expose the store type",
-            "read-only": "true"
+            "read-only": "true",
+            "read_random": false
         }
     ]
 }
