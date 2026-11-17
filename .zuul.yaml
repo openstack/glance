@@ -140,6 +140,16 @@
       tox_envlist: functional-py314
 
 - job:
+    name: glance-tox-bandit-baseline
+    parent: tox
+    nodeset: ubuntu-noble
+    timeout: 2400
+    description: |
+      Run Bandit baseline security checks on Glance
+    vars:
+      tox_envlist: bandit-baseline
+
+- job:
     name: tempest-integrated-storage-import
     parent: tempest-integrated-storage
     description: |
@@ -329,6 +339,8 @@
       jobs:
         - openstack-tox-functional-py311
         - openstack-tox-functional-py314
+        - glance-tox-bandit-baseline:
+            voting: false
         - glance-ceph-thin-provisioning:
             voting: false
             irrelevant-files: &tempest-irrelevant-files
