@@ -651,6 +651,14 @@ class Test_UwsgiChunkedFile(test_utils.BaseTestCase):
         out = reader.read(length=-2)
         self.assertEqual(out, b'abc')
 
+    def test_read_client_disconnect(self):
+        reader = wsgi._UWSGIChunkFile()
+        uwsgi_mod = self._mock_uwsgi()
+        uwsgi_mod.chunked_read = mock.Mock(
+            side_effect=OSError('connection reset'))
+
+        self.assertRaises(webob.exc.HTTPBadRequest, reader.read, length=2)
+
     def test_read_data_length_with_overshoot(self):
         reader = wsgi._UWSGIChunkFile()
         uwsgi_mod = self._mock_uwsgi()

@@ -109,6 +109,24 @@ example through a load balancer that passes the body through unchanged.
    with ``http-socket`` and do not change how chunked request bodies
    are read.
 
+Apache HTTP Proxy
+~~~~~~~~~~~~~~~~~
+
+When Apache proxies to the ``http-socket`` listener shown above, use
+``mod_proxy_http``. Set ``Proxy100Continue off`` so Apache answers
+``Expect: 100-continue`` itself before forwarding the request body.
+
+.. code-block:: apache
+
+   <VirtualHost *:80>
+       ServerName glance-api.example.com
+
+       ProxyPreserveHost On
+       Proxy100Continue off
+       ProxyPass / http://127.0.0.1:60999/
+       ProxyPassReverse / http://127.0.0.1:60999/
+   </VirtualHost>
+
 Graceful Shutdown
 ~~~~~~~~~~~~~~~~~
 
