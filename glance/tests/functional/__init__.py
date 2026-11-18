@@ -1510,6 +1510,21 @@ class SynchronousAPIBase(test_utils.BaseTestCase):
                          'image %s' % image_id)
         return image
 
+    def _wait_for_image_status(self, image_id, expected_status, max_sec=10,
+                               delay_sec=0.1):
+        """Wait until image has expected status."""
+        done_time = time.time() + max_sec
+        image = None
+        while time.time() <= done_time:
+            image = self.api_get('/v2/images/%s' % image_id).json
+            if image['status'] == expected_status:
+                return image
+            time.sleep(delay_sec)
+
+        last_status = image['status'] if image else 'unknown'
+        self.fail('Timed out waiting for image %s status %s (last status=%s)'
+                  % (image_id, expected_status, last_status))
+
     def _create(self):
         return self.api_post('/v2/images',
                              json={'name': 'foo',
