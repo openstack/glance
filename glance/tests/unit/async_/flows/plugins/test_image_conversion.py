@@ -26,6 +26,7 @@ from oslo_utils.imageutils import format_inspector
 import glance.async_.flows.api_image_import as import_flow
 import glance.async_.flows.plugins.image_conversion as image_conversion
 from glance.async_ import utils as async_utils
+from glance.common import exception
 from glance.common import utils
 from glance import domain
 from glance import gateway
@@ -103,7 +104,8 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
     @mock.patch.object(os, 'stat')
     @mock.patch.object(os, 'remove')
-    def test_image_convert_success(self, mock_os_remove, mock_os_stat):
+    def test_image_convert_success(self, mock_os_remove, mock_os_stat,
+                                   virtual_size=456):
         mock_os_remove.return_value = None
         mock_os_stat.return_value.st_size = 123
         image_convert = image_conversion._ConvertImage(self.context,
@@ -123,7 +125,7 @@ class TestConvertImageTask(test_utils.BaseTestCase):
             cmd_mock.return_value = ("", None)
             with mock.patch.object(json, 'loads') as jloads_mock:
                 jloads_mock.return_value = {'format': 'raw',
-                                            'virtual-size': 456}
+                                            'virtual-size': virtual_size}
                 inspector = self.detect_file_format_mock.return_value
                 inspector.__str__.side_effect = ['raw', 'qcow2']
                 image_convert.execute('file:///test/path.raw')
@@ -137,8 +139,40 @@ class TestConvertImageTask(test_utils.BaseTestCase):
 
         self.assertEqual('bare', image.container_format)
         self.assertEqual('qcow2', image.disk_format)
-        self.assertEqual(456, image.virtual_size)
+        self.assertEqual(virtual_size, image.virtual_size)
         self.assertEqual(123, image.size)
+
+    def test_image_convert_virtual_size_below_cap(self):
+        self.config(image_size_cap=1024)
+        self.test_image_convert_success(virtual_size=1023)
+
+    def test_image_convert_virtual_size_at_cap(self):
+        self.config(image_size_cap=1024)
+        self.test_image_convert_success(virtual_size=1024)
+
+    def test_image_convert_virtual_size_above_cap(self):
+        self.config(image_size_cap=1024)
+        self.config(output_format='raw', group='image_conversion')
+        convert = self._setup_image_convert_info_fail()
+        inspector = self.detect_file_format_mock.return_value
+        inspector.__str__.return_value = 'qcow2'
+        with mock.patch.object(processutils, 'trycmd') as cmd_mock:
+            cmd_mock.return_value = (
+                '{"format": "qcow2", "virtual-size": 1025}', '')
+            self.assertRaises(exception.ImageSizeLimitExceeded,
+                              convert.execute, 'file:///test/path.qcow2')
+            # Reject the image after inspection, before conversion.
+            cmd_mock.assert_called_once_with(
+                'qemu-img', 'info',
+                '-f', 'qcow2',
+                '--output=json',
+                '/test/path.qcow2',
+                prlimit=async_utils.QEMU_IMG_PROC_LIMITS,
+                python_exec=convert.python,
+                log_errors=processutils.LOG_ALL_ERRORS)
+
+        self.assertIsNone(self.img_repo.get.return_value.virtual_size)
+        self.img_repo.save.assert_not_called()
 
     @mock.patch('os.remove')
     @mock.patch('os.stat')
