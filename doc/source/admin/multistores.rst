@@ -59,6 +59,14 @@ operators to enable multiple stores support.
     call, where an http type store will have the attribute ``read-only:
     True`` in addition to the usual ``id`` and ``description`` fields.
 
+    Every store includes the ``read_random`` attribute. Its value is
+    ``true`` when the backend supports ranged reads, and ``false`` when it
+    does not. Stores with ``read_random: true`` also include
+    ``max_concurrent_range_requests``, which reports the per-worker
+    maximum that clients should use when issuing concurrent range requests.
+    The ``[DEFAULT] max_concurrent_range_requests`` option controls this
+    advertised value.
+
     .. code-block:: ini
 
          [DEFAULT]

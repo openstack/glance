@@ -438,6 +438,12 @@ Possible values:
                help=_("""
 The number of times to retry when any operation fails.
 """)),
+    cfg.IntOpt('max_concurrent_range_requests', default=8, min=1,
+               help=_("""
+Maximum number of concurrent ranged image-download requests per API
+worker. Store discovery reports this value for backends that support
+ranged reads.
+""")),
     cfg.IntOpt('image_size_cap', default=1099511627776, min=1,
                max=9223372036854775808,
                help=_("""

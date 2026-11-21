@@ -6,6 +6,7 @@
             "description": "More expensive store with data redundancy",
             "default": "true",
             "weight": 100,
+            "read_random": false,
             "properties": {
                 "pool": "pool1",
                 "chunk_size": 65536,
@@ -18,6 +19,8 @@
             "type": "file",
             "description": "Less expensive store for seldom-used images",
             "weight": 200,
+            "read_random": true,
+            "max_concurrent_range_requests": 8,
             "properties": {
                 "datadir": "fdir",
                 "chunk_size": 65536,
@@ -29,6 +32,8 @@
             "type": "cinder",
             "description": "Reasonably-priced fast store",
             "weight": 300,
+            "read_random": true,
+            "max_concurrent_range_requests": 8,
             "properties": {
                 "volume_type": "volume1",
                 "use_multipath": false
@@ -39,6 +44,7 @@
             "type": "swift",
             "description": "Entry-level store balancing price and speed",
             "weight": 400,
+            "read_random": false,
             "properties": {
                 "container": "container1",
                 "large_object_size": 52428,

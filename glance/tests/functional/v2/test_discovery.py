@@ -16,12 +16,16 @@
 import fixtures
 import http.client as http
 
+from oslo_config import cfg
 from oslo_utils import units
 
 from glance.quota import keystone as ks_quota
 from glance.tests import functional
 from glance.tests.functional.v2.test_images import get_enforcer_class
 from glance.tests import utils as test_utils
+
+
+CONF = cfg.CONF
 
 
 class TestDiscovery(functional.SynchronousAPIBase):
@@ -112,13 +116,22 @@ class TestDiscovery(functional.SynchronousAPIBase):
             "stores": [
                 {
                     "id": "store1",
-                    "default": "true"
+                    "default": "true",
+                    "read_random": True,
+                    "max_concurrent_range_requests":
+                        CONF.max_concurrent_range_requests
                 },
                 {
-                    "id": "store2"
+                    "id": "store2",
+                    "read_random": True,
+                    "max_concurrent_range_requests":
+                        CONF.max_concurrent_range_requests
                 },
                 {
-                    "id": "store3"
+                    "id": "store3",
+                    "read_random": True,
+                    "max_concurrent_range_requests":
+                        CONF.max_concurrent_range_requests
                 }]}
 
         self.assertEqual(expected['stores'], stores)
@@ -133,6 +146,9 @@ class TestDiscovery(functional.SynchronousAPIBase):
                     "default": "true",
                     "type": "file",
                     "weight": 0,
+                    "read_random": True,
+                    "max_concurrent_range_requests":
+                        CONF.max_concurrent_range_requests,
                     "properties": {
                           "data_dir": self._store_dir('store1'),
                           "chunk_size": 65536,
@@ -143,6 +159,9 @@ class TestDiscovery(functional.SynchronousAPIBase):
                     "id": "store2",
                     "type": "file",
                     "weight": 0,
+                    "read_random": True,
+                    "max_concurrent_range_requests":
+                        CONF.max_concurrent_range_requests,
                     "properties": {
                           "data_dir": self._store_dir('store2'),
                           "chunk_size": 65536,
@@ -153,6 +172,9 @@ class TestDiscovery(functional.SynchronousAPIBase):
                     "id": "store3",
                     "type": "file",
                     "weight": 0,
+                    "read_random": True,
+                    "max_concurrent_range_requests":
+                        CONF.max_concurrent_range_requests,
                     "properties": {
                           "data_dir": self._store_dir('store3'),
                           "chunk_size": 65536,

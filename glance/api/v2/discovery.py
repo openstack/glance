@@ -17,6 +17,7 @@ import copy
 import importlib
 
 import glance_store as g_store
+from glance_store import capabilities as store_capabilities
 from oslo_config import cfg
 from oslo_log import log as logging
 import oslo_serialization.jsonutils as json
@@ -101,7 +102,7 @@ class InfoController(object):
         ]
         return response
 
-    def get_stores(self, req):
+    def _get_base_stores(self):
         # TODO(abhishekk): This will be removed after config options
         # 'stores' and 'default_store' are removed.
         enabled_backends = CONF.enabled_backends
@@ -139,7 +140,28 @@ class InfoController(object):
             # Check if http store is configured then mark it as read-only
             if enabled_backends[backend] == 'http':
                 stores['read-only'] = "true"
+
             backends.append(stores)
+
+        return backends
+
+    @staticmethod
+    def _report_ranged_reads(stores, store_details=None):
+        for store in stores:
+            if store_details is None:
+                store_detail = g_store.get_store_from_store_identifier(
+                    store['id'])
+            else:
+                store_detail = store_details[store['id']]
+            store['read_random'] = store_detail.is_capable(
+                store_capabilities.BitMasks.READ_RANDOM)
+            if store['read_random']:
+                store['max_concurrent_range_requests'] = (
+                    CONF.max_concurrent_range_requests)
+
+    def get_stores(self, req):
+        backends = self._get_base_stores()
+        self._report_ranged_reads(backends)
 
         return {'stores': backends}
 
@@ -215,7 +237,7 @@ class InfoController(object):
 
     def get_stores_detail(self, req):
         enabled_backends = CONF.enabled_backends
-        stores = self.get_stores(req).get('stores')
+        stores = self._get_base_stores()
         try:
             api_policy.DiscoveryAPIPolicy(
                 req.context,
@@ -230,14 +252,18 @@ class InfoController(object):
                 'http': self._get_http_properties
             }
 
+            store_details = {}
             for store in stores:
                 store_type = enabled_backends[store['id']]
                 store['type'] = store_type
                 store_detail = g_store.get_store_from_store_identifier(
                     store['id'])
+                store_details[store['id']] = store_detail
                 store['properties'] = store_mapper.get(store_type)(
                     store_detail)
                 store['weight'] = getattr(CONF, store['id']).weight
+
+            self._report_ranged_reads(stores, store_details)
 
         except exception.Forbidden as e:
             LOG.debug("User not permitted to view details")
