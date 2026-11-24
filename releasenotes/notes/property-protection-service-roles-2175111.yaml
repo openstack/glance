@@ -1,0 +1,8 @@
+---
+fixes:
+  - |
+    Glance no longer grants property-protection access based on service roles
+    supplied in a service token. Service roles are now separate from the
+    end-user roles used to authorize protected image properties. For more
+    information see `bug 2175111
+    <https://bugs.launchpad.net/glance/+bug/2175111>`_.

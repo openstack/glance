@@ -41,10 +41,11 @@ CONFIG_SECTIONS = [
 ]
 
 
-def create_context(policy, roles=None):
+def create_context(policy, roles=None, service_roles=None):
     if roles is None:
         roles = []
     return glance.context.RequestContext(roles=roles,
+                                         service_roles=service_roles,
                                          policy_enforcer=policy)
 
 
@@ -209,6 +210,22 @@ class TestPropertyRulesWithRoles(base.IsolatedUnitTest, TestPropertyRules):
         self.rules_checker = property_utils.PropertyRules(self.policy)
         self.assertFalse(self.rules_checker.check_property_rules('test_prop',
                          'read', create_context(self.policy, ['member'])))
+
+    def test_check_property_rules_service_role_not_user_role(self):
+        rules = {'test_prop': {'create': ['admin'],
+                               'read': ['admin'],
+                               'update': ['admin'],
+                               'delete': ['admin']}}
+        self.set_property_protection_rules(rules)
+        self.rules_checker = property_utils.PropertyRules(self.policy)
+        context = create_context(self.policy, ['member'],
+                                 service_roles=['admin'])
+
+        allowed = self.rules_checker.check_property_rules(
+            'test_prop', 'read', context)
+
+        self.assertFalse(allowed)
+        self.assertEqual(['member'], context.roles)
 
     def test_check_property_rules_create_permitted_admin_role(self):
         self.rules_checker = property_utils.PropertyRules(self.policy)
@@ -409,6 +426,12 @@ class TestPropertyRulesWithPolicies(base.IsolatedUnitTest, TestPropertyRules):
         self.assertFalse(self.rules_checker.check_property_rules(
                          'spl_creator_policy', 'create',
                          create_context(self.policy, ['fake-role'])))
+
+    def test_check_property_rules_service_role_not_policy_role(self):
+        self.assertFalse(self.rules_checker.check_property_rules(
+                         'spl_creator_policy', 'create',
+                         create_context(self.policy, ['fake-role'],
+                                        service_roles=['admin'])))
 
     def test_check_property_rules_read_permitted_specific_policy(self):
         self.assertTrue(self.rules_checker.check_property_rules(
